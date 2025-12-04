@@ -11,23 +11,15 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\Translations\Translatable;
 use Spatie\Permission\Traits\HasPermissions;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CompanyUser extends Model
 {
     use HasFactory, Translatable, HasRoles, Filterable, Scopes, HasPermissions, LogsActivity, HasImages;
-    protected $table = 'company_user';
-    /**
-     * اسم الجدول المرتبط بالموديل.
-     *
-     * @var string
-     */
 
-    /**
-     * الحقول التي يمكن تعبئتها جماعياً.
-     *
-     * @var array<int, string>
-     */
+    protected $table = 'company_user';
+
     protected $guarded = [];
 
     /**
@@ -63,5 +55,56 @@ class CompanyUser extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * علاقة مباشرة للحصول على الخزنة الافتراضية للمستخدم في هذه الشركة
+     * 
+     * @return HasOne
+     */
+    public function defaultCashBox(): HasOne
+    {
+        return $this->hasOneThrough(
+            CashBox::class,
+            User::class,
+            'id',
+            'user_id',
+            'user_id',
+            'id'
+        )
+            ->where('cash_boxes.is_default', true)
+            ->where('cash_boxes.company_id', $this->company_id);
+    }
+
+    /**
+     * الحصول على جميع صناديق النقد للمستخدم في هذه الشركة
+     * 
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getCashBoxesAttribute()
+    {
+        if (!$this->relationLoaded('user')) {
+            return collect();
+        }
+
+        return $this->user->cashBoxes
+            ->where('company_id', $this->company_id);
+    }
+
+    /**
+     * الحصول على الخزنة الافتراضية للمستخدم في هذه الشركة
+     * 
+     * @return CashBox|null
+     */
+    public function getDefaultCashBoxAttribute()
+    {
+        if (!$this->relationLoaded('user')) {
+            return null;
+        }
+
+        return $this->user->cashBoxes
+            ->where('company_id', $this->company_id)
+            ->where('is_default', true)
+            ->first();
     }
 }

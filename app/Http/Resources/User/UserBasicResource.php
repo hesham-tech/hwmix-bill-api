@@ -27,7 +27,6 @@ class UserBasicResource extends JsonResource
             'customer_type' => $this->customer_type,
             'username' => $this->username,
             'email' => $this->email,
-            'phone' => $this->phone,
             'position' => $this->position,
             'cash_box_id' => optional($this->cashBoxDefault)->id,
             'avatar_url' => $avatarImage ? asset($avatarImage->url) : null,
