@@ -23,6 +23,16 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+// يجب استيراد النماذج (Models) المستخدمة داخل الكود:
+use App\Models\CashBox; 
+use App\Models\Company; 
+use App\Models\CompanyUser; 
+use App\Models\Installment; 
+use App\Models\InstallmentPlan; 
+use App\Models\Transaction; 
+use App\Models\Payment; 
+use App\Models\Translation; // تم استخدامه في دالة trans
+use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 
 
 /**
@@ -33,16 +43,16 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, Translatable, HasRoles, HasApiTokens, Filterable, Scopes, HasPermissions, LogsActivity, HasImages;
 
+
     /**
-     * The attributes that are mass assignable.
+     * الحقول التي لا تخضع لـ Mass Assignment Protection.
      *
      * @var array<int, string>
      */
-
     protected $guarded = [];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * الحقول التي يجب إخفاؤها عند التحويل إلى مصفوفة/JSON.
      *
      * @var array<int, string>
      */
@@ -52,7 +62,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * تعريف أنواع البيانات للمحولات (Casts).
      *
      * @return array<string, string>
      */
@@ -64,6 +74,9 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * الإجراءات التي يتم تنفيذها بعد تمهيد النموذج (مثل إنشاء صندوق نقد افتراضي عند إنشاء مستخدم جديد).
+     */
     protected static function booted(): void
     {
         static::created(function (User $user) {
@@ -71,14 +84,16 @@ class User extends Authenticatable
         });
     }
 
+    /**
+     * علاقة MorphMany للوصول إلى ترجمات النموذج.
+     */
     public function trans()
     {
         return $this->morphMany(Translation::class, 'model');
     }
 
     /**
-     * علاقة المستخدم بالخزنة الافتراضية.
-     * تم تحسينها لتعمل مع eager loading بشكل صحيح
+     * علاقة المستخدم بالخزنة الافتراضية للشركة.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
@@ -91,8 +106,8 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على الخزنة الافتراضية لشركة معينة
-     * 
+     * الحصول على الخزنة الافتراضية لشركة محددة أو للشركة النشطة للمستخدم الموثق.
+     *
      * @param int|null $companyId
      * @return CashBox|null
      */
@@ -111,8 +126,8 @@ class User extends Authenticatable
     }
 
     /**
-     * Scope للحصول على المستخدمين مع خزنتهم الافتراضية لشركة معينة
-     * 
+     * نطاق استعلام (Scope) لتحميل المستخدمين مع خزنتهم الافتراضية لشركة معينة.
+     *
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @param int|null $companyId
      * @return \Illuminate\Database\Eloquent\Builder
@@ -130,7 +145,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة المستخدم بالشركات التي ينتمي إليها عبر جدول الوسيط company_user.
+     * علاقة BelongsToMany بين المستخدم والشركات التي يعمل بها.
      */
     public function companies(): BelongsToMany
     {
@@ -151,11 +166,17 @@ class User extends Authenticatable
             ]);
     }
 
+    /**
+     * علاقة HasMany للحصول على جميع سجلات المستخدم في جدول company_user.
+     */
     public function companyUsers(): HasMany
     {
         return $this->hasMany(CompanyUser::class, 'user_id');
     }
 
+    /**
+     * علاقة HasOne للحصول على سجل المستخدم الحالي في جدول company_user للشركة النشطة.
+     */
     public function activeCompanyUser(): HasOne
     {
         $activeCompanyId = $this->company_id ?? null;
@@ -165,6 +186,9 @@ class User extends Authenticatable
     }
 
 
+    /**
+     * علاقة BelongsToMany خاصة بـ "كاش المستخدم في الشركة" (قديمة أو خاصة).
+     */
     public function companyUsersCash()
     {
         return $this
@@ -172,14 +196,17 @@ class User extends Authenticatable
             ->withPivot('cash_box_id', 'created_by');
     }
 
+    /**
+     * علاقة HasMany للحصول على جميع صناديق النقد (Cash Boxes) الخاصة بالمستخدم.
+     */
     public function cashBoxes(): HasMany
     {
         return $this->hasMany(CashBox::class, 'user_id');
     }
 
     /**
-     * الحصول على صناديق النقد الخاصة بشركة معينة
-     * 
+     * الحصول على صناديق النقد الخاصة بالمستخدم ضمن شركة معينة.
+     *
      * @param int|null $companyId
      * @return \Illuminate\Database\Eloquent\Collection
      */
@@ -214,11 +241,17 @@ class User extends Authenticatable
         return $cashBox ? $cashBox->balance : 0.0;
     }
 
+    /**
+     * الحصول على صناديق النقد للمستخدم في الشركة النشطة (استدعاء لـ getCashBoxesForCompany).
+     */
     public function cashBoxesByCompany(): \Illuminate\Database\Eloquent\Collection
     {
         return $this->getCashBoxesForCompany();
     }
 
+    /**
+     * علاقة للحصول على الأدوار التي أنشأها المستخدم (علاقة HasManyThrough مع جدول RoleCompany).
+     */
     public function createdRoles()
     {
         return $this->hasManyThrough(
@@ -231,16 +264,25 @@ class User extends Authenticatable
         );
     }
 
+    /**
+     * علاقة HasMany للحصول على الأقساط الخاصة بهذا المستخدم (العميل).
+     */
     public function installments(): HasMany
     {
         return $this->hasMany(Installment::class, 'user_id');
     }
 
+    /**
+     * علاقة HasMany للحصول على الأقساط التي أنشأها هذا المستخدم.
+     */
     public function createdInstallments(): HasMany
     {
         return $this->hasMany(Installment::class, 'created_by');
     }
 
+    /**
+     * الحصول على أدوار المستخدم مع قائمة أذونات كل دور.
+     */
     public function getRolesWithPermissions()
     {
         return $this->roles->map(function ($role) {
@@ -257,16 +299,25 @@ class User extends Authenticatable
         });
     }
 
+    /**
+     * علاقة HasMany للحصول على جميع المعاملات المالية الخاصة بالمستخدم.
+     */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'user_id');
     }
 
+    /**
+     * علاقة BelongsTo للحصول على المستخدم الذي أنشأ هذا المستخدم.
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * علاقة HasMany للحصول على جميع المدفوعات التي قام بها هذا المستخدم.
+     */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
@@ -290,6 +341,7 @@ class User extends Authenticatable
             $cashBox = null;
 
             if ($cashBoxId) {
+                // يجب استيراد CashBox في الجزء العلوي
                 $cashBox = CashBox::query()->where('id', $cashBoxId)->where('user_id', $this->id)->first();
             } else {
                 if (is_null($authCompanyId)) {
@@ -338,6 +390,7 @@ class User extends Authenticatable
         try {
             $cashBox = null;
             if ($cashBoxId) {
+                // يجب استيراد CashBox في الجزء العلوي
                 $cashBox = CashBox::query()->where('id', $cashBoxId)->where('user_id', $this->id)->first();
                 if (!$cashBox) {
                     DB::rollBack();
@@ -378,10 +431,20 @@ class User extends Authenticatable
         }
     }
 
+    /**
+     * تحويل مبلغ من صندوق نقدي للمستخدم الحالي إلى مستخدم آخر في نفس الشركة.
+     *
+     * @param int $cashBoxId معرف صندوق النقدية للمرسل.
+     * @param int $targetUserId معرف المستخدم المستهدف.
+     * @param float $amount المبلغ المراد تحويله.
+     * @param string|null $description وصف العملية.
+     * @throws Exception في حال عدم وجود صلاحية، عدم وجود شركة نشطة، رصيد غير كافٍ، أو عدم وجود صندوق مطابق للمستهدف.
+     */
     public function transfer($cashBoxId, $targetUserId, $amount, $description = null)
     {
         $amount = floatval($amount);
 
+        // يفترض وجود دالة hasAnyPermission من HasPermissions trait
         if (!$this->hasAnyPermission(['super_admin', 'transfer'])) {
             throw new Exception('Unauthorized: You do not have permission to transfer.');
         }
@@ -397,13 +460,15 @@ class User extends Authenticatable
             $cashBox = $this->cashBoxes()
                 ->where('id', $cashBoxId)
                 ->where('company_id', $authCompanyId)
-                ->firstOrFail();
+                // firstOrFail يتطلب أن يكون CashBox مستورداً بشكل صحيح
+                ->firstOrFail(); 
 
             if ($cashBox->balance < $amount) {
                 throw new Exception('Insufficient funds in the cash box.');
             }
 
-            $targetUser = User::findOrFail($targetUserId);
+            // يجب استيراد User في الجزء العلوي، وهو مستورد كـ Authenticatable
+            $targetUser = User::findOrFail($targetUserId); 
             $targetCashBox = $targetUser->cashBoxes()
                 ->where('cash_type', $cashBox->cash_type)
                 ->where('company_id', $authCompanyId)
@@ -416,6 +481,7 @@ class User extends Authenticatable
             $cashBox->decrement('balance', $amount);
             $targetCashBox->increment('balance', $amount);
 
+            // يجب استيراد Transaction في الجزء العلوي
             $senderTransaction = Transaction::create([
                 'user_id' => $this->id,
                 'cashbox_id' => $cashBox->id,
@@ -460,24 +526,31 @@ class User extends Authenticatable
         }
     }
 
+    /**
+     * علاقة HasMany للحصول على الفواتير الخاصة بالمستخدم.
+     */
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
     }
 
+    /**
+     * علاقة HasMany للحصول على خطط التقسيط الخاصة بالمستخدم.
+     */
     public function installmentPlans(): HasMany
     {
         return $this->hasMany(InstallmentPlan::class);
     }
 
     /**
-     * إرجاع جميع معرفات المستخدمين التابعين للمستخدم الحالي داخل الشركة النشطة فقط.
+     * إرجاع جميع معرفات المستخدمين التابعين للمستخدم الحالي بشكل تسلسلي داخل الشركة النشطة.
      *
      * @return array
      */
     public function getDescendantUserIds(): array
     {
-        $companyId = Auth::user()->company_id ?? null;
+        // يتطلب استيراد CompanyUser
+        $companyId = Auth::user()->company_id ?? null; 
 
         if (is_null($companyId)) {
             return [];
@@ -509,11 +582,12 @@ class User extends Authenticatable
     }
 
     /**
-     * التأكد من وجود صناديق نقدية للمستخدم في جميع الشركات التي ينتمي إليها.
+     * التأكد من وجود صناديق نقدية افتراضية للمستخدم في جميع الشركات التي ينتمي إليها.
      */
     public function ensureCashBoxesForAllCompanies(): void
     {
-        if ($this->hasPermissionTo(perm_key('admin.super'))) {
+        // يتطلب استيراد Company 
+        if ($this->hasPermissionTo(perm_key('admin.super'))) { 
             $companies = Company::all();
         } else {
             $companies = $this->companies;
@@ -524,8 +598,12 @@ class User extends Authenticatable
         app(CashBoxService::class)->ensureCashBoxesForUserCompanies($this, $companyIds, $this->created_by ?? $this->id);
     }
 
+    /**
+     * إرجاع الشركات المرئية للمستخدم بناءً على صلاحياته (جميع الشركات للسوبر أدمن أو الشركات المرتبط بها).
+     */
     public function getVisibleCompaniesForUser()
     {
+        // يتطلب استيراد Company
         if ($this->hasPermissionTo(perm_key('admin.super'))) {
             return \App\Models\Company::all();
         }

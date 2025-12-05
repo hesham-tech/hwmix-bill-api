@@ -19,6 +19,7 @@ return new class extends Migration {
 
             $table->enum('role', ['manager', 'employee', 'customer'])->default('customer')->nullable();
             $table->enum('status', ['active', 'pending', 'suspended'])->default('active')->nullable();
+            //
 
             // *** الحقول الخاصة بالشركة التي تم نقلها من جدول users أو إضافتها ***
             // هذه الحقول تمثل بيانات المستخدم/العميل كما تراها هذه الشركة

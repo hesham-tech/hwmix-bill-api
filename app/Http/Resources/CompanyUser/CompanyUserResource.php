@@ -17,18 +17,28 @@ class CompanyUserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // الحصول على شعار الشركة من علاقة الشركة
+        /**
+         * شعار الشركة
+         */
         $companyLogoUrl = $this->whenLoaded('company', function () {
-            return $this->company->logo?->url ? asset($this->company->logo->url) : null;
+            $logo = $this->company->logo;
+            return $logo && $logo->url ? asset($logo->url) : null;
         });
 
-        // الحصول على صورة الأفاتار للمستخدم من علاقة المستخدم
-        $avatarImage = $this->whenLoaded('user', function () {
-            return $this->user->images->where('type', 'avatar')->first();
-        });
-        $avatarUrl = $avatarImage ? asset($avatarImage->url) : null;
+        /**
+         * صورة الأفاتار
+         */
+        $avatarUrl = $this->whenLoaded('user', function () {
+            $avatar = $this->user->images
+                ->where('type', 'avatar')
+                ->first();
 
-        // الحصول على الخزنة الافتراضية للشركة الحالية
+            return $avatar && $avatar->url ? asset($avatar->url) : null;
+        });
+
+        /**
+         * الخزنة الافتراضية
+         */
         $defaultCashBox = $this->whenLoaded('user', function () {
             if (!$this->user || !$this->user->relationLoaded('cashBoxes')) {
                 return null;
@@ -40,7 +50,9 @@ class CompanyUserResource extends JsonResource
                 ->first();
         });
 
-        // الحصول على صناديق النقد للشركة الحالية فقط
+        /**
+         * كل الخزن المرتبطة بالشركة الحالية
+         */
         $companyCashBoxes = $this->whenLoaded('user', function () {
             if (!$this->user || !$this->user->relationLoaded('cashBoxes')) {
                 return collect();
@@ -51,43 +63,55 @@ class CompanyUserResource extends JsonResource
         });
 
         return [
-            // البيانات الأساسية للمستخدم (من جدول users)
-            'id' => $this->user_id,
-            'username' => $this->whenLoaded('user', fn() => $this->user->username),
-            'email' => $this->whenLoaded('user', fn() => $this->user->email),
-            'phone' => $this->whenLoaded('user', fn() => $this->user->phone),
-            'last_login_at' => $this->whenLoaded('user', fn() => $this->user->last_login_at),
+            // بيانات المستخدم الأساسية
+            'id'                => $this->user_id,
+            'username'          => $this->whenLoaded('user', fn() => $this->user->username),
+            'email'             => $this->whenLoaded('user', fn() => $this->user->email),
+            'phone'             => $this->whenLoaded('user', fn() => $this->user->phone),
+            'last_login_at'     => $this->whenLoaded('user', fn() => $this->user->last_login_at),
             'email_verified_at' => $this->whenLoaded('user', fn() => $this->user->email_verified_at),
-            'created_by' => $this->whenLoaded('user', fn() => $this->user->created_by),
+            'created_by'        => $this->whenLoaded('user', fn() => $this->user->created_by),
 
-            // البيانات الخاصة بالشركة (من جدول company_user)
-            'nickname' => $this->nickname_in_company,
-            'full_name' => $this->full_name_in_company,
-            'balance' => $this->balance_in_company,
-            'position' => $this->position_in_company,
-            'status' => $this->status,
+            // بيانات من جدول company_user
+            'nickname'      => $this->nickname_in_company,
+            'full_name'     => $this->full_name_in_company,
+            'balance'       => $this->balance_in_company,
+            'position'      => $this->position_in_company,
+            'status'        => $this->status,
             'customer_type' => $this->customer_type_in_company,
 
-            // بيانات الخزنة الافتراضية
-            'cash_box_id' => $defaultCashBox?->id,
-            'cashBoxDefault' => $defaultCashBox ? new CashBoxResource($defaultCashBox) : null,
+            // الخزنة الافتراضية
+            'cash_box_id'     => $defaultCashBox?->id,
+            'cashBoxDefault'  => $defaultCashBox ? new CashBoxResource($defaultCashBox) : null,
 
-            // بيانات الشركة النشطة
-            'company_id' => $this->company_id,
+            // الشركة الحالية
+            'company_id'   => $this->company_id,
             'company_logo' => $companyLogoUrl,
 
-            // علاقات أخرى
-            'roles' => $this->whenLoaded('user', fn() => $this->user->getRolesWithPermissions()),
-            'avatar_url' => $avatarUrl,
-            'companies' => $this->whenLoaded('user', fn() => CompanyResource::collection($this->user->getVisibleCompaniesForUser())),
-            'cashBoxes' => $companyCashBoxes ? CashBoxResource::collection($companyCashBoxes) : [],
+            // الأدوار والصلاحيات
+            'roles'       => $this->whenLoaded('user', fn() => $this->user->getRolesWithPermissions()),
             'permissions' => $this->whenLoaded('user', fn() => $this->user->getAllPermissions()->pluck('name')),
 
-            // أوقات الإنشاء والتحديث
-            'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
-            'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
+            // الصورة
+            'avatar_url' => $avatarUrl,
 
-            // حقل settings
+            // الشركات المرتبطة بالمستخدم
+            'companies' => $this->whenLoaded(
+                'user',
+                fn() =>
+                CompanyResource::collection($this->user->getVisibleCompaniesForUser())
+            ),
+
+            // الخزن التابعة للشركة
+            'cashBoxes' => $companyCashBoxes
+                ? CashBoxResource::collection($companyCashBoxes)
+                : [],
+
+            // أوقات الإنشاء والتحديث
+            'created_at' => $this->created_at?->format('Y-m-d'),
+            'updated_at' => $this->updated_at?->format('Y-m-d'),
+
+            // الإعدادات
             'settings' => $this->whenLoaded('user', fn() => $this->user->settings ?? null),
         ];
     }

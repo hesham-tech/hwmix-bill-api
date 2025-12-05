@@ -21,6 +21,7 @@ class InstallmentResource extends JsonResource
             'paid_at' => $this->paid_at ? $this->paid_at->format('Y-m-d H:i:s') : null, // تنسيق التاريخ
             'remaining' => number_format($this->remaining, 2, '.', ''), // تنسيق الرقم
             'created_by' => $this->created_by,
+            'company_id' => $this->company_id,
             'user_id' => $this->user_id,
             'created_at' => $this->created_at ? $this->created_at->toDateTimeString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toDateTimeString() : null,
