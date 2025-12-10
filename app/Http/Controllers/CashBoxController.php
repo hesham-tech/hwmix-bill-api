@@ -149,8 +149,8 @@ class CashBoxController extends Controller
             try {
                 $validatedData = $request->validated();
 
-                $validatedData['company_id'] =  $validatedData['company_id'] ?? $companyId;
-                $validatedData['user_id'] =  $validatedData['user_id'] ?? $authUser->id;
+                $validatedData['company_id'] = $validatedData['company_id'] ?? $companyId;
+                $validatedData['user_id'] = $validatedData['user_id'] ?? $authUser->id;
 
                 // التأكد من أن المستخدم مصرح له بإنشاء صندوق لهذه الشركة
                 if ($validatedData['company_id'] != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -376,20 +376,29 @@ class CashBoxController extends Controller
             $validated = $request->validate([
                 'to_user_id' => 'required|exists:users,id',
                 'amount' => 'required|numeric|min:0.01',
-                'cash_box_id' => ['required', 'exists:cash_boxes,id', function ($attribute, $value, $fail) use ($authUser, $companyId) {
-                    // تأكد أن الصندوق ينتمي لشركة المستخدم أو أن المستخدم super_admin
-                    $cashBox = CashBox::with(['company', 'creator'])->find($value);
-                    if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
-                        $fail('صندوق النقد المحدد غير صالح أو غير متاح.');
+                'cash_box_id' => [
+                    'required',
+                    'exists:cash_boxes,id',
+                    function ($attribute, $value, $fail) use ($authUser, $companyId) {
+                        // تأكد أن الصندوق ينتمي لشركة المستخدم أو أن المستخدم super_admin
+                        $cashBox = CashBox::with(['company', 'creator'])->find($value);
+                        if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
+                            $fail('صندوق النقد المحدد غير صالح أو غير متاح.');
+                        }
                     }
-                }],
-                'to_cash_box_id' => ['required', 'exists:cash_boxes,id', 'different:cash_box_id', function ($attribute, $value, $fail) use ($authUser, $companyId) {
-                    // تأكد أن الصندوق الهدف ينتمي لشركة المستخدم أو أن المستخدم super_admin
-                    $toCashBox = CashBox::with(['company', 'creator'])->find($value);
-                    if (!$toCashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $toCashBox->company_id !== $companyId)) {
-                        $fail('صندوق النقد المستهدف غير صالح أو غير متاح.');
+                ],
+                'to_cash_box_id' => [
+                    'required',
+                    'exists:cash_boxes,id',
+                    'different:cash_box_id',
+                    function ($attribute, $value, $fail) use ($authUser, $companyId) {
+                        // تأكد أن الصندوق الهدف ينتمي لشركة المستخدم أو أن المستخدم super_admin
+                        $toCashBox = CashBox::with(['company', 'creator'])->find($value);
+                        if (!$toCashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $toCashBox->company_id !== $companyId)) {
+                            $fail('صندوق النقد المستهدف غير صالح أو غير متاح.');
+                        }
                     }
-                }],
+                ],
                 'description' => 'nullable|string',
             ]);
 
@@ -480,5 +489,5 @@ class CashBoxController extends Controller
         }
     }
 
-    // تم نقل الدالة إلى نموذج المستخدم User كـ ensureCashBoxesForAllCompanies
+    // تم نقل الدالة إلى نموذج المستخدم User كـ ensure=CashBoxesForAllCompanies
 }

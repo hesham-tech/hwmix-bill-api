@@ -24,13 +24,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 // يجب استيراد النماذج (Models) المستخدمة داخل الكود:
-use App\Models\CashBox; 
-use App\Models\Company; 
-use App\Models\CompanyUser; 
-use App\Models\Installment; 
-use App\Models\InstallmentPlan; 
-use App\Models\Transaction; 
-use App\Models\Payment; 
+use App\Models\CashBox;
+use App\Models\Company;
+use App\Models\CompanyUser;
+use App\Models\Installment;
+use App\Models\InstallmentPlan;
+use App\Models\Transaction;
+use App\Models\Payment;
 use App\Models\Translation; // تم استخدامه في دالة trans
 use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 
@@ -79,9 +79,9 @@ class User extends Authenticatable
      */
     protected static function booted(): void
     {
-        static::created(function (User $user) {
-            app(CashBoxService::class)->ensureCashBoxForUser($user);
-        });
+        //    static::created(function (User $user) {
+        //        app(CashBoxService::class)->ensure-CashBoxForUser($user);
+        //    });
     }
 
     /**
@@ -136,12 +136,14 @@ class User extends Authenticatable
     {
         $companyId = $companyId ?? Auth::user()->company_id ?? null;
 
-        return $query->with(['cashBoxes' => function ($q) use ($companyId) {
-            $q->where('is_default', true);
-            if ($companyId) {
-                $q->where('company_id', $companyId);
+        return $query->with([
+            'cashBoxes' => function ($q) use ($companyId) {
+                $q->where('is_default', true);
+                if ($companyId) {
+                    $q->where('company_id', $companyId);
+                }
             }
-        }]);
+        ]);
     }
 
     /**
@@ -461,14 +463,14 @@ class User extends Authenticatable
                 ->where('id', $cashBoxId)
                 ->where('company_id', $authCompanyId)
                 // firstOrFail يتطلب أن يكون CashBox مستورداً بشكل صحيح
-                ->firstOrFail(); 
+                ->firstOrFail();
 
             if ($cashBox->balance < $amount) {
                 throw new Exception('Insufficient funds in the cash box.');
             }
 
             // يجب استيراد User في الجزء العلوي، وهو مستورد كـ Authenticatable
-            $targetUser = User::findOrFail($targetUserId); 
+            $targetUser = User::findOrFail($targetUserId);
             $targetCashBox = $targetUser->cashBoxes()
                 ->where('cash_type', $cashBox->cash_type)
                 ->where('company_id', $authCompanyId)
@@ -550,7 +552,7 @@ class User extends Authenticatable
     public function getDescendantUserIds(): array
     {
         // يتطلب استيراد CompanyUser
-        $companyId = Auth::user()->company_id ?? null; 
+        $companyId = Auth::user()->company_id ?? null;
 
         if (is_null($companyId)) {
             return [];
@@ -581,22 +583,7 @@ class User extends Authenticatable
         return array_values($descendants);
     }
 
-    /**
-     * التأكد من وجود صناديق نقدية افتراضية للمستخدم في جميع الشركات التي ينتمي إليها.
-     */
-    public function ensureCashBoxesForAllCompanies(): void
-    {
-        // يتطلب استيراد Company 
-        if ($this->hasPermissionTo(perm_key('admin.super'))) { 
-            $companies = Company::all();
-        } else {
-            $companies = $this->companies;
-        }
 
-        $companyIds = $companies->pluck('id')->toArray();
-
-        app(CashBoxService::class)->ensureCashBoxesForUserCompanies($this, $companyIds, $this->created_by ?? $this->id);
-    }
 
     /**
      * إرجاع الشركات المرئية للمستخدم بناءً على صلاحياته (جميع الشركات للسوبر أدمن أو الشركات المرتبط بها).
@@ -609,4 +596,47 @@ class User extends Authenticatable
         }
         return $this->companies;
     }
+
+    /**
+     * يتحقق مما إذا كان المستخدم (كعميل/موظف) لديه أي سجلات حركية/مالية مرتبطة بالشركة المحددة.
+     * @param int $companyId معرف الشركة النشطة
+     * @return bool
+     */
+    public function hasActiveTransactionsInCompany(int $companyId): bool
+    {
+        // 1. فحص الفواتير (Invoices)
+        $hasInvoices = $this->invoices()
+            ->where('company_id', $companyId)
+            ->exists();
+
+        // 2. فحص المعاملات المالية (Transactions)
+        $hasTransactions = $this->transactions()
+            ->where('company_id', $companyId)
+            ->exists();
+
+        // 3. فحص المدفوعات (Payments)
+        $hasPayments = $this->payments()
+            ->where('company_id', $companyId)
+            ->exists();
+
+        // 4. فحص الأقساط (Installments)
+        $hasInstallments = $this->installments()
+            ->where('company_id', $companyId)
+            ->exists();
+
+        // 5. فحص خطط التقسيط (Installment Plans)
+        $hasInstallmentPlans = $this->installmentPlans()
+            ->where('company_id', $companyId)
+            ->exists();
+
+        // 6. فحص رصيد الخزنة: إذا كان المستخدم يمتلك خزنة في هذه الشركة ورصيدها ليس صفرًا
+        $hasNonZeroBalance = $this->cashBoxes()
+            ->where('company_id', $companyId)
+            ->where('balance', '!=', 0)
+            ->exists();
+
+        // إذا كان أي من هذه السجلات موجودًا، فالحذف غير آمن.
+        return $hasInvoices || $hasTransactions || $hasPayments || $hasInstallments || $hasInstallmentPlans || $hasNonZeroBalance;
+    }
+
 }

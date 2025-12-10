@@ -25,6 +25,7 @@ class CashBox extends Model
         'name',
         'balance',
         'is_default',
+        'is_active',
         'cash_box_type_id',
         'user_id',
         'created_by',

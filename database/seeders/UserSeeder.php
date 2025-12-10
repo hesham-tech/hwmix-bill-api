@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
             }
             $user->companies()->sync($pivotData);
             // إنشاء صناديق المستخدم الافتراضية لكل شركة
-            $user->ensureCashBoxesForAllCompanies();
+            // $user->ensure=CashBoxesForAllCompanies();
         }
     }
 }

@@ -2,21 +2,17 @@
 
 namespace App\Models;
 
-use App\Traits\Scopes;
-use App\Traits\HasImages;
-use App\Traits\Filterable;
-use App\Traits\LogsActivity;
-use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Model;
-use App\Traits\Translations\Translatable;
-use Spatie\Permission\Traits\HasPermissions;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\Pivot; // تم التغيير من Model إلى Pivot
 
-class CompanyUser extends Model
+// تم إزالة Traits مثل HasRoles, HasPermissions, HasImages, LogsActivity 
+
+class CompanyUser extends Pivot
 {
-    use HasFactory, Translatable, HasRoles, Filterable, Scopes, HasPermissions, LogsActivity, HasImages;
+    // تم الإبقاء على HasFactory فقط من الـ Traits الأساسية للنماذج
+    use HasFactory; 
 
     protected $table = 'company_user';
 
@@ -38,7 +34,8 @@ class CompanyUser extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        // تم التأكيد على المفتاح الخارجي إذا لم يكن قياسياً (لكن هنا قياسي)
+        return $this->belongsTo(User::class, 'user_id'); 
     }
 
     /**
@@ -46,7 +43,8 @@ class CompanyUser extends Model
      */
     public function company(): BelongsTo
     {
-        return $this->belongsTo(Company::class);
+        // تم التأكيد على المفتاح الخارجي إذا لم يكن قياسياً (لكن هنا قياسي)
+        return $this->belongsTo(Company::class, 'company_id');
     }
 
     /**
@@ -59,27 +57,20 @@ class CompanyUser extends Model
 
     /**
      * علاقة مباشرة للحصول على الخزنة الافتراضية للمستخدم في هذه الشركة
-     * 
-     * @return HasOne
+     * * @return HasOne
      */
     public function defaultCashBox(): HasOne
     {
-        return $this->hasOneThrough(
-            CashBox::class,
-            User::class,
-            'id',
-            'user_id',
-            'user_id',
-            'id'
-        )
-            ->where('cash_boxes.is_default', true)
-            ->where('cash_boxes.company_id', $this->company_id);
+        // تم تبسيط علاقة HasOneThrough هنا لتكون أكثر ملاءمة للـ Pivot
+        // باستخدام حقل user_id من الـ Pivot كـ local key
+        return $this->hasOne(CashBox::class, 'user_id', 'user_id')
+            ->where('is_default', true)
+            ->where('company_id', $this->company_id);
     }
 
     /**
      * الحصول على جميع صناديق النقد للمستخدم في هذه الشركة
-     * 
-     * @return \Illuminate\Database\Eloquent\Collection
+     * * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getCashBoxesAttribute()
     {
@@ -93,8 +84,7 @@ class CompanyUser extends Model
 
     /**
      * الحصول على الخزنة الافتراضية للمستخدم في هذه الشركة
-     * 
-     * @return CashBox|null
+     * * @return CashBox|null
      */
     public function getDefaultCashBoxAttribute()
     {

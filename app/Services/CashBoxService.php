@@ -2,104 +2,92 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\CashBox;
 use App\Models\CashBoxType;
-use Illuminate\Support\Facades\Auth;
-use Throwable; // لاستخدامها في معالجة الأخطاء المحتملة
+use App\Models\Company;
+use Illuminate\Support\Facades\Log; // استخدام Log لتسجيل الأخطاء
+use Throwable;
 
 class CashBoxService
 {
     /**
-     * تضمن وجود خزنة نقدية افتراضية للمستخدم في شركته الحالية.
-     *
-     * @param \App\Models\User $user المستخدم
-     * @param int|null $createdById معرف من قام بالإنشاء (اختياري)
-     * @return \App\Models\CashBox|null الخزنة التي تم العثور عليها أو إنشاؤها، أو null في حالة الفشل.
+     * تُنشئ أو تُعيد تفعيل خزنة نقدية افتراضية للمستخدم ضمن شركة محددة.
      */
-    public function ensureCashBoxForUser(User $user, int|null $createdById = null): ?CashBox
+    public function createDefaultCashBoxForUserCompany(int $userId, int $companyId, int $createdById): ?CashBox
     {
-        // البحث عن نوع "نقدي" للخزنة
-        $cashType = CashBoxType::where('name', 'نقدي')->first();
-
-        // إذا لم يتم العثور على نوع "نقدي"، لا يمكن إنشاء الخزنة
-        if (!$cashType) {
-            // يمكن هنا تسجيل خطأ أو إلقاء استثناء إذا كان هذا النوع ضروريًا دائمًا
-            return null;
-        }
-
         try {
-            // استخدام firstOrCreate لضمان عدم التكرار والاستفادة من القيد الفريد
-            // تبحث عن خزنة مطابقة للمعايير، وإذا لم تجدها، تقوم بإنشائها
+            // 1. البحث عن خزنة مُعطلة سابقة لنفس المستخدم والشركة
+            $cashBox = CashBox::where('user_id', $userId)
+                ->where('company_id', $companyId)
+                ->where('is_active', false)
+                // يفضل البحث عن الخزنة التي كانت افتراضية سابقاً
+                ->first();
+
+            if ($cashBox) {
+                // 2. إذا وجدت: إعادة تفعيلها وجعلها افتراضية
+                $cashBox->is_active = true;
+                $cashBox->is_default = true;
+                $cashBox->save();
+                return $cashBox;
+            }
+
+            // 3. إذا لم توجد: إنشاء خزنة جديدة
+            $company = Company::find($companyId);
+            $cashType = CashBoxType::where('name', 'نقدي')->first();
+
+            if (!$cashType || !$company) {
+                Log::error("CashBoxService: فشل في العثور على نوع الخزنة 'نقدي' أو الشركة {$companyId}.");
+                return null;
+            }
+
             return CashBox::firstOrCreate(
                 [
-                    'user_id' => $user->id,
-                    'company_id' => $user->company_id,
+                    'user_id' => $userId,
+                    'company_id' => $companyId,
                     'cash_box_type_id' => $cashType->id,
-                    'is_default' => true, // هذا حاسم للقيد الفريد
+                    'is_default' => true,
+                    // **[جديد]** إضافة is_active للقيد
                 ],
                 [
                     'name' => 'الخزنة النقدية',
                     'balance' => 0,
-                    'created_by' => $createdById
-                        ?? Auth::id()
-                        ?? $user->created_by
-                        ?? $user->id,
-                    'description' => 'تم إنشاؤها تلقائيًا مع المستخدم',
+                    'created_by' => $createdById,
+                    'is_active' => true, // **[جديد]** تعيين الحقل الجديد عند الإنشاء
+                    'description' => "تم إنشاؤها تلقائيًا مع ارتباط المستخدم بشركة: {$company->name}",
                     'account_number' => null,
                 ]
             );
+
         } catch (Throwable $e) {
-            // في حالة وجود خطأ (مثل انتهاك القيد الفريد في ظروف سباق نادرة جداً)
-            // يمكن هنا تسجيل الخطأ للمراجعة
-            // Log::error("فشل في إنشاء صندوق الكاش الافتراضي للمستخدم {$user->id}: " . $e->getMessage());
+            Log::error("CashBoxService: فشل في إنشاء/تفعيل خزنة للمستخدم {$userId} والشركة {$companyId}: " . $e->getMessage());
             return null;
         }
     }
 
     /**
-     * تضمن وجود خزنة نقدية افتراضية لكل شركة جديدة رُبط بها المستخدم.
-     *
-     * @param \App\Models\User $user المستخدم
-     * @param array $companyIds مصفوفة بمعرفات الشركات
-     * @param int|null $createdById معرف من قام بالإنشاء (اختياري)
-     * @return void
+     * تُعطّل الخزنة النقدية الافتراضية للمستخدم عند فك ارتباطه بالشركة.
      */
-    public function ensureCashBoxesForUserCompanies(User $user, array $companyIds, int|null $createdById = null): void
+    public function disableDefaultCashBoxForUserCompany(int $userId, int $companyId): bool
     {
-        // البحث عن نوع "نقدي" للخزنة
-        $cashType = CashBoxType::where('name', 'نقدي')->first();
-        if (!$cashType) {
-            // يمكن هنا تسجيل خطأ
-            return;
-        }
+        try {
+            // البحث عن الخزنة الافتراضية النشطة حالياً
+            $cashBox = CashBox::where('user_id', $userId)
+                ->where('company_id', $companyId)
+                ->where('is_default', true) // نعتمد على أن الخزنة الافتراضية الحالية هي التي سيتم تعطيلها
+                ->where('is_active', true)
+                ->first();
 
-        foreach ($companyIds as $companyId) {
-            try {
-                // استخدام firstOrCreate لضمان عدم التكرار لكل شركة
-                CashBox::firstOrCreate(
-                    [
-                        'user_id' => $user->id,
-                        'company_id' => $companyId,
-                        'cash_box_type_id' => $cashType->id,
-                        'is_default' => true,
-                    ],
-                    [
-                        'name' => 'الخزنة النقدية',
-                        'balance' => 0,
-                        'created_by' => $createdById
-                            ?? Auth::id()
-                            ?? $user->created_by
-                            ?? $user->id,
-                        'description' => 'تم إنشاؤها تلقائيًا مع ربط المستخدم بالشركة',
-                        'account_number' => null,
-                    ]
-                );
-            } catch (Throwable $e) {
-                // في حالة وجود خطأ لكل شركة (مثل انتهاك القيد الفريد)
-                // Log::error("فشل في إنشاء صندوق الكاش الافتراضي للمستخدم {$user->id} والشركة {$companyId}: " . $e->getMessage());
-                continue; // الاستمرار في الشركات الأخرى حتى لو فشل إنشاء واحدة
+            if ($cashBox) {
+                // تعطيلها وجعلها غير افتراضية
+                $cashBox->is_active = false; // **[تعديل: تعطيل الحقل الجديد]**
+                $cashBox->is_default = false;
+                return $cashBox->save();
             }
+            return true; // إذا لم نجدها، نفترض أنها معطلة أو غير موجودة بالفعل.
+
+        } catch (Throwable $e) {
+            Log::error("CashBoxService: فشل في تعطيل خزنة للمستخدم {$userId} والشركة {$companyId}: " . $e->getMessage());
+            return false;
         }
     }
 }

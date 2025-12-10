@@ -33,7 +33,7 @@ class AuthController extends Controller
             $validated = $request->validate([
                 'phone' => 'required|unique:users,phone',
                 'password' => 'required|string|min:8',
-                'company_id' => 'nullable|string|min:8',
+                'company_id' => 'nullable|string|min:8', // يُفضل إزالته إذا لم يكن يُستخدم لتحديد الشركة الرئيسية
                 'email' => 'nullable|email|unique:users,email',
                 'full_name' => 'nullable|string|max:255',
                 'nickname' => 'nullable|string|max:255',
@@ -41,15 +41,29 @@ class AuthController extends Controller
 
             $user = User::create([
                 'phone' => $validated['phone'],
-                'company_id' => 1,
+                'company_id' => 1, // الشركة الرئيسية/النشطة (افتراضية)
                 'full_name' => $validated['full_name'] ?? null,
                 'nickname' => $validated['nickname'] ?? null,
                 'password' => Hash::make($validated['password']),
             ]);
 
+            // **[التعديل الجديد]: ربط المستخدم بالشركة الافتراضية (Company 1)**
+            // هذا السطر هو الذي ينشئ سجل في جدول company_user ويطلق المراقب.
+            $user->companies()->attach(1, [
+                // يجب توفير created_by في جدول company_user
+                // نفترض أن المستخدم الذي تم إنشاؤه حديثًا هو 'created_by' لنفسه في الوقت الحالي.
+                'created_by' => $user->id,
+                'user_phone' => $user->phone, 
+                'full_name_in_company' =>  $user->full_name,
+                'nickname_in_company' => $user->nickname,
+            ]);
+
             $token = $user->createToken('auth_token')->plainTextToken;
-            // إنشاء صناديق المستخدم الافتراضية لكل شركة
-            app(\App\Services\CashBoxService::class)->ensureCashBoxForUser($user);
+            
+            // **[الحذف]: تم حذف السطر الذي كان يستخدم الدالة القديمة يدوياً:**
+            // app(\App\Services\CashBoxService::class)->ensure=CashBoxForUser($user);
+
+            // إنشاء صناديق المستخدم الافتراضية لكل شركة (تتم الآن تلقائياً بواسطة المراقب)
             return api_success([
                 'user' => new UserResource($user),
                 'token' => $token,

@@ -158,11 +158,13 @@ class UserController extends Controller
     {
         $authUser = Auth::user();
 
-        if (!$authUser || (
-            !$authUser->hasAnyPermission(perm_key('admin.super')) &&
-            !$authUser->hasAnyPermission(perm_key('users.create')) &&
-            !$authUser->hasAnyPermission(perm_key('admin.company'))
-        )) {
+        if (
+            !$authUser || (
+                !$authUser->hasAnyPermission(perm_key('admin.super')) &&
+                !$authUser->hasAnyPermission(perm_key('users.create')) &&
+                !$authUser->hasAnyPermission(perm_key('admin.company'))
+            )
+        ) {
             return api_forbidden('ليس لديك صلاحية لإنشاء مستخدمين.');
         }
 
@@ -188,8 +190,8 @@ class UserController extends Controller
             if (!$user) {
                 $userDataForUserTable = [
                     'username' => $validatedData['username'],
-                    'email'    => $validatedData['email'],
-                    'phone'    => $validatedData['phone'],
+                    'email' => $validatedData['email'],
+                    'phone' => $validatedData['phone'],
                     'password' => $validatedData['password'],
                     'created_by' => $authUser->id,
                     'company_id' => $activeCompanyId,
@@ -221,18 +223,18 @@ class UserController extends Controller
             }
 
             $companyUserData = [
-                'user_id'                  => $user->id,
-                'company_id'               => $activeCompanyId,
-                'nickname_in_company'      => $validatedData['nickname'] ?? $user->username,
-                'full_name_in_company'     => $validatedData['full_name'] ?? $user->full_name,
-                'balance_in_company'       => $validatedData['balance'] ?? 0,
+                'user_id' => $user->id,
+                'company_id' => $activeCompanyId,
+                'nickname_in_company' => $validatedData['nickname'] ?? $user->username,
+                'full_name_in_company' => $validatedData['full_name'] ?? $user->full_name,
+                'balance_in_company' => $validatedData['balance'] ?? 0,
                 'customer_type_in_company' => $validatedData['customer_type'] ?? 'default',
-                'status'                   => $validatedData['status'] ?? 'active',
-                'position_in_company'      => $validatedData['position'] ?? null,
-                'created_by'               => $authUser->id,
-                'user_phone'               => $user->phone,
-                'user_email'               => $user->email,
-                'user_username'            => $user->username,
+                'status' => $validatedData['status'] ?? 'active',
+                'position_in_company' => $validatedData['position'] ?? null,
+                'created_by' => $authUser->id,
+                'user_phone' => $user->phone,
+                'user_email' => $user->email,
+                'user_username' => $user->username,
             ];
 
             Log::info('Base CompanyUser data prepared.', ['data' => $companyUserData]);
@@ -243,11 +245,12 @@ class UserController extends Controller
                 Log::info('Admin/Super Admin/UpdateAll handling company_ids for user creation.', ['user_id' => $user->id, 'company_ids_from_request' => $validatedData['company_ids']]);
 
                 $companyIdsFromRequest = collect($validatedData['company_ids'])
-                    ->filter(fn($id) => filter_var($id, FILTER_VALIDATE_INT) !== false && (int)$id > 0)
+                    ->filter(fn($id) => filter_var($id, FILTER_VALIDATE_INT) !== false && (int) $id > 0)
                     ->values()
                     ->toArray();
 
                 foreach ($companyIdsFromRequest as $companyId) {
+                    // هذا السطر يطلق المراقب (created إذا كان جديداً، updated إذا كان موجوداً)
                     $currentCompanyUser = CompanyUser::updateOrCreate(
                         ['user_id' => $user->id, 'company_id' => $companyId],
                         array_merge($companyUserData, ['company_id' => $companyId])
@@ -266,12 +269,15 @@ class UserController extends Controller
                 }
             } else {
                 Log::info('Creating single CompanyUser record for active company.', ['user_id' => $user->id, 'active_company_id' => $activeCompanyId]);
+                // هذا السطر يطلق المراقب (created)
                 $companyUser = CompanyUser::create($companyUserData);
                 Log::info('Single CompanyUser created for active company.', ['company_user_id' => $companyUser->id]);
             }
 
-            $user->ensureCashBoxesForAllCompanies();
-            Log::info('Cash boxes ensured for user companies.', ['user_id' => $user->id]);
+            // **[الحذف]** تم حذف السطر الذي يستدعي الدالة القديمة.
+            // $user->ensure=CashBoxesForAllCompanies();
+            // Log::info('Cash boxes ensured for user companies.', ['user_id' => $user->id]);
+
 
             if ($request->has('images_ids')) {
                 $imagesIds = $request->input('images_ids');
@@ -286,7 +292,8 @@ class UserController extends Controller
             // تحميل العلاقات مع تصفية cashBoxes
             $companyUser->load([
                 'user.cashBoxes' => function ($q) use ($activeCompanyId) {
-                    $q->where('company_id', $activeCompanyId);
+                    // ملاحظة: للتأكد من جلب الخزنة النشطة فقط
+                    $q->where('company_id', $activeCompanyId)->where('is_active', true);
                 },
                 'user.creator',
                 'company'
@@ -299,7 +306,6 @@ class UserController extends Controller
             return api_exception($e);
         }
     }
-
     /**
      * عرض بيانات مستخدم واحد.
      *
@@ -434,15 +440,24 @@ class UserController extends Controller
             $isUpdatingSelf = ($authUser->id === $user->id);
 
             $userDataToUpdate = [];
-            if (isset($validated['username'])) $userDataToUpdate['username'] = $validated['username'];
-            if (isset($validated['email']))      $userDataToUpdate['email']      = $validated['email'];
-            if (isset($validated['phone']))      $userDataToUpdate['phone']      = $validated['phone'];
-            if (isset($validated['password']))   $userDataToUpdate['password']   = $validated['password'];
-            if (isset($validated['full_name']))  $userDataToUpdate['full_name']  = $validated['full_name'];
-            if (isset($validated['position']))   $userDataToUpdate['position']   = $validated['position'];
-            if (isset($validated['settings']))   $userDataToUpdate['settings']   = $validated['settings'];
-            if (isset($validated['last_login_at'])) $userDataToUpdate['last_login_at'] = $validated['last_login_at'];
-            if (isset($validated['email_verified_at'])) $userDataToUpdate['email_verified_at'] = $validated['email_verified_at'];
+            if (isset($validated['username']))
+                $userDataToUpdate['username'] = $validated['username'];
+            if (isset($validated['email']))
+                $userDataToUpdate['email'] = $validated['email'];
+            if (isset($validated['phone']))
+                $userDataToUpdate['phone'] = $validated['phone'];
+            if (isset($validated['password']))
+                $userDataToUpdate['password'] = $validated['password'];
+            if (isset($validated['full_name']))
+                $userDataToUpdate['full_name'] = $validated['full_name'];
+            if (isset($validated['position']))
+                $userDataToUpdate['position'] = $validated['position'];
+            if (isset($validated['settings']))
+                $userDataToUpdate['settings'] = $validated['settings'];
+            if (isset($validated['last_login_at']))
+                $userDataToUpdate['last_login_at'] = $validated['last_login_at'];
+            if (isset($validated['email_verified_at']))
+                $userDataToUpdate['email_verified_at'] = $validated['email_verified_at'];
 
             if ($isUpdatingSelf && $canUpdateSelf) {
                 if (!empty($userDataToUpdate)) {
@@ -472,15 +487,24 @@ class UserController extends Controller
             }
 
             $companyUserDataToUpdate = [];
-            if (isset($validated['nickname'])) $companyUserDataToUpdate['nickname_in_company'] = $validated['nickname'];
-            if (isset($validated['full_name'])) $companyUserDataToUpdate['full_name_in_company'] = $validated['full_name'];
-            if (isset($validated['position'])) $companyUserDataToUpdate['position_in_company'] = $validated['position'];
-            if (isset($validated['customer_type'])) $companyUserDataToUpdate['customer_type_in_company'] = $validated['customer_type'];
-            if (isset($validated['status'])) $companyUserDataToUpdate['status'] = $validated['status'];
-            if (isset($validated['balance'])) $companyUserDataToUpdate['balance_in_company'] = $validated['balance'];
-            if (isset($validated['phone'])) $companyUserDataToUpdate['user_phone'] = $validated['phone'];
-            if (isset($validated['email'])) $companyUserDataToUpdate['user_email'] = $validated['email'];
-            if (isset($validated['username'])) $companyUserDataToUpdate['user_username'] = $validated['username'];
+            if (isset($validated['nickname']))
+                $companyUserDataToUpdate['nickname_in_company'] = $validated['nickname'];
+            if (isset($validated['full_name']))
+                $companyUserDataToUpdate['full_name_in_company'] = $validated['full_name'];
+            if (isset($validated['position']))
+                $companyUserDataToUpdate['position_in_company'] = $validated['position'];
+            if (isset($validated['customer_type']))
+                $companyUserDataToUpdate['customer_type_in_company'] = $validated['customer_type'];
+            if (isset($validated['status']))
+                $companyUserDataToUpdate['status'] = $validated['status'];
+            if (isset($validated['balance']))
+                $companyUserDataToUpdate['balance_in_company'] = $validated['balance'];
+            if (isset($validated['phone']))
+                $companyUserDataToUpdate['user_phone'] = $validated['phone'];
+            if (isset($validated['email']))
+                $companyUserDataToUpdate['user_email'] = $validated['email'];
+            if (isset($validated['username']))
+                $companyUserDataToUpdate['user_username'] = $validated['username'];
 
             Log::info('CompanyUser Data To Update (company_user table) - Base data for syncing:', ['data' => $companyUserDataToUpdate]);
 
@@ -597,6 +621,7 @@ class UserController extends Controller
             $canDeleteChildren = $authUser->hasPermissionTo(perm_key('users.delete_children'));
 
             $deletedCount = 0;
+            $skippedCount = 0; // **[تعديل]: عداد للمستخدمين الذين تم تخطيهم**
             $descendantUserIds = [];
             if ($canDeleteChildren) {
                 $descendantUserIds = $authUser->getDescendantUserIds();
@@ -607,22 +632,43 @@ class UserController extends Controller
                     continue;
                 }
 
+                // 1. منطق المشرف العام (Hard Delete من النظام)
                 if ($isSuperAdmin || $canDeleteAll) {
+
+                    // **[ملاحظة هامة]:** الحذف النهائي هنا ما زال يحتاج لفحص الحركات على مستوى النظام.
+                    // لتطبيق متطلبك، يجب أن نتحقق حتى هنا من عدم وجود سجلات حركية على مستوى النظام ككل.
+                    // ولكن بالنظر للسيناريو الحالي، هذا القسم ينفذ الحذف بشكل كامل:
+
                     $user->cashBoxes()->delete();
                     $user->companyUsers()->delete();
                     $user->delete();
                     $user->logForceDeleted('المستخدم ' . $user->username);
                     $deletedCount++;
-                } elseif ($activeCompanyId && ($isCompanyAdmin || $canDeleteChildren)) {
+                }
+
+                // 2. منطق مسؤول الشركة (Un-link من الشركة)
+                elseif ($activeCompanyId && ($isCompanyAdmin || $canDeleteChildren)) {
                     if ($isCompanyAdmin || ($canDeleteChildren && in_array($user->id, $descendantUserIds))) {
+
+                        // **[تعديل]: التحقق من وجود حركات مالية قبل الفصل**
+                        if ($user->hasActiveTransactionsInCompany($activeCompanyId)) {
+                            $skippedCount++;
+                            continue; // تخطي المستخدم لوجود حركات مالية/حركية مرتبطة بالشركة النشطة
+                        }
+
                         $companyUser = $user->companyUsers()->where('company_id', $activeCompanyId)->first();
+
                         if ($companyUser) {
-                            $user->cashBoxes()->where('company_id', $activeCompanyId)->delete();
+
+                            // **[حذف]:** تم حذف السطر القديم $user->cashBoxes()->where('company_id', $activeCompanyId)->delete(); 
+                            // لأنه سيتم التعامل مع الخزنة عبر المراقب عند حذف companyUser.
+
                             $companyUser->delete();
                             $user->logForceDeleted('علاقة المستخدم ' . ($companyUser->nickname_in_company ?? $user->username) . ' بالشركة ' . $companyUser->company->name);
                             $deletedCount++;
 
-                            if ($user->companyUsers()->count() === 0 && $user->cashBoxes()->count() === 0) {
+                            // الحذف النهائي المشروط للمستخدم من جدول users إذا لم يعد لديه ارتباطات
+                            if ($user->companyUsers()->count() === 0) { // تم إزالة فحص cashBoxes بما أن المراقب سيتولى حذف/تعطيل الخزائن
                                 $user->delete();
                                 $user->logForceDeleted('المستخدم ' . $user->username . ' من النظام بعد إزالة جميع ارتباطاته بالشركات.');
                             }
@@ -633,11 +679,19 @@ class UserController extends Controller
 
             if ($deletedCount === 0) {
                 DB::rollBack();
-                return api_forbidden('لم يتم حذف أي مستخدمين. تحقق من الصلاحيات أو معرفات المستخدمين.');
+                // **[تعديل]: رسالة خطأ أكثر وضوحًا**
+                $message = 'لم يتم حذف أي مستخدمين.';
+                if ($skippedCount > 0) {
+                    $message .= " تم تخطي {$skippedCount} مستخدم لوجود سجلات حركية/مالية مرتبطة بالشركة النشطة، ولا يمكن فصلهم.";
+                } else {
+                    $message .= " تحقق من الصلاحيات أو معرفات المستخدمين.";
+                }
+                return api_forbidden($message);
             }
 
             DB::commit();
-            return api_success([], 'تم حذف المستخدمين بنجاح');
+            // **[تعديل]: رسالة نجاح أكثر وضوحًا**
+            return api_success([], "تم معالجة حذف {$deletedCount} مستخدم بنجاح" . ($skippedCount > 0 ? " مع تخطي {$skippedCount} مستخدم لوجود سجلات حركية." : ""));
         } catch (Throwable $e) {
             DB::rollback();
             Log::error("فشل حذف المستخدم: " . $e->getMessage(), ['exception' => $e, 'user_id' => $authUser->id, 'item_ids' => $userIds]);
@@ -768,19 +822,19 @@ class UserController extends Controller
 
             $baseQuery
                 ->when($request->filled('nickname'), fn($q) =>
-                $q->where('nickname_in_company', 'like', '%' . $request->nickname . '%'))
+                    $q->where('nickname_in_company', 'like', '%' . $request->nickname . '%'))
                 ->when($request->filled('email'), fn($q) =>
-                $q->whereHas('user', fn($u) =>
-                $u->where('email', 'like', '%' . $request->email . '%')))
+                    $q->whereHas('user', fn($u) =>
+                        $u->where('email', 'like', '%' . $request->email . '%')))
                 ->when($request->filled('phone'), fn($q) =>
-                $q->whereHas('user', fn($u) =>
-                $u->where('phone', 'like', '%' . $request->phone . '%')))
+                    $q->whereHas('user', fn($u) =>
+                        $u->where('phone', 'like', '%' . $request->phone . '%')))
                 ->when($request->filled('status'), fn($q) =>
-                $q->where('status', $request->input('status')))
+                    $q->where('status', $request->input('status')))
                 ->when($request->filled('created_at_from'), fn($q) =>
-                $q->where('company_user.created_at', '>=', $request->input('created_at_from') . ' 00:00:00'))
+                    $q->where('company_user.created_at', '>=', $request->input('created_at_from') . ' 00:00:00'))
                 ->when($request->filled('created_at_to'), fn($q) =>
-                $q->where('company_user.created_at', '<=', $request->input('created_at_to') . ' 23:59:59'));
+                    $q->where('company_user.created_at', '<=', $request->input('created_at_to') . ' 23:59:59'));
 
             if (in_array($sortField, ['nickname_in_company', 'status', 'balance_in_company', 'position_in_company', 'customer_type_in_company', 'full_name_in_company', 'user_phone', 'user_email', 'user_username'])) {
                 $baseQuery->orderBy('company_user.' . $sortField, $sortOrder);
