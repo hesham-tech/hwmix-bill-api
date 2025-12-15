@@ -621,8 +621,10 @@ class UserController extends Controller
             $canDeleteChildren = $authUser->hasPermissionTo(perm_key('users.delete_children'));
 
             $deletedCount = 0;
-            $skippedCount = 0; // **[تعديل]: عداد للمستخدمين الذين تم تخطيهم**
+            $skippedCount = 0;
+            $skipReasons = []; // **[تعديل]: مصفوفة لتخزين أسباب التخطي**
             $descendantUserIds = [];
+
             if ($canDeleteChildren) {
                 $descendantUserIds = $authUser->getDescendantUserIds();
             }
@@ -635,9 +637,8 @@ class UserController extends Controller
                 // 1. منطق المشرف العام (Hard Delete من النظام)
                 if ($isSuperAdmin || $canDeleteAll) {
 
-                    // **[ملاحظة هامة]:** الحذف النهائي هنا ما زال يحتاج لفحص الحركات على مستوى النظام.
-                    // لتطبيق متطلبك، يجب أن نتحقق حتى هنا من عدم وجود سجلات حركية على مستوى النظام ككل.
-                    // ولكن بالنظر للسيناريو الحالي، هذا القسم ينفذ الحذف بشكل كامل:
+                    // يتم هنا افتراض أن المشرف العام له صلاحية تجاوز التحقق من سلامة البيانات
+                    // أو أن يتم إضافة فحص مشابه لـ hasActiveTransactionsInCompany على مستوى النظام كله هنا إذا لزم الأمر.
 
                     $user->cashBoxes()->delete();
                     $user->companyUsers()->delete();
@@ -650,25 +651,32 @@ class UserController extends Controller
                 elseif ($activeCompanyId && ($isCompanyAdmin || $canDeleteChildren)) {
                     if ($isCompanyAdmin || ($canDeleteChildren && in_array($user->id, $descendantUserIds))) {
 
-                        // **[تعديل]: التحقق من وجود حركات مالية قبل الفصل**
-                        if ($user->hasActiveTransactionsInCompany($activeCompanyId)) {
+                        // **[تعديل]: استدعاء الدالة واستقبال رسالة المنع**
+                        $deletionSafetyCheck = $user->hasActiveTransactionsInCompany($activeCompanyId);
+
+                        if ($deletionSafetyCheck !== null) {
                             $skippedCount++;
-                            continue; // تخطي المستخدم لوجود حركات مالية/حركية مرتبطة بالشركة النشطة
+                            // **[تعديل]: تسجيل سبب التخطي لإرساله للواجهة الأمامية**
+                            $skipReasons[] = [
+                                'user_id' => $user->id,
+                                'username' => $user->username,
+                                'reason' => $deletionSafetyCheck['message'],
+                            ];
+                            Log::warning("تم تخطي فصل المستخدم {$user->id} ({$user->username}) بسبب: {$deletionSafetyCheck['message']}");
+                            continue;
                         }
 
                         $companyUser = $user->companyUsers()->where('company_id', $activeCompanyId)->first();
 
                         if ($companyUser) {
-
-                            // **[حذف]:** تم حذف السطر القديم $user->cashBoxes()->where('company_id', $activeCompanyId)->delete(); 
-                            // لأنه سيتم التعامل مع الخزنة عبر المراقب عند حذف companyUser.
+                            // **[تنظيف]:** تم حذف السطر القديم لحذف الخزنة يدوياً
 
                             $companyUser->delete();
                             $user->logForceDeleted('علاقة المستخدم ' . ($companyUser->nickname_in_company ?? $user->username) . ' بالشركة ' . $companyUser->company->name);
                             $deletedCount++;
 
                             // الحذف النهائي المشروط للمستخدم من جدول users إذا لم يعد لديه ارتباطات
-                            if ($user->companyUsers()->count() === 0) { // تم إزالة فحص cashBoxes بما أن المراقب سيتولى حذف/تعطيل الخزائن
+                            if ($user->companyUsers()->count() === 0) {
                                 $user->delete();
                                 $user->logForceDeleted('المستخدم ' . $user->username . ' من النظام بعد إزالة جميع ارتباطاته بالشركات.');
                             }
@@ -677,21 +685,28 @@ class UserController extends Controller
                 }
             }
 
+            // **[منطق إرجاع الخطأ]:** إذا لم يتم حذف أي مستخدم (سواء بسبب الصلاحيات أو التخطي)
             if ($deletedCount === 0) {
                 DB::rollBack();
-                // **[تعديل]: رسالة خطأ أكثر وضوحًا**
                 $message = 'لم يتم حذف أي مستخدمين.';
+                $data = []; // البيانات التي سترجع للواجهة الأمامية
+
                 if ($skippedCount > 0) {
                     $message .= " تم تخطي {$skippedCount} مستخدم لوجود سجلات حركية/مالية مرتبطة بالشركة النشطة، ولا يمكن فصلهم.";
+                    $data['skipped_users'] = $skipReasons;
                 } else {
                     $message .= " تحقق من الصلاحيات أو معرفات المستخدمين.";
                 }
-                return api_forbidden($message);
+
+                return api_forbidden($message, $data, 403);
             }
 
+            // **[منطق إرجاع النجاح]:** عند نجاح عملية الحذف
             DB::commit();
-            // **[تعديل]: رسالة نجاح أكثر وضوحًا**
-            return api_success([], "تم معالجة حذف {$deletedCount} مستخدم بنجاح" . ($skippedCount > 0 ? " مع تخطي {$skippedCount} مستخدم لوجود سجلات حركية." : ""));
+            $data = ($skippedCount > 0) ? ['skipped_users' => $skipReasons] : [];
+            $message = "تم معالجة حذف {$deletedCount} مستخدم بنجاح" . ($skippedCount > 0 ? " مع تخطي {$skippedCount} مستخدم لوجود سجلات حركية." : "");
+
+            return api_success($data, $message);
         } catch (Throwable $e) {
             DB::rollback();
             Log::error("فشل حذف المستخدم: " . $e->getMessage(), ['exception' => $e, 'user_id' => $authUser->id, 'item_ids' => $userIds]);

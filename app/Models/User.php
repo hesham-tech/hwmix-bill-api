@@ -602,41 +602,46 @@ class User extends Authenticatable
      * @param int $companyId معرف الشركة النشطة
      * @return bool
      */
-    public function hasActiveTransactionsInCompany(int $companyId): bool
+    /**
+     * يتحقق مما إذا كان المستخدم (كعميل/موظف) لديه أي سجلات حركية/مالية مرتبطة بالشركة المحددة.
+     *
+     * @param int $companyId معرف الشركة النشطة
+     * @return array|null مصفوفة تحتوي على سبب المنع (الرسالة)، أو null إذا كان الحذف آمنًا.
+     */
+    public function hasActiveTransactionsInCompany(int $companyId): ?array
     {
         // 1. فحص الفواتير (Invoices)
-        $hasInvoices = $this->invoices()
-            ->where('company_id', $companyId)
-            ->exists();
+        if ($this->invoices()->where('company_id', $companyId)->exists()) {
+            return ['message' => 'لا يمكن فصل العميل لوجود فواتير  مسجلة باسمه في هذه الشركة.'];
+        }
 
         // 2. فحص المعاملات المالية (Transactions)
-        $hasTransactions = $this->transactions()
-            ->where('company_id', $companyId)
-            ->exists();
+        if ($this->transactions()->where('company_id', $companyId)->exists()) {
+            return ['message' => 'لا يمكن فصل العميل لوجود سجلات معاملات مالية مرتبطة به في هذه الشركة.'];
+        }
 
         // 3. فحص المدفوعات (Payments)
-        $hasPayments = $this->payments()
-            ->where('company_id', $companyId)
-            ->exists();
+        if ($this->payments()->where('company_id', $companyId)->exists()) {
+            return ['message' => 'لا يمكن فصل العميل لوجود سجلات مدفوعات  قام بها في هذه الشركة.'];
+        }
 
         // 4. فحص الأقساط (Installments)
-        $hasInstallments = $this->installments()
-            ->where('company_id', $companyId)
-            ->exists();
+        if ($this->installments()->where('company_id', $companyId)->exists()) {
+            return ['message' => 'لا يمكن فصل العميل لوجود أقساط  مستحقة أو مدفوعة مرتبطة به في هذه الشركة.'];
+        }
 
         // 5. فحص خطط التقسيط (Installment Plans)
-        $hasInstallmentPlans = $this->installmentPlans()
-            ->where('company_id', $companyId)
-            ->exists();
+        if ($this->installmentPlans()->where('company_id', $companyId)->exists()) {
+            return ['message' => 'لا يمكن فصل العميل لوجود خطط تقسيط مسجلة باسمه في هذه الشركة.'];
+        }
 
         // 6. فحص رصيد الخزنة: إذا كان المستخدم يمتلك خزنة في هذه الشركة ورصيدها ليس صفرًا
-        $hasNonZeroBalance = $this->cashBoxes()
-            ->where('company_id', $companyId)
-            ->where('balance', '!=', 0)
-            ->exists();
+        if ($this->cashBoxes()->where('company_id', $companyId)->where('balance', '!=', 0)->exists()) {
+            return ['message' => 'لا يمكن فصل المستخدم لوجود رصيد متبقي غير صفري في خزنته الافتراضية لهذه الشركة.'];
+        }
 
-        // إذا كان أي من هذه السجلات موجودًا، فالحذف غير آمن.
-        return $hasInvoices || $hasTransactions || $hasPayments || $hasInstallments || $hasInstallmentPlans || $hasNonZeroBalance;
+        // إذا لم يتم العثور على أي سجلات حركية/مالية، يكون الحذف آمنًا
+        return null;
     }
 
 }
