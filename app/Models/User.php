@@ -333,7 +333,7 @@ class User extends Authenticatable
      * @return bool True عند النجاح.
      * @throws Exception عند الفشل (مثل عدم وجود خزنة أو رصيد غير كافي).
      */
-    public function withdraw(float $amount, $cashBoxId = null): bool
+    public function withdraw(float $amount, $cashBoxId = null, $description = null): bool
     {
         $amount = floatval($amount);
         $authCompanyId = Auth::user()->company_id ?? null;
@@ -343,7 +343,6 @@ class User extends Authenticatable
             $cashBox = null;
 
             if ($cashBoxId) {
-                // يجب استيراد CashBox في الجزء العلوي
                 $cashBox = CashBox::query()->where('id', $cashBoxId)->where('user_id', $this->id)->first();
             } else {
                 if (is_null($authCompanyId)) {
@@ -358,7 +357,27 @@ class User extends Authenticatable
                 throw new Exception("لم يتم العثور على خزنة مناسبة للمستخدم : {$this->nickname}");
             }
 
+            if ($cashBox->balance < $amount) {
+                DB::rollBack();
+                throw new Exception("رصيد الخزنة غير كافٍ.");
+            }
+
+            $balanceBefore = $cashBox->balance;
             $cashBox->decrement('balance', $amount);
+            $balanceAfter = $cashBox->balance;
+
+            Transaction::create([
+                'user_id' => $this->id,
+                'cashbox_id' => $cashBox->id,
+                'created_by' => Auth::id() ?? $this->id,
+                'company_id' => $cashBox->company_id,
+                'type' => 'سحب',
+                'amount' => $amount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'description' => $description ?? 'سحب نقدي',
+            ]);
+
             DB::commit();
             return true;
         } catch (\Throwable $e) {
@@ -383,7 +402,7 @@ class User extends Authenticatable
      * @throws Exception عند الفشل (مثل عدم وجود خزنة).
      */
 
-    public function deposit(float $amount, $cashBoxId = null): bool
+    public function deposit(float $amount, $cashBoxId = null, $description = null): bool
     {
         $amount = floatval($amount);
         DB::beginTransaction();
@@ -392,7 +411,6 @@ class User extends Authenticatable
         try {
             $cashBox = null;
             if ($cashBoxId) {
-                // يجب استيراد CashBox في الجزء العلوي
                 $cashBox = CashBox::query()->where('id', $cashBoxId)->where('user_id', $this->id)->first();
                 if (!$cashBox) {
                     DB::rollBack();
@@ -416,7 +434,21 @@ class User extends Authenticatable
                 throw new Exception("لم يتم العثور على خزنة مناسبة للمستخدم : {$this->nickname} ");
             }
 
+            $balanceBefore = $cashBox->balance;
             $cashBox->increment('balance', $amount);
+            $balanceAfter = $cashBox->balance;
+
+            Transaction::create([
+                'user_id' => $this->id,
+                'cashbox_id' => $cashBox->id,
+                'created_by' => Auth::id() ?? $this->id,
+                'company_id' => $cashBox->company_id,
+                'type' => 'إيداع',
+                'amount' => $amount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'description' => $description ?? 'إيداع نقدي',
+            ]);
 
             DB::commit();
             return true;

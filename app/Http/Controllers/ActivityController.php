@@ -9,7 +9,16 @@ use Illuminate\Http\JsonResponse;
 class ActivityController extends Controller
 {
     /**
-     * Get activity logs with filters
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * استعراض سجلات النشاط (Activity Log)
+     * 
+     * تتبع عمليات الإنشاء والتعديل والحذف التي يقوم بها المستخدمون على النماذج المختلفة في النظام.
+     * 
+     * @queryParam user_id integer فلترة حسب المستخدم.
+     * @queryParam subject_type string نوع النموذج (مثل Product, Invoice).
+     * @queryParam action string نوع العملية (created, updated, deleted).
+     * @queryParam date_from date تاريخ البداية.
      */
     public function index(Request $request): JsonResponse
     {
@@ -62,7 +71,11 @@ class ActivityController extends Controller
     }
 
     /**
-     * Get activity log by ID
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * عرض تفاصيل سجل نشاط
+     * 
+     * @urlParam id required معرف السجل. Example: 1
      */
     public function show($id): JsonResponse
     {
@@ -115,7 +128,11 @@ class ActivityController extends Controller
     }
 
     /**
-     * Get invoice activities
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * سجلات نشاط فاتورة محددة
+     * 
+     * @urlParam invoiceId required معرف الفاتورة. Example: 1
      */
     public function invoiceActivities($invoiceId): JsonResponse
     {
@@ -133,7 +150,13 @@ class ActivityController extends Controller
     }
 
     /**
-     * Export activity logs
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * تصدير سجلات النشاط
+     * 
+     * @bodyParam date_from date required تاريخ البداية.
+     * @bodyParam date_to date required تاريخ النهاية.
+     * @bodyParam format string تنسيق الملف (csv, excel). Example: excel
      */
     public function export(Request $request)
     {

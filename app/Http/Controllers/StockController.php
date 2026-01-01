@@ -30,7 +30,25 @@ class StockController extends Controller
     }
 
     /**
-     * عرض قائمة سجلات المخزون.
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة حركات المخزون
+     * 
+     * تتبع حركة المخزن الواردة والصادرة (رصيد افتتاحي، مبيعات، مشتريات، تسويات).
+     * 
+     * @queryParam product_variant_id integer فلترة حسب متغير المنتج. Example: 1
+     * @queryParam warehouse_id integer فلترة حسب المستودع. Example: 1
+     * @queryParam status string حالة الحركة (in, out, adjustment). Example: in
+     * @queryParam quantity_from number الحد الأدنى للكمية. Example: 10
+     * @queryParam quantity_to number الحد الأقصى للكمية. Example: 100
+     * @queryParam created_at_from date تاريخ الإنشاء من. Example: 2023-01-01
+     * @queryParam created_at_to date تاريخ الإنشاء إلى. Example: 2023-12-31
+     * @queryParam sort_by string حقل الفرز. Default: id. Example: created_at
+     * @queryParam sort_order string ترتيب الفرز (asc/desc). Default: desc. Example: asc
+     * @queryParam per_page integer عدد العناصر في الصفحة. Default: 20. Example: 50
+     * 
+     * @apiResourceCollection App\Http\Resources\Stock\StockResource
+     * @apiResourceModel App\Models\Stock
      */
     public function index(Request $request): JsonResponse
     {
@@ -98,7 +116,15 @@ class StockController extends Controller
     }
 
     /**
-     * تخزين سجل مخزون جديد.
+     * @group 04. نظام المنتجات
+     * 
+     * إضافة حركة مخزون يدوية
+     * 
+     * @bodyParam product_variant_id integer required معرف متغير المنتج. Example: 1
+     * @bodyParam warehouse_id integer required معرف المستودع. Example: 1
+     * @bodyParam quantity number required الكمية. Example: 50
+     * @bodyParam status string required الحالة (in/out). Example: in
+     * @bodyParam notes string ملاحظات إضافية. Example: رصيد افتتاحي
      */
     public function store(StoreStockRequest $request): JsonResponse
     {
@@ -145,7 +171,11 @@ class StockController extends Controller
     }
 
     /**
-     * عرض سجل مخزون محدد.
+     * @group 04. نظام المنتجات
+     * 
+     * عرض تفاصيل حركة مخزون
+     * 
+     * @urlParam id required معرف حركة المخزون. Example: 1
      */
     public function show(string $id): JsonResponse
     {
@@ -182,7 +212,16 @@ class StockController extends Controller
     }
 
     /**
-     * تحديث سجل مخزون محدد.
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث حركة مخزون
+     * 
+     * @urlParam id required معرف حركة المخزون. Example: 1
+     * @bodyParam product_variant_id integer معرف متغير المنتج. Example: 1
+     * @bodyParam warehouse_id integer معرف المستودع. Example: 1
+     * @bodyParam quantity number الكمية. Example: 50
+     * @bodyParam status string الحالة (in/out). Example: in
+     * @bodyParam notes string ملاحظات إضافية. Example: تحديث الرصيد
      */
     public function update(UpdateStockRequest $request, string $id): JsonResponse
     {
@@ -246,7 +285,11 @@ class StockController extends Controller
     }
 
     /**
-     * حذف سجل مخزون محدد.
+     * @group 04. نظام المنتجات
+     * 
+     * حذف حركة مخزون
+     * 
+     * @urlParam id required معرف حركة المخزون. Example: 1
      */
     public function destroy(string $id): JsonResponse
     {

@@ -27,10 +27,18 @@ class RoleController extends Controller
     ];
 
     /**
-     * عرض قائمة بالأدوار.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 09. الأذونات والأمن
+     * 
+     * عرض قائمة الأدوار
+     * 
+     * استرجاع كافة المجموعات (Roles) المعرفة في النظام (مثل: مدير، بائع، أمين مخزن).
+     * 
+     * @queryParam company_id integer فلترة حسب الشركة. Example: 1
+     * @queryParam name string البحث باسم الدور. Example: admin
+     * @queryParam per_page integer عدد العناصر. Default: 10. Example: -1
+     * 
+     * @apiResourceCollection App\Http\Resources\Roles\RoleResource
+     * @apiResourceModel App\Models\Role
      */
     public function index(Request $request): JsonResponse
     {
@@ -119,10 +127,13 @@ class RoleController extends Controller
     }
 
     /**
-     * تخزين دور جديد في قاعدة البيانات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. إدراة المستخدمين
+     * 
+     * إنشاء دور جديد
+     * 
+     * @bodyParam name string required اسم الدور الفريد. Example: Accountant
+     * @bodyParam company_ids integer[] مصفوفة الشركات المرتبطة. Example: [1]
+     * @bodyParam permissions string[] مصفوفة مسميات الصلاحيات. Example: ["users.view", "invoices.create"]
      */
     public function store(Request $request): JsonResponse
     {
@@ -135,11 +146,13 @@ class RoleController extends Controller
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
 
-            if (!$authUser->hasAnyPermission([
-                perm_key('admin.super'),
-                perm_key('admin.company'),
-                perm_key('roles.create'),
-            ])) {
+            if (
+                !$authUser->hasAnyPermission([
+                    perm_key('admin.super'),
+                    perm_key('admin.company'),
+                    perm_key('roles.create'),
+                ])
+            ) {
                 return api_forbidden('ليس لديك صلاحية لإنشاء الأدوار.');
             }
 
@@ -208,11 +221,13 @@ class RoleController extends Controller
     }
 
     /**
-     * تحديث الدور المحدد في قاعدة البيانات.
-     *
-     * @param Request $request
-     * @param Role $role
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. إدراة المستخدمين
+     * 
+     * تحديث بيانات دور
+     * 
+     * @urlParam role required معرف الدور. Example: 1
+     * @bodyParam name string اسم الدور. Example: Senior Accountant
+     * @bodyParam permissions string[] تحديث قائمة الصلاحيات. Example: ["invoices.all"]
      */
     public function update(Request $request, Role $role): JsonResponse
     {
@@ -226,9 +241,12 @@ class RoleController extends Controller
             }
 
             // تحميل العلاقات اللازمة للتحقق من الصلاحيات
-            $role->load(['companies' => function ($q) use ($companyId) {
-                $q->where('companies.id', $companyId)->withPivot('created_by');
-            }, 'creator']);
+            $role->load([
+                'companies' => function ($q) use ($companyId) {
+                    $q->where('companies.id', $companyId)->withPivot('created_by');
+                },
+                'creator'
+            ]);
 
             $canUpdate = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -308,10 +326,11 @@ class RoleController extends Controller
     }
 
     /**
-     * عرض الدور المحدد.
-     *
-     * @param Role $role
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. إدراة المستخدمين
+     * 
+     * عرض تفاصيل دور
+     * 
+     * @urlParam role required معرف الدور. Example: 1
      */
     public function show(Role $role): JsonResponse
     {
@@ -325,9 +344,12 @@ class RoleController extends Controller
             }
 
             // تحميل العلاقات اللازمة للتحقق من الصلاحيات
-            $role->load(['companies' => function ($q) use ($companyId) {
-                $q->where('companies.id', $companyId)->withPivot('created_by');
-            }, 'creator']);
+            $role->load([
+                'companies' => function ($q) use ($companyId) {
+                    $q->where('companies.id', $companyId)->withPivot('created_by');
+                },
+                'creator'
+            ]);
 
             $canView = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -357,12 +379,11 @@ class RoleController extends Controller
     }
 
     /**
-     * حذف الأدوار المحددة من قاعدة البيانات.
-     * سيؤدي هذا الإجراء إلى حذف سجل الدور الأساسي ويتسلسل لحذف جميع سجلات Pivot المرتبطة به في 'role_company'.
-     * لذلك، هناك حاجة إلى تفويض دقيق.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. إدراة المستخدمين
+     * 
+     * حذف أدوار (Batch Delete)
+     * 
+     * @bodyParam item_ids integer[] required مصفوفة معرفات الأدوار. Example: [2, 3]
      */
     public function destroy(Request $request): JsonResponse
     {
@@ -384,9 +405,12 @@ class RoleController extends Controller
             try {
                 $deletedRoles = collect();
                 foreach ($roleIds as $roleId) {
-                    $role = Role::with(['companies' => function ($q) use ($companyId) {
-                        $q->where('companies.id', $companyId)->withPivot('created_by');
-                    }, 'users'])->find($roleId);
+                    $role = Role::with([
+                        'companies' => function ($q) use ($companyId) {
+                            $q->where('companies.id', $companyId)->withPivot('created_by');
+                        },
+                        'users'
+                    ])->find($roleId);
 
                     if (!$role) {
                         // إذا لم يتم العثور على الدور، تجاهله وانتقل إلى التالي
@@ -441,10 +465,12 @@ class RoleController extends Controller
     }
 
     /**
-     * تعيين أدوار متعددة لمستخدم.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. إدراة المستخدمين
+     * 
+     * تعيين أدوار لمستخدم
+     * 
+     * @bodyParam user_id integer required معرف المستخدم. Example: 1
+     * @bodyParam roles string[] required مصفوفة مسميات الأدوار. Example: ["admin", "editor"]
      */
     public function assignRole(Request $request): JsonResponse
     {
@@ -457,11 +483,13 @@ class RoleController extends Controller
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
 
-            if (!$authUser->hasAnyPermission([
-                perm_key('admin.super'),
-                perm_key('admin.company'),
-                
-            ])) {
+            if (
+                !$authUser->hasAnyPermission([
+                    perm_key('admin.super'),
+                    perm_key('admin.company'),
+
+                ])
+            ) {
                 return api_forbidden('ليس لديك صلاحية لتعيين الأدوار.');
             }
 

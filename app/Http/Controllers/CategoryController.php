@@ -30,10 +30,16 @@ class CategoryController extends Controller
     }
 
     /**
-     * عرض قائمة الموارد.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة الأقسام (الفئات)
+     * 
+     * استرجاع شجرة الأقسام بالكامل (الأقسام الرئيسية والفرعية) مع دعم البحث والفلترة.
+     * 
+     * @queryParam search string البحث باسم القسم. Example: هواتف
+     * 
+     * @apiResourceCollection App\Http\Resources\Category\CategoryResource
+     * @apiResourceModel App\Models\Category
      */
     public function index(Request $request): JsonResponse
     {
@@ -84,10 +90,12 @@ class CategoryController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param StoreCategoryRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * إضافة قسم جديد
+     * 
+     * @bodyParam name string required اسم القسم. Example: إلكترونيات
+     * @bodyParam parent_id integer معرف القسم الأب (اختياري). Example: 1
      */
     public function store(StoreCategoryRequest $request): JsonResponse
     {
@@ -140,10 +148,9 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * عرض تفاصيل قسم
      */
     public function show(string $id): JsonResponse
     {
@@ -181,11 +188,9 @@ class CategoryController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param UpdateCategoryRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث بيانات قسم
      */
     public function update(UpdateCategoryRequest $request, string $id): JsonResponse
     {
@@ -252,10 +257,9 @@ class CategoryController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف قسم
      */
     public function destroy(string $id): JsonResponse
     {

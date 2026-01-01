@@ -9,10 +9,14 @@ use Illuminate\Support\Facades\DB;
 class TaxReportController extends BaseReportController
 {
     /**
-     * Tax summary report
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * ملخص الضريبة
+     * 
+     * ملخص للضرائب المحصلة والمدفوعة وصافي الالتزام الضريبي.
+     * 
+     * @queryParam date_from date تاريخ البداية. Example: 2023-10-01
+     * @queryParam date_to date تاريخ النهاية.
      */
     public function index(Request $request)
     {
@@ -43,10 +47,11 @@ class TaxReportController extends BaseReportController
     }
 
     /**
-     * Get collected tax (from sales)
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * التفاصيل الضريبية للمبيعات
+     * 
+     * عرض الفواتير التي تم تحصيل ضريبة منها.
      */
     public function collected(Request $request)
     {
@@ -86,10 +91,11 @@ class TaxReportController extends BaseReportController
     }
 
     /**
-     * Get paid tax (from purchases)
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * التفاصيل الضريبية للمشتريات
+     * 
+     * عرض الفواتير التي تم دفع ضريبة فيها.
      */
     public function paid(Request $request)
     {
@@ -129,10 +135,11 @@ class TaxReportController extends BaseReportController
     }
 
     /**
-     * Get net tax (collected - paid)
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * صافي الضريبة (المقاصة)
+     * 
+     * حساب الفرق بين الضريبة المحصلة والمدفوعة.
      */
     public function netTax(Request $request)
     {

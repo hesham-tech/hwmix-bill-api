@@ -26,10 +26,16 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * عرض قائمة طرق الدفع.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض طرق الدفع المتاحة
+     * 
+     * استرجاع كافة الوسائل المالية المقبولة في النظام (كاش، تحويل بنكي، محفظة إلكترونية).
+     * 
+     * @queryParam active boolean فلترة حسب النشط فقط.
+     * 
+     * @apiResourceCollection App\Http\Resources\PaymentMethod\PaymentMethodResource
+     * @apiResourceModel App\Models\PaymentMethod
      */
     public function index(Request $request): JsonResponse
     {
@@ -85,10 +91,13 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * تخزين طريقة دفع جديدة.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * إضافة طريقة دفع
+     * 
+     * @bodyParam name string required اسم الطريقة. Example: فودافون كاش
+     * @bodyParam code string required كود فريد للطريقة. Example: VFC
+     * @bodyParam active boolean الحالة. Example: true
      */
     public function store(Request $request): JsonResponse
     {
@@ -145,10 +154,11 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * عرض طريقة دفع محددة.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض تفاصيل طريقة دفع
+     * 
+     * @urlParam id required معرف الطريقة. Example: 1
      */
     public function show(string $id): JsonResponse
     {
@@ -185,11 +195,12 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * تحديث طريقة دفع محددة.
-     *
-     * @param Request $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحديث طريقة دفع
+     * 
+     * @urlParam id required معرف الطريقة. Example: 1
+     * @bodyParam name string اسم الطريقة. Example: تحويل بنكي
      */
     public function update(Request $request, string $id): JsonResponse
     {
@@ -257,10 +268,11 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * حذف طريقة دفع محددة.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * حذف طريقة دفع
+     * 
+     * @urlParam id required معرف الطريقة. Example: 1
      */
     public function destroy(string $id): JsonResponse
     {
@@ -325,10 +337,11 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * تبديل حالة تفعيل/تعطيل طريقة الدفع.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تفعيل/تعطيل طريقة دفع
+     * 
+     * @urlParam id required معرف الطريقة. Example: 1
      */
     public function toggle(string $id): JsonResponse
     {

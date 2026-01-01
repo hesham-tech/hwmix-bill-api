@@ -29,10 +29,17 @@ class InvoiceItemController extends Controller
     }
 
     /**
-     * عرض قائمة عناصر الفواتير.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 02. إدارة الفواتير
+     * 
+     * عرض كافة بنود الفواتير
+     * 
+     * استرجاع تفاصيل كافة الأسطر (Items) المدرجة في الفواتير المختلفة مع إمكانية الفلترة حسب الفاتورة أو المنتج.
+     * 
+     * @queryParam invoice_id integer فلترة حسب الفاتورة.
+     * @queryParam product_id integer فلترة حسب المنتج.
+     * 
+     * @apiResourceCollection App\Http\Resources\InvoiceItem\InvoiceItemResource
+     * @apiResourceModel App\Models\InvoiceItem
      */
     public function index(Request $request): JsonResponse
     {

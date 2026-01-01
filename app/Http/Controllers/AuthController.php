@@ -22,10 +22,23 @@ use Throwable; // استيراد Throwable
 class AuthController extends Controller
 {
     /**
-     * تسجيل مستخدم جديد.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 01. إدارة المصادقة
+     * 
+     * تسجيل مستخدم جديد
+     * 
+     * إنشاء حساب مستخدم جديد وربطه بالشركة الافتراضية.
+     * 
+     * @bodyParam phone string required رقم الهاتف (يجب أن يكون فريداً). Example: 01099223344
+     * @bodyParam password string required كلمة المرور (8 أحرف على الأقل). Example: password123
+     * @bodyParam full_name string الاسم الكامل للمستخدم. Example: هشام محمد
+     * @bodyParam nickname string الاسم الحركي أو اللقب. Example: أبو هيبة
+     * @bodyParam email string البريد الإلكتروني (اختياري وفريد). Example: user@example.com
+     * 
+     * @response 201 {
+     *  "success": true,
+     *  "data": { "user": { "id": 1, "full_name": "..." }, "token": "..." },
+     *  "message": "تم تسجيل المستخدم بنجاح."
+     * }
      */
     public function register(Request $request): JsonResponse
     {
@@ -53,13 +66,13 @@ class AuthController extends Controller
                 // يجب توفير created_by في جدول company_user
                 // نفترض أن المستخدم الذي تم إنشاؤه حديثًا هو 'created_by' لنفسه في الوقت الحالي.
                 'created_by' => $user->id,
-                'user_phone' => $user->phone, 
-                'full_name_in_company' =>  $user->full_name,
+                'user_phone' => $user->phone,
+                'full_name_in_company' => $user->full_name,
                 'nickname_in_company' => $user->nickname,
             ]);
 
             $token = $user->createToken('auth_token')->plainTextToken;
-            
+
             // **[الحذف]: تم حذف السطر الذي كان يستخدم الدالة القديمة يدوياً:**
             // app(\App\Services\CashBoxService::class)->ensure=CashBoxForUser($user);
 
@@ -76,10 +89,20 @@ class AuthController extends Controller
     }
 
     /**
-     * تسجيل الدخول للمستخدم.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 01. إدارة المصادقة
+     * 
+     * تسجيل دخول
+     * 
+     * الحصول على رمز الوصول (Access Token) باستخدام الهاتف أو البريد الإلكتروني.
+     * 
+     * @bodyParam login string required الهاتف أو البريد الإلكتروني. Example: 01099223344
+     * @bodyParam password string required كلمة المرور. Example: password123
+     * 
+     * @response 200 {
+     *  "success": true,
+     *  "data": { "token": "...", "user": {...} },
+     *  "message": "تم تسجيل دخول المستخدم بنجاح."
+     * }
      */
     public function login(Request $request): JsonResponse
     {
@@ -111,10 +134,11 @@ class AuthController extends Controller
     }
 
     /**
-     * تسجيل الخروج للمستخدم.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 01. إدارة المصادقة
+     * 
+     * تسجيل الخروج
+     * 
+     * إبطال رمز الوصول الحالي للمستخدم.
      */
     public function logout(Request $request): JsonResponse
     {
@@ -123,7 +147,9 @@ class AuthController extends Controller
             /** @var \Laravel\Sanctum\PersonalAccessToken|null $token */
             $user = $request->user();
             if ($user) {
-                $user->currentAccessToken()->delete();
+                /** @var \Laravel\Sanctum\PersonalAccessToken $token */
+                $token = $user->currentAccessToken();
+                $token->delete();
             } else {
                 // إذا لم يكن هناك مستخدم مصادق عليه، فلا يوجد رمز مميز لحذفه
                 return api_error('لا يوجد مستخدم مصادق عليه لتسجيل الخروج.', [], 401);
@@ -136,10 +162,11 @@ class AuthController extends Controller
     }
 
     /**
-     * استعادة بيانات المستخدم المصادق عليه.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 01. إدارة المصادقة
+     * 
+     * بياناتي (الملف الشخصي)
+     * 
+     * استعادة بيانات المستخدم المصادق عليه حالياً.
      */
     public function me(Request $request): JsonResponse
     {
@@ -158,10 +185,9 @@ class AuthController extends Controller
     }
 
     /**
-     * التحقق من حالة تسجيل دخول المستخدم.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 01. إدارة المصادقة
+     * 
+     * فحص حالة تسجيل الدخول
      */
     public function checkLogin(Request $request): JsonResponse
     {

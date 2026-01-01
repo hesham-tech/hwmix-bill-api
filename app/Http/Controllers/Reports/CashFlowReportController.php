@@ -10,10 +10,15 @@ use Illuminate\Support\Facades\DB;
 class CashFlowReportController extends BaseReportController
 {
     /**
-     * Cash flow report
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير المالية
+     * 
+     * تقرير التدفق النقدي
+     * 
+     * تحليل الحركات المالية (إيداعات وسحوبات) خلال فترة زمنية محددة.
+     * 
+     * @queryParam date_from date تاريخ البداية. Example: 2023-10-01
+     * @queryParam date_to date تاريخ النهاية. Example: 2023-10-31
+     * @queryParam company_id integer معرف الشركة.
      */
     public function index(Request $request)
     {
@@ -61,10 +66,12 @@ class CashFlowReportController extends BaseReportController
     }
 
     /**
-     * Cash flow by cash box
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير المالية
+     * 
+     * التدفق النقدي حسب الخزنة
+     * 
+     * @queryParam date_from date تاريخ البداية. Example: 2023-10-01
+     * @queryParam date_to date تاريخ النهاية. Example: 2023-10-31
      */
     public function byCashBox(Request $request)
     {
@@ -93,10 +100,13 @@ class CashFlowReportController extends BaseReportController
     }
 
     /**
-     * Current liquidity summary
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير المالية
+     * 
+     * ملخص السيولة الحالية
+     * 
+     * عرض أرصدة جميع الخزن وتصنيفاتها.
+     * 
+     * @queryParam company_id integer معرف الشركة.
      */
     public function summary(Request $request)
     {

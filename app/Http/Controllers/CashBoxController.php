@@ -38,10 +38,19 @@ class CashBoxController extends Controller
     }
 
     /**
-     * عرض جميع الخزن مع الفلاتر والصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض قائمة الخزن
+     * 
+     * @queryParam current_user boolean عرض الخزن المرتبطة بالمستخدم الحالي فقط. Example: 1
+     * @queryParam name string البحث باسم الخزنة. Example: الخزنة الرئيسية
+     * @queryParam account_number string رقم الحساب. Example: 123456
+     * @queryParam created_at_from date تاريخ الإنشاء من. Example: 2023-01-01
+     * @queryParam user_id integer فلترة لصالح مستخدم معين. Example: 2
+     * @queryParam per_page integer عدد النتائج. Default: 10
+     * 
+     * @apiResourceCollection App\Http\Resources\CashBox\CashBoxResource
+     * @apiResourceModel App\Models\CashBox
      */
     public function index(Request $request): JsonResponse
     {
@@ -124,10 +133,15 @@ class CashBoxController extends Controller
     }
 
     /**
-     * تخزين خزنة جديدة.
-     *
-     * @param StoreCashBoxRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * إنشاء خزنة جديدة
+     * 
+     * @bodyParam name string required اسم الخزنة. Example: مكتب القاهرة
+     * @bodyParam type_box_id integer required معرف جود النوع. Example: 1
+     * @bodyParam account_number string رقم الحساب المرتبط. Example: ACC-001
+     * @bodyParam user_id integer معرف المستخدم المسؤول عن الخزنة. Example: 1
+     * @bodyParam company_id integer معرف الشركة (للمسؤول فقط). Example: 1
      */
     public function store(StoreCashBoxRequest $request): JsonResponse
     {
@@ -179,10 +193,14 @@ class CashBoxController extends Controller
     }
 
     /**
-     * عرض تفاصيل خزنة معينة.
-     *
-     * @param CashBox $cashBox
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض تفاصيل خزنة
+     * 
+     * @urlParam cashBox required معرف الخزنة. Example: 1
+     * 
+     * @apiResource App\Http\Resources\CashBox\CashBoxResource
+     * @apiResourceModel App\Models\CashBox
      */
     public function show(CashBox $cashBox): JsonResponse
     {
@@ -222,11 +240,12 @@ class CashBoxController extends Controller
     }
 
     /**
-     * تحديث بيانات خزنة موجودة.
-     *
-     * @param UpdateCashBoxRequest $request
-     * @param CashBox $cashBox
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحديث بيانات خزنة
+     * 
+     * @urlParam cashBox required معرف الخزنة. Example: 1
+     * @bodyParam name string اسم الخزنة المحدث. Example: الخزنة الفرعية
      */
     public function update(UpdateCashBoxRequest $request, CashBox $cashBox): JsonResponse
     {
@@ -292,10 +311,11 @@ class CashBoxController extends Controller
     }
 
     /**
-     * حذف خزنة.
-     *
-     * @param CashBox $cashBox
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * حذف خزنة
+     * 
+     * @urlParam cashBox required معرف الخزنة. Example: 1
      */
     public function destroy(CashBox $cashBox): JsonResponse
     {
@@ -352,10 +372,15 @@ class CashBoxController extends Controller
     }
 
     /**
-     * تحويل أموال بين الخزن.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحويل أرصدة بين الخزن
+     * 
+     * @bodyParam amount number required المبلغ المراد تحويله. Example: 500.50
+     * @bodyParam cash_box_id integer required معرف الخزنة المصدر. Example: 1
+     * @bodyParam to_cash_box_id integer required معرف الخزنة الهدف. Example: 2
+     * @bodyParam to_user_id integer required معرف المستخدم المستلم (يمكن أن يكون نفس المحول). Example: 1
+     * @bodyParam description string وصف التحويل. Example: تحويل عهدة شهرية
      */
     public function transferFunds(Request $request): JsonResponse
     {

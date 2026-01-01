@@ -10,10 +10,14 @@ use Illuminate\Support\Facades\DB;
 class StockReportController extends BaseReportController
 {
     /**
-     * Stock movement report
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * حركة المخزون
+     * 
+     * تقرير مفصل عن عمليات الوارد والمنصرف لكل منتج ومستودع.
+     * 
+     * @queryParam product_id integer فلترة حسب المنتج.
+     * @queryParam date_from date تاريخ البداية.
      */
     public function index(Request $request)
     {
@@ -65,10 +69,11 @@ class StockReportController extends BaseReportController
     }
 
     /**
-     * Stock valuation report
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * تقييم المخزون
+     * 
+     * حساب القيمة المالية للمخزون الحالي بناءً على سعر التكلفة وسعر البيع.
      */
     public function valuation(Request $request)
     {
@@ -102,10 +107,13 @@ class StockReportController extends BaseReportController
     }
 
     /**
-     * Low stock alert
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * تنبيهات نقص المخزون
+     * 
+     * عرض المنتجات التي وصلت كميتها إلى حد أقل من القيمة المحددة.
+     * 
+     * @queryParam threshold integer الحد الأدنى للكمية. Example: 10
      */
     public function lowStock(Request $request)
     {
@@ -135,10 +143,13 @@ class StockReportController extends BaseReportController
     }
 
     /**
-     * Inactive stock (no movement for X days)
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * المنتجات الراكدة
+     * 
+     * المنتجات التي لم يتم عليها أي حركة خلال فترة طويلة.
+     * 
+     * @queryParam days integer عدد الأيام. Example: 90
      */
     public function inactiveStock(Request $request)
     {

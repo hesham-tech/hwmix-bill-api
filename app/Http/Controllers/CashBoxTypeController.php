@@ -23,10 +23,17 @@ use Throwable;
 class CashBoxTypeController extends Controller
 {
     /**
-     * عرض جميع أنواع الخزن مع الفلاتر والصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض أنواع الخزن
+     * 
+     * استرجاع أنواع الصناديق المالية (مثل: خزنة فرعية، حساب بنكي، عهدة موظف).
+     * 
+     * @queryParam description string البحث بالوصف. Example: بنك
+     * @queryParam is_default boolean تصفية حسب الافتراضي. Example: 1
+     * 
+     * @apiResourceCollection App\Http\Resources\CashBoxType\CashBoxTypeResource
+     * @apiResourceModel App\Models\CashBoxType
      */
     public function index(Request $request): JsonResponse
     {
@@ -95,10 +102,12 @@ class CashBoxTypeController extends Controller
     }
 
     /**
-     * Store a newly created CashBoxType in storage.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * إضافة نوع خزنة جديد
+     * 
+     * @bodyParam description string required وصف النوع. Example: نقدي
+     * @bodyParam is_default boolean هل هو النوع الافتراضي. Example: false
      */
     public function store(Request $request): JsonResponse
     {
@@ -152,10 +161,11 @@ class CashBoxTypeController extends Controller
     }
 
     /**
-     * Display the specified CashBoxType.
-     *
-     * @param CashBoxType $cashBoxType
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض تفاصيل نوع خزنة
+     * 
+     * @urlParam cashBoxType required معرف النوع. Example: 1
      */
     public function show(CashBoxType $cashBoxType): JsonResponse
     {
@@ -194,11 +204,12 @@ class CashBoxTypeController extends Controller
     }
 
     /**
-     * Update the specified CashBoxType in storage.
-     *
-     * @param Request $request
-     * @param CashBoxType $cashBoxType
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحديث نوع خزنة
+     * 
+     * @urlParam cashBoxType required معرف النوع. Example: 1
+     * @bodyParam description string وصف النوع المحدث. Example: عهدة شخصية
      */
     public function update(Request $request, CashBoxType $cashBoxType): JsonResponse
     {
@@ -265,10 +276,11 @@ class CashBoxTypeController extends Controller
     }
 
     /**
-     * Remove the specified CashBoxType from storage.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * حذف أنواع خزن (Batch Delete)
+     * 
+     * @bodyParam item_ids integer[] required مصفوفة المعرفات. Example: [2, 3]
      */
     public function destroy(Request $request): JsonResponse
     {
@@ -350,10 +362,11 @@ class CashBoxTypeController extends Controller
     }
 
     /**
-     * تبديل حالة تفعيل/تعطيل نوع الصندوق.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تفعيل/تعطيل نوع الخزنة
+     * 
+     * @urlParam id required معرف النوع. Example: 1
      */
     public function toggle(string $id): JsonResponse
     {

@@ -41,12 +41,21 @@ class ProductController extends Controller
     ];
 
     /**
-     * عرض قائمة المنتجات مع الفلاتر والصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة المنتجات
+     * 
+     * استرجاع قائمة شاملة بالمنتجات مع دعم البحث الذكي والتصفية المتقدمة حسب القسم، الماركة، أو الحالة.
+     * 
+     * @queryParam search string نص البحث (يتم البحث في الاسم، الوصف، الصنف، والماركة). Example: هاتف
+     * @queryParam category_id integer فلترة حسب القسم.
+     * @queryParam brand_id integer فلترة حسب الماركة.
+     * @queryParam active boolean فلترة حسب الحالة (نشط/غير نشط). Example: true
+     * @queryParam per_page integer عدد النتائج في الصفحة. Example: 15
+     * 
+     * @apiResourceCollection App\Http\Resources\Product\ProductResource
+     * @apiResourceModel App\Models\Product
      */
-
     public function index(Request $request): JsonResponse
     {
         try {
@@ -113,13 +122,13 @@ class ProductController extends Controller
             // فلاتر إضافية
             $baseQuery
                 ->when($request->filled('category_id'), fn($q) =>
-                $q->where('category_id', $request->input('category_id')))
+                    $q->where('category_id', $request->input('category_id')))
                 ->when($request->filled('brand_id'), fn($q) =>
-                $q->where('brand_id', $request->input('brand_id')))
+                    $q->where('brand_id', $request->input('brand_id')))
                 ->when($request->filled('active'), fn($q) =>
-                $q->where('active', (bool) $request->input('active')))
+                    $q->where('active', (bool) $request->input('active')))
                 ->when($request->filled('featured'), fn($q) =>
-                $q->where('featured', (bool) $request->input('featured')));
+                    $q->where('featured', (bool) $request->input('featured')));
 
             // الترتيب
             $baseQuery->orderBy($sortField, $sortOrder);
@@ -162,10 +171,20 @@ class ProductController extends Controller
 
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param StoreProductRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * إنشاء منتج جديد متكامل
+     * 
+     * يسمح بإنشاء سجل المنتج الأساسي مع متغيراته (Variants) وسجلات المخزون الأولية في طلب واحد.
+     * 
+     * @bodyParam name string required اسم المنتج. Example: آيفون 15 بروميجا
+     * @bodyParam category_id integer required معرف القسم. Example: 3
+     * @bodyParam variants array required مصفوفة المتغيرات (الأحجام، الألوان، إلخ).
+     * @bodyParam variants.*.retail_price number سعر البيع القطاعي. Example: 1500
+     * @bodyParam variants.*.wholesale_price number سعر الجملة. Example: 1350
+     * @bodyParam variants.*.stocks array مصفوفة المخزون لكل مخزن.
+     * @bodyParam variants.*.stocks.*.quantity integer الكمية الأولية. Example: 10
+     * @bodyParam variants.*.stocks.*.warehouse_id integer معرف المستودع. Example: 1
      */
     public function store(StoreProductRequest $request): JsonResponse
     {
@@ -187,7 +206,7 @@ class ProductController extends Controller
             try {
                 $validatedData = $request->validated();
 
-                // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمستخدم.
+                // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمنتج.
                 $validatedData['company_id'] = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
                     ? $validatedData['company_id']
                     : $companyId;
@@ -266,10 +285,17 @@ class ProductController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param Product $product
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * عرض تفاصيل منتج محدد
+     * 
+     * جلب بيانات المنتج بالكامل (الاسم، الوصف، المتغيرات، والمخزون المتاح بكل مستودع).
+     * 
+     * @response 200 {
+     *  "success": true,
+     *  "data": { "id": 1, "name": "آيفون", "variants": [...] },
+     *  "message": "تم جلب بيانات المنتج بنجاح"
+     * }
      */
     public function show(Product $product): JsonResponse
     {
@@ -309,11 +335,11 @@ class ProductController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param UpdateProductRequest $request
-     * @param Product $product
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث بيانات منتج
+     * 
+     * تعديل بيانات المنتج الأساسية أو تحديث المتغيرات والمخزون المرتبط بها.
      */
     public function update(UpdateProductRequest $request, Product $product): JsonResponse
     {
@@ -476,10 +502,11 @@ class ProductController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param Product $product
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف منتج
+     * 
+     * حذف المنتج وكافة المتغيرات وسجلات المخزون المرتبطة به بشكل نهائي.
      */
     public function destroy(Product $product): JsonResponse
     {
@@ -499,10 +526,10 @@ class ProductController extends Controller
             } elseif ($authUser->hasAnyPermission([perm_key('products.delete_all'), perm_key('admin.company')])) {
                 // يمكنه حذف أي منتج داخل الشركة النشطة (بما في ذلك مديرو الشركة)
                 $canDelete = $product->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('products.delete_children'))) {
+            } elseif ($authUser->hasPermissionTo(perm_key('products.view_children'))) {
                 // يمكنه حذف المنتجات التي أنشأها هو أو أحد التابعين له وتابعة للشركة النشطة
                 $canDelete = $product->belongsToCurrentCompany() && $product->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('products.delete_self'))) {
+            } elseif ($authUser->hasPermissionTo(perm_key('products.view_self'))) {
                 // يمكنه حذف منتجه الخاص الذي أنشأه وتابع للشركة النشطة
                 $canDelete = $product->belongsToCurrentCompany() && $product->createdByCurrentUser();
             }

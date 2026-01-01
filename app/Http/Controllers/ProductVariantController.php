@@ -31,10 +31,18 @@ class ProductVariantController extends Controller
     ];
 
     /**
-     * عرض قائمة بمتغيرات المنتجات مع الفلاتر والصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة أصناف المنتجات
+     * 
+     * استرجاع كافة التشكيلات (Variants) المتوفرة للمنتجات (مثل: آيفون 15 برو - أسود - 256 جيجا).
+     * 
+     * @queryParam search string البحث برمز SKU أو الباركود. Example: SKU123
+     * @queryParam product_id integer فلترة حسب المنتج الأم.
+     * @queryParam status string فلترة حسب الحالة (active, inactive).
+     * 
+     * @apiResourceCollection App\Http\Resources\ProductVariant\ProductVariantResource
+     * @apiResourceModel App\Models\ProductVariant
      */
     public function index(Request $request): JsonResponse
     {
@@ -93,10 +101,15 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param StoreProductVariantRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * إضافة متغير لمنتج
+     * 
+     * إنشاء تشكيلة جديدة (مثلاً لون أو مقاس معين) لمنتج موجود مسبقاً.
+     * 
+     * @bodyParam product_id integer required معرف المنتج الأم. Example: 1
+     * @bodyParam sku string رمز SKU الفريد. Example: APP-IPHN15-RED
+     * @bodyParam retail_price number سعر البيع. Example: 1200
      */
     public function store(StoreProductVariantRequest $request): JsonResponse
     {
@@ -187,10 +200,11 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * عرض متغير محدد
+     * 
+     * جلب تفاصيل تشكيلة معينة شاملة المخزون والخصائص الفنية.
      */
     public function show(string $id): JsonResponse
     {
@@ -228,11 +242,9 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param UpdateProductVariantRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث متغير
      */
     public function update(UpdateProductVariantRequest $request, string $id): JsonResponse
     {
@@ -370,10 +382,9 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف متغير
      */
     public function destroy(string $id): JsonResponse
     {
@@ -431,10 +442,11 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * حذف متغيرات منتج متعددة بناءً على مصفوفة من المعرفات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف متغيرات متعددة
+     * 
+     * @bodyParam ids array required مصفوفة المعرفات المطلوب حذفها. Example: [1, 2, 5]
      */
     public function deleteMultiple(Request $request): JsonResponse
     {
@@ -513,10 +525,11 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * البحث عن متغيرات منتج باستخدام براميتر بحث وتطبيق الصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * بحث متقدم في التشكيلات
+     * 
+     * @queryParam search string نص البحث.
      */
     public function searchByProduct(Request $request): JsonResponse
     {
@@ -557,9 +570,11 @@ class ProductVariantController extends Controller
 
             $perPage = max(1, (int) $request->get('per_page', 20));
 
-            $productsWithVariants = $productQuery->with(['variants' => function ($query) {
-                $query->with($this->relations);
-            }])->paginate($perPage);
+            $productsWithVariants = $productQuery->with([
+                'variants' => function ($query) {
+                    $query->with($this->relations);
+                }
+            ])->paginate($perPage);
 
             $variants = collect($productsWithVariants->items())->flatMap(function ($product) {
                 return $product->variants;
@@ -567,9 +582,11 @@ class ProductVariantController extends Controller
 
             // ✅ لو مفيش نتائج نستخدم similar_text
             if ($variants->isEmpty()) {
-                $allProducts = Product::limit(100)->with(['variants' => function ($query) {
-                    $query->with($this->relations);
-                }])->get();
+                $allProducts = Product::limit(100)->with([
+                    'variants' => function ($query) {
+                        $query->with($this->relations);
+                    }
+                ])->get();
                 $similarProducts = [];
 
                 foreach ($allProducts as $product) {

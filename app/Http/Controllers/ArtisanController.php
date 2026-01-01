@@ -11,6 +11,9 @@ use App\Models\CashBox;
 use App\Models\CashBoxType;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @hideFromApiDocs
+ */
 class ArtisanController extends Controller
 {
     /**

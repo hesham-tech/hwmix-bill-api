@@ -13,7 +13,11 @@ use Carbon\Carbon;
 class DashboardController extends Controller
 {
     /**
-     * الحصول على ملخص إحصاءات لوحة التحكم
+     * @group 05. التقارير والتحليلات
+     * 
+     * مؤشرات لوحة التحكم (Dashboard)
+     * 
+     * جلب الإحصائيات الحيوية للنظام (إجمالي المبيعات، نمو العملاء، المنتجات الأعلى مبيعاً) لعرضها في الشاشة الرئيسية.
      */
     public function index(Request $request)
     {

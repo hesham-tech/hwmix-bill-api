@@ -38,10 +38,17 @@ class TransactionController extends Controller
     }
 
     /**
-     * تحويل الرصيد بين المستخدمين والصناديق.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحويل الرصيد (Transfer)
+     * 
+     * إجراء عملية تحويل رصيد من صندوق مستخدم إلى صندوق مستخدم آخر أو لنفس المستخدم في صندوق آخر.
+     * 
+     * @bodyParam target_user_id integer required معرف المستخدم المستهدف. Example: 2
+     * @bodyParam amount number required المبلغ. Example: 100
+     * @bodyParam from_cash_box_id integer required معرف صندوق الصادر. Example: 1
+     * @bodyParam to_cash_box_id integer required معرف صندوق الوارد. Example: 2
+     * @bodyParam description string وصف المعاملة. Example: تحويل داخلي
      */
     public function transfer(Request $request)
     {
@@ -62,18 +69,27 @@ class TransactionController extends Controller
             $validated = $request->validate([
                 'target_user_id' => 'required|exists:users,id',
                 'amount' => 'required|numeric|min:0.01',
-                'from_cash_box_id' => ['required', 'exists:cash_boxes,id', function ($attribute, $value, $fail) use ($authUser, $companyId) {
-                    $cashBox = CashBox::with(['company'])->find($value);
-                    if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
-                        $fail('صندوق النقد المصدر المحدد غير صالح أو غير متاح.');
+                'from_cash_box_id' => [
+                    'required',
+                    'exists:cash_boxes,id',
+                    function ($attribute, $value, $fail) use ($authUser, $companyId) {
+                        $cashBox = CashBox::with(['company'])->find($value);
+                        if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
+                            $fail('صندوق النقد المصدر المحدد غير صالح أو غير متاح.');
+                        }
                     }
-                }],
-                'to_cash_box_id' => ['required', 'exists:cash_boxes,id', 'different:from_cash_box_id', function ($attribute, $value, $fail) use ($authUser, $companyId) {
-                    $toCashBox = CashBox::with(['company'])->find($value);
-                    if (!$toCashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $toCashBox->company_id !== $companyId)) {
-                        $fail('صندوق النقد المستهدف المحدد غير صالح أو غير متاح.');
+                ],
+                'to_cash_box_id' => [
+                    'required',
+                    'exists:cash_boxes,id',
+                    'different:from_cash_box_id',
+                    function ($attribute, $value, $fail) use ($authUser, $companyId) {
+                        $toCashBox = CashBox::with(['company'])->find($value);
+                        if (!$toCashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $toCashBox->company_id !== $companyId)) {
+                            $fail('صندوق النقد المستهدف المحدد غير صالح أو غير متاح.');
+                        }
                     }
-                }],
+                ],
                 'description' => 'nullable|string',
             ]);
 
@@ -118,10 +134,14 @@ class TransactionController extends Controller
     }
 
     /**
-     * إرجاع جميع عمليات المستخدم.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * سجل عمليات المستخدم في خزنة
+     * 
+     * @urlParam cashBoxId required معرف الخزنة. Example: 1
+     * @queryParam type string نوع العملية (إيداع، سحب، تحويل). Example: إيداع
+     * @queryParam created_at_from date تاريخ من. Example: 2023-01-01
+     * @queryParam per_page integer عدد النتائج. Default: 20
      */
     public function userTransactions(Request $request, $cashBoxId)
     {
@@ -176,10 +196,13 @@ class TransactionController extends Controller
     }
 
     /**
-     * الإيداع في صندوق نقدي.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * إيداع نقدي (Deposit)
+     * 
+     * @bodyParam amount number required المبلغ المودع. Example: 1000
+     * @bodyParam cash_box_id integer required معرف الخزنة. Example: 1
+     * @bodyParam description string وصف الإيداع. Example: إيداع رأس مال
      */
     public function deposit(Request $request)
     {
@@ -199,12 +222,16 @@ class TransactionController extends Controller
 
             $validated = $request->validate([
                 'amount' => 'required|numeric|min:0.01',
-                'cash_box_id' => ['required', 'exists:cash_boxes,id', function ($attribute, $value, $fail) use ($authUser, $companyId) {
-                    $cashBox = CashBox::with(['company'])->find($value);
-                    if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
-                        $fail('صندوق النقد المحدد غير صالح أو غير متاح.');
+                'cash_box_id' => [
+                    'required',
+                    'exists:cash_boxes,id',
+                    function ($attribute, $value, $fail) use ($authUser, $companyId) {
+                        $cashBox = CashBox::with(['company'])->find($value);
+                        if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
+                            $fail('صندوق النقد المحدد غير صالح أو غير متاح.');
+                        }
                     }
-                }],
+                ],
                 'description' => 'nullable|string',
             ]);
 
@@ -230,10 +257,13 @@ class TransactionController extends Controller
     }
 
     /**
-     * السحب من صندوق نقدي.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * سحب نقدي (Withdraw)
+     * 
+     * @bodyParam amount number required المبلغ المسحوب. Example: 200
+     * @bodyParam cash_box_id integer required معرف الخزنة. Example: 1
+     * @bodyParam description string وصف السحب. Example: مصاريف نثرية
      */
     public function withdraw(Request $request)
     {
@@ -253,12 +283,16 @@ class TransactionController extends Controller
 
             $validated = $request->validate([
                 'amount' => 'required|numeric|min:0.01',
-                'cash_box_id' => ['required', 'exists:cash_boxes,id', function ($attribute, $value, $fail) use ($authUser, $companyId) {
-                    $cashBox = CashBox::with(['company'])->find($value);
-                    if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
-                        $fail('صندوق النقد المحدد غير صالح أو غير متاح.');
+                'cash_box_id' => [
+                    'required',
+                    'exists:cash_boxes,id',
+                    function ($attribute, $value, $fail) use ($authUser, $companyId) {
+                        $cashBox = CashBox::with(['company'])->find($value);
+                        if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
+                            $fail('صندوق النقد المحدد غير صالح أو غير متاح.');
+                        }
                     }
-                }],
+                ],
                 'description' => 'nullable|string',
             ]);
 
@@ -291,10 +325,14 @@ class TransactionController extends Controller
     }
 
     /**
-     * عرض جميع المعاملات مع الفلاتر والصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض جميع المعاملات (للمدراء)
+     * 
+     * @queryParam type string نوع المعاملة. Example: سحب
+     * @queryParam user_id integer معرف المستخدم. Example: 1
+     * @queryParam cashbox_id integer معرف الخزنة. Example: 1
+     * @queryParam created_at_from date تاريخ من. Example: 2023-01-01
      */
     public function transactions(Request $request)
     {
@@ -365,10 +403,13 @@ class TransactionController extends Controller
     }
 
     /**
-     * عكس معاملة معينة.
-     *
-     * @param string $transactionId
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عكس معاملة (Reverse)
+     * 
+     * إلغاء معاملة سابقة وإرجاع الحالة كما كانت.
+     * 
+     * @urlParam transactionId required المعرف الفريد للمعاملة (UUID). Example: 9abc-123...
      */
     public function reverseTransaction(string $transactionId)
     {

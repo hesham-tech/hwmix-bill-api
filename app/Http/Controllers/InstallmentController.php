@@ -30,10 +30,16 @@ class InstallmentController extends Controller
     }
 
     /**
-     * عرض قائمة بالأقساط.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * عرض قائمة الأقساط
+     * 
+     * @queryParam status string الحالة (pending, paid, late). Example: pending
+     * @queryParam due_date_from date تاريخ الاستحقاق من. Example: 2023-01-01
+     * @queryParam user_id integer فلترة حسب المستخدم.
+     * 
+     * @apiResourceCollection App\Http\Resources\Installment\InstallmentResource
+     * @apiResourceModel App\Models\Installment
      */
     public function index(Request $request): JsonResponse
     {
@@ -103,10 +109,14 @@ class InstallmentController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param StoreInstallmentRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * إنشاء قسط يدوي
+     * 
+     * @bodyParam user_id integer required معرف العميل. Example: 1
+     * @bodyParam amount number required مبلغ القسط. Example: 500
+     * @bodyParam due_date date required تاريخ الاستحقاق. Example: 2023-06-01
+     * @bodyParam description string وصف إضافي. Example: قسط شهر يونيو
      */
     public function store(StoreInstallmentRequest $request): JsonResponse
     {
@@ -155,18 +165,8 @@ class InstallmentController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show(string $id): JsonResponse
-    {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
-
+     * @group 04. نظام الأقساط
+     * 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
@@ -199,11 +199,12 @@ class InstallmentController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param UpdateInstallmentRequest $request
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * تحديث بيانات قسط
+     * 
+     * @urlParam id required معرف القسط. Example: 1
+     * @bodyParam amount number المبلغ الجديد. Example: 550
      */
     public function update(UpdateInstallmentRequest $request, string $id): JsonResponse
     {
@@ -260,10 +261,11 @@ class InstallmentController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * حذف قسط
+     * 
+     * @urlParam id required معرف القسط. Example: 1
      */
     public function destroy(string $id): JsonResponse
     {

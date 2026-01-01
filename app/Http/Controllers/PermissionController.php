@@ -11,10 +11,11 @@ use Throwable;
 class PermissionController extends Controller
 {
     /**
-     * عرض جميع تعريفات الصلاحيات كـ JSON.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 09. الأذونات والأمن
+     * 
+     * استعراض مفاتيح الصلاحيات
+     * 
+     * جلب جميع تعريفات الصلاحيات المتاحة في النظام من ملف الإعدادات.
      */
     public function index(Request $request): JsonResponse
     {

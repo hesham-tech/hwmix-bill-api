@@ -41,6 +41,71 @@ class CustomerSupplierReportController extends BaseReportController
     }
 
     /**
+     * @group 05. التقارير والتحليلات
+     * 
+     * تقرير أرصدة العملاء والموردين
+     * 
+     * عرض إجمالي المديونيات والدائنية لكل مستخدم.
+     */
+    public function index(Request $request)
+    {
+        $filters = $this->validateFilters($request);
+
+        $query = Invoice::query()
+            ->whereHas('invoiceType', fn($q) => $q->where('code', 'sale'))
+            ->where('remaining_amount', '>', 0)
+            ->whereIn('status', ['confirmed', 'partially_paid']);
+
+        if (!empty($filters['company_id'])) {
+            $query->where('company_id', $filters['company_id']);
+        }
+
+        $customerDebts = $query->selectRaw('
+                user_id,
+                SUM(remaining_amount) as total_debt
+            ')
+            ->groupBy('user_id')
+            ->get();
+
+        $supplierQuery = Invoice::query()
+            ->whereHas('invoiceType', fn($q) => $q->where('code', 'purchase'))
+            ->where('remaining_amount', '>', 0)
+            ->whereIn('status', ['confirmed', 'partially_paid']);
+
+        if (!empty($filters['company_id'])) {
+            $supplierQuery->where('company_id', $filters['company_id']);
+        }
+
+        $supplierDebts = $supplierQuery->selectRaw('
+                user_id,
+                SUM(remaining_amount) as total_debt
+            ')
+            ->groupBy('user_id')
+            ->get();
+
+        $allUsers = User::whereIn('id', $customerDebts->pluck('user_id')->merge($supplierDebts->pluck('user_id')))->get(['id', 'name', 'email']);
+
+        $report = $allUsers->map(function ($user) use ($customerDebts, $supplierDebts) {
+            $customerDebt = $customerDebts->where('user_id', $user->id)->first();
+            $supplierDebt = $supplierDebts->where('user_id', $user->id)->first();
+
+            return [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'total_customer_debt' => round($customerDebt->total_debt ?? 0, 2),
+                'total_supplier_debt' => round($supplierDebt->total_debt ?? 0, 2),
+            ];
+        })->sortByDesc(function ($user) {
+            return $user['total_customer_debt'] + $user['total_supplier_debt'];
+        })->values();
+
+        return response()->json([
+            'customer_supplier_balances' => $report,
+        ]);
+    }
+
+    /**
      * Customer debts report
      *
      * @param Request $request
@@ -115,6 +180,64 @@ class CustomerSupplierReportController extends BaseReportController
         return response()->json([
             'total_debt_to_suppliers' => round($totalDebt, 2),
             'supplier_debts' => $debts,
+        ]);
+    }
+
+    /**
+     * @group 05. التقارير والتحليلات
+     * 
+     * كشف حساب تفصيلي
+     * 
+     * عرض جميع الحركات المالية والفواتير المرتبطة بمستخدم معين خلال فترة.
+     * 
+     * @queryParam user_id integer required معرف العميل/المورد. Example: 1
+     * @queryParam date_from date تاريخ البداية.
+     */
+    public function statement(Request $request)
+    {
+        $userId = $request->input('user_id');
+        $filters = $this->validateFilters($request);
+
+        if (!$userId) {
+            return response()->json(['error' => 'user_id is required'], 400);
+        }
+
+        $dateFrom = $filters['date_from'] ?? now()->subYear()->toDateString();
+        $dateTo = $filters['date_to'] ?? now()->toDateString();
+
+        $invoices = Invoice::query()
+            ->where('user_id', $userId)
+            ->whereBetween('created_at', [$dateFrom, $dateTo])
+            ->with(['invoiceType', 'company'])
+            ->orderBy('created_at')
+            ->get();
+
+        $balance = 0;
+        $statement = $invoices->map(function ($invoice) use (&$balance) {
+            $amount = $invoice->net_amount;
+            $type = $invoice->invoiceType->code;
+
+            if ($type === 'sale') {
+                $balance += $amount;
+            } elseif ($type === 'purchase') {
+                $balance -= $amount;
+            }
+
+            return [
+                'date' => $invoice->created_at->toDateString(),
+                'type' => $type,
+                'invoice_number' => $invoice->invoice_number,
+                'description' => $invoice->description,
+                'amount' => round($amount, 2),
+                'current_balance' => round($balance, 2),
+            ];
+        });
+
+        return response()->json([
+            'user' => User::find($userId, ['id', 'name', 'email']),
+            'period' => ['from' => $dateFrom, 'to' => $dateTo],
+            'statement' => $statement,
+            'final_balance' => round($balance, 2),
         ]);
     }
 

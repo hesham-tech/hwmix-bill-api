@@ -1,0 +1,322 @@
+name: '05. التقارير المالية'
+description: ''
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: api/reports/profit-loss
+    metadata:
+      groupName: '05. التقارير المالية'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        تقرير الأرباح والخسائر (P&L)
+
+        حساب إجمالي الإيرادات مقابل التكاليف لاستخراج صافي الربح.
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      date_from:
+        name: date_from
+        description: 'date تاريخ البداية.'
+        required: false
+        example: '2023-10-01'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      date_to:
+        name: date_to
+        description: 'date تاريخ النهاية.'
+        required: false
+        example: '2023-10-31'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      company_id:
+        name: company_id
+        description: 'معرف الشركة.'
+        required: false
+        example: 19
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      date_from: '2023-10-01'
+      date_to: '2023-10-31'
+      company_id: 19
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/reports/profit-loss/monthly-comparison
+    metadata:
+      groupName: '05. التقارير المالية'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'مقارنة شهرية للأرباح'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      months:
+        name: months
+        description: 'عدد الأشهر للمقارنة. Default: 6.'
+        required: false
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      months: 12
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/reports/cash-flow
+    metadata:
+      groupName: '05. التقارير المالية'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        تقرير التدفق النقدي
+
+        تحليل الحركات المالية (إيداعات وسحوبات) خلال فترة زمنية محددة.
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      date_from:
+        name: date_from
+        description: 'date تاريخ البداية.'
+        required: false
+        example: '2023-10-01'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      date_to:
+        name: date_to
+        description: 'date تاريخ النهاية.'
+        required: false
+        example: '2023-10-31'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      company_id:
+        name: company_id
+        description: 'معرف الشركة.'
+        required: false
+        example: 15
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      date_from: '2023-10-01'
+      date_to: '2023-10-31'
+      company_id: 15
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/reports/cash-flow/by-cash-box
+    metadata:
+      groupName: '05. التقارير المالية'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'التدفق النقدي حسب الخزنة'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      date_from:
+        name: date_from
+        description: 'date تاريخ البداية.'
+        required: false
+        example: '2023-10-01'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      date_to:
+        name: date_to
+        description: 'date تاريخ النهاية.'
+        required: false
+        example: '2023-10-31'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      date_from: '2023-10-01'
+      date_to: '2023-10-31'
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/reports/cash-flow/summary
+    metadata:
+      groupName: '05. التقارير المالية'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        ملخص السيولة الحالية
+
+        عرض أرصدة جميع الخزن وتصنيفاتها.
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      company_id:
+        name: company_id
+        description: 'معرف الشركة.'
+        required: false
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      company_id: 12
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []

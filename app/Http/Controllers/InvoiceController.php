@@ -23,7 +23,11 @@ use Illuminate\Support\Collection;
 class InvoiceController extends Controller
 {
     /**
-     * Download invoice as PDF
+     * @group 02. إدارة الفواتير
+     * 
+     * تحميل الفاتورة كـ PDF
+     * 
+     * @urlParam id required معرف الفاتورة. Example: 1
      */
     public function downloadPDF($id)
     {
@@ -39,7 +43,11 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Get invoice data formatted for frontend PDF generation
+     * @group 02. إدارة الفواتير
+     * 
+     * بيانات الفاتورة للواجهة الأمامية (PDF)
+     * 
+     * @urlParam id required معرف الفاتورة. Example: 1
      */
     public function getInvoiceForPDF($id)
     {
@@ -61,7 +69,13 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Email invoice PDF
+     * @group 02. إدارة الفواتير
+     * 
+     * إرسال الفاتورة عبر البريد
+     * 
+     * @urlParam id required معرف الفاتورة. Example: 1
+     * @bodyParam recipients string[] قائمة البريد الإلكتروني. Example: ["client@example.com"]
+     * @bodyParam subject string موضوع الرسالة. Example: فاتورة مبيعات #123
      */
     public function emailPDF($id, Request $request)
     {
@@ -85,7 +99,11 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Export invoices to Excel
+     * @group 02. إدارة الفواتير
+     * 
+     * تصدير الفواتير إلى Excel
+     * 
+     * @bodyParam ids integer[] قائمة المعرفات المطلوب تصديرها. Example: [1, 2, 3]
      */
     public function exportExcel(Request $request)
     {
@@ -130,10 +148,21 @@ class InvoiceController extends Controller
     }
 
     /**
-     * عرض قائمة بالفواتير.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 02. إدارة الفواتير
+     * 
+     * عرض قائمة الفواتير
+     * 
+     * استرجاع قائمة بجميع الفواتير مع إمكانية التصفية المتقدمة حسب النوع، الحالة، العميل، أو التاريخ.
+     * 
+     * @queryParam type string نوع الفاتورة (sale, purchase, return_sale, return_purchase). Example: sale
+     * @queryParam user_id integer فلترة حسب العميل أو المورد.
+     * @queryParam status string حالة الفاتورة (draft, confirmed, paid, partially_paid, cancelled). Example: confirmed
+     * @queryParam date_from date تاريخ البداية.
+     * @queryParam date_to date تاريخ النهاية.
+     * @queryParam per_page integer عدد النتائج في الصفحة. Example: 15
+     * 
+     * @apiResourceCollection App\Http\Resources\Invoice\InvoiceResource
+     * @apiResourceModel App\Models\Invoice
      */
     public function index(Request $request): JsonResponse
     {
@@ -200,10 +229,19 @@ class InvoiceController extends Controller
     }
 
     /**
-     * تخزين فاتورة جديدة في قاعدة البيانات.
-     *
-     * @param StoreInvoiceRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 02. إدارة الفواتير
+     * 
+     * إنشاء فاتورة جديدة
+     * 
+     * يدعم إنشاء فواتير البيع والشراء والخدمات مع معالجة المخزون والحسابات تلقائياً.
+     * 
+     * @bodyParam invoice_type_id integer required معرف النوع. Example: 1
+     * @bodyParam user_id integer required معرف العميل/المورد. Example: 2
+     * @bodyParam items array required مصفوفة المنتجات.
+     * @bodyParam items.*.product_id integer required معرف المنتج.
+     * @bodyParam items.*.quantity number required الكمية. Example: 5
+     * @bodyParam items.*.unit_price number required سعر الوحدة. Example: 150
+     * @bodyParam paid_amount number required المبلغ المدفوع حالياً. Example: 750
      */
     public function store(StoreInvoiceRequest $request): JsonResponse
     {
@@ -260,18 +298,10 @@ class InvoiceController extends Controller
     }
 
     /**
-     * عرض الفاتورة المحددة.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show(string $id): JsonResponse
-    {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
-
+     * @group 02. إدارة الفواتير
+     * 
+     * عرض تفاصيل فاتورة
+     * 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
@@ -301,11 +331,12 @@ class InvoiceController extends Controller
     }
 
     /**
-     * تحديث الفاتورة المحددة في قاعدة البيانات.
-     *
-     * @param UpdateInvoiceRequest $request
-     * @param Invoice $invoice
-     * @return \Illuminate\Http\JsonResponse
+     * @group 02. إدارة الفواتير
+     * 
+     * تحديث بيانات فاتورة
+     * 
+     * @urlParam invoice required معرف الفاتورة (Model Binding). Example: 1
+     * @bodyParam user_id integer معرف العميل المحدث.
      */
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): JsonResponse
     {
@@ -361,10 +392,11 @@ class InvoiceController extends Controller
 
 
     /**
-     * حذف الفاتورة المحددة من قاعدة البيانات.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 02. إدارة الفواتير
+     * 
+     * إلغاء/حذف فاتورة
+     * 
+     * @urlParam id required معرف الفاتورة. Example: 1
      */
     public function destroy(string $id): JsonResponse
     {

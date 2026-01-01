@@ -28,10 +28,16 @@ class AttributeController extends Controller
     }
 
     /**
-     * عرض قائمة الموارد.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة السمات
+     * 
+     * استرجاع قائمة بخصائص المنتجات (مثل اللون، المقاس، الخامة) التي تتيح إنشاء تنوعات للمنتجات.
+     * 
+     * @queryParam search string البحث في اسم السمة أو قيمها. Example: اللون
+     * 
+     * @apiResourceCollection App\Http\Resources\Attribute\AttributeResource
+     * @apiResourceModel App\Models\Attribute
      */
     public function index(Request $request): JsonResponse
     {
@@ -64,8 +70,7 @@ class AttributeController extends Controller
                     $q
                         ->where('name', 'like', "%$search%")
                         ->orWhereHas('values', function ($vq) use ($search) {
-                            $vq->where('name', 'like', "%$search%")
-                                ->orWhere('value', 'like', "%$search%");
+                            $vq->where('name', 'like', "%$search%");
                         });
                 });
             }
@@ -92,10 +97,17 @@ class AttributeController extends Controller
     }
 
     /**
-     * تخزين مورد تم إنشاؤه حديثًا في التخزين.
-     *
-     * @param StoreAttributeRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * إضافة سمة جديدة
+     * 
+     * إنشاء سمة جديدة (مثل: هاتف) مع إمكانية إضافة قيم أولية لها في نفس الطلب.
+     * 
+     * @bodyParam name string required اسم السمة. Example: اللون
+     * @bodyParam attribute_id integer معرف السمة (في حال الإضافة لسمة موجودة). Example: 1
+     * @bodyParam values array required قائمة القيم.
+     * @bodyParam values[].name string required اسم القيمة (مثل: أحمر). Example: أحمر
+     * @bodyParam values[].value string القيمة التقنية (مثل كود اللون Hex). Example: #FF0000
      */
     public function store(StoreAttributeRequest $request): JsonResponse
     {
@@ -183,10 +195,9 @@ class AttributeController extends Controller
     }
 
     /**
-     * عرض المورد المحدد.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * عرض تفاصيل سمة
      */
     public function show(string $id): JsonResponse
     {
@@ -225,11 +236,9 @@ class AttributeController extends Controller
     }
 
     /**
-     * تحديث المورد المحدد في التخزين.
-     *
-     * @param UpdateAttributeRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث بيانات وقيم سمة
      */
     public function update(UpdateAttributeRequest $request, string $id): JsonResponse
     {
@@ -319,10 +328,9 @@ class AttributeController extends Controller
     }
 
     /**
-     * حذف المورد المحدد من التخزين.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف سمة بالكامل
      */
     public function destroy(string $id): JsonResponse
     {

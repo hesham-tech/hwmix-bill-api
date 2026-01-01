@@ -9,10 +9,15 @@ use Illuminate\Support\Facades\DB;
 class ProfitLossReportController extends BaseReportController
 {
     /**
-     * Generate Profit & Loss Report
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير المالية
+     * 
+     * تقرير الأرباح والخسائر (P&L)
+     * 
+     * حساب إجمالي الإيرادات مقابل التكاليف لاستخراج صافي الربح.
+     * 
+     * @queryParam date_from date تاريخ البداية. Example: 2023-10-01
+     * @queryParam date_to date تاريخ النهاية. Example: 2023-10-31
+     * @queryParam company_id integer معرف الشركة.
      */
     public function index(Request $request)
     {
@@ -165,10 +170,11 @@ class ProfitLossReportController extends BaseReportController
     }
 
     /**
-     * Get monthly comparison
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير المالية
+     * 
+     * مقارنة شهرية للأرباح
+     * 
+     * @queryParam months integer عدد الأشهر للمقارنة. Default: 6. Example: 12
      */
     public function monthlyComparison(Request $request)
     {

@@ -35,10 +35,16 @@ class BrandController extends Controller
     }
 
     /**
-     * عرض جميع العلامات التجارية.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة الماركات
+     * 
+     * استرجاع قائمة العلامات التجارية المسجلة في النظام.
+     * 
+     * @queryParam search string البحث باسم الماركة أو وصفها. Example: سامسونج
+     * 
+     * @apiResourceCollection App\Http\Resources\Brand\BrandResource
+     * @apiResourceModel App\Models\Brand
      */
     public function index(Request $request): JsonResponse
     {
@@ -95,10 +101,12 @@ class BrandController extends Controller
     }
 
     /**
-     * إضافة علامة تجارية جديدة.
-     *
-     * @param StoreBrandRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * إضافة ماركة جديدة
+     * 
+     * @bodyParam name string required اسم العلامة التجارية. Example: آبل
+     * @bodyParam desc string وصف الماركة. Example: شركة تقنية عالمية
      */
     public function store(StoreBrandRequest $request): JsonResponse
     {
@@ -151,10 +159,9 @@ class BrandController extends Controller
     }
 
     /**
-     * عرض علامة تجارية محددة.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * عرض ماركة محددة
      */
     public function show(string $id): JsonResponse
     {
@@ -192,11 +199,9 @@ class BrandController extends Controller
     }
 
     /**
-     * تحديث علامة تجارية.
-     *
-     * @param UpdateBrandRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث بيانات ماركة
      */
     public function update(UpdateBrandRequest $request, string $id): JsonResponse
     {
@@ -264,10 +269,9 @@ class BrandController extends Controller
     }
 
     /**
-     * حذف علامة تجارية.
-     *
-     * @param Brand $brand
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف ماركة
      */
     public function destroy(Brand $brand): JsonResponse
     {

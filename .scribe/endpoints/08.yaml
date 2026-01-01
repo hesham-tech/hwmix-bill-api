@@ -1,0 +1,326 @@
+name: '05. إدراة المستخدمين'
+description: ''
+endpoints:
+  -
+    httpMethods:
+      - POST
+    uri: api/role
+    metadata:
+      groupName: '05. إدراة المستخدمين'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'إنشاء دور جديد'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'اسم الدور الفريد.'
+        required: true
+        example: Accountant
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      company_ids:
+        name: company_ids
+        description: 'مصفوفة الشركات المرتبطة.'
+        required: false
+        example:
+          - 1
+        type: 'integer[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      permissions:
+        name: permissions
+        description: 'مصفوفة مسميات الصلاحيات.'
+        required: false
+        example:
+          - users.view
+          - invoices.create
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: Accountant
+      company_ids:
+        - 1
+      permissions:
+        - users.view
+        - invoices.create
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/role/{role_id}'
+    metadata:
+      groupName: '05. إدراة المستخدمين'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'عرض تفاصيل دور'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      role_id:
+        name: role_id
+        description: 'The ID of the role.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      role:
+        name: role
+        description: 'معرف الدور.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      role_id: 1
+      role: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/role/{role_id}'
+    metadata:
+      groupName: '05. إدراة المستخدمين'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحديث بيانات دور'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      role_id:
+        name: role_id
+        description: 'The ID of the role.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      role:
+        name: role
+        description: 'معرف الدور.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      role_id: 1
+      role: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'اسم الدور.'
+        required: false
+        example: 'Senior Accountant'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      permissions:
+        name: permissions
+        description: 'تحديث قائمة الصلاحيات.'
+        required: false
+        example:
+          - invoices.all
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: 'Senior Accountant'
+      permissions:
+        - invoices.all
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/role/{role}'
+    metadata:
+      groupName: '05. إدراة المستخدمين'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'حذف أدوار (Batch Delete)'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      role:
+        name: role
+        description: 'The role.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      role: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      item_ids:
+        name: item_ids
+        description: 'مصفوفة معرفات الأدوار.'
+        required: true
+        example:
+          - 2
+          - 3
+        type: 'integer[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      item_ids:
+        - 2
+        - 3
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/role/assignRole
+    metadata:
+      groupName: '05. إدراة المستخدمين'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تعيين أدوار لمستخدم'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      user_id:
+        name: user_id
+        description: 'معرف المستخدم.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      roles:
+        name: roles
+        description: 'مصفوفة مسميات الأدوار.'
+        required: true
+        example:
+          - admin
+          - editor
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      user_id: 1
+      roles:
+        - admin
+        - editor
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []

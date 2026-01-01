@@ -33,12 +33,17 @@ class UserController extends Controller
     }
 
     /**
-     * عرض قائمة المستخدمين بناءً على الصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * عرض قائمة المستخدمين
+     * 
+     * @queryParam nickname string فلترة حسب اللقب.
+     * @queryParam phone string فلترة حسب الهاتف.
+     * @queryParam per_page integer عدد النتائج.
+     * 
+     * @apiResourceCollection App\Http\Resources\CompanyUser\CompanyUserResource
+     * @apiResourceModel App\Models\CompanyUser
      */
-
     public function index(Request $request)
     {
         $authUser = Auth::user();
@@ -170,10 +175,12 @@ class UserController extends Controller
     }
 
     /**
-     * إنشاء مستخدم جديد.
-     *
-     * @param UserRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * إضافة مستخدم جديد
+     * 
+     * @bodyParam phone string required رقم الهاتف.
+     * @bodyParam nickname string اللقب.
      */
     public function store(UserRequest $request)
     {
@@ -328,10 +335,14 @@ class UserController extends Controller
         }
     }
     /**
-     * عرض بيانات مستخدم واحد.
-     *
-     * @param User $user
-     * @return \Illuminate\Http\JsonResponse
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * عرض تفاصيل مستخدم
+     * 
+     * @urlParam user required معرف المستخدم. Example: 1
+     * 
+     * @apiResource App\Http\Resources\User\UserResource
+     * @apiResourceModel App\Models\User
      */
     public function show(User $user, Request $request)
     {
@@ -433,11 +444,11 @@ class UserController extends Controller
         return api_forbidden('ليس لديك صلاحية لعرض هذا المستخدم.');
     }
     /**
-     * تحديث بيانات مستخدم.
-     *
-     * @param UserUpdateRequest $request
-     * @param User $user
-     * @return \Illuminate\Http\JsonResponse
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * تحديث بيانات مستخدم
+     * 
+     * @urlParam user required معرف المستخدم. Example: 1
      */
     public function update(UserUpdateRequest $request, User $user)
     {
@@ -615,10 +626,11 @@ class UserController extends Controller
     }
 
     /**
-     * حذف المستخدمين.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * حذف مستخدمين (Batch)
+     * 
+     * @bodyParam item_ids integer[] required مصفوفة المعرفات. Example: [2, 3]
      */
     public function destroy(Request $request)
     {
@@ -719,7 +731,7 @@ class UserController extends Controller
                     $message .= " تحقق من الصلاحيات أو معرفات المستخدمين.";
                 }
 
-                return api_forbidden($message, $data, 403);
+                return api_error($message, $data, 403);
             }
 
             // **[منطق إرجاع النجاح]:** عند نجاح عملية الحذف
@@ -736,11 +748,12 @@ class UserController extends Controller
     }
 
     /**
-     * تغيير الشركة النشطة للمستخدم.
-     *
-     * @param Request $request
-     * @param User $user
-     * @return \Illuminate\Http\JsonResponse
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * تغيير الشركة النشطة
+     * 
+     * @urlParam user required معرف المستخدم. Example: 1
+     * @bodyParam company_id integer required معرف الشركة. Example: 2
      */
     public function changeCompany(Request $request, User $user)
     {

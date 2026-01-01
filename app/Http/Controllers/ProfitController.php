@@ -28,10 +28,17 @@ class ProfitController extends Controller
     }
 
     /**
-     * عرض قائمة الأرباح.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض قائمة الأرباح
+     * 
+     * @queryParam amount_from number المبلغ من. Example: 50
+     * @queryParam amount_to number المبلغ إلى. Example: 500
+     * @queryParam created_at_from date التاريخ من. Example: 2023-01-01
+     * @queryParam per_page integer عدد النتائج. Default: 15
+     * 
+     * @apiResourceCollection App\Http\Resources\Profit\ProfitResource
+     * @apiResourceModel App\Models\Profit
      */
     public function index(Request $request): JsonResponse
     {
@@ -101,10 +108,13 @@ class ProfitController extends Controller
     }
 
     /**
-     * تخزين ربح جديد.
-     *
-     * @param StoreProfitRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تسجيل ربح جديد
+     * 
+     * @bodyParam amount number required المبلغ. Example: 150
+     * @bodyParam description string required وصف الربح. Example: عمولة مبيعات
+     * @bodyParam company_id integer معرف الشركة (للمدراء). Example: 1
      */
     public function store(StoreProfitRequest $request): JsonResponse
     {
@@ -155,10 +165,14 @@ class ProfitController extends Controller
     }
 
     /**
-     * عرض ربح محدد.
-     *
-     * @param Profit $profit
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض تفاصيل ربح
+     * 
+     * @urlParam profit required معرف الربح. Example: 1
+     * 
+     * @apiResource App\Http\Resources\Profit\ProfitResource
+     * @apiResourceModel App\Models\Profit
      */
     public function show(Profit $profit): JsonResponse
     {
@@ -195,11 +209,12 @@ class ProfitController extends Controller
     }
 
     /**
-     * تحديث ربح محدد.
-     *
-     * @param UpdateProfitRequest $request
-     * @param Profit $profit
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحديث ربح
+     * 
+     * @urlParam profit required معرف الربح. Example: 1
+     * @bodyParam amount number المبلغ المحدث. Example: 200
      */
     public function update(UpdateProfitRequest $request, Profit $profit): JsonResponse
     {
@@ -261,10 +276,11 @@ class ProfitController extends Controller
     }
 
     /**
-     * حذف ربح محدد.
-     *
-     * @param Profit $profit
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * حذف ربح
+     * 
+     * @urlParam profit required معرف الربح. Example: 1
      */
     public function destroy(Profit $profit): JsonResponse
     {

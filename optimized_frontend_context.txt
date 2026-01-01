@@ -1,0 +1,1007 @@
+﻿Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceController::class, 'fixMissingCashBoxes'])->name('emergency.fix.cashboxes');
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
+Route::middleware(['auth:sanctum'])->group(function () {
+Route::post('logout', [AuthController::class, 'logout']);
+Route::get('/auth/check', [AuthController::class, 'checkLogin']);
+Route::get('/artisan/health', [ArtisanController::class, 'health']);
+Route::prefix('reports')->group(function () {
+Route::get('/sales', [\App\Http\Controllers\Reports\SalesReportController::class, 'index']);
+Route::get('/sales/top-products', [\App\Http\Controllers\Reports\SalesReportController::class, 'topProducts']);
+Route::get('/sales/top-customers', [\App\Http\Controllers\Reports\SalesReportController::class, 'topCustomers']);
+Route::get('/sales/trend', [\App\Http\Controllers\Reports\SalesReportController::class, 'trend']);
+Route::get('/profit-loss', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'index']);
+Route::get('/profit-loss/monthly-comparison', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'monthlyComparison']);
+Route::get('/stock', [\App\Http\Controllers\Reports\StockReportController::class, 'index']);
+Route::get('/stock/valuation', [\App\Http\Controllers\Reports\StockReportController::class, 'valuation']);
+Route::get('/stock/low-stock', [\App\Http\Controllers\Reports\StockReportController::class, 'lowStock']);
+Route::get('/stock/inactive', [\App\Http\Controllers\Reports\StockReportController::class, 'inactiveStock']);
+Route::get('/cash-flow', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'index']);
+Route::get('/cash-flow/by-cash-box', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'byCashBox']);
+Route::get('/cash-flow/summary', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'summary']);
+Route::get('/tax', [\App\Http\Controllers\Reports\TaxReportController::class, 'index']);
+Route::get('/tax/collected', [\App\Http\Controllers\Reports\TaxReportController::class, 'collected']);
+Route::get('/tax/paid', [\App\Http\Controllers\Reports\TaxReportController::class, 'paid']);
+Route::get('/tax/net', [\App\Http\Controllers\Reports\TaxReportController::class, 'netTax']);
+Route::get('/customers/top', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'topCustomers']);
+Route::get('/customers/debts', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'customerDebts']);
+Route::get('/suppliers/debts', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'supplierDebts']);
+Route::get('/customers/performance', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'performance']);
+Route::prefix('activity-logs')->group(function () {
+Route::get('/', [\App\Http\Controllers\ActivityController::class, 'index']);
+Route::get('/{id}', [\App\Http\Controllers\ActivityController::class, 'show']);
+Route::get('/subject/logs', [\App\Http\Controllers\ActivityController::class, 'forSubject']);
+Route::get('/user/{userId}', [\App\Http\Controllers\ActivityController::class, 'userActivity']);
+Route::get('/invoice/{invoiceId}', [\App\Http\Controllers\ActivityController::class, 'invoiceActivities']);
+Route::post('/export', [\App\Http\Controllers\ActivityController::class, 'export']);
+Route::get('/dashboard/summary', [\App\Http\Controllers\DashboardController::class, 'index']);
+Route::get('me', [AuthController::class, 'me']);
+Route::controller(UserController::class)
+->group(function () {
+Route::get('users', 'index');
+Route::get('users/search', 'usersSearch');
+Route::get('users/search-advanced', 'indexWithSearch');
+Route::post('user', 'store');
+Route::get('user/{user}', 'show');
+Route::put('user/{user}', 'update');
+Route::put('change-company/{user}', 'changeCompany');
+Route::put('user/{user}/cashbox/{cashBoxId}/set-default', 'setDefaultCashBox');
+Route::post('users/delete', 'destroy');
+Route::controller(CompanyController::class)
+->group(function () {
+Route::get('companys', 'index');
+Route::post('company', 'store');
+Route::get('company/{company}', 'show');
+Route::put('company/{company}', 'update');
+Route::post('company/delete', 'destroy');
+Route::controller(ImageController::class)
+->group(function () {
+Route::get('images', 'index');
+Route::post('image', 'store');
+Route::put('image/{Image}', 'update');
+Route::post('images/delete', 'destroy');
+Route::controller(TransactionController::class)
+->group(function () {
+Route::post('/transfer', 'transfer');
+Route::post('/deposit', 'deposit');
+Route::post('/withdraw', 'withdraw');
+Route::get('/transactions', 'transactions');
+Route::get('transactions/user/{cashBoxId?}', 'userTransactions');
+Route::post('/transactions/{transaction}/reverse', 'reverseTransaction');
+Route::controller(InvoiceController::class)
+->group(function () {
+Route::get('invoices', 'index');
+Route::post('invoice', 'store');
+Route::get('invoice/{invoice}', 'show');
+Route::put('invoice/{invoice}', 'update');
+Route::delete('invoice/{invoice}', 'destroy');
+Route::post('invoices/deletes', 'deleteMultiple');
+Route::get('invoice/{id}/pdf', 'downloadPDF')->name('invoice.download-pdf');
+Route::get('invoice/{id}/pdf-data', 'getInvoiceForPDF')->name('invoice.pdf-data');
+Route::post('invoice/{id}/email-pdf', 'emailPDF')->name('invoice.email-pdf');
+Route::post('invoices/export-excel', 'exportExcel')->name('invoices.export-excel');
+Route::controller(RoleController::class)
+->group(function () {
+Route::get('roles', 'index');
+Route::post('role', 'store');
+Route::get('role/{role}', 'show');
+Route::put('role/{role}', 'update');
+Route::delete('role/{role}', 'destroy');
+Route::post('role/assignRole', 'assignRole');
+Route::controller(CashBoxTypeController::class)
+->group(function () {
+Route::get('cashBoxTypes', 'index');
+Route::post('cashBoxType', 'store');
+Route::get('cashBoxType/{cashBoxType}', 'show');
+Route::put('cashBoxType/{cashBoxType}', 'update');
+Route::patch('cashBoxType/{id}/toggle', 'toggle');
+Route::delete('cashBoxType/{cashBoxType}', 'destroy');
+Route::controller(CashBoxController::class)
+->group(function () {
+Route::get('cashBoxs', 'index');
+Route::post('cashBox', 'store');
+Route::get('cashBox/{cashBox}', 'show');
+Route::put('cashBox/{cashBox}', 'update');
+Route::delete('cashBox/{cashBox}', 'destroy');
+Route::post('cashBox/transfer', 'transferFunds');
+Route::controller(LogController::class)
+->group(function () {
+Route::get('logs', 'index');
+Route::post('logs/{log}/undo', 'undo');
+Route::controller(ProductController::class)
+->group(function () {
+Route::get('products', 'index');
+Route::post('product', 'store');
+Route::get('product/{product}', 'show');
+Route::put('product/{product}', 'update');
+Route::delete('product/delete/{product}', 'destroy');
+Route::controller(AttributeController::class)
+->group(function () {
+Route::get('attributes', 'index');
+Route::post('attribute', 'store');
+Route::get('attribute/{attribute}', 'show');
+Route::put('attribute/{attribute}', 'update');
+Route::delete('attribute/{attribute}', 'destroy');
+Route::post('attribute/deletes', 'deleteMultiple');
+Route::controller(AttributeValueController::class)
+->group(function () {
+Route::get('attribute-values', 'index');
+Route::post('attribute-value', 'store');
+Route::get('attribute-value/{attributeValue}', 'show');
+Route::put('attribute-value/{attributeValue}', 'update');
+Route::delete('attribute-value/{attributeValue}', 'destroy');
+Route::post('attribute-value/deletes', 'deleteMultiple');
+Route::controller(ProductVariantController::class)
+->group(function () {
+Route::get('product-variants', 'index');
+Route::post('product-variant', 'store');
+Route::get('product-variant/{productVariant}', 'show');
+Route::put('product-variant/{productVariant}', 'update');
+Route::delete('product-variant/{productVariant}', 'destroy');
+Route::post('product-variant/delete', 'deleteMultiple');
+Route::get('product-variants/search-by-product', 'searchByProduct');
+Route::controller(WarehouseController::class)
+->group(function () {
+Route::get('warehouses', 'index');
+Route::post('warehouse', 'store');
+Route::get('warehouse/{warehouse}', 'show');
+Route::put('warehouse/{warehouse}', 'update');
+Route::post('warehouse/delete', 'destroy');
+Route::controller(StockController::class)
+->group(function () {
+Route::get('stocks', 'index');
+Route::post('stock', 'store');
+Route::get('stock/{stock}', 'show');
+Route::put('stock/{stock}', 'update');
+Route::post('stock/delete', 'destroy');
+Route::controller(CategoryController::class)
+->group(function () {
+Route::get('categories', 'index');
+Route::post('category', 'store');
+Route::get('category/{category}', 'show');
+Route::put('category/{category}', 'update');
+Route::post('category/delete', 'destroy');
+Route::controller(BrandController::class)
+->group(function () {
+Route::get('brands', 'index');
+Route::post('brand', 'store');
+Route::get('brand/{brand}', 'show');
+Route::put('brand/{brand}', 'update');
+Route::delete('brand/delete/{brand}', 'destroy');
+Route::controller(InvoiceTypeController::class)->group(function () {
+Route::get('invoice-types', 'index');
+Route::post('invoice-type', 'store');
+Route::get('invoice-type/{invoiceType}', 'show');
+Route::put('invoice-type/{invoiceType}', 'update');
+Route::delete('invoice-type/{invoiceType}', 'destroy');
+Route::controller(InvoiceItemController::class)->group(function () {
+Route::get('invoice-items', 'index');
+Route::post('invoice-item', 'store');
+Route::get('invoice-item/{invoiceItem}', 'show');
+Route::put('invoice-item/{invoiceItem}', 'update');
+Route::delete('invoice-item/{invoiceItem}', 'destroy');
+Route::controller(InstallmentPlanController::class)->group(function () {
+Route::get('installment-plans', 'index');
+Route::post('installment-plan', 'store');
+Route::get('installment-plan/{installmentPlan}', 'show');
+Route::put('installment-plan/{installmentPlan}', 'update');
+Route::delete('installment-plan/{installmentPlan}', 'destroy');
+Route::controller(InstallmentController::class)->group(function () {
+Route::get('installments', 'index');
+Route::post('installment', 'store');
+Route::get('installment/{installment}', 'show');
+Route::put('installment/{installment}', 'update');
+Route::delete('installment/{installment}', 'destroy');
+Route::controller(PaymentController::class)->group(function () {
+Route::get('payments', 'index');
+Route::post('payment', 'store');
+Route::get('payment/{payment}', 'show');
+Route::put('payment/{payment}', 'update');
+Route::delete('payment/{payment}', 'destroy');
+Route::controller(PaymentMethodController::class)
+->group(function () {
+Route::get('payment-methods', 'index');
+Route::post('payment-method', 'store');
+Route::get('payment-method/{paymentMethod}', 'show');
+Route::put('payment-method/{paymentMethod}', 'update');
+Route::patch('payment-method/{id}/toggle', 'toggle');
+Route::delete('payment-method/delete/{paymentMethod}', 'destroy');
+Route::controller(InstallmentPaymentController::class)
+->group(function () {
+Route::get('installment-payments', 'index');
+Route::post('installment-payment', 'store');
+Route::post('installment-payment/pay', 'payInstallments');
+Route::get('installment-payment/{installmentPayment}', 'show');
+Route::put('installment-payment/{installmentPayment}', 'update');
+Route::delete('installment-payment/delete/{installmentPayment}', 'destroy');
+Route::controller(RevenueController::class)
+->group(function () {
+Route::get('revenues', 'index');
+Route::post('revenue', 'store');
+Route::get('revenue/{revenue}', 'show');
+Route::put('revenue/{revenue}', 'update');
+Route::delete('revenue/delete/{revenue}', 'destroy');
+Route::controller(ProfitController::class)
+->group(function () {
+Route::get('profits', 'index');
+Route::post('profit', 'store');
+Route::get('profit/{profit}', 'show');
+Route::put('profit/{profit}', 'update');
+Route::delete('profit/delete/{profit}', 'destroy');
+Route::controller(InstallmentPaymentDetailController::class)
+->group(function () {
+Route::get('installment-payment-details', 'index');
+Route::post('installment-payment-detail', 'store');
+Route::get('installment-payment-detail/{installmentPaymentDetail}', 'show');
+Route::put('installment-payment-detail/{installmentPaymentDetail}', 'update');
+Route::delete('installment-payment-detail/delete/{installmentPaymentDetail}', 'destroy');
+Route::apiResource('plans', PlanController::class);
+Route::get('/permissions', [PermissionController::class, 'index']);
+Route::controller(ArtisanController::class)->prefix('php')->group(function () {
+Route::get('runComposerDump', 'runComposerDump'); 
+Route::get('generateBackup', 'generateBackup'); 
+Route::get('migrateAndSeed', 'migrateAndSeed'); 
+Route::get('applyBackup', 'applyBackup');     
+Route::get('PermissionsSeeder', 'PermissionsSeeder'); 
+Route::get('DatabaseSeeder', 'DatabaseSeeder'); 
+Route::get('seedRolesAndPermissions', 'seedRolesAndPermissions'); 
+Route::get('clear', 'clearAllCache'); 
+public function toArray(Request $request): array
+$agent->setUserAgent($this->user_agent);
+return [
+'id' => $this->id,
+'action' => $this->action,
+'model' => $this->model,
+'data_old' => $this->data_old ? json_decode($this->data_old) : null,
+'data_new' => $this->data_new ? json_decode($this->data_new) : null,
+'description' => $this->description,
+'user_id' => $this->user_id,
+'created_by' => $this->created_by,
+'company_id' => $this->company_id,
+'user_agent' => $agent->browser() . ' ' .
+$agent->version($agent->browser()) .
+' (' . $agent->platform() .
+' ' . $agent->version($agent->platform()) . ')',
+'ip_address' => $this->ip_address,
+'url' => $this->url,
+'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
+public function toArray(Request $request): array
+public function up(): void
+Schema::create('companies', function (Blueprint $table) {
+$table->id();
+$table->string('name');
+$table->text('description')->nullable();
+$table->string('field')->nullable();
+$table->string('owner_name')->nullable();
+$table->string('address')->nullable();
+$table->string('phone')->nullable();
+$table->string('email')->nullable()->unique();
+$table->unsignedBigInteger('created_by')->nullable()->index();
+$table->string('company_id')->nullable();
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('users', function (Blueprint $table) {
+$table->id();
+$table->string('phone')->unique();
+$table->string('password');
+$table->string('email')->unique()->nullable();
+$table->string('username')->unique()->nullable();
+$table->string('nickname')->nullable();
+$table->string('full_name')->nullable();
+$table->string('position')->nullable();
+$table->string('settings')->nullable();
+$table->timestamp('last_login_at')->nullable();
+$table->timestamp('email_verified_at')->nullable();
+$table->decimal('balance', 10, 2)->default(0);
+$table->string('status')->default('1')->nullable();
+$table->string('customer_type')->default(value: 'retail')->comment('retail or wholesale'); 
+$table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+$table->foreignId('company_id')->nullable()->constrained()->onDelete('set null');
+$table->rememberToken();
+$table->timestamps();
+Schema::create('password_reset_tokens', function (Blueprint $table) {
+$table->string('email')->primary();
+$table->string('token');
+$table->timestamp('created_at')->nullable();
+Schema::create('sessions', function (Blueprint $table) {
+$table->string('id')->primary();
+$table->foreignId('user_id')->nullable()->index();
+$table->string('ip_address', 45)->nullable();
+$table->text('user_agent')->nullable();
+$table->longText('payload');
+$table->integer('last_activity')->index();
+public function down(): void
+public function up(): void
+Schema::create('cache', function (Blueprint $table) {
+$table->string('key')->primary();
+$table->mediumText('value');
+$table->integer('expiration');
+Schema::create('cache_locks', function (Blueprint $table) {
+$table->string('key')->primary();
+$table->string('owner');
+$table->integer('expiration');
+public function down(): void
+public function up(): void
+Schema::create('jobs', function (Blueprint $table) {
+$table->id();
+$table->string('queue')->index();
+$table->longText('payload');
+$table->unsignedTinyInteger('attempts');
+$table->unsignedInteger('reserved_at')->nullable();
+$table->unsignedInteger('available_at');
+$table->unsignedInteger('created_at');
+Schema::create('job_batches', function (Blueprint $table) {
+$table->string('id')->primary();
+$table->string('name');
+$table->integer('total_jobs');
+$table->integer('pending_jobs');
+$table->integer('failed_jobs');
+$table->longText('failed_job_ids');
+$table->mediumText('options')->nullable();
+$table->integer('cancelled_at')->nullable();
+$table->integer('created_at');
+$table->integer('finished_at')->nullable();
+Schema::create('failed_jobs', function (Blueprint $table) {
+$table->id();
+$table->string('uuid')->unique();
+$table->text('connection');
+$table->text('queue');
+$table->longText('payload');
+$table->longText('exception');
+$table->timestamp('failed_at')->useCurrent();
+public function down(): void
+public function up(): void
+Schema::create('personal_access_tokens', function (Blueprint $table) {
+$table->id();
+$table->morphs('tokenable');
+$table->string('name');
+$table->string('token', 64)->unique();
+$table->text('abilities')->nullable();
+$table->timestamp('last_used_at')->nullable();
+$table->timestamp('expires_at')->nullable();
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('translations', function (Blueprint $table) {
+$table->id();
+$table->string('locale');
+$table->string('field');
+$table->text('value');
+$table->morphs('model');
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create($tableNames['permissions'], function (Blueprint $table) {
+$table->bigIncrements('id'); 
+$table->string('name');       
+$table->string('guard_name'); 
+$table->timestamps();
+$table->unique(['name', 'guard_name']);
+Schema::create($tableNames['roles'], function (Blueprint $table) use ($teams, $columnNames) {
+$table->bigIncrements('id'); 
+$table->unsignedBigInteger($columnNames['team_foreign_key'])->nullable();
+$table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
+$table->string('name');       
+$table->string('guard_name'); 
+$table->timestamps();
+$table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);
+$table->unique(['name', 'guard_name']);
+Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames, $columnNames, $pivotPermission, $teams) {
+$table->unsignedBigInteger($pivotPermission);
+$table->string('model_type');
+$table->unsignedBigInteger($columnNames['model_morph_key']);
+$table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_permissions_model_id_model_type_index');
+$table->foreign($pivotPermission)
+->references('id') 
+->on($tableNames['permissions'])
+->onDelete('cascade');
+$table->unsignedBigInteger($columnNames['team_foreign_key']);
+$table->index($columnNames['team_foreign_key'], 'model_has_permissions_team_foreign_key_index');
+$table->primary([$columnNames['team_foreign_key'], $pivotPermission, $columnNames['model_morph_key'], 'model_type'],
+$table->primary([$pivotPermission, $columnNames['model_morph_key'], 'model_type'],
+Schema::create($tableNames['model_has_roles'], function (Blueprint $table) use ($tableNames, $columnNames, $pivotRole, $teams) {
+$table->unsignedBigInteger($pivotRole);
+$table->string('model_type');
+$table->unsignedBigInteger($columnNames['model_morph_key']);
+$table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_roles_model_id_model_type_index');
+$table->foreign($pivotRole)
+->references('id') 
+->on($tableNames['roles'])
+->onDelete('cascade');
+$table->unsignedBigInteger($columnNames['team_foreign_key']);
+$table->index($columnNames['team_foreign_key'], 'model_has_roles_team_foreign_key_index');
+$table->primary([$columnNames['team_foreign_key'], $pivotRole, $columnNames['model_morph_key'], 'model_type'],
+$table->primary([$pivotRole, $columnNames['model_morph_key'], 'model_type'],
+Schema::create($tableNames['role_has_permissions'], function (Blueprint $table) use ($tableNames, $pivotRole, $pivotPermission) {
+$table->unsignedBigInteger($pivotPermission);
+$table->unsignedBigInteger($pivotRole);
+$table->foreign($pivotPermission)
+->references('id') 
+->on($tableNames['permissions'])
+->onDelete('cascade');
+$table->foreign($pivotRole)
+->references('id') 
+->on($tableNames['roles'])
+->onDelete('cascade');
+$table->primary([$pivotPermission, $pivotRole], 'role_has_permissions_permission_id_role_id_primary');
+->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
+->forget(config('permission.cache.key'));
+public function down(): void
+public function up(): void
+$table->unsignedBigInteger('created_by')->nullable()->after('id');
+$table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
+$table->unsignedBigInteger('company_id')->nullable()->after('created_by');
+$table->foreign('company_id')->references('id')->on('companies')->onDelete('set null');
+public function down(): void
+$table->dropForeign(['created_by']);
+$table->dropColumn('created_by');
+$table->dropForeign(['company_id']);
+$table->dropColumn('company_id');
+public function up(): void
+Schema::create('company_user', function (Blueprint $table) {
+$table->id();
+$table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+$table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+$table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null'); 
+$table->enum('role', ['manager', 'employee', 'customer'])->default('customer')->nullable();
+$table->enum('status', ['active', 'pending', 'suspended'])->default('active')->nullable();
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('cash_box_types', function (Blueprint $table) {
+$table->id();
+$table->string('name')->unique();
+$table->text('description')->nullable();
+$table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
+$table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('cash_boxes', function (Blueprint $table) {
+$table->id();
+$table->string('name');  
+$table->decimal('balance', 10, 2)->default(0)->nullable();
+$table->foreignId('cash_box_type_id')->constrained('cash_box_types')->onDelete('cascade');
+$table->boolean('is_default')->default(1);
+$table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+$table->string('description')->nullable();
+$table->string('account_number')->nullable();
+$table->unique(['user_id', 'company_id', 'is_default'], 'unique_single_default_cashbox');
+$table->timestamps();
+public function down(): void
+public function up()
+Schema::create('transactions', function (Blueprint $table) {
+$table->id();
+$table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+$table->unsignedBigInteger('original_transaction_id')->nullable();
+$table->string('type');
+$table->decimal('amount', 15, 2);
+$table->decimal('balance_before', 10, 2)->default(0);
+$table->decimal('balance_after', 10, 2)->default(0);
+$table->text('description')->nullable();
+$table->foreignId('target_user_id')->nullable()->constrained('users')->onDelete('set null');
+$table->foreignId('cashbox_id')->nullable()->constrained('cash_boxes')->onDelete('set null');
+$table->foreignId('target_cashbox_id')->nullable()->constrained('cash_boxes')->onDelete('set null');
+$table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+$table->foreignId('company_id')->nullable()->constrained()->onDelete('set null');
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('images', function (Blueprint $table) {
+$table->id();
+$table->string('url');
+$table->string('file_name')->nullable();
+$table->string('mime_type')->nullable();
+$table->unsignedBigInteger('size')->nullable();
+$table->string('type')->nullable();
+$table->boolean('is_temp')->default(true);
+$table->unsignedBigInteger('imageable_id')->nullable();
+$table->string('imageable_type')->nullable();
+$table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('role_company', function (Blueprint $table) {
+$table->id();
+$table->unsignedBigInteger('role_id');
+$table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->timestamps();
+$table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+public function down(): void
+public function up(): void
+Schema::create('user_company_cash', function (Blueprint $table) {
+$table->id();
+$table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+$table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+$table->foreignId('cash_box_id')->constrained('cash_boxes')->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('warehouses', function (Blueprint $table) {
+$table->id();
+$table->string('name');  
+$table->string('location')->nullable();  
+$table->string('manager')->nullable();  
+$table->integer('capacity')->nullable();  
+$table->enum('status', ['active', 'inactive'])->default('active');  
+$table->foreignId('company_id')->constrained()->onDelete('cascade');  
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');  
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('categories', function (Blueprint $table) {
+$table->id();
+$table->foreignId('company_id')->constrained()->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->foreignId('parent_id')
+->nullable()
+->constrained('categories')
+->onDelete('cascade');
+$table->string('name');
+$table->text('description')->nullable();
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('brands', function (Blueprint $table) {
+$table->id();
+$table->foreignId('company_id')->constrained()->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->string('name');
+$table->text('description')->nullable();
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('attributes', function (Blueprint $table) {
+$table->id();
+$table->string('name');
+$table->string('value')->nullable();
+$table->foreignId('company_id')->constrained()->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('attribute_values', function (Blueprint $table) {
+$table->id();
+$table->foreignId('attribute_id')->constrained()->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->string('name');
+$table->string('color')->nullable();
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('products', function (Blueprint $table) {
+$table->id();
+$table->string('name');  
+$table->string('slug')->unique();  
+$table->boolean('active')->default(true);  
+$table->boolean('featured')->default(false);  
+$table->boolean('returnable')->default(true);  
+$table->text('desc')->nullable();  
+$table->text('desc_long')->nullable();  
+$table->timestamp('published_at')->nullable();  
+$table->foreignId('category_id')->constrained()->onDelete('cascade');  
+$table->foreignId('brand_id')->nullable()->constrained()->nullOnDelete();  
+$table->foreignId('company_id')->constrained()->onDelete('cascade');  
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');  
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('product_variants', function (Blueprint $table) {
+$table->id();
+$table->string('barcode')->unique()->nullable();  
+$table->string('sku')->unique()->nullable();  
+$table->decimal('retail_price', 10, 2)->nullable();  
+$table->decimal('wholesale_price', 10, 2)->nullable();  
+$table->decimal('profit_margin', 5, 2)->nullable();  
+$table->integer('min_quantity')->nullable();  
+$table->string('image')->nullable();  
+$table->decimal('weight', 8, 2)->nullable();  
+$table->string('dimensions')->nullable();  
+$table->decimal('tax', 5, 2)->nullable();  
+$table->decimal('discount', 8, 2)->nullable();  
+$table->enum('status', ['active', 'inactive', 'discontinued'])->default('active');  
+$table->foreignId('product_id')->constrained()->onDelete('cascade');  
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');  
+$table->foreignId('company_id')->constrained()->onDelete('cascade');  
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('product_variant_attributes', function (Blueprint $table) {
+$table->id();
+$table->foreignId('product_variant_id')->constrained()->onDelete('cascade');
+$table->foreignId('attribute_id')->constrained()->onDelete('cascade');
+$table->foreignId('attribute_value_id')->constrained()->onDelete('cascade');
+$table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('stocks', function (Blueprint $table) {
+$table->id();
+$table->integer('quantity')->default(0);  
+$table->integer('reserved')->default(0);  
+$table->integer('min_quantity')->default(0);  
+$table->decimal('cost', 10, 2)->nullable();  
+$table->string('batch')->nullable();  
+$table->date('expiry')->nullable();  
+$table->string('loc')->nullable();  
+$table->enum('status', ['available', 'unavailable', 'expired'])->default('available');  
+$table->foreignId('variant_id')->constrained('product_variants')->onDelete('cascade');  
+$table->foreignId('warehouse_id')->constrained()->onDelete('cascade');  
+$table->foreignId('company_id')->constrained()->onDelete('cascade');  
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');  
+$table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('cascade');  
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('invoice_types', function (Blueprint $table) {
+$table->id();
+$table->string('name');
+$table->text('description')->nullable();
+$table->string('context')->nullable()->comment('sales, purchases, inventory, finance, services, etc.');
+$table->string('code')->unique();
+$table->foreignId('company_id')->constrained()->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('invoices', function (Blueprint $table) {
+$table->id();
+$table->string('invoice_number')->unique()->nullable();
+$table->date('due_date')->nullable();
+$table->decimal('gross_amount', 15, 2);
+$table->decimal('total_discount', 15, 2)->default(0);
+$table->decimal('net_amount', 15, 2);
+$table->decimal('paid_amount', 15, 2)->default(0);
+$table->decimal('remaining_amount', 15, 2)->default(0);
+$table->enum('status', ['draft', 'confirmed', 'canceled'])->default('confirmed');
+$table->text('notes')->nullable();
+$table->foreignId('company_id')->constrained()->onDelete('cascade');
+$table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+$table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+$table->foreignId('user_id')->constrained()->onDelete('cascade');
+$table->foreignId('invoice_type_id')->constrained()->onDelete('cascade');
+$table->foreignId('cash_box_id')->nullable()->constrained()->nullOnDelete();
+$table->string('invoice_type_code')->nullable();
+$table->integer('round_step')->nullable();
+$table->timestamps();
+$table->softDeletes();
+public function down(): void
+public function up(): void
+Schema::create('installment_plans', function (Blueprint $table) {
+$table->id();  
+$table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');  
+$table->foreignId('user_id')->constrained('users')->onDelete('cascade');  
+$table->foreignId('company_id')->constrained()->onDelete('cascade');  
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');  
+$table->decimal('total_amount', 15, 2);  
+$table->decimal('down_payment', 15, 2)->default(0);  
+$table->decimal('remaining_amount', 15, 2);  
+$table->integer('number_of_installments');  
+$table->decimal('installment_amount', 15, 2);  
+$table->integer('round_step')->nullable(); 
+$table->date('start_date');  
+$table->date('end_date');  
+$table->string('status');  
+$table->text('notes')->nullable();  
+$table->timestamps();  
+$table->softDeletes(); 
+public function down(): void
+public function up(): void
+Schema::create('installments', function (Blueprint $table) {
+$table->id();
+$table->foreignId('installment_plan_id')
+->constrained('installment_plans')
+->onDelete('cascade');
+$table->foreignId('user_id')
+->constrained('users')
+->onDelete('cascade'); 
+$table->foreignId('created_by')
+->constrained('users')
+->onDelete('cascade'); 
+$table->foreignId('company_id')
+->constrained('companies') 
+->onDelete('cascade');     
+$table->string('installment_number')->nullable();
+$table->date('due_date');
+$table->decimal('amount', 15, 2);
+$table->decimal('remaining', 15, 2)->default(0);
+$table->string('status'); 
+$table->timestamp('paid_at')->nullable();
+$table->timestamps();
+$table->softDeletes(); 
+public function down(): void
+public function up(): void
+Schema::create('installment_payments', function (Blueprint $table) {
+$table->id(); 
+$table->foreignId('installment_plan_id')->constrained('installment_plans')->onDelete('cascade'); 
+$table->foreignId('company_id')->constrained()->onDelete('cascade'); 
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade'); 
+$table->date('payment_date'); 
+$table->decimal('amount_paid', 15, 2); 
+$table->string('payment_method'); 
+$table->text('notes')->nullable(); 
+$table->timestamps(); 
+public function down(): void
+public function up(): void
+Schema::create('invoice_items', function (Blueprint $table) {
+$table->id();
+$table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');
+$table->foreignId('product_id')->nullable()->constrained('products')->nullOnDelete();
+$table->foreignId('variant_id')->nullable()->constrained('product_variants')->nullOnDelete();
+$table->foreignId('company_id')->constrained()->onDelete('cascade');
+$table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+$table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+$table->string('name');
+$table->decimal('quantity', 15, 2);
+$table->decimal('unit_price', 15, 2);
+$table->decimal('discount', 15, 2)->default(0);
+$table->decimal('total', 15, 2);
+$table->timestamps();
+$table->softDeletes(); 
+public function down(): void
+public function up(): void
+Schema::create('installment_payment_details', function (Blueprint $table) {
+$table->id(); 
+$table->foreignId('installment_payment_id')->constrained('installment_payments')->onDelete('cascade'); 
+$table->foreignId('installment_id')->constrained('installments')->onDelete('cascade'); 
+$table->decimal('amount_paid', 15, 2); 
+$table->timestamps(); 
+public function down(): void
+public function up(): void
+Schema::create('payments', function (Blueprint $table) {
+$table->id(); 
+$table->foreignId('user_id')->constrained()->onDelete('cascade'); 
+$table->foreignId('company_id')->constrained()->onDelete('cascade'); 
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade'); 
+$table->date('payment_date'); 
+$table->decimal('amount', 15, 2); 
+$table->string('method'); 
+$table->text('notes')->nullable(); 
+$table->boolean('is_split')->default(false); 
+$table->timestamps(); 
+public function down(): void
+public function up(): void {
+Schema::create('payment_methods', function (Blueprint $table) {
+$table->id();
+$table->string('name');
+$table->string('code')->unique();
+$table->boolean('active')->default(true);
+$table->timestamps();
+$table->foreignId('payment_method_id')->nullable()->constrained('payment_methods')->nullOnDelete();
+public function down(): void {
+$table->dropForeign(['payment_method_id']);
+$table->dropColumn('payment_method_id');
+public function up(): void
+Schema::create('revenues', function (Blueprint $table) {
+$table->id();
+$table->string('source_type');
+$table->unsignedBigInteger('source_id');
+$table->unsignedBigInteger('user_id')->nullable();
+$table->unsignedBigInteger('created_by');
+$table->unsignedBigInteger('wallet_id')->nullable();
+$table->unsignedBigInteger('company_id');
+$table->decimal('amount', 15, 2);
+$table->decimal('paid_amount', 15, 2)->default(0);
+$table->decimal('remaining_amount', 15, 2)->default(0);
+$table->string('payment_method')->nullable();
+$table->string('note')->nullable();
+$table->date('revenue_date');
+$table->timestamps();
+$table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
+$table->foreign('created_by')->references('id')->on('users')->cascadeOnDelete();
+$table->foreign('wallet_id')->references('id')->on('cash_boxes')->nullOnDelete();
+$table->foreign('company_id')->references('id')->on('companies')->cascadeOnDelete();
+public function down(): void
+public function up(): void
+Schema::create('profits', function (Blueprint $table) {
+$table->id();  
+$table->string('source_type');  
+$table->unsignedBigInteger('source_id');  
+$table->unsignedBigInteger('created_by');  
+$table->unsignedBigInteger('user_id')->nullable();  
+$table->unsignedBigInteger('company_id');  
+$table->decimal('revenue_amount', 15, 2);  
+$table->decimal('cost_amount', 15, 2);  
+$table->decimal('profit_amount', 15, 2);  
+$table->string('note')->nullable();  
+$table->date('profit_date');  
+$table->timestamps();  
+$table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+$table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
+$table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+public function down(): void
+public function up(): void
+Schema::create('services', function (Blueprint $table) {
+$table->id();
+$table->string('name');
+$table->text('description')->nullable();
+$table->decimal('default_price', 15, 2)->default(0);
+$table->foreignId('company_id')->constrained()->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('subscriptions', function (Blueprint $table) {
+$table->id();
+$table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+$table->foreignId('service_id')->constrained('services')->onDelete('cascade');
+$table->foreignId('company_id')->constrained()->onDelete('cascade');
+$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+$table->date('start_date');
+$table->date('next_billing_date');
+$table->string('billing_cycle');
+$table->decimal('price', 15, 2);
+$table->string('status');
+$table->text('notes')->nullable();
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('payment_installment', function (Blueprint $table) {
+$table->id();
+$table->foreignId('payment_id')->constrained('payments')->onDelete('cascade');
+$table->foreignId('installment_id')->constrained('installments')->onDelete('cascade');
+$table->decimal('allocated_amount', 10, 2)->default(0);
+$table->timestamps();
+public function down(): void
+public function up(): void
+Schema::create('plans', function (Blueprint $table) {
+$table->id();
+$table->string('name'); 
+$table->string('code')->nullable(); 
+$table->text('description')->nullable(); 
+$table->unsignedBigInteger('company_id')->nullable(); 
+$table->decimal('price', 15, 2)->default(0); 
+$table->string('currency', 10)->nullable(); 
+$table->integer('duration')->nullable(); 
+$table->string('duration_unit', 20)->nullable(); 
+$table->integer('trial_days')->nullable(); 
+$table->boolean('is_active')->default(true); 
+$table->json('features')->nullable(); 
+$table->integer('max_users')->nullable(); 
+$table->integer('max_projects')->nullable(); 
+$table->integer('max_storage_mb')->nullable(); 
+$table->string('type')->nullable(); 
+$table->string('icon')->nullable(); 
+$table->unsignedBigInteger('created_by')->nullable();
+$table->unsignedBigInteger('updated_by')->nullable();
+$table->timestamps();
+$table->foreign('company_id')->references('id')->on('companies')->nullOnDelete();
+$table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
+$table->foreign('updated_by')->references('id')->on('users')->nullOnDelete();
+public function down(): void
+public function up(): void
+$table->foreignId('cash_box_id')
+->nullable() 
+->constrained('cash_boxes') 
+->onDelete('set null') 
+->after('amount_paid'); 
+public function down(): void
+public function up(): void
+$table->string('nickname_in_company')->nullable()->after('created_by')->comment('Ø§Ù„Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ¹Ø§Ø± Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø¯Ø§Ø®Ù„ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©');
+$table->string('full_name_in_company')->nullable()->after('nickname_in_company')->comment('Ø§Ù„Ø§Ø³Ù… Ø§Ù„ÙƒØ§Ù…Ù„ Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù…/Ø§Ù„Ø¹Ù…ÙŠÙ„ ÙƒÙ…Ø§ ØªØ¹Ø±ÙÙ‡ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©');
+$table->string('position_in_company')->nullable()->after('full_name_in_company')->comment('Ø§Ù„Ù…Ø³Ù…Ù‰ Ø§Ù„ÙˆØ¸ÙŠÙÙŠ Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ© (Ù„Ù„Ù…ÙˆØ¸ÙÙŠÙ†)');
+$table->decimal('balance_in_company', 15, 2)->default(0)->after('position_in_company')->comment('Ø±ØµÙŠØ¯ Ø§Ù„Ø¹Ù…ÙŠÙ„ ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©');
+$table->string('customer_type_in_company')->default('retail')->after('balance_in_company')->comment('Ù†ÙˆØ¹ Ø§Ù„Ø¹Ù…ÙŠÙ„ (ØªØ¬Ø²Ø¦Ø©/Ø¬Ù…Ù„Ø©) ÙÙŠ Ø³ÙŠØ§Ù‚ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©');
+$table->string('user_phone')->nullable()->after('customer_type_in_company');
+$table->string('user_email')->nullable()->after('user_phone');
+$table->string('user_username')->nullable()->after('user_email');
+$table->unique(['company_id', 'user_id']);
+public function down(): void
+$table->dropUnique(['company_id', 'user_id']);
+$table->dropColumn([
+public function up(): void
+$table->boolean('is_active')->default(true)->after('is_default');
+public function down(): void
+$table->dropColumn('is_active');
+public function up(): void
+$table->boolean('is_system')->default(false)->after('active');
+$table->boolean('is_system')->default(false)->after('description');
+public function down(): void
+$table->dropColumn('is_system');
+$table->dropColumn('is_system');
+public function up(): void
+$table->boolean('is_active')->default(true)->after('is_system');
+public function down(): void
+$table->dropColumn('is_active');
+public function up(): void
+public function down(): void
+public function up(): void
+$table->decimal('total_tax', 15, 2)->default(0)->after('total_discount');
+$table->decimal('tax_rate', 5, 2)->nullable()->after('total_tax');
+$table->boolean('tax_inclusive')->default(false)->after('tax_rate');
+$table->decimal('tax_rate', 5, 2)->default(0)->after('discount');
+$table->decimal('tax_amount', 15, 2)->default(0)->after('tax_rate');
+$table->decimal('subtotal', 15, 2)->default(0)->after('tax_amount');
+public function down(): void
+$table->dropColumn(['total_tax', 'tax_rate', 'tax_inclusive']);
+$table->dropColumn(['tax_rate', 'tax_amount', 'subtotal']);
+public function up(): void
+$table->enum('payment_status', [
+])->default('unpaid')->after('status');
+public function down(): void
+$table->dropColumn('payment_status');
+public function up(): void
+Schema::create('invoice_payments', function (Blueprint $table) {
+$table->id();
+$table->foreignId('invoice_id')->constrained()->onDelete('cascade');
+$table->foreignId('payment_method_id')->nullable()->constrained()->nullOnDelete();
+$table->foreignId('cash_box_id')->nullable()->constrained()->nullOnDelete();
+$table->decimal('amount', 15, 2);
+$table->date('payment_date');
+$table->text('notes')->nullable();
+$table->string('reference_number')->nullable(); 
+$table->foreignId('company_id')->constrained()->onDelete('cascade');
+$table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+$table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+$table->timestamps();
+$table->softDeletes();
+public function down(): void
+public function up(): void
+$table->enum('product_type', [
+])->default('physical')->after('name');
+$table->boolean('require_stock')->default(true)->after('product_type');
+$table->boolean('is_downloadable')->default(false)->after('require_stock');
+$table->text('download_url')->nullable()->after('is_downloadable');
+$table->integer('download_limit')->nullable()->after('download_url'); 
+$table->json('license_keys')->nullable()->after('download_limit');
+$table->integer('available_keys_count')->default(0)->after('license_keys');
+$table->integer('validity_days')->nullable()->after('available_keys_count'); 
+$table->datetime('expires_at')->nullable()->after('validity_days'); 
+$table->text('delivery_instructions')->nullable()->after('expires_at'); 
+public function down(): void
+$table->dropColumn([
+public function up(): void
+Schema::create('digital_product_deliveries', function (Blueprint $table) {
+$table->id();
+$table->foreignId('invoice_item_id')->constrained('invoice_items')->onDelete('cascade');
+$table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+$table->foreignId('user_id')->constrained('users')->onDelete('cascade'); 
+$table->enum('delivery_type', [
+$table->json('delivery_data')->nullable();
+$table->enum('status', [
+])->default('pending');
+$table->datetime('delivered_at')->nullable();
+$table->datetime('activated_at')->nullable();
+$table->datetime('expires_at')->nullable();
+$table->integer('download_count')->default(0);
+$table->datetime('last_downloaded_at')->nullable();
+$table->integer('activation_count')->default(0);
+$table->datetime('last_activated_at')->nullable();
+$table->text('notes')->nullable();
+$table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+$table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+$table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+$table->timestamps();
+$table->softDeletes();
+$table->index(['user_id', 'status']);
+$table->index(['product_id', 'status']);
+$table->index('status');
+public function down(): void
+public function up(): void
+Schema::create('activity_logs', function (Blueprint $table) {
+$table->id();
+$table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+$table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
+$table->string('subject_type')->nullable(); 
+$table->unsignedBigInteger('subject_id')->nullable();
+$table->index(['subject_type', 'subject_id']);
+$table->string('action', 50); 
+$table->text('description');
+$table->json('old_values')->nullable();
+$table->json('new_values')->nullable();
+$table->string('ip_address', 45)->nullable();
+$table->text('user_agent')->nullable();
+$table->json('metadata')->nullable(); 
+$table->timestamps();
+$table->index('user_id');
+$table->index('company_id');
+$table->index('action');
+$table->index('created_at');
+public function down(): void

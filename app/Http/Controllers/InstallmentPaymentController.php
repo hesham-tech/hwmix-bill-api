@@ -294,10 +294,17 @@ class InstallmentPaymentController extends Controller
     }
 
     /**
-     * دفع الأقساط.
-     *
-     * @param PayInstallmentsRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * تحصيل أقساط (دفع)
+     * 
+     * عملية سداد مبلغ للأقساط المحددة، يتم توزيع المبلغ تلقائياً على الأقساط المختارة.
+     * 
+     * @bodyParam installment_ids array required معرفات الأقساط المراد دفعها. Example: [1, 2]
+     * @bodyParam amount number required المبلغ المدفوع إجمالاً. Example: 1000
+     * @bodyParam payment_method_id integer required معرف طريقة الدفع. Example: 1
+     * @bodyParam cash_box_id integer معرف الخزنة (اختياري، يستخدم الافتراضي إذا لم يحدد). Example: 1
+     * @bodyParam paid_at datetime تاريخ الدفع. Example: 2023-10-25 14:00:00
      */
     public function payInstallments(PayInstallmentsRequest $request): JsonResponse
     {

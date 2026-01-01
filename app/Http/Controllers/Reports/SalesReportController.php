@@ -9,10 +9,16 @@ use Illuminate\Support\Facades\DB;
 class SalesReportController extends BaseReportController
 {
     /**
-     * Generate sales report
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * تقرير المبيعات العام
+     * 
+     * توليد تقرير شامل للمبيعات مع إمكانية التجميع حسب (اليوم، الشهر، العميل، أو المنتج).
+     * 
+     * @queryParam date_from date تاريخ البداية. Example: 2024-01-01
+     * @queryParam date_to date تاريخ النهاية.
+     * @queryParam group_by string التجميع حسب (day, month, product, customer). Example: month
+     * @queryParam export string تصدير التقرير (excel, csv).
      */
     public function index(Request $request)
     {
@@ -84,10 +90,13 @@ class SalesReportController extends BaseReportController
     }
 
     /**
-     * Get top selling products
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * المنتجات الأكثر مبيعاً
+     * 
+     * عرض قائمة بالمنتجات الأعلى مبيعاً خلال فترة محددة.
+     * 
+     * @queryParam limit integer عدد النتائج. Example: 10
      */
     public function topProducts(Request $request)
     {
@@ -113,10 +122,11 @@ class SalesReportController extends BaseReportController
     }
 
     /**
-     * Get top customers
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * كبار العملاء
+     * 
+     * عرض قائمة بالعملاء الأكثر شراءً.
      */
     public function topCustomers(Request $request)
     {
@@ -142,10 +152,13 @@ class SalesReportController extends BaseReportController
     }
 
     /**
-     * Get sales trend (daily/weekly/monthly)
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 05. التقارير والتحليلات
+     * 
+     * اتجاهات المبيعات (Trend)
+     * 
+     * تحليل حركة المبيعات بمرور الوقت (يومياً، أسبوعياً، أو شهرياً).
+     * 
+     * @queryParam period string نوع الفترة (day, week, month). Example: week
      */
     public function trend(Request $request)
     {

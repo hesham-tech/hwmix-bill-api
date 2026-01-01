@@ -29,10 +29,16 @@ class InvoiceTypeController extends Controller
     }
 
     /**
-     * عرض قائمة أنواع الفواتير.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * عرض أنواع المستندات
+     * 
+     * استرجاع أنواع المعاملات المالية المتاحة (فواتير مبيعات، مشتريات، مرتجعات، سندات قبص).
+     * 
+     * @queryParam context string سياق النوع (sale, purchase).
+     * 
+     * @apiResourceCollection App\Http\Resources\InvoiceType\InvoiceTypeResource
+     * @apiResourceModel App\Models\InvoiceType
      */
     public function index(Request $request): JsonResponse
     {
@@ -78,10 +84,13 @@ class InvoiceTypeController extends Controller
     }
 
     /**
-     * تخزين نوع فاتورة جديد.
-     *
-     * @param StoreInvoiceTypeRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * إضافة نوع مستند جديد
+     * 
+     * @bodyParam name string required الاسم بالعربية. Example: فاتورة مبيعات ضريبية
+     * @bodyParam code string required كود فريد للنوع. Example: SALE_TAX
+     * @bodyParam context string required السياق (sale/purchase). Example: sale
      */
     public function store(StoreInvoiceTypeRequest $request): JsonResponse
     {

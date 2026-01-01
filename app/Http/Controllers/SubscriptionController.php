@@ -29,7 +29,18 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * عرض قائمة الاشتراكات.
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * عرض قائمة الاشتراكات
+     * 
+     * استرجاع سجلات اشتراك الشركات في باقات النظام المختلفة.
+     * 
+     * @queryParam user_id integer فلترة حسب المستخدم.
+     * @queryParam plan_id integer فلترة حسب الخطة.
+     * @queryParam status string الحالة (active, expired).
+     * 
+     * @apiResourceCollection App\Http\Resources\Subscription\SubscriptionResource
+     * @apiResourceModel App\Models\Subscription
      */
     public function index(Request $request): JsonResponse
     {
@@ -104,7 +115,9 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * تخزين اشتراك جديد.
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * تسجيل اشتراك جديد
      */
     public function store(StoreSubscriptionRequest $request): JsonResponse
     {

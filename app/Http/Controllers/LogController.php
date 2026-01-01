@@ -15,10 +15,17 @@ use Throwable;
 class LogController extends Controller
 {
     /**
-     * عرض قائمة بسجلات النشاطات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * عرض سجلات التدقيق
+     * 
+     * استرجاع سجلات العمليات المالية والإدارية الحساسة لغرض التدقيق والمراجعة.
+     * 
+     * @queryParam created_at_from date التاريخ من.
+     * @queryParam created_at_to date التاريخ إلى.
+     * 
+     * @apiResourceCollection App\Http\Resources\LogResource
+     * @apiResourceModel App\Models\ActivityLog
      */
     public function index(Request $request): JsonResponse
     {
@@ -78,12 +85,13 @@ class LogController extends Controller
     }
 
     /**
-     * التراجع عن سجل نشاط محدد.
-     * يجب أن يكون المستخدم مصرحًا له "بحذف" السجل المحدد (أو التراجع عنه).
-     *
-     * @param Request $request
-     * @param int $logId
-     * @return \Illuminate\Http\JsonResponse
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * التراجع عن عملية (Undo)
+     * 
+     * إمكانية التراجع عن عملية حذف أو تعديل أو إضافة تمت من خلال سجل النشاط لاستعادة الحالة السابقة للبيانات.
+     * 
+     * @urlParam logId required معرف سجل النشاط المراد التراجع عنه. Example: 1
      */
     public function undo(Request $request, int $logId): JsonResponse
     {

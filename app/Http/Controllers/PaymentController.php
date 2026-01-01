@@ -31,10 +31,20 @@ class PaymentController extends Controller
     }
 
     /**
-     * عرض قائمة المدفوعات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض قائمة المدفوعات
+     * 
+     * @queryParam user_id integer فلترة حسب المستخدم. Example: 1
+     * @queryParam payment_method_id integer فلترة حسب طريقة الدفع. Example: 1
+     * @queryParam cash_box_id integer فلترة حسب الخزنة. Example: 1
+     * @queryParam amount_from number المبلغ من. Example: 100
+     * @queryParam amount_to number المبلغ إلى. Example: 1000
+     * @queryParam paid_at_from date تاريخ الدفع من. Example: 2023-01-01
+     * @queryParam per_page integer عدد النتائج. Default: 20
+     * 
+     * @apiResourceCollection App\Http\Resources\Payment\PaymentResource
+     * @apiResourceModel App\Models\Payment
      */
     public function index(Request $request): JsonResponse
     {
@@ -106,10 +116,16 @@ class PaymentController extends Controller
     }
 
     /**
-     * تخزين دفعة جديدة.
-     *
-     * @param StorePaymentRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تسجيل دفعة جديدة
+     * 
+     * @bodyParam user_id integer required معرف العميل/المورد. Example: 1
+     * @bodyParam amount number required المبلغ المالي. Example: 1500.75
+     * @bodyParam payment_method_id integer required معرف طريقة الدفع. Example: 1
+     * @bodyParam cash_box_id integer required معرف الخزنة المستلمة/الصادرة. Example: 1
+     * @bodyParam paid_at datetime تاريخ وتوقيت الدفع. Example: 2023-05-20 14:30:00
+     * @bodyParam notes string ملاحظات إضافية. Example: دفعة مقدمة من الحساب
      */
     public function store(StorePaymentRequest $request): JsonResponse
     {
@@ -157,18 +173,10 @@ class PaymentController extends Controller
     }
 
     /**
-     * عرض دفعة محددة.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show(string $id): JsonResponse
-    {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
-
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض دفعة محددة
+     * 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
@@ -197,11 +205,12 @@ class PaymentController extends Controller
     }
 
     /**
-     * تحديث دفعة محددة.
-     *
-     * @param UpdatePaymentRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحديث دفعة
+     * 
+     * @urlParam id required معرف الدفعة. Example: 1
+     * @bodyParam amount number المبلغ الجديد. Example: 2000
      */
     public function update(UpdatePaymentRequest $request, string $id): JsonResponse
     {
@@ -265,10 +274,11 @@ class PaymentController extends Controller
     }
 
     /**
-     * حذف دفعة محددة.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * حذف دفعة
+     * 
+     * @urlParam id required معرف الدفعة. Example: 1
      */
     public function destroy(string $id): JsonResponse
     {

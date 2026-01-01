@@ -24,7 +24,21 @@ class WarehouseController extends Controller
     ];
 
     /**
-     * عرض قائمة بالمستودعات.
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة المستودعات
+     * 
+     * @queryParam active boolean فلترة حسب النشط/غير النشط. Example: true
+     * @queryParam name string البحث باسم المستودع. Example: المستودع الرئيسي
+     * @queryParam company_id integer فلترة حسب الشركة (للمسؤول العام فقط). Example: 1
+     * @queryParam created_at_from date تاريخ الإنشاء من. Example: 2023-01-01
+     * @queryParam created_at_to date تاريخ الإنشاء إلى. Example: 2023-12-31
+     * @queryParam sort_by string حقل الفرز. Default: id. Example: name
+     * @queryParam sort_order string ترتيب الفرز (asc/desc). Default: desc. Example: asc
+     * @queryParam per_page integer عدد العناصر في الصفحة. Default: 20. Example: 50
+     * 
+     * @apiResourceCollection App\Http\Resources\Warehouse\WarehouseResource
+     * @apiResourceModel App\Models\Warehouse
      */
     public function index(Request $request): JsonResponse
     {
@@ -98,7 +112,14 @@ class WarehouseController extends Controller
     }
 
     /**
-     * تخزين مستودع جديد.
+     * @group 04. نظام المنتجات
+     * 
+     * إنشاء مستودع جديد
+     * 
+     * @bodyParam name string required اسم المستودع. Example: مستودع جدة
+     * @bodyParam address string عنوان المستودع. Example: شارع فلسطين
+     * @bodyParam active boolean حالة المستودع. Example: true
+     * @bodyParam company_id integer معرف الشركة (للمسؤول العام فقط). Example: 1
      */
     public function store(StoreWarehouseRequest $request): JsonResponse
     {
@@ -118,7 +139,7 @@ class WarehouseController extends Controller
                 $validatedData['created_by'] = $authUser->id;
 
                 // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمستخدم.
-                $warehouseCompanyId = $validatedData['company_id']
+                $warehouseCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
                     ? $validatedData['company_id']
                     : $companyId;
 
@@ -147,7 +168,11 @@ class WarehouseController extends Controller
     }
 
     /**
-     * عرض مستودع محدد.
+     * @group 04. نظام المنتجات
+     * 
+     * عرض تفاصيل مستودع
+     * 
+     * @urlParam warehouse required معرف المستودع. Example: 1
      */
     public function show(Warehouse $warehouse): JsonResponse // استخدام Route Model Binding
     {
@@ -184,7 +209,15 @@ class WarehouseController extends Controller
     }
 
     /**
-     * تحديث مستودع محدد.
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث بيانات مستودع
+     * 
+     * @urlParam warehouse required معرف المستودع. Example: 1
+     * @bodyParam name string اسم المستودع. Example: مستودع جدة الجديد
+     * @bodyParam address string عنوان المستودع. Example: شارع فلسطين، حي الجامعة
+     * @bodyParam active boolean حالة المستودع. Example: false
+     * @bodyParam company_id integer معرف الشركة (للمسؤول العام فقط). Example: 2
      */
     public function update(UpdateWarehouseRequest $request, Warehouse $warehouse): JsonResponse // استخدام Route Model Binding
     {
@@ -241,7 +274,11 @@ class WarehouseController extends Controller
     }
 
     /**
-     * حذف مستودع محدد.
+     * @group 04. نظام المنتجات
+     * 
+     * حذف مستودع
+     * 
+     * @urlParam warehouse required معرف المستودع. Example: 1
      */
     public function destroy(Warehouse $warehouse): JsonResponse // استخدام Route Model Binding
     {
