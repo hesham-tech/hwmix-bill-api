@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Auth;
 trait Scopes
 {
     /**
-     * نطاق لجلب السجلات المرتبطة بشركة المستخدم الحالي (المالك/المدير) فقط.
-     * يفترض أن المستخدم الذي يستخدم هذا النطاق هو "مالك" أو "مدير" للشركة.
+
      * لا يتضمن السجلات التي company_id لها null.
      *
      * @param  \Illuminate\Database\Eloquent\Builder $query

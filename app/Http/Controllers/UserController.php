@@ -38,6 +38,7 @@ class UserController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
+
     public function index(Request $request)
     {
         $authUser = Auth::user();
@@ -53,14 +54,16 @@ class UserController extends Controller
             $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
             $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
 
+            // 1. فحص الصلاحية الأولية (هل لديه أي صلاحية رؤية تبرر إكمال الطلب؟)
             if (
                 !$isSuperAdmin &&
                 (!$isCompanyAdmin || !$activeCompanyId) &&
                 !$canViewAll &&
-                !$canViewChildren &&
-                !$canViewSelf
+                !$canViewChildren
+                // تم استبعاد $canViewSelf من هذا الفحص لتجنب حالة أن يكون الـ AuthUser هو المستخدم الوحيد ويريد رؤية بياناته الخاصة (لكنه لا يُسمح له هنا برؤية قائمة الآخرين).
             ) {
-                return api_forbidden('ليس لديك صلاحية لعرض المستخدمين أو لا توجد شركة نشطة مرتبطة بك.');
+                // إذا لم يكن لديه أي من صلاحيات الرؤية الجماعية، نمنعه.
+                return api_forbidden('ليس لديك صلاحية لعرض قائمة المستخدمين الآخرين.');
             }
 
             $query = CompanyUser::with([
@@ -76,27 +79,35 @@ class UserController extends Controller
                 'company',
             ]);
 
-            // تطبيق منطق الصلاحيات بناءً على company_id للمستخدم الموثق
+            // **[تأكيد المنطق]: استبعاد المستخدم الموثق من القائمة المعروضة للإدارة**
+            $query->where('user_id', '!=', $authUser->id);
+
+            // 2. تطبيق منطق الصلاحيات على الاستعلام
             if ($isSuperAdmin) {
                 // المدير العام يرى كل المستخدمين في كل الشركات
             } elseif ($activeCompanyId) {
                 if ($isCompanyAdmin || $canViewAll) {
+                    // يرى الجميع في الشركة النشطة
                     $query->where('company_id', $activeCompanyId);
                 } elseif ($canViewChildren) {
+                    // يرى التابعين له في الشركة النشطة
                     $descendantUserIds = $authUser->getDescendantUserIds();
+
+                    // تأكيد: يجب أن نرى فقط المستخدمين التابعين له والموجودين في الشركة النشطة
                     $query->where('company_id', $activeCompanyId)
                         ->whereIn('user_id', $descendantUserIds);
+
                 } elseif ($canViewSelf) {
-                    $query->where('company_id', $activeCompanyId)
-                        ->where('user_id', $authUser->id);
-                } else {
-                    return api_forbidden('ليس لديك صلاحية لعرض المستخدمين في هذه الشركة.');
+                    // **[مراجعة]: بما أننا استبعدنا الـ AuthUser، وصلاحية view_self لا تمنح رؤية للآخرين، يجب أن تظهر له القائمة فارغة أو نمنعه.**
+                    // المنطق الحالي يمنع الوصول إذا كانت هذه هي الصلاحية الوحيدة المتبقية (وهو المنطق السليم لقائمة إدارية):
+                    return api_forbidden('ليس لديك صلاحية لعرض المستخدمين الآخرين في هذه الشركة.');
                 }
             } else {
-                return api_forbidden('ليس لديك صلاحية لعرض المستخدمين أو لا توجد شركة نشطة مرتبطة بك.');
+                // لا يوجد شركة نشطة
+                return api_forbidden('لا توجد شركة نشطة مرتبطة بك للبحث ضمن نطاقها.');
             }
 
-            // تطبيق فلاتر البحث
+            // تطبيق فلاتر البحث (كما هي)
             if ($request->filled('nickname')) {
                 $query->where('nickname_in_company', 'like', '%' . $request->input('nickname') . '%');
             }
@@ -120,7 +131,7 @@ class UserController extends Controller
                 $query->where('company_user.created_at', '<=', $request->input('created_at_to') . ' 23:59:59');
             }
 
-            // الفرز والتصفح
+            // الفرز والتصفح (كما هي)
             $perPage = max(1, $request->input('per_page', 10));
             $sortField = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'asc');
@@ -137,10 +148,20 @@ class UserController extends Controller
 
             $companyUsers = $query->paginate($perPage);
 
+            // تحديد الـ Resource المطلوب
+            $full = filter_var(
+                $request->input('full', false),
+                FILTER_VALIDATE_BOOLEAN
+            );
+            $resourceClass = $full
+                ? CompanyUserResource::class
+                : CompanyUserBasicResource::class;
+
+
             if ($companyUsers->isEmpty()) {
-                return api_success([], 'لم يتم العثور على مستخدمين في هذه الشركة.');
+                return api_success([], 'لم يتم العثور على مستخدمين.');
             } else {
-                return api_success(CompanyUserBasicResource::collection($companyUsers), 'تم جلب المستخدمين بنجاح.');
+                return api_success($resourceClass::collection($companyUsers), 'تم جلب المستخدمين بنجاح.');
             }
         } catch (Throwable $e) {
             Log::error("فشل جلب قائمة المستخدمين: " . $e->getMessage(), ['exception' => $e, 'user_id' => $authUser->id, 'request_data' => $request->all()]);
