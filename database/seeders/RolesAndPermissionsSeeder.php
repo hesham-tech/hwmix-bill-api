@@ -33,15 +33,17 @@ class RolesAndPermissionsSeeder extends Seeder
 
     private function createSystemCompany()
     {
-        Company::create([
-            'name' => 'System Company',
-            'description' => 'A description for the system company.',
-            'field' => 'Technology',
-            'owner_name' => 'System Owner',
-            'address' => '123 System Street',
-            'phone' => '010123456789',
-            'email' => 'company@admin.com',
-        ]);
+        Company::firstOrCreate(
+            ['email' => 'company@admin.com'],
+            [
+                'name' => 'System Company',
+                'description' => 'A description for the system company.',
+                'field' => 'Technology',
+                'owner_name' => 'System Owner',
+                'address' => '123 System Street',
+                'phone' => '010123456789',
+            ]
+        );
     }
 
     private function createSystemOwner($permissions)

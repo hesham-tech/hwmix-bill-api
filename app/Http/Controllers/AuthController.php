@@ -52,17 +52,20 @@ class AuthController extends Controller
                 'nickname' => 'nullable|string|max:255',
             ]);
 
+            $company = \App\Models\Company::first();
+            $companyId = $company ? $company->id : 1;
+
             $user = User::create([
                 'phone' => $validated['phone'],
-                'company_id' => 1, // الشركة الرئيسية/النشطة (افتراضية)
+                'company_id' => $companyId, // الشركة الرئيسية/النشطة (افتراضية)
                 'full_name' => $validated['full_name'] ?? null,
                 'nickname' => $validated['nickname'] ?? null,
                 'password' => Hash::make($validated['password']),
             ]);
 
-            // **[التعديل الجديد]: ربط المستخدم بالشركة الافتراضية (Company 1)**
+            // **[التعديل الجديد]: ربط المستخدم بالشركة الافتراضية**
             // هذا السطر هو الذي ينشئ سجل في جدول company_user ويطلق المراقب.
-            $user->companies()->attach(1, [
+            $user->companies()->attach($companyId, [
                 // يجب توفير created_by في جدول company_user
                 // نفترض أن المستخدم الذي تم إنشاؤه حديثًا هو 'created_by' لنفسه في الوقت الحالي.
                 'created_by' => $user->id,
@@ -84,6 +87,11 @@ class AuthController extends Controller
         } catch (ValidationException $e) {
             return api_error('فشل التحقق من صحة البيانات أثناء التسجيل.', $e->errors(), 422);
         } catch (Throwable $e) {
+            \Log::error('Registration Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
             return api_exception($e, 500);
         }
     }

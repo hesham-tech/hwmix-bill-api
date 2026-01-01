@@ -138,7 +138,7 @@ class CashBoxController extends Controller
      * إنشاء خزنة جديدة
      * 
      * @bodyParam name string required اسم الخزنة. Example: مكتب القاهرة
-     * @bodyParam type_box_id integer required معرف جود النوع. Example: 1
+     * @bodyParam cash_box_type_id integer required معرف نوع الصندوق. Example: 1
      * @bodyParam account_number string رقم الحساب المرتبط. Example: ACC-001
      * @bodyParam user_id integer معرف المستخدم المسؤول عن الخزنة. Example: 1
      * @bodyParam company_id integer معرف الشركة (للمسؤول فقط). Example: 1
