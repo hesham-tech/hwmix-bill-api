@@ -14,13 +14,15 @@ use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 #[ScopedBy([CompanyScope::class])]
 /**
  * @mixin IdeHelperCashBox
  */
 class CashBox extends Model
 {
-    use Scopes, LogsActivity, RolePermissions, Blameable;
+    use HasFactory, Scopes, LogsActivity, RolePermissions, Blameable;
     protected $fillable = [
         'name',
         'balance',

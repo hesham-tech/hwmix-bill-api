@@ -39,6 +39,8 @@ return new class extends Migration {
             $table->text('user_agent')->nullable();
 
             // Additional context
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('url')->nullable();
             $table->json('metadata')->nullable(); // Any extra data
 
             $table->timestamps();

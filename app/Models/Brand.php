@@ -5,13 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Blameable;
+use App\Traits\LogsActivity;
+use App\Traits\RolePermissions;
 use App\Traits\Scopes;
 /**
  * @mixin IdeHelperBrand
  */
 class Brand extends Model
 {
-    use HasFactory, Blameable,Scopes;
+    use HasFactory, Blameable, Scopes;
 
     protected $fillable = ['company_id', 'created_by', 'name', 'description'];
 

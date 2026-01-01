@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use App\Traits\Blameable;
+use App\Traits\LogsActivity;
+use App\Traits\RolePermissions;
 use App\Traits\Scopes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @mixin IdeHelperCategory
  */
 class Category extends Model
 {
-    use HasFactory, Scopes;
+    use HasFactory, Blameable, Scopes;
 
     protected $fillable = ['company_id', 'created_by', 'parent_id', 'name', 'description'];
 

@@ -46,6 +46,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
     private function createSystemOwner($permissions)
     {
+        $company = Company::first();
         $user = User::create([
             'nickname' => 'System Owner',
             'email' => 'admin@admin.com',
@@ -53,7 +54,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'username' => 'system_owner',
             'password' => bcrypt('12345678'),
             'phone' => '1234567890',
-            'company_id' => 1,
+            'company_id' => $company ? $company->id : null,
         ]);
         $user->givePermissionTo($permissions);
 

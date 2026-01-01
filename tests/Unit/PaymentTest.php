@@ -15,15 +15,19 @@ class PaymentTest extends TestCase
     {
         $calculator = new InvoiceCalculator(new TaxCalculator());
 
+        $items = [
+            ['product_id' => 1, 'variant_id' => 1, 'name' => 'Test', 'quantity' => 1, 'unit_price' => 1000, 'total' => 1000]
+        ];
+
         $invoiceData = [
             'gross_amount' => 1000,
             'total_discount' => 100,
             'net_amount' => 900,
             'paid_amount' => 500,
-            'items' => []
+            'items' => $items
         ];
 
-        $result = $calculator->calculateTotals([], $invoiceData);
+        $result = $calculator->calculateTotals($items, $invoiceData);
 
         $this->assertEquals(400, $result['remaining_amount']);
     }

@@ -5,9 +5,9 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\InvoiceType>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Warehouse>
  */
-class InvoiceTypeFactory extends Factory
+class WarehouseFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,10 +17,9 @@ class InvoiceTypeFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word,
-            'description' => $this->faker->sentence,
-            'context' => 'sales',
-            'code' => $this->faker->unique()->slug(1),
+            'name' => $this->faker->word . ' Warehouse',
+            'location' => $this->faker->address,
+            'capacity' => 1000,
             'company_id' => \App\Models\Company::factory(),
             'created_by' => \App\Models\User::factory(),
         ];

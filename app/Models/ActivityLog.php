@@ -23,10 +23,10 @@ class ActivityLog extends Model
 
     protected $fillable = [
         'action',
-        'model',
-        'row_id',
-        'data_old',
-        'data_new',
+        'subject_type',
+        'subject_id',
+        'old_values',
+        'new_values',
         'description',
         'user_id',
         'created_by',
@@ -37,7 +37,7 @@ class ActivityLog extends Model
     ];
 
     protected $casts = [
-        'data_old' => 'array',
-        'data_new' => 'array',
+        'old_values' => 'array',
+        'new_values' => 'array',
     ];
 }

@@ -5,11 +5,12 @@ namespace App\Models;
 use App\Traits\Scopes;
 use App\Traits\LogsActivity;
 use App\Traits\RolePermissions;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CashBoxType extends Model
 {
-    use Scopes, LogsActivity, RolePermissions;
+    use HasFactory, Scopes, LogsActivity, RolePermissions;
     protected $table = 'cash_box_types';
 
     protected $fillable = [

@@ -21,8 +21,8 @@ trait InvoiceHelperTrait
     protected function createInvoice(array $data): Invoice
     {
         try {
-            unset($data['invoice_number']);
             $invoice = Invoice::create([
+                'invoice_number' => $data['invoice_number'] ?? null,
                 'invoice_type_id' => $data['invoice_type_id'],
                 'invoice_type_code' => $data['invoice_type_code'] ?? null,
                 'due_date' => $data['due_date'] ?? null,
