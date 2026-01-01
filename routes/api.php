@@ -120,6 +120,57 @@ Route::post('login', [AuthController::class, 'login']);
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('/auth/check', [AuthController::class, 'checkLogin']);
+    // Health check
+    Route::get('/artisan/health', [ArtisanController::class, 'health']);
+
+    // ================== Reports Routes ==================
+    Route::prefix('reports')->group(function () {
+        // Sales Reports
+        Route::get('/sales', [\App\Http\Controllers\Reports\SalesReportController::class, 'index']);
+        Route::get('/sales/top-products', [\App\Http\Controllers\Reports\SalesReportController::class, 'topProducts']);
+        Route::get('/sales/top-customers', [\App\Http\Controllers\Reports\SalesReportController::class, 'topCustomers']);
+        Route::get('/sales/trend', [\App\Http\Controllers\Reports\SalesReportController::class, 'trend']);
+
+        // Profit & Loss Reports
+        Route::get('/profit-loss', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'index']);
+        Route::get('/profit-loss/monthly-comparison', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'monthlyComparison']);
+
+        // Stock Reports
+        Route::get('/stock', [\App\Http\Controllers\Reports\StockReportController::class, 'index']);
+        Route::get('/stock/valuation', [\App\Http\Controllers\Reports\StockReportController::class, 'valuation']);
+        Route::get('/stock/low-stock', [\App\Http\Controllers\Reports\StockReportController::class, 'lowStock']);
+        Route::get('/stock/inactive', [\App\Http\Controllers\Reports\StockReportController::class, 'inactiveStock']);
+
+        // Cash Flow Reports
+        Route::get('/cash-flow', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'index']);
+        Route::get('/cash-flow/by-cash-box', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'byCashBox']);
+        Route::get('/cash-flow/summary', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'summary']);
+
+        // Tax Reports
+        Route::get('/tax', [\App\Http\Controllers\Reports\TaxReportController::class, 'index']);
+        Route::get('/tax/collected', [\App\Http\Controllers\Reports\TaxReportController::class, 'collected']);
+        Route::get('/tax/paid', [\App\Http\Controllers\Reports\TaxReportController::class, 'paid']);
+        Route::get('/tax/net', [\App\Http\Controllers\Reports\TaxReportController::class, 'netTax']);
+
+        // Customer/Supplier Reports
+        Route::get('/customers/top', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'topCustomers']);
+        Route::get('/customers/debts', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'customerDebts']);
+        Route::get('/suppliers/debts', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'supplierDebts']);
+        Route::get('/customers/performance', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'performance']);
+    });
+
+    // ================== Activity Logs (Audit Trail) ==================
+    Route::prefix('activity-logs')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ActivityController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\ActivityController::class, 'show']);
+        Route::get('/subject/logs', [\App\Http\Controllers\ActivityController::class, 'forSubject']);
+        Route::get('/user/{userId}', [\App\Http\Controllers\ActivityController::class, 'userActivity']);
+        Route::get('/invoice/{invoiceId}', [\App\Http\Controllers\ActivityController::class, 'invoiceActivities']);
+        Route::post('/export', [\App\Http\Controllers\ActivityController::class, 'export']);
+    });
+
+    // ================== Dashboard ==================
+    Route::get('/dashboard/summary', [\App\Http\Controllers\DashboardController::class, 'index']);
     // Auth Controller
     Route::get('me', [AuthController::class, 'me']);
     // User Controller
@@ -164,6 +215,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/transactions', 'transactions');
             Route::get('transactions/user/{cashBoxId?}', 'userTransactions');
             Route::post('/transactions/{transaction}/reverse', 'reverseTransaction');
+        });
+    // Invoice Controller
+    Route::controller(InvoiceController::class)
+        ->group(function () {
+            Route::get('invoices', 'index');
+            Route::post('invoice', 'store');
+            Route::get('invoice/{invoice}', 'show');
+            Route::put('invoice/{invoice}', 'update');
+            Route::delete('invoice/{invoice}', 'destroy');
+            Route::post('invoices/deletes', 'deleteMultiple');
+
+            // PDF Routes
+            Route::get('invoice/{id}/pdf', 'downloadPDF')->name('invoice.download-pdf');
+            Route::get('invoice/{id}/pdf-data', 'getInvoiceForPDF')->name('invoice.pdf-data');
+            Route::post('invoice/{id}/email-pdf', 'emailPDF')->name('invoice.email-pdf');
+
+            // Excel Export
+            Route::post('invoices/export-excel', 'exportExcel')->name('invoices.export-excel');
         });
     // Role Controller
     Route::controller(RoleController::class)

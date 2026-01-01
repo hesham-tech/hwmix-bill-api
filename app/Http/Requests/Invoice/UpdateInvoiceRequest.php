@@ -23,32 +23,44 @@ class UpdateInvoiceRequest extends FormRequest
                 'string',
                 Rule::unique('invoices', 'invoice_number')->ignore($invoiceId),
             ],
-            'status' => 'nullable|string',
+            'status' => 'nullable|string|in:draft,confirmed,paid,partially_paid,overdue,canceled,refunded',
 
             // الحقول المالية
-            'gross_amount' => 'sometimes|numeric',
-            'total_discount' => 'nullable|numeric',
-            'net_amount' => 'sometimes|numeric',
+            'gross_amount' => 'sometimes|numeric|min:0',
+            'total_discount' => 'nullable|numeric|min:0',
 
-            'paid_amount' => 'nullable|numeric',
+            // حقول الضرائب
+            'total_tax' => 'nullable|numeric|min:0',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
+            'tax_inclusive' => 'nullable|boolean',
+
+            'net_amount' => 'sometimes|numeric|min:0',
+
+            'paid_amount' => 'nullable|numeric|min:0',
             'remaining_amount' => 'nullable|numeric',
             'round_step' => 'nullable|integer',
 
-            'due_date' => 'nullable|date',
+            'due_date' => 'nullable|date|after_or_equal:today',
             'cash_box_id' => 'nullable|integer|exists:cash_boxes,id',
             'user_cash_box_id' => 'nullable|integer|exists:cash_boxes,id',
             'user_id' => 'sometimes|integer|exists:users,id',
 
             'notes' => 'nullable|string',
 
-            'items' => 'sometimes|array',
-            'items.*.product_id' => 'required_with:items|integer',
+            'items' => 'sometimes|array|min:1',
+            'items.*.product_id' => 'required_with:items|integer|exists:products,id',
             'items.*.variant_id' => 'sometimes|nullable|integer|exists:product_variants,id',
             'items.*.name' => 'required_with:items|string',
-            'items.*.quantity' => 'required_with:items|integer',
-            'items.*.unit_price' => 'required_with:items|numeric',
-            'items.*.discount' => 'nullable|numeric',
-            'items.*.total' => 'required_with:items|numeric',
+            'items.*.quantity' => 'required_with:items|numeric|min:0.01',
+            'items.*.unit_price' => 'required_with:items|numeric|min:0',
+            'items.*.discount' => 'nullable|numeric|min:0',
+
+            // حقول الضرائب للصنف
+            'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
+            'items.*.tax_amount' => 'nullable|numeric|min:0',
+            'items.*.subtotal' => 'nullable|numeric|min:0',
+
+            'items.*.total' => 'required_with:items|numeric|min:0',
 
             'items.*.attributes' => 'nullable|array',
             'items.*.attributes.*.id' => 'nullable|integer',
@@ -68,7 +80,7 @@ class UpdateInvoiceRequest extends FormRequest
 
             'installment_plan' => 'nullable|array',
             'installment_plan.down_payment' => 'nullable|numeric',
-            'installment_plan.number_of_installments' => 'nullable|integer',
+            'installment_plan.number_of_installments' => 'nullable|integer|min:1',
             'installment_plan.installment_amount' => 'nullable|numeric',
             'installment_plan.total_amount' => 'nullable|numeric',
             'installment_plan.start_date' => 'nullable|date',

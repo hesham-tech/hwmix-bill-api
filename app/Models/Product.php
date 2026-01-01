@@ -7,12 +7,9 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * @mixin IdeHelperProduct
- */
 class Product extends Model
 {
-    use HasFactory, Blameable,Scopes;
+    use HasFactory, Blameable, Scopes;
 
     protected $fillable = [
         'name',
@@ -29,7 +26,22 @@ class Product extends Model
         'created_by'
     ];
 
+    protected $guarded = [];
+
+    // Product Type Constants
+    const TYPE_PHYSICAL = 'physical';
+    const TYPE_DIGITAL = 'digital';
+    const TYPE_SERVICE = 'service';
+    const TYPE_SUBSCRIPTION = 'subscription';
+
     protected $casts = [
+        'product_type' => 'string',
+        'require_stock' => 'boolean',
+        'is_downloadable' => 'boolean',
+        'license_keys' => 'array',
+        'available_keys_count' => 'integer',
+        'validity_days' => 'integer',
+        'expires_at' => 'datetime',
         'active' => 'boolean',
         'featured' => 'boolean',
         'returnable' => 'boolean',
@@ -62,6 +74,67 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
+    public function digitalDeliveries()
+    {
+        return $this->hasMany(DigitalProductDelivery::class);
+    }
+
+    // ==================== Scopes ====================
+
+    public function scopePhysical($query)
+    {
+        return $query->where('product_type', self::TYPE_PHYSICAL);
+    }
+
+    public function scopeDigital($query)
+    {
+        return $query->where('product_type', self::TYPE_DIGITAL);
+    }
+
+    public function scopeService($query)
+    {
+        return $query->where('product_type', self::TYPE_SERVICE);
+    }
+
+    public function scopeSubscription($query)
+    {
+        return $query->where('product_type', self::TYPE_SUBSCRIPTION);
+    }
+
+    // ==================== Helper Methods ====================
+
+    public function isPhysical(): bool
+    {
+        return $this->product_type === self::TYPE_PHYSICAL;
+    }
+
+    public function isDigital(): bool
+    {
+        return $this->product_type === self::TYPE_DIGITAL;
+    }
+
+    public function isService(): bool
+    {
+        return $this->product_type === self::TYPE_SERVICE;
+    }
+
+    public function isSubscription(): bool
+    {
+        return $this->product_type === self::TYPE_SUBSCRIPTION;
+    }
+
+    public function requiresStock(): bool
+    {
+        return $this->require_stock;
+    }
+
+    public function hasAvailableKeys(): bool
+    {
+        return $this->isDigital() && $this->available_keys_count > 0;
+    }
+
+    // ==================== العلاقات ====================
+
     // // علاقة المنتج مع الصور
     // public function images()
     // {
@@ -90,4 +163,5 @@ class Product extends Model
 
         return $slug;
     }
-};
+}
+;

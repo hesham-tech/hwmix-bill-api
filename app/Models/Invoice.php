@@ -16,6 +16,45 @@ class Invoice extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'total_tax' => 'decimal:2',
+        'tax_rate' => 'decimal:2',
+        'tax_inclusive' => 'boolean',
+    ];
+
+    // Status Constants
+    const STATUS_DRAFT = 'draft';
+    const STATUS_CONFIRMED = 'confirmed';
+    const STATUS_PAID = 'paid';
+    const STATUS_PARTIALLY_PAID = 'partially_paid';
+    const STATUS_OVERDUE = 'overdue';
+    const STATUS_CANCELED = 'canceled';
+    const STATUS_REFUNDED = 'refunded';
+
+    // Payment Status Constants
+    const PAYMENT_UNPAID = 'unpaid';
+    const PAYMENT_PARTIALLY_PAID = 'partially_paid';
+    const PAYMENT_PAID = 'paid';
+    const PAYMENT_OVERPAID = 'overpaid';
+
+    /**
+     * تحديث حالة الدفع بناءً على المبالغ
+     */
+    public function updatePaymentStatus(): void
+    {
+        if ($this->paid_amount == 0) {
+            $this->payment_status = self::PAYMENT_UNPAID;
+        } elseif ($this->paid_amount >= $this->net_amount) {
+            $this->payment_status = $this->paid_amount > $this->net_amount
+                ? self::PAYMENT_OVERPAID
+                : self::PAYMENT_PAID;
+        } else {
+            $this->payment_status = self::PAYMENT_PARTIALLY_PAID;
+        }
+
+        $this->save();
+    }
+
     protected static function booted()
     {
         static::creating(function ($invoice) {
@@ -85,5 +124,10 @@ class Invoice extends Model
     public function installmentPlan()
     {
         return $this->hasOne(InstallmentPlan::class, 'invoice_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(InvoicePayment::class, 'invoice_id');
     }
 }

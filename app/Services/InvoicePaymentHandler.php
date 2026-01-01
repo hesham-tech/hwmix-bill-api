@@ -1,0 +1,180 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\User;
+use App\Models\Invoice;
+use Illuminate\Support\Facades\Log;
+
+class InvoicePaymentHandler
+{
+    /**
+     * معالجة دفع فاتورة بيع
+     *
+     * @param Invoice $invoice
+     * @param User $seller
+     * @param User|null $buyer
+     * @param float $paidAmount
+     * @param float $remainingAmount
+     * @param int|null $sellerCashBoxId
+     * @param int|null $buyerCashBoxId
+     * @return void
+     * @throws \Exception
+     */
+    public function handleSalePayment(
+        Invoice $invoice,
+        User $seller,
+        ?User $buyer,
+        float $paidAmount,
+        float $remainingAmount,
+        ?int $sellerCashBoxId = null,
+        ?int $buyerCashBoxId = null
+    ): void {
+        // المبلغ المدفوع → يذهب لخزنة البائع
+        if ($paidAmount > 0) {
+            $result = $seller->deposit($paidAmount, $sellerCashBoxId);
+            if ($result !== true) {
+                throw new \Exception('فشل إيداع المبلغ في خزنة البائع: ' . json_encode($result));
+            }
+            Log::info("InvoicePaymentHandler: إيداع {$paidAmount} في خزنة البائع");
+        }
+
+        // المبلغ المتبقي → دين على العميل
+        if ($buyer && $remainingAmount > 0) {
+            $result = $buyer->withdraw($remainingAmount, $buyerCashBoxId);
+            if ($result !== true) {
+                throw new \Exception('فشل خصم الدين من رصيد العميل: ' . json_encode($result));
+            }
+            Log::info("InvoicePaymentHandler: خصم دين {$remainingAmount} من رصيد العميل");
+        }
+
+        // تحديث حالة الدفع
+        $invoice->updatePaymentStatus();
+    }
+
+    /**
+     * معالجة دفع فاتورة شراء
+     *
+     * @param Invoice $invoice
+     * @param User $buyer
+     * @param User|null $supplier
+     * @param float $paidAmount
+     * @param float $remainingAmount
+     * @param int|null $buyerCashBoxId
+     * @param int|null $supplierCashBoxId
+     * @return void
+     * @throws \Exception
+     */
+    public function handlePurchasePayment(
+        Invoice $invoice,
+        User $buyer,
+        ?User $supplier,
+        float $paidAmount,
+        float $remainingAmount,
+        ?int $buyerCashBoxId = null,
+        ?int $supplierCashBoxId = null
+    ): void {
+        // المبلغ المدفوع → يُسحب من خزنة المشتري (الشركة)
+        if ($paidAmount > 0) {
+            $result = $buyer->withdraw($paidAmount, $buyerCashBoxId);
+            if ($result !== true) {
+                throw new \Exception('فشل سحب المبلغ من خزنة الشركة: ' . json_encode($result));
+            }
+            Log::info("InvoicePaymentHandler: سحب {$paidAmount} من خزنة الشركة");
+        }
+
+        // المبلغ المتبقي → دين للمورد على الشركة
+        if ($supplier && $remainingAmount > 0) {
+            $result = $supplier->deposit($remainingAmount, $supplierCashBoxId);
+            if ($result !== true) {
+                throw new \Exception('فشل إضافة الدين لرصيد المورد: ' . json_encode($result));
+            }
+            Log::info("InvoicePaymentHandler: إضافة دين {$remainingAmount} لرصيد المورد");
+        }
+
+        $invoice->updatePaymentStatus();
+    }
+
+    /**
+     * عكس المدفوعات عند الإلغاء
+     *
+     * @param Invoice $invoice
+     * @param string $invoiceTypeCode
+     * @param User $currentUser
+     * @param int|null $cashBoxId
+     * @param int|null $userCashBoxId
+     * @return void
+     * @throws \Exception
+     */
+    public function reversePayment(
+        Invoice $invoice,
+        string $invoiceTypeCode,
+        User $currentUser,
+        ?int $cashBoxId = null,
+        ?int $userCashBoxId = null
+    ): void {
+        if (in_array($invoiceTypeCode, ['sale', 'installment_sale', 'service_invoice'])) {
+            $this->reverseSalePayment($invoice, $currentUser, $cashBoxId, $userCashBoxId);
+        } elseif ($invoiceTypeCode === 'purchase') {
+            $this->reversePurchasePayment($invoice, $currentUser, $cashBoxId, $userCashBoxId);
+        }
+    }
+
+    /**
+     * عكس دفع فاتورة بيع
+     */
+    private function reverseSalePayment(
+        Invoice $invoice,
+        User $seller,
+        ?int $sellerCashBoxId,
+        ?int $buyerCashBoxId
+    ): void {
+        // عكس المبلغ المدفوع (سحب من خزنة البائع)
+        if ($invoice->paid_amount > 0) {
+            $result = $seller->withdraw($invoice->paid_amount, $sellerCashBoxId);
+            if ($result !== true) {
+                Log::error('InvoicePaymentHandler: فشل عكس المبلغ المدفوع', ['result' => $result]);
+            }
+        }
+
+        // عكس الدين (إرجاع لرصيد العميل)
+        if ($invoice->user_id && $invoice->remaining_amount > 0) {
+            $buyer = User::find($invoice->user_id);
+            if ($buyer) {
+                $result = $buyer->deposit($invoice->remaining_amount, $buyerCashBoxId);
+                if ($result !== true) {
+                    Log::error('InvoicePaymentHandler: فشل عكس الدين', ['result' => $result]);
+                }
+            }
+        }
+    }
+
+    /**
+     * عكس دفع فاتورة شراء
+     */
+    private function reversePurchasePayment(
+        Invoice $invoice,
+        User $buyer,
+        ?int $buyerCashBoxId,
+        ?int $supplierCashBoxId
+    ): void {
+        // عكس المبلغ المدفوع (إرجاع لخزنة الشركة)
+        if ($invoice->paid_amount > 0) {
+            $result = $buyer->deposit($invoice->paid_amount, $buyerCashBoxId);
+            if ($result !== true) {
+                Log::error('InvoicePaymentHandler: فشل عكس المبلغ المدفوع للشركة', ['result' => $result]);
+            }
+        }
+
+        // عكس الدين (سحب من رصيد المورد)
+        if ($invoice->user_id && $invoice->remaining_amount > 0) {
+            $supplier = User::find($invoice->user_id);
+            if ($supplier) {
+                $result = $supplier->withdraw($invoice->remaining_amount, $supplierCashBoxId);
+                if ($result !== true) {
+                    Log::error('InvoicePaymentHandler: فشل عكس دين المورد', ['result' => $result]);
+                }
+            }
+        }
+    }
+}

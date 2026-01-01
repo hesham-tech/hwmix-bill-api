@@ -19,7 +19,9 @@ class InvoiceItem extends Model
         'quantity' => 'integer',
         'unit_price' => 'float',
         'discount' => 'float',
-        'tax' => 'float',
+        'tax_rate' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'subtotal' => 'decimal:2',
         'total' => 'float',
     ];
     // 🔗 العلاقة مع الفاتورة

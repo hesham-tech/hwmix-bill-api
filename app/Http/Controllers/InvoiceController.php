@@ -16,10 +16,105 @@ use App\Http\Resources\Invoice\InvoiceResource;
 use App\Http\Requests\Invoice\StoreInvoiceRequest;
 use App\Http\Requests\Invoice\UpdateInvoiceRequest;
 use App\Http\Resources\InvoiceItem\InvoiceItemResource;
+use App\Services\PDFService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 
 class InvoiceController extends Controller
 {
+    /**
+     * Download invoice as PDF
+     */
+    public function downloadPDF($id)
+    {
+        try {
+            $invoice = Invoice::with(['items.product', 'items.variant', 'user', 'company', 'invoiceType', 'payments'])
+                ->findOrFail($id);
+
+            return app(PDFService::class)->generateInvoicePDF($invoice);
+        } catch (\Exception $e) {
+            Log::error('Failed to generate invoice PDF: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل في إنشاء PDF'], 500);
+        }
+    }
+
+    /**
+     * Get invoice data formatted for frontend PDF generation
+     */
+    public function getInvoiceForPDF($id)
+    {
+        try {
+            $invoice = Invoice::with(['items.product', 'items.variant', 'user', 'company', 'invoiceType', 'payments'])
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => new \App\Http\Resources\Invoice\InvoiceForPDFResource($invoice),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get invoice data: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل في جلب بيانات الفاتورة'
+            ], 500);
+        }
+    }
+
+    /**
+     * Email invoice PDF
+     */
+    public function emailPDF($id, Request $request)
+    {
+        try {
+            $invoice = Invoice::with(['items.product', 'user', 'company'])->findOrFail($id);
+
+            $recipients = $request->input('recipients', [$invoice->user->email]);
+            $subject = $request->input('subject');
+
+            $success = app(PDFService::class)->emailInvoicePDF($invoice, $recipients, $subject);
+
+            if ($success) {
+                return response()->json(['message' => 'تم إرسال الفاتورة بالبريد الإلكتروني']);
+            }
+
+            return response()->json(['error' => 'فشل في إرسال البريد'], 500);
+        } catch (\Exception $e) {
+            Log::error('Failed to email invoice PDF: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل في إرسال الفاتورة'], 500);
+        }
+    }
+
+    /**
+     * Export invoices to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'nullable|array',
+                'ids.*' => 'exists:invoices,id',
+            ]);
+
+            $query = Invoice::with(['items', 'user', 'invoiceType', 'company']);
+
+            if ($request->filled('ids')) {
+                $query->whereIn('id', $request->ids);
+            } else {
+                // Export all (with limit for safety)
+                $query->limit(1000);
+            }
+
+            $invoices = $query->get();
+
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\InvoicesExport($invoices),
+                'invoices_' . now()->format('Y-m-d') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            Log::error('Failed to export invoices: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل في تصدير الفواتير'], 500);
+        }
+    }
     private array $relations;
 
     public function __construct()

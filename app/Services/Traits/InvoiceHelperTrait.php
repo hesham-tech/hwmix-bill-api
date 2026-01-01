@@ -23,19 +23,22 @@ trait InvoiceHelperTrait
         try {
             unset($data['invoice_number']);
             $invoice = Invoice::create([
-                'invoice_type_id'   => $data['invoice_type_id'],
+                'invoice_type_id' => $data['invoice_type_id'],
                 'invoice_type_code' => $data['invoice_type_code'] ?? null,
-                'due_date'          => $data['due_date'] ?? null,
-                'status'            => $data['status'] ?? 'confirmed',
-                'user_id'           => $data['user_id'],
-                'gross_amount'      => $data['gross_amount'],
-                'total_discount'    => $data['total_discount'] ?? 0,
-                'net_amount'        => $data['net_amount'],
-                'paid_amount'       => $data['paid_amount'] ?? 0,
-                'remaining_amount'  => $data['remaining_amount'] ?? 0,
-                'round_step'        => $data['round_step'] ?? null,
-                'company_id'        => $data['company_id'] ?? null,
-                'created_by'        => $data['created_by'] ?? null,
+                'due_date' => $data['due_date'] ?? null,
+                'status' => $data['status'] ?? 'confirmed',
+                'user_id' => $data['user_id'],
+                'gross_amount' => $data['gross_amount'],
+                'total_discount' => $data['total_discount'] ?? 0,
+                'total_tax' => $data['total_tax'] ?? 0,
+                'tax_rate' => $data['tax_rate'] ?? null,
+                'tax_inclusive' => $data['tax_inclusive'] ?? false,
+                'net_amount' => $data['net_amount'],
+                'paid_amount' => $data['paid_amount'] ?? 0,
+                'remaining_amount' => $data['remaining_amount'] ?? 0,
+                'round_step' => $data['round_step'] ?? null,
+                'company_id' => $data['company_id'] ?? null,
+                'created_by' => $data['created_by'] ?? null,
             ]);
 
             return $invoice;
@@ -57,19 +60,22 @@ trait InvoiceHelperTrait
     {
         try {
             $invoice->update([
-                'invoice_type_id'   => $data['invoice_type_id'],
+                'invoice_type_id' => $data['invoice_type_id'],
                 'invoice_type_code' => $data['invoice_type_code'] ?? null,
-                'due_date'          => $data['due_date'] ?? null,
-                'status'            => $data['status'] ?? 'confirmed',
-                'user_id'           => $data['user_id'],
-                'gross_amount'      => $data['gross_amount'],
-                'total_discount'    => $data['total_discount'] ?? 0,
-                'net_amount'        => $data['net_amount'],
-                'paid_amount'       => $data['paid_amount'] ?? 0,
-                'remaining_amount'  => $data['remaining_amount'] ?? 0,
-                'round_step'        => $data['round_step'] ?? null,
-                'company_id'        => $data['company_id'] ?? null,
-                'updated_by'        => $data['updated_by'] ?? null,
+                'due_date' => $data['due_date'] ?? null,
+                'status' => $data['status'] ?? 'confirmed',
+                'user_id' => $data['user_id'],
+                'gross_amount' => $data['gross_amount'],
+                'total_discount' => $data['total_discount'] ?? 0,
+                'total_tax' => $data['total_tax'] ?? 0,
+                'tax_rate' => $data['tax_rate'] ?? null,
+                'tax_inclusive' => $data['tax_inclusive'] ?? false,
+                'net_amount' => $data['net_amount'],
+                'paid_amount' => $data['paid_amount'] ?? 0,
+                'remaining_amount' => $data['remaining_amount'] ?? 0,
+                'round_step' => $data['round_step'] ?? null,
+                'company_id' => $data['company_id'] ?? null,
+                'updated_by' => $data['updated_by'] ?? null,
             ]);
 
             return $invoice;
@@ -95,11 +101,14 @@ trait InvoiceHelperTrait
                     'invoice_id' => $invoice->id,
                     'product_id' => $item['product_id'] ?? null,
                     'variant_id' => $item['variant_id'] ?? null,
-                    'name'       => $item['name'],
-                    'quantity'   => $item['quantity'],
+                    'name' => $item['name'],
+                    'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
-                    'discount'   => $item['discount'] ?? 0,
-                    'total'      => $item['total'],
+                    'discount' => $item['discount'] ?? 0,
+                    'tax_rate' => $item['tax_rate'] ?? 0,
+                    'tax_amount' => $item['tax_amount'] ?? 0,
+                    'subtotal' => $item['subtotal'] ?? 0,
+                    'total' => $item['total'],
                     'company_id' => $companyId,
                     'created_by' => $createdBy,
                 ]);
@@ -137,11 +146,14 @@ trait InvoiceHelperTrait
                     $existingItem->update([
                         'product_id' => $itemData['product_id'] ?? null,
                         'variant_id' => $itemData['variant_id'] ?? null,
-                        'name'       => $itemData['name'],
-                        'quantity'   => $itemData['quantity'],
+                        'name' => $itemData['name'],
+                        'quantity' => $itemData['quantity'],
                         'unit_price' => $itemData['unit_price'],
-                        'discount'   => $itemData['discount'] ?? 0,
-                        'total'      => $itemData['total'],
+                        'discount' => $itemData['discount'] ?? 0,
+                        'tax_rate' => $itemData['tax_rate'] ?? 0,
+                        'tax_amount' => $itemData['tax_amount'] ?? 0,
+                        'subtotal' => $itemData['subtotal'] ?? 0,
+                        'total' => $itemData['total'],
                         'company_id' => $companyId,
                         'updated_by' => $updatedBy,
                     ]);
@@ -151,11 +163,14 @@ trait InvoiceHelperTrait
                         'invoice_id' => $invoice->id,
                         'product_id' => $itemData['product_id'] ?? null,
                         'variant_id' => $itemData['variant_id'] ?? null,
-                        'name'       => $itemData['name'],
-                        'quantity'   => $itemData['quantity'],
+                        'name' => $itemData['name'],
+                        'quantity' => $itemData['quantity'],
                         'unit_price' => $itemData['unit_price'],
-                        'discount'   => $itemData['discount'] ?? 0,
-                        'total'      => $itemData['total'],
+                        'discount' => $itemData['discount'] ?? 0,
+                        'tax_rate' => $itemData['tax_rate'] ?? 0,
+                        'tax_amount' => $itemData['tax_amount'] ?? 0,
+                        'subtotal' => $itemData['subtotal'] ?? 0,
+                        'total' => $itemData['total'],
                         'company_id' => $companyId,
                         'created_by' => $updatedBy,
                     ]);
@@ -192,7 +207,8 @@ trait InvoiceHelperTrait
     protected function checkVariantsStock(array $items, string $mode = 'deduct'): void
     {
         try {
-            if ($mode === 'none') return;
+            if ($mode === 'none')
+                return;
 
             foreach ($items as $index => $item) {
                 $variantId = $item['variant_id'] ?? null;
@@ -202,6 +218,12 @@ trait InvoiceHelperTrait
                     throw ValidationException::withMessages([
                         "items.$index.variant_id" => ["المتغير المختار غير موجود (ID: $variantId)"],
                     ]);
+                }
+
+                // ✅ تجاهل فحص المخزون للمنتجات الرقمية
+                $product = $variant->product;
+                if ($product && !$product->requiresStock()) {
+                    continue; // تخطي فحص المخزون
                 }
 
                 $totalAvailableQuantity = $variant->stocks()->where('status', 'available')->sum('quantity');
@@ -229,13 +251,15 @@ trait InvoiceHelperTrait
         try {
             foreach ($items as $item) {
                 $variant = ProductVariant::find($item['variant_id'] ?? null);
-                if (!$variant) continue;
+                if (!$variant)
+                    continue;
 
                 $remaining = $item['quantity'];
                 $stocks = $variant->stocks()->where('status', 'available')->orderBy('created_at', 'asc')->get();
 
                 foreach ($stocks as $stock) {
-                    if ($remaining <= 0) break;
+                    if ($remaining <= 0)
+                        break;
 
                     $deduct = min($remaining, $stock->quantity);
                     if ($deduct > 0) {
@@ -260,7 +284,8 @@ trait InvoiceHelperTrait
         try {
             foreach ($invoice->items as $item) {
                 $variant = ProductVariant::find($item->variant_id ?? null);
-                if (!$variant) continue;
+                if (!$variant)
+                    continue;
 
                 $remaining = $item->quantity;
 
@@ -273,8 +298,8 @@ trait InvoiceHelperTrait
                     // إذا لم يكن هناك مخزون متاح، قد تحتاج لإنشاء سجل مخزون جديد
                     Stock::create([
                         'variant_id' => $variant->id,
-                        'quantity'   => $remaining,
-                        'status'     => 'available',
+                        'quantity' => $remaining,
+                        'status' => 'available',
                         'company_id' => $invoice->company_id,
                         'created_by' => $invoice->updated_by ?? $invoice->created_by,
                     ]);
@@ -298,7 +323,8 @@ trait InvoiceHelperTrait
         try {
             foreach ($items as $item) {
                 $variant = ProductVariant::find($item['variant_id'] ?? null);
-                if (!$variant) continue;
+                if (!$variant)
+                    continue;
 
                 // نبحث عن أحدث مخزون متاح لإضافة الكمية إليه
                 $stock = $variant->stocks()->where('status', 'available')->orderBy('created_at', 'desc')->first();
@@ -309,8 +335,8 @@ trait InvoiceHelperTrait
                     // إذا لم يكن هناك مخزون متاح، نقوم بإنشاء سجل مخزون جديد
                     Stock::create([
                         'variant_id' => $item['variant_id'],
-                        'quantity'   => $item['quantity'],
-                        'status'     => 'available',
+                        'quantity' => $item['quantity'],
+                        'status' => 'available',
                         'company_id' => $companyId,
                         'created_by' => $createdBy,
                     ]);
@@ -332,7 +358,8 @@ trait InvoiceHelperTrait
         try {
             foreach ($invoice->items as $item) {
                 $variant = ProductVariant::find($item->variant_id ?? null);
-                if (!$variant) continue;
+                if (!$variant)
+                    continue;
 
                 $remainingToDeduct = $item->quantity;
 
@@ -341,7 +368,8 @@ trait InvoiceHelperTrait
                 $stocks = $variant->stocks()->where('status', 'available')->orderBy('created_at', 'desc')->get();
 
                 foreach ($stocks as $stock) {
-                    if ($remainingToDeduct <= 0) break;
+                    if ($remainingToDeduct <= 0)
+                        break;
 
                     $deduct = min($remainingToDeduct, $stock->quantity);
                     if ($deduct > 0) {
