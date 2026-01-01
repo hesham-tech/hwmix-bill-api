@@ -41,7 +41,7 @@ use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, Translatable, HasRoles, HasApiTokens, Filterable, Scopes, HasPermissions, LogsActivity, HasImages;
+    use HasFactory, Notifiable, Translatable, HasRoles, HasApiTokens, Filterable, Scopes, HasPermissions, LogsActivity, HasImages, \App\Traits\HasTransferTo;
 
 
     /**
@@ -676,4 +676,28 @@ class User extends Authenticatable
         return null;
     }
 
+
+    public function transferTo(User $targetUser, float $amount, int $fromCashBoxId, int $toCashBoxId, $description = null): bool
+    {
+        $amount = floatval($amount);
+        DB::beginTransaction();
+        try {
+            $fromCashBox = CashBox::findOrFail($fromCashBoxId);
+            $toCashBox = CashBox::findOrFail($toCashBoxId);
+            if ($fromCashBox->balance < $amount) {
+                throw new \Exception('?????? ??? ???');
+            }
+            $balanceBeforeFrom = $fromCashBox->balance;
+            $balanceBeforeTo = $toCashBox->balance;
+            $fromCashBox->decrement('balance', $amount);
+            $toCashBox->increment('balance', $amount);
+            Transaction::create(['user_id' => $this->id, 'cashbox_id' => $fromCashBox->id, 'target_user_id' => $targetUser->id, 'target_cashbox_id' => $toCashBox->id, 'created_by' => Auth::id() ?? $this->id, 'company_id' => $fromCashBox->company_id, 'type' => '????? ????', 'amount' => $amount, 'balance_before' => $balanceBeforeFrom, 'balance_after' => $fromCashBox->fresh()->balance, 'description' => $description]);
+            Transaction::create(['user_id' => $targetUser->id, 'cashbox_id' => $toCashBox->id, 'target_user_id' => $this->id, 'target_cashbox_id' => $fromCashBox->id, 'created_by' => Auth::id() ?? $this->id, 'company_id' => $toCashBox->company_id, 'type' => '????? ????', 'amount' => $amount, 'balance_before' => $balanceBeforeTo, 'balance_after' => $toCashBox->fresh()->balance, 'description' => $description]);
+            DB::commit();
+            return true;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
 }

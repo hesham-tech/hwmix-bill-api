@@ -135,7 +135,7 @@ class ProductControllerTest extends TestCase
             'category_id' => $this->category->id,
         ]);
 
-        $response = $this->deleteJson("/api/product/{$product->id}");
+        $response = $this->deleteJson("/api/product/delete/{$product->id}");
 
         $response->assertStatus(200);
         $this->assertSoftDeleted('products', ['id' => $product->id]);
