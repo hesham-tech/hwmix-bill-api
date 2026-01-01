@@ -7,9 +7,6 @@ use App\Traits\LogsActivity;
 use App\Traits\RolePermissions;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * @mixin IdeHelperCashBoxType
- */
 class CashBoxType extends Model
 {
     use Scopes, LogsActivity, RolePermissions;
@@ -18,11 +15,20 @@ class CashBoxType extends Model
     protected $fillable = [
         'name',
         'description',
+        'is_system',
+        'is_active',
     ];
 
-    // العلاقة مع الخزائن (CashBox)
     public function cashBoxes()
     {
         return $this->hasMany(CashBox::class, 'cash_box_type_id');
+    }
+
+    /**
+     * Scope للحصول على أنواع الصناديق النشطة فقط
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

@@ -293,10 +293,11 @@ class CashBoxTypeController extends Controller
             try {
                 $deletedTypes = [];
                 foreach ($cashBoxTypesToDelete as $cashBoxType) {
-                    // التحقق من صلاحيات الحذف لكل عنصر
                     $canDelete = false;
+
+                    // تطبيق منطق الصلاحيات
                     if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                        $canDelete = true;
+                        $canDelete = $cashBoxType->belongsToCurrentCompany();
                     } elseif ($authUser->hasAnyPermission([perm_key('cash_box_types.delete_all'), perm_key('admin.company')])) {
                         $canDelete = $cashBoxType->belongsToCurrentCompany();
                     } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.delete_children'))) {
@@ -306,20 +307,33 @@ class CashBoxTypeController extends Controller
                     }
 
                     if (!$canDelete) {
-                        DB::rollback();
-                        return api_forbidden('ليس لديك صلاحية لحذف نوع الخزنة بالمعرف: ' . $cashBoxType->id);
+                        DB::rollBack();
+                        return api_forbidden("ليس لديك إذن لحذف نوع الخزنة '{$cashBoxType->name}'.");
                     }
 
-                    // تحقق مما إذا كان نوع الصندوق مرتبطًا بأي صندوق نقدي فعلي قبل الحذف
-                    if (CashBox::where('type_box_id', $cashBoxType->id)->exists()) {
-                        DB::rollback();
-                        return api_error('لا يمكن حذف نوع الخزنة. إنه مرتبط بخزن نقدية موجودة (المعرف: ' . $cashBoxType->id . ').', [], 409);
+                    // ✅ حماية من حذف أنواع الصناديق الأساسية (is_system)
+                    if ($cashBoxType->is_system) {
+                        DB::rollBack();
+                        return api_error(
+                            "لا يمكن حذف نوع صندوق أساسي من النظام: '{$cashBoxType->name}'. يمكنك تعطيله بدلاً من ذلك.",
+                            [
+                                'suggestion' => 'يمكنك تعطيل النوع بتغيير حالة is_active إلى false',
+                                'is_system' => true,
+                                'type_name' => $cashBoxType->name
+                            ],
+                            403
+                        );
+                    }
+
+                    // تحقق من وجود صناديق مرتبطة
+                    if ($cashBoxType->cashBoxes()->exists()) {
+                        DB::rollBack();
+                        return api_error("لا يمكن حذف نوع الخزنة '{$cashBoxType->name}' لأنه مستخدم في صناديق موجودة.", [], 422);
                     }
 
                     // حفظ نسخة من العنصر قبل حذفه لإرجاعه في الاستجابة
                     $deletedType = $cashBoxType->replicate();
                     $deletedType->setRelations($cashBoxType->getRelations()); // نسخ العلاقات المحملة
-                    $deletedTypes[] = $deletedType;
 
                     $cashBoxType->delete();
                 }
@@ -330,6 +344,55 @@ class CashBoxTypeController extends Controller
                 DB::rollback();
                 return api_error('حدث خطأ أثناء حذف أنواع الخزن.', [], 500);
             }
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * تبديل حالة تفعيل/تعطيل نوع الصندوق.
+     *
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function toggle(string $id): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+            $companyId = $authUser->company_id ?? null;
+
+            if (!$authUser || (!$authUser->hasPermissionTo(perm_key('admin.super')))) {
+                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            }
+
+            $cashBoxType = CashBoxType::findOrFail($id);
+
+            // التحقق من الصلاحيات (نفس منطق update)
+            $canUpdate = false;
+            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                $canUpdate = true;
+            } elseif ($authUser->hasAnyPermission([perm_key('cash_box_types.update_all'), perm_key('admin.company')])) {
+                $canUpdate = $cashBoxType->belongsToCurrentCompany();
+            } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.update_children'))) {
+                $canUpdate = $cashBoxType->belongsToCurrentCompany() && $cashBoxType->createdByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.update_self'))) {
+                $canUpdate = $cashBoxType->belongsToCurrentCompany() && $cashBoxType->createdByCurrentUser();
+            }
+
+            if (!$canUpdate) {
+                return api_forbidden('ليس لديك إذن لتعديل حالة نوع الصندوق هذا.');
+            }
+
+            // تبديل الحالة
+            $cashBoxType->is_active = !$cashBoxType->is_active;
+            $cashBoxType->save();
+
+            $status = $cashBoxType->is_active ? 'مفعّل' : 'معطّل';
+            return api_success(
+                $cashBoxType,
+                "نوع الصندوق '{$cashBoxType->name}' الآن {$status}."
+            );
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }

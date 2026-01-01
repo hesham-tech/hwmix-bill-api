@@ -25,6 +25,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('cash_box_types_');
+        Schema::dropIfExists('cash_box_types');
     }
 };

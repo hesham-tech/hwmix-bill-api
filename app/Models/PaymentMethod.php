@@ -6,15 +6,11 @@ use App\Traits\Scopes;
 use App\Traits\Blameable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
-/**
- * @mixin IdeHelperPaymentMethod
- */
 class PaymentMethod extends Model
 {
     use HasFactory, Scopes, Blameable;
 
-    protected $fillable = ['name', 'code', 'active'];
+    protected $fillable = ['name', 'code', 'active', 'is_system'];
 
     public function payments()
     {
@@ -29,5 +25,13 @@ class PaymentMethod extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Scope للحصول على طرق الدفع النشطة فقط
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
     }
 }

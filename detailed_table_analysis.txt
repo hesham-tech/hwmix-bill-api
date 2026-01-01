@@ -1,0 +1,60 @@
+================================================================================
+DETAILED DATABASE ANALYSIS
+Comparing Migrations vs Backup
+================================================================================
+
+Tables in migrations: 43
+Tables in backup: 4
+Tables in migrations but NOT in backup: 39
+
+================================================================================
+TABLES WITH NO INSERTS (Exist in migrations but not in backup):
+================================================================================
+1. activity_logs
+2. attribute_values
+3. attributes
+4. brands
+5. cache
+6. cache_locks
+7. cash_box_types
+8. categories
+9. failed_jobs
+10. images
+11. installment_payment_details
+12. installment_payments
+13. installment_plans
+14. installments
+15. invoice_items
+16. invoice_types
+17. invoices
+18. job_batches
+19. jobs
+20. password_reset_tokens
+21. payment_installment
+22. payment_methods
+23. payments
+24. personal_access_tokens
+25. plans
+26. product_variant_attributes
+27. product_variants
+28. products
+29. profits
+30. revenues
+31. role_company
+32. services
+33. sessions
+34. stocks
+35. subscriptions
+36. transactions
+37. translations
+38. user_company_cash
+39. warehouses
+
+================================================================================
+TABLES IN BACKUP:
+================================================================================
+  ✓ cash_boxes
+  ✓ companies
+  ✓ company_user
+  ✓ users
+

@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::rename('company_users', 'company_user');
+        Schema::table('cash_box_types', function (Blueprint $table) {
+            //
+        });
     }
 
     /**
@@ -19,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('company_user', function (Blueprint $table) {
+        Schema::table('cash_box_types', function (Blueprint $table) {
             //
         });
     }

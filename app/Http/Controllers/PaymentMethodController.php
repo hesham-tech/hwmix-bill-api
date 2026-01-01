@@ -290,14 +290,25 @@ class PaymentMethodController extends Controller
                 return api_forbidden('ليس لديك إذن لحذف طريقة الدفع هذه.');
             }
 
+            // ✅ حماية من حذف طرق الدفع الأساسية (is_system)
+            if ($paymentMethod->is_system) {
+                return api_error(
+                    'لا يمكن حذف طريقة دفع أساسية من النظام. يمكنك تعطيلها بدلاً من ذلك.',
+                    [
+                        'suggestion' => 'يمكنك تعطيل الطريقة بتغيير حالة active إلى false',
+                        'is_system' => true
+                    ],
+                    403
+                );
+            }
+
+            // التحقق من وجود ارتباطات بدفعات
+            if ($paymentMethod->payments()->exists()) {
+                return api_error('لا يمكن حذف طريقة الدفع لأنها مستخدمة في دفعات موجودة.', [], 422);
+            }
+
             DB::beginTransaction();
             try {
-                // تحقق مما إذا كانت طريقة الدفع مرتبطة بأي مدفوعات
-                if ($paymentMethod->payments()->exists()) {
-                    DB::rollBack();
-                    return api_error('لا يمكن حذف طريقة الدفع. إنها مرتبطة بمدفوعات موجودة.', [], 409);
-                }
-
                 $deletedPaymentMethod = $paymentMethod->replicate();
                 $deletedPaymentMethod->setRelations($paymentMethod->getRelations());
 
@@ -308,6 +319,55 @@ class PaymentMethodController extends Controller
                 DB::rollBack();
                 return api_exception($e);
             }
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * تبديل حالة تفعيل/تعطيل طريقة الدفع.
+     *
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function toggle(string $id): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+            $companyId = $authUser->company_id ?? null;
+
+            if (!$authUser || !$companyId) {
+                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            }
+
+            $paymentMethod = PaymentMethod::findOrFail($id);
+
+            // التحقق من الصلاحيات (نفس منطق update)
+            $canUpdate = false;
+            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                $canUpdate = true;
+            } elseif ($authUser->hasAnyPermission([perm_key('payment_methods.update_all'), perm_key('admin.company')])) {
+                $canUpdate = $paymentMethod->belongsToCurrentCompany();
+            } elseif ($authUser->hasPermissionTo(perm_key('payment_methods.update_children'))) {
+                $canUpdate = $paymentMethod->belongsToCurrentCompany() && $paymentMethod->createdByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('payment_methods.update_self'))) {
+                $canUpdate = $paymentMethod->belongsToCurrentCompany() && $paymentMethod->createdByCurrentUser();
+            }
+
+            if (!$canUpdate) {
+                return api_forbidden('ليس لديك إذن لتعديل حالة طريقة الدفع هذه.');
+            }
+
+            // تبديل الحالة
+            $paymentMethod->active = !$paymentMethod->active;
+            $paymentMethod->save();
+
+            $status = $paymentMethod->active ? 'مفعّلة' : 'معطّلة';
+            return api_success(
+                $paymentMethod,
+                "طريقة الدفع '{$paymentMethod->name}' الآن {$status}."
+            );
         } catch (Throwable $e) {
             return api_exception($e);
         }
