@@ -167,6 +167,17 @@ class InstallmentController extends Controller
     /**
      * @group 04. نظام الأقساط
      * 
+     * عرض تفاصيل قسط
+     *
+     * @urlParam id required معرف القسط. Example: 1
+     */
+    public function show(string $id): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+            $companyId = $authUser->company_id ?? null;
+
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }

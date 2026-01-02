@@ -72,6 +72,7 @@ class InstallmentControllerTest extends TestCase
         ]);
 
         $response->assertStatus(201);
+        dump(Installment::all()->toArray());
         $this->assertDatabaseHas('installments', ['amount' => 1000]);
     }
 
@@ -85,6 +86,9 @@ class InstallmentControllerTest extends TestCase
         ]);
 
         $response = $this->getJson("/api/installment/{$installment->id}");
+        if ($response->status() !== 200) {
+            dd($response->json());
+        }
         $response->assertStatus(200)->assertJsonPath('data.id', $installment->id);
     }
 
