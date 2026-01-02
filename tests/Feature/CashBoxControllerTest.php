@@ -23,7 +23,7 @@ class CashBoxControllerTest extends TestCase
         parent::setUp();
 
         $this->seed(AddPermissionsSeeder::class);
-        $this->company = Company::factory()->create(['id' => 1]);
+        $this->company = Company::factory()->create();
         $this->admin = User::factory()->create([
             'company_id' => $this->company->id,
         ]);
@@ -38,11 +38,15 @@ class CashBoxControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        CashBox::factory()->count(3)->create([
-            'company_id' => $this->company->id,
-            'cash_box_type_id' => $this->type->id,
-            'user_id' => $this->admin->id,
-        ]);
+        CashBox::factory()->count(3)->sequence(
+            ['is_default' => true],
+            ['is_default' => false],
+            ['is_default' => false],
+        )->create([
+                    'company_id' => $this->company->id,
+                    'cash_box_type_id' => $this->type->id,
+                    'user_id' => $this->admin->id,
+                ]);
 
         $response = $this->getJson('/api/cashBoxs');
 
@@ -74,6 +78,7 @@ class CashBoxControllerTest extends TestCase
         $cashBox = CashBox::factory()->create([
             'company_id' => $this->company->id,
             'cash_box_type_id' => $this->type->id,
+            'is_default' => true,
         ]);
 
         $response = $this->getJson("/api/cashBox/{$cashBox->id}");
@@ -89,6 +94,7 @@ class CashBoxControllerTest extends TestCase
         $cashBox = CashBox::factory()->create([
             'company_id' => $this->company->id,
             'cash_box_type_id' => $this->type->id,
+            'is_default' => true,
         ]);
 
         $payload = [
@@ -111,12 +117,13 @@ class CashBoxControllerTest extends TestCase
         $cashBox = CashBox::factory()->create([
             'company_id' => $this->company->id,
             'cash_box_type_id' => $this->type->id,
+            'is_default' => true,
         ]);
 
         $response = $this->deleteJson("/api/cashBox/{$cashBox->id}");
 
         $response->assertStatus(200);
-        $this->assertSoftDeleted('cash_boxes', ['id' => $cashBox->id]);
+        $this->assertDatabaseMissing('cash_boxes', ['id' => $cashBox->id]);
     }
 
     public function test_can_transfer_funds_between_boxes()
@@ -128,6 +135,7 @@ class CashBoxControllerTest extends TestCase
             'cash_box_type_id' => $this->type->id,
             'balance' => 5000,
             'user_id' => $this->admin->id,
+            'is_default' => true,
         ]);
 
         $toBox = CashBox::factory()->create([
@@ -135,10 +143,11 @@ class CashBoxControllerTest extends TestCase
             'cash_box_type_id' => $this->type->id,
             'balance' => 0,
             'user_id' => $this->admin->id,
+            'is_default' => false,
         ]);
 
         $payload = [
-            'from_cash_box_id' => $fromBox->id,
+            'cash_box_id' => $fromBox->id,
             'to_cash_box_id' => $toBox->id,
             'amount' => 1000,
             'to_user_id' => $this->admin->id,

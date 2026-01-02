@@ -26,7 +26,7 @@ class InstallmentControllerTest extends TestCase
         parent::setUp();
 
         $this->seed(AddPermissionsSeeder::class);
-        $this->company = Company::factory()->create(['id' => 1]);
+        $this->company = Company::factory()->create();
         $this->admin = User::factory()->create(['company_id' => $this->company->id]);
         $this->admin->givePermissionTo('admin.super');
 
@@ -41,8 +41,9 @@ class InstallmentControllerTest extends TestCase
 
         $this->plan = InstallmentPlan::factory()->create([
             'company_id' => $this->company->id,
+            'invoice_id' => $this->invoice->id,
             'name' => 'Test Plan',
-            'installments_count' => 3,
+            'number_of_installments' => 3,
         ]);
     }
 

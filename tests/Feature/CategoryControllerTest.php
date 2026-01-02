@@ -21,7 +21,7 @@ class CategoryControllerTest extends TestCase
         parent::setUp();
 
         $this->seed(AddPermissionsSeeder::class);
-        $this->company = Company::factory()->create(['id' => 1]);
+        $this->company = Company::factory()->create();
         $this->admin = User::factory()->create(['company_id' => $this->company->id]);
         $this->admin->givePermissionTo('admin.super');
     }
@@ -31,8 +31,12 @@ class CategoryControllerTest extends TestCase
         $this->actingAs($this->admin);
         Category::factory()->count(3)->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson('/api/categorys');
+        $response = $this->getJson('/api/categories');
+        if ($response->status() !== 200) {
+            file_put_contents(base_path('debug_category.json'), $response->content());
+        }
         $response->assertStatus(200)->assertJsonStructure(['status', 'data']);
+
     }
 
     public function test_can_create_category()

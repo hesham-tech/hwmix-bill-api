@@ -17,6 +17,8 @@ class InstallmentPlan extends Model
 
     protected $fillable = [
         'invoice_id',
+        'name',
+        'description',
         'user_id',
         'total_amount',
         'down_payment',

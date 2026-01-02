@@ -21,7 +21,7 @@ class CashBoxTypeControllerTest extends TestCase
         parent::setUp();
 
         $this->seed(AddPermissionsSeeder::class);
-        $this->company = Company::factory()->create(['id' => 1]);
+        $this->company = Company::factory()->create();
         $this->admin = User::factory()->create([
             'company_id' => $this->company->id,
         ]);
@@ -81,6 +81,7 @@ class CashBoxTypeControllerTest extends TestCase
 
         $payload = [
             'name' => 'Updated Type Name',
+            'description' => 'Updated Description',
         ];
 
         $response = $this->putJson("/api/cashBoxType/{$type->id}", $payload);
@@ -115,9 +116,11 @@ class CashBoxTypeControllerTest extends TestCase
             'company_id' => $this->company->id,
         ]);
 
-        $response = $this->deleteJson("/api/cashBoxType/{$type->id}");
+        $response = $this->deleteJson("/api/cashBoxType/{$type->id}", [
+            'item_ids' => [$type->id]
+        ]);
 
         $response->assertStatus(200);
-        $this->assertSoftDeleted('cash_box_types', ['id' => $type->id]);
+        $this->assertDatabaseMissing('cash_box_types', ['id' => $type->id]);
     }
 }

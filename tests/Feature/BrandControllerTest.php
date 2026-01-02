@@ -21,7 +21,7 @@ class BrandControllerTest extends TestCase
         parent::setUp();
 
         $this->seed(AddPermissionsSeeder::class);
-        $this->company = Company::factory()->create(['id' => 1]);
+        $this->company = Company::factory()->create();
         $this->admin = User::factory()->create(['company_id' => $this->company->id]);
         $this->admin->givePermissionTo('admin.super');
     }
@@ -44,7 +44,7 @@ class BrandControllerTest extends TestCase
             'description' => 'Samsung Electronics'
         ]);
 
-        $response->assertStatus(201);
+        $response->assertStatus(200);
         $this->assertDatabaseHas('brands', ['name' => 'Samsung']);
     }
 

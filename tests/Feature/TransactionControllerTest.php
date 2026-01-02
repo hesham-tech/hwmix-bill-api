@@ -24,11 +24,13 @@ class TransactionControllerTest extends TestCase
         parent::setUp();
 
         $this->seed(AddPermissionsSeeder::class);
-        $this->company = Company::factory()->create(['id' => 1]);
+        $this->company = Company::factory()->create();
         $this->admin = User::factory()->create([
             'company_id' => $this->company->id,
         ]);
         $this->admin->givePermissionTo('admin.super');
+        $this->assertTrue($this->admin->hasPermissionTo('admin.super'), 'Admin user should have admin.super permission');
+
 
         $type = CashBoxType::factory()->create(['company_id' => $this->company->id]);
         $this->cashBox = CashBox::factory()->create([
@@ -57,7 +59,8 @@ class TransactionControllerTest extends TestCase
         $response = $this->getJson('/api/transactions');
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['status', 'data' => ['data']]);
+            ->assertJsonStructure(['status', 'data', 'total']);
+
     }
 
     public function test_user_can_deposit_money()

@@ -9,7 +9,9 @@ return new class extends Migration {
     public function up(): void
     {
         // تحديث enum لحالة الفاتورة
-        DB::statement("ALTER TABLE invoices MODIFY COLUMN status ENUM('draft', 'confirmed', 'paid', 'partially_paid', 'overdue', 'canceled', 'refunded') DEFAULT 'draft'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE invoices MODIFY COLUMN status ENUM('draft', 'confirmed', 'paid', 'partially_paid', 'overdue', 'canceled', 'refunded') DEFAULT 'draft'");
+        }
 
         // إضافة حقل payment_status منفصل
         Schema::table('invoices', function (Blueprint $table) {
@@ -29,6 +31,9 @@ return new class extends Migration {
         });
 
         // إرجاع enum للقيم القديمة
-        DB::statement("ALTER TABLE invoices MODIFY COLUMN status ENUM('draft', 'confirmed', 'canceled') DEFAULT 'confirmed'");
+        // إرجاع enum للقيم القديمة
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE invoices MODIFY COLUMN status ENUM('draft', 'confirmed', 'canceled') DEFAULT 'confirmed'");
+        }
     }
 };

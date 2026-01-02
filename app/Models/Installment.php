@@ -27,6 +27,7 @@ class Installment extends Model
         'created_by',
         'user_id',
         'company_id',
+        'invoice_id',
     ];
 
     protected $casts = [

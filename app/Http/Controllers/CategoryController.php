@@ -261,9 +261,12 @@ class CategoryController extends Controller
      * 
      * حذف قسم
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request): JsonResponse
     {
         try {
+            $request->validate(['id' => 'required|exists:categories,id']);
+            $id = $request->input('id');
+
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
             $companyId = $authUser->company_id ?? null;

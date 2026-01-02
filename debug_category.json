@@ -1,0 +1,267 @@
+{
+    "message": "The route api/categorys could not be found.",
+    "exception": "Symfony\\Component\\HttpKernel\\Exception\\NotFoundHttpException",
+    "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\AbstractRouteCollection.php",
+    "line": 44,
+    "trace": [
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\CompiledRouteCollection.php",
+            "line": 144,
+            "function": "handleMatchedRoute",
+            "class": "Illuminate\\Routing\\AbstractRouteCollection",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
+            "line": 763,
+            "function": "match",
+            "class": "Illuminate\\Routing\\CompiledRouteCollection",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
+            "line": 750,
+            "function": "findRoute",
+            "class": "Illuminate\\Routing\\Router",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
+            "line": 739,
+            "function": "dispatchToRoute",
+            "class": "Illuminate\\Routing\\Router",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
+            "line": 201,
+            "function": "dispatch",
+            "class": "Illuminate\\Routing\\Router",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
+            "line": 144,
+            "function": "Illuminate\\Foundation\\Http\\{closure}",
+            "class": "Illuminate\\Foundation\\Http\\Kernel",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php",
+            "line": 21,
+            "function": "Illuminate\\Pipeline\\{closure}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php",
+            "line": 31,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
+            "line": 183,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php",
+            "line": 21,
+            "function": "Illuminate\\Pipeline\\{closure}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php",
+            "line": 51,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
+            "line": 183,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\TrimStrings",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php",
+            "line": 27,
+            "function": "Illuminate\\Pipeline\\{closure}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
+            "line": 183,
+            "function": "handle",
+            "class": "Illuminate\\Http\\Middleware\\ValidatePostSize",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php",
+            "line": 110,
+            "function": "Illuminate\\Pipeline\\{closure}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
+            "line": 183,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php",
+            "line": 62,
+            "function": "Illuminate\\Pipeline\\{closure}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
+            "line": 183,
+            "function": "handle",
+            "class": "Illuminate\\Http\\Middleware\\HandleCors",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php",
+            "line": 58,
+            "function": "Illuminate\\Pipeline\\{closure}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
+            "line": 183,
+            "function": "handle",
+            "class": "Illuminate\\Http\\Middleware\\TrustProxies",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php",
+            "line": 22,
+            "function": "Illuminate\\Pipeline\\{closure}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
+            "line": 183,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
+            "line": 119,
+            "function": "Illuminate\\Pipeline\\{closure}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
+            "line": 176,
+            "function": "then",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
+            "line": 145,
+            "function": "sendRequestThroughRouter",
+            "class": "Illuminate\\Foundation\\Http\\Kernel",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
+            "line": 604,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Kernel",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
+            "line": 570,
+            "function": "call",
+            "class": "Illuminate\\Foundation\\Testing\\TestCase",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
+            "line": 378,
+            "function": "json",
+            "class": "Illuminate\\Foundation\\Testing\\TestCase",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\tests\\Feature\\CategoryControllerTest.php",
+            "line": 34,
+            "function": "getJson",
+            "class": "Illuminate\\Foundation\\Testing\\TestCase",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
+            "line": 1234,
+            "function": "test_can_list_categories",
+            "class": "Tests\\Feature\\CategoryControllerTest",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
+            "line": 515,
+            "function": "runTest",
+            "class": "PHPUnit\\Framework\\TestCase",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\phpunit\\phpunit\\src\\Framework\\TestRunner\\TestRunner.php",
+            "line": 86,
+            "function": "runBare",
+            "class": "PHPUnit\\Framework\\TestCase",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
+            "line": 362,
+            "function": "run",
+            "class": "PHPUnit\\Framework\\TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
+            "line": 369,
+            "function": "run",
+            "class": "PHPUnit\\Framework\\TestCase",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\phpunit\\phpunit\\src\\TextUI\\TestRunner.php",
+            "line": 64,
+            "function": "run",
+            "class": "PHPUnit\\Framework\\TestSuite",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\phpunit\\phpunit\\src\\TextUI\\Application.php",
+            "line": 210,
+            "function": "run",
+            "class": "PHPUnit\\TextUI\\TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "D:\\Dev\\projects\\hwmix-bill-api\\vendor\\phpunit\\phpunit\\phpunit",
+            "line": 104,
+            "function": "run",
+            "class": "PHPUnit\\TextUI\\Application",
+            "type": "->"
+        }
+    ]
+}

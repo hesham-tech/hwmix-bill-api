@@ -23,6 +23,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class CashBox extends Model
 {
     use HasFactory, Scopes, LogsActivity, RolePermissions, Blameable;
+
+    protected static function booted()
+    {
+        static::saving(function ($cashBox) {
+            if ($cashBox->is_default) {
+                static::where('user_id', $cashBox->user_id)
+                    ->where('company_id', $cashBox->company_id)
+                    ->where('id', '!=', $cashBox->id)
+                    ->update(['is_default' => false]);
+            }
+        });
+    }
+
     protected $fillable = [
         'name',
         'balance',

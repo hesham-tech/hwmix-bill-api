@@ -129,6 +129,7 @@ class CashBoxTypeController extends Controller
             try {
                 // التحقق من البيانات المدخلة
                 $validatedData = $request->validate([
+                    'name' => 'required|string|max:255',
                     'description' => 'required|string|max:255',
                     'is_default' => 'boolean',
                     // إذا كانت أنواع الصناديق مرتبطة بشركات:
@@ -244,6 +245,7 @@ class CashBoxTypeController extends Controller
             DB::beginTransaction();
             try {
                 $validatedData = $request->validate([
+                    'name' => 'required|string|max:255',
                     'description' => 'required|string|max:255',
                     'is_default' => 'boolean',
                     // إذا كانت أنواع الصناديق مرتبطة بشركات:
