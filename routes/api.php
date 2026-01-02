@@ -160,10 +160,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->group(function () {
             Route::get('roles', 'index');
             Route::post('role', 'store');
+            Route::post('role/delete', 'destroy');
+            Route::post('role/assignRole', 'assignRole');
             Route::get('role/{role}', 'show');
             Route::put('role/{role}', 'update');
-            Route::delete('role/{role}', 'destroy');
-            Route::post('role/assignRole', 'assignRole');
         });
     // cashBoxTypes Controller
     Route::controller(CashBoxTypeController::class)
@@ -239,7 +239,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('warehouse', 'store');
             Route::get('warehouse/{warehouse}', 'show');
             Route::put('warehouse/{warehouse}', 'update');
-            Route::post('warehouse/delete', 'destroy');
+            Route::delete('warehouse/{warehouse}', 'destroy');
         });
     // Stock Controller
     Route::controller(StockController::class)
@@ -248,7 +248,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('stock', 'store');
             Route::get('stock/{stock}', 'show');
             Route::put('stock/{stock}', 'update');
-            Route::post('stock/delete', 'destroy');
+            Route::delete('stock/{stock}', 'destroy');
         });
     // Category Controller
     Route::controller(CategoryController::class)

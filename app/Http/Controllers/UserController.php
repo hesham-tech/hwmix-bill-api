@@ -763,7 +763,11 @@ class UserController extends Controller
             return api_unauthorized('يجب تسجيل الدخول.');
         }
 
-        if (!$authUser->hasPermissionTo(perm_key('users.update_all')) && $authUser->id !== $user->id) {
+        if (
+            !$authUser->hasPermissionTo(perm_key('admin.super')) &&
+            !$authUser->hasPermissionTo(perm_key('users.update_all')) &&
+            $authUser->id !== $user->id
+        ) {
             return api_forbidden('ليس لديك صلاحية لتغيير شركة هذا المستخدم.');
         }
 

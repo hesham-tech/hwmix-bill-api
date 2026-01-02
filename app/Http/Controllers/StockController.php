@@ -23,8 +23,8 @@ class StockController extends Controller
         $this->relations = [
             'creator',
             'company',
-            'productVariant',
-            'productVariant.product',
+            'variant',
+            'variant.product',
             'warehouse',
         ];
     }
@@ -36,7 +36,7 @@ class StockController extends Controller
      * 
      * تتبع حركة المخزن الواردة والصادرة (رصيد افتتاحي، مبيعات، مشتريات، تسويات).
      * 
-     * @queryParam product_variant_id integer فلترة حسب متغير المنتج. Example: 1
+     * @queryParam variant_id integer فلترة حسب متغير المنتج. Example: 1
      * @queryParam warehouse_id integer فلترة حسب المستودع. Example: 1
      * @queryParam status string حالة الحركة (in, out, adjustment). Example: in
      * @queryParam quantity_from number الحد الأدنى للكمية. Example: 10
@@ -76,8 +76,8 @@ class StockController extends Controller
             }
 
             // فلاتر الطلب
-            if ($request->filled('product_variant_id')) {
-                $query->where('product_variant_id', $request->input('product_variant_id'));
+            if ($request->filled('variant_id')) {
+                $query->where('variant_id', $request->input('variant_id'));
             }
             if ($request->filled('warehouse_id')) {
                 $query->where('warehouse_id', $request->input('warehouse_id'));
@@ -120,7 +120,7 @@ class StockController extends Controller
      * 
      * إضافة حركة مخزون يدوية
      * 
-     * @bodyParam product_variant_id integer required معرف متغير المنتج. Example: 1
+     * @bodyParam variant_id integer required معرف متغير المنتج. Example: 1
      * @bodyParam warehouse_id integer required معرف المستودع. Example: 1
      * @bodyParam quantity number required الكمية. Example: 50
      * @bodyParam status string required الحالة (in/out). Example: in
@@ -147,7 +147,7 @@ class StockController extends Controller
                 $validatedData['created_by'] = $authUser->id;
 
                 // التحقق من أن المتغير والمستودع ينتميان لنفس الشركة
-                $productVariant = \App\Models\ProductVariant::where('id', $validatedData['product_variant_id'])
+                $productVariant = \App\Models\ProductVariant::where('id', $validatedData['variant_id'])
                     ->where('company_id', $companyId)
                     ->firstOrFail();
                 $warehouse = \App\Models\Warehouse::where('id', $validatedData['warehouse_id'])
@@ -217,7 +217,7 @@ class StockController extends Controller
      * تحديث حركة مخزون
      * 
      * @urlParam id required معرف حركة المخزون. Example: 1
-     * @bodyParam product_variant_id integer معرف متغير المنتج. Example: 1
+     * @bodyParam variant_id integer معرف متغير المنتج. Example: 1
      * @bodyParam warehouse_id integer معرف المستودع. Example: 1
      * @bodyParam quantity number الكمية. Example: 50
      * @bodyParam status string الحالة (in/out). Example: in
@@ -234,7 +234,7 @@ class StockController extends Controller
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
 
-            $stock = Stock::with(['company', 'creator', 'productVariant', 'warehouse'])->findOrFail($id);
+            $stock = Stock::with(['company', 'creator', 'variant', 'warehouse'])->findOrFail($id);
 
             $canUpdate = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -257,8 +257,8 @@ class StockController extends Controller
                 $validatedData['updated_by'] = $authUser->id;
 
                 // التحقق من أن المتغير والمستودع ينتميان لنفس الشركة إذا تم تغييرها
-                if (isset($validatedData['product_variant_id']) && $validatedData['product_variant_id'] != $stock->product_variant_id) {
-                    \App\Models\ProductVariant::where('id', $validatedData['product_variant_id'])
+                if (isset($validatedData['variant_id']) && $validatedData['variant_id'] != $stock->variant_id) {
+                    \App\Models\ProductVariant::where('id', $validatedData['variant_id'])
                         ->where('company_id', $companyId)
                         ->firstOrFail();
                 }

@@ -81,6 +81,36 @@ class CategoryControllerTest extends TestCase
 
         $response = $this->postJson("/api/category/delete", ['id' => $category->id]);
         $response->assertStatus(200);
-        // Soft delete not configured - skip assertion
+        $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+    }
+
+    public function test_cannot_delete_category_with_children()
+    {
+        $this->actingAs($this->admin);
+        $parent = Category::factory()->create(['company_id' => $this->company->id]);
+        Category::factory()->create([
+            'company_id' => $this->company->id,
+            'parent_id' => $parent->id
+        ]);
+
+        $response = $this->postJson("/api/category/delete", ['id' => $parent->id]);
+        $response->assertStatus(409);
+    }
+
+    public function test_user_cannot_view_categories_from_another_company()
+    {
+        $otherCompany = Company::factory()->create();
+        $otherCategory = Category::factory()->create(['company_id' => $otherCompany->id]);
+
+        $user = User::factory()->create(['company_id' => $this->company->id]);
+        $user->givePermissionTo('categories.view_all');
+
+        $this->actingAs($user);
+
+        $response = $this->getJson("/api/category/{$otherCategory->id}");
+        $response->assertStatus(403);
+
+        $response = $this->getJson('/api/categories');
+        $response->assertJsonMissing(['name' => $otherCategory->name]);
     }
 }

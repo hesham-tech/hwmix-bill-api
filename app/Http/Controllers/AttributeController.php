@@ -165,7 +165,7 @@ class AttributeController extends Controller
                     foreach ($validatedData['values'] as $valueData) {
                         $attribute->values()->create([
                             'name' => $valueData['name'],
-                            'value' => $valueData['value'] ?? null,
+                            'color' => $valueData['color'] ?? $valueData['value'] ?? null,
                             'company_id' => $attributeCompanyId,
                             'created_by' => $authUser->id,
                         ]);
@@ -173,7 +173,7 @@ class AttributeController extends Controller
                 } elseif (!empty($validatedData['name_value'])) {
                     $attribute->values()->create([
                         'name' => $validatedData['name_value'],
-                        'value' => $validatedData['value'] ?? null,
+                        'color' => $validatedData['color'] ?? $validatedData['value'] ?? null,
                         'company_id' => $attributeCompanyId,
                         'created_by' => $authUser->id,
                     ]);
@@ -303,7 +303,7 @@ class AttributeController extends Controller
                             ['id' => $valueData['id'] ?? null],
                             [
                                 'name' => $valueData['name'],
-                                'value' => $valueData['value'] ?? null,
+                                'color' => $valueData['color'] ?? $valueData['value'] ?? null,
                                 'company_id' => $attributeCompanyId,
                                 'created_by' => $valueData['created_by'] ?? $authUser->id,
                                 'updated_by' => $authUser->id,

@@ -76,8 +76,41 @@ class WarehouseControllerTest extends TestCase
         $this->actingAs($this->admin);
         $warehouse = Warehouse::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->postJson("/api/warehouse/delete", ['id' => $warehouse->id]);
+        $response = $this->deleteJson("/api/warehouse/{$warehouse->id}");
         $response->assertStatus(200);
-        // Soft delete not configured - skip assertion
+        $this->assertDatabaseMissing('warehouses', ['id' => $warehouse->id]);
+    }
+
+    public function test_user_cannot_view_warehouses_from_another_company()
+    {
+        $otherCompany = Company::factory()->create();
+        $otherWarehouse = Warehouse::factory()->create(['company_id' => $otherCompany->id]);
+
+        $user = User::factory()->create(['company_id' => $this->company->id]);
+        $user->givePermissionTo('warehouses.view_all');
+
+        $this->actingAs($user);
+
+        $response = $this->getJson("/api/warehouse/{$otherWarehouse->id}");
+        $response->assertStatus(403);
+
+        $response = $this->getJson('/api/warehouses');
+        $response->assertJsonMissing(['name' => $otherWarehouse->name]);
+    }
+
+    public function test_cannot_delete_warehouse_with_stocks()
+    {
+        $this->actingAs($this->admin);
+        $warehouse = Warehouse::factory()->create(['company_id' => $this->company->id]);
+
+        // Mock stock in this warehouse
+        \App\Models\Stock::factory()->create([
+            'warehouse_id' => $warehouse->id,
+            'company_id' => $this->company->id
+        ]);
+
+        $response = $this->deleteJson("/api/warehouse/{$warehouse->id}");
+        $response->assertStatus(409);
+        $this->assertDatabaseHas('warehouses', ['id' => $warehouse->id]);
     }
 }

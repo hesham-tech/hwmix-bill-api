@@ -110,7 +110,7 @@ class AttributeValueController extends Controller
 
                 // التأكد أن المستخدم صاحب الـ ID=1 موجود في جدول users
                 // هذا هو السبب الأكثر ترجيحاً للخطأ الحالي
-                $validatedData['created_by'] = 1;
+                $validatedData['created_by'] = auth()->id();
 
                 $attributeValue = AttributeValue::create($validatedData);
                 $attributeValue->load($this->relations);
@@ -171,7 +171,7 @@ class AttributeValueController extends Controller
 
                 // التأكد أن المستخدم صاحب الـ ID=1 موجود في جدول users
                 // هذا هو السبب الأكثر ترجيحاً للخطأ الحالي
-                $validatedData['updated_by'] = 1;
+                $validatedData['updated_by'] = auth()->id();
 
                 $attributeValue->update($validatedData);
                 $attributeValue->load($this->relations);

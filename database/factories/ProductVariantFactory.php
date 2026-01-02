@@ -17,6 +17,7 @@ class ProductVariantFactory extends Factory
     public function definition(): array
     {
         return [
+            'sku' => $this->faker->unique()->bothify('SKU-####-????'),
             'retail_price' => $this->faker->randomFloat(2, 10, 1000),
             'wholesale_price' => $this->faker->randomFloat(2, 5, 800),
             'min_quantity' => $this->faker->numberBetween(1, 10),

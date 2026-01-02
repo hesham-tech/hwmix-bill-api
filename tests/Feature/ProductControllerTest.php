@@ -149,4 +149,45 @@ class ProductControllerTest extends TestCase
         $response->assertStatus(200);
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
+
+    public function test_user_cannot_view_products_from_another_company()
+    {
+        $otherCompany = Company::factory()->create();
+        $otherProduct = Product::factory()->create([
+            'company_id' => $otherCompany->id,
+            'category_id' => Category::factory()->create(['company_id' => $otherCompany->id])->id,
+        ]);
+
+        $user = User::factory()->create(['company_id' => $this->company->id]);
+        $user->givePermissionTo('products.view_all'); // view_all within company
+
+        $this->actingAs($user);
+
+        $response = $this->getJson("/api/product/{$otherProduct->id}");
+        $response->assertStatus(403);
+
+        $response = $this->getJson('/api/products');
+        $response->assertJsonMissing(['name' => $otherProduct->name]);
+    }
+
+    public function test_cannot_create_product_with_duplicate_sku()
+    {
+        $this->actingAs($this->admin);
+
+        ProductVariant::factory()->create([
+            'sku' => 'DUPE-SKU',
+            'company_id' => $this->company->id
+        ]);
+
+        $payload = [
+            'name' => 'Dupe Product',
+            'category_id' => $this->category->id,
+            'variants' => [
+                ['sku' => 'DUPE-SKU', 'retail_price' => 100]
+            ]
+        ];
+
+        $response = $this->postJson('/api/product', $payload);
+        $response->assertStatus(422);
+    }
 }

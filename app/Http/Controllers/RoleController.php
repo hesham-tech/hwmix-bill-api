@@ -408,12 +408,10 @@ class RoleController extends Controller
                     $role = Role::with([
                         'companies' => function ($q) use ($companyId) {
                             $q->where('companies.id', $companyId)->withPivot('created_by');
-                        },
-                        'users'
+                        }
                     ])->find($roleId);
 
                     if (!$role) {
-                        // إذا لم يتم العثور على الدور، تجاهله وانتقل إلى التالي
                         continue;
                     }
 
@@ -421,12 +419,12 @@ class RoleController extends Controller
                     if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                         $canDelete = true;
                     } elseif ($authUser->hasPermissionTo(perm_key('roles.delete_all'))) {
-                        $canDelete = $role->companies->isNotEmpty(); // الدور مرتبط بالشركة الحالية
+                        $canDelete = $role->companies->isNotEmpty();
                     } elseif ($authUser->hasPermissionTo(perm_key('roles.delete_children'))) {
                         $descendantUserIds = $authUser->getDescendantUserIds();
                         $descendantUserIds[] = $authUser->id;
                         $canDelete = $role->companies->contains(function ($company) use ($authUser, $descendantUserIds) {
-                            return $company->pivot->created_by === $authUser->id || in_array($company->pivot->created_by, $descendantUserIds);
+                            return in_array($company->pivot->created_by, $descendantUserIds);
                         });
                     } elseif ($authUser->hasPermissionTo(perm_key('roles.delete_self'))) {
                         $canDelete = $role->companies->contains(function ($company) use ($authUser) {
@@ -440,16 +438,17 @@ class RoleController extends Controller
                     }
 
                     // التحقق مما إذا كان الدور مرتبطًا بأي مستخدمين
-                    if ($role->users()->exists()) {
+                    $hasUsers = DB::table('model_has_roles')->where('role_id', $role->id)->exists();
+                    if ($hasUsers) {
                         DB::rollBack();
                         return api_error('لا يمكن حذف الدور "' . $role->name . '". إنه مرتبط بمستخدم واحد أو أكثر.', [], 409);
                     }
 
-                    $replicatedRole = $role->replicate(); // نسخ الكائن قبل الحذف
-                    $replicatedRole->setRelations($role->getRelations()); // نسخ العلاقات المحملة
+                    $replicatedRole = $role->replicate();
+                    $replicatedRole->setRelations($role->getRelations());
 
-                    $role->companies()->detach(); // فصل الدور عن الشركات المرتبطة به
-                    $role->delete(); // حذف الدور نفسه
+                    $role->companies()->detach();
+                    $role->delete();
                     $deletedRoles->push($replicatedRole);
                 }
 

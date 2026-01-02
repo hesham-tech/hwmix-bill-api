@@ -17,7 +17,10 @@ class AttributeValueFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'attribute_id' => \App\Models\Attribute::factory(),
+            'name' => $this->faker->word(),
+            'color' => $this->faker->hexColor(),
+            'created_by' => \App\Models\User::factory(),
         ];
     }
 }

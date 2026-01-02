@@ -36,6 +36,14 @@ class StoreProductVariantRequest extends FormRequest
             'product_id' => 'required|exists:products,id',
             'company_id' => 'required|exists:companies,id',
             'created_by' => 'required|exists:users,id',
+            'attributes' => 'nullable|array',
+            'attributes.*.attribute_id' => 'required|exists:attributes,id',
+            'attributes.*.attribute_value_id' => 'required|exists:attribute_values,id',
+            'stocks' => 'nullable|array',
+            'stocks.*.warehouse_id' => 'required|exists:warehouses,id',
+            'stocks.*.quantity' => 'nullable|integer|min:0',
+            'stocks.*.min_quantity' => 'nullable|integer|min:0',
+            'stocks.*.cost' => 'nullable|numeric|min:0',
         ];
     }
 }

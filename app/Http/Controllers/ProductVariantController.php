@@ -154,7 +154,8 @@ class ProductVariantController extends Controller
                 if ($request->has('attributes') && is_array($request->input('attributes'))) {
                     foreach ($request->input('attributes') as $attr) {
                         if (!empty($attr['attribute_id']) && !empty($attr['attribute_value_id'])) {
-                            $productVariant->attributes()->attach($attr['attribute_id'], [
+                            $productVariant->attributes()->create([
+                                'attribute_id' => $attr['attribute_id'],
                                 'attribute_value_id' => $attr['attribute_value_id'],
                                 'company_id' => $variantCompanyId,
                                 'created_by' => $authUser->id,
@@ -168,7 +169,7 @@ class ProductVariantController extends Controller
                     foreach ($request->input('stocks') as $stockData) {
                         if (!empty($stockData['warehouse_id'])) {
                             Stock::create([
-                                'product_variant_id' => $productVariant->id,
+                                'variant_id' => $productVariant->id,
                                 'warehouse_id' => $stockData['warehouse_id'],
                                 'quantity' => $stockData['quantity'] ?? 0,
                                 'reserved' => $stockData['reserved'] ?? 0,
@@ -344,7 +345,7 @@ class ProductVariantController extends Controller
                     foreach ($request->input('stocks') as $stockData) {
                         if (!empty($stockData['warehouse_id'])) {
                             Stock::updateOrCreate(
-                                ['id' => $stockData['id'] ?? null, 'product_variant_id' => $productVariant->id],
+                                ['id' => $stockData['id'] ?? null, 'variant_id' => $productVariant->id],
                                 [
                                     'warehouse_id' => $stockData['warehouse_id'],
                                     'quantity' => $stockData['quantity'] ?? 0,
@@ -427,7 +428,7 @@ class ProductVariantController extends Controller
                 $deletedProductVariant->setRelations($productVariant->getRelations());
 
                 $productVariant->stocks()->delete(); // حذف سجلات المخزون
-                $productVariant->attributes()->detach(); // حذف العلاقات في الجدول الوسيط
+                $productVariant->attributes()->delete(); // حذف سجلات الخصائص المرتبطة
                 $productVariant->delete(); // حذف المتغير نفسه
 
                 DB::commit();
@@ -497,7 +498,7 @@ class ProductVariantController extends Controller
                                 $cannotDelete[] = $productVariant->id; // إضافة معرف المتغير الذي لا يمكن حذفه
                             } else {
                                 $productVariant->stocks()->delete();
-                                $productVariant->attributes()->detach();
+                                $productVariant->attributes()->delete();
                                 $productVariant->delete();
                                 $deletedCount++;
                             }
