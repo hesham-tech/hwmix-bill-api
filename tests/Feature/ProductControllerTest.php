@@ -57,22 +57,17 @@ class ProductControllerTest extends TestCase
 
     public function test_can_create_product()
     {
-        $this->markTestSkipped('Product create requires complex validation - needs investigation');
         $this->actingAs($this->admin);
 
         $payload = [
             'name' => 'Test Product',
             'category_id' => $this->category->id,
             'brand_id' => $this->brand->id,
-            'product_type' => 'physical',
-            'price' => 100,
-            'cost' => 50,
             'variants' => [
                 [
                     'sku' => 'TEST-001',
-                    'price' => 100,
-                    'cost' => 50,
-                    'stock' => 10,
+                    'retail_price' => 100,
+                    'wholesale_price' => 50,
                     'stocks' => [
                         [
                             'warehouse_id' => $this->warehouse->id,
@@ -106,7 +101,6 @@ class ProductControllerTest extends TestCase
 
     public function test_can_update_product()
     {
-        $this->markTestSkipped('Product update requires complex validation - needs investigation');
         $this->actingAs($this->admin);
 
         $product = Product::factory()->create([
@@ -116,7 +110,20 @@ class ProductControllerTest extends TestCase
 
         $payload = [
             'name' => 'Updated Product',
-            'price' => 150,
+            'category_id' => $this->category->id,
+            'brand_id' => $this->brand->id,
+            'variants' => [
+                [
+                    'sku' => 'UPDATED-SKU',
+                    'retail_price' => 150,
+                    'stocks' => [
+                        [
+                            'warehouse_id' => $this->warehouse->id,
+                            'quantity' => 20,
+                        ]
+                    ]
+                ]
+            ]
         ];
 
         $response = $this->putJson("/api/product/{$product->id}", $payload);
@@ -130,7 +137,6 @@ class ProductControllerTest extends TestCase
 
     public function test_can_delete_product()
     {
-        $this->markTestSkipped('Product delete needs implementation review');
         $this->actingAs($this->admin);
 
         $product = Product::factory()->create([

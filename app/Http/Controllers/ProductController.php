@@ -271,7 +271,7 @@ class ProductController extends Controller
 
                 DB::commit();
 
-                return api_success(ProductResource::make($product->load($this->relations)), 'تم إنشاء المنتج بنجاح');
+                return api_success(ProductResource::make($product->load($this->relations)), 'تم إنشاء المنتج بنجاح', 201);
             } catch (ValidationException $e) {
                 DB::rollBack();
                 return api_error('فشل التحقق من صحة البيانات أثناء تخزين المنتج.', $e->errors(), 422);

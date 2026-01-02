@@ -120,7 +120,7 @@ class TransactionControllerTest extends TestCase
 
     public function test_user_can_transfer_money()
     {
-        $this->markTestSkipped('Complex transfer logic - needs deep fixes');
+        $this->actingAs($this->admin);
 
         $targetUser = User::factory()->create(['company_id' => $this->company->id]);
         $type = CashBoxType::factory()->create(['company_id' => $this->company->id]);
@@ -148,7 +148,7 @@ class TransactionControllerTest extends TestCase
 
     public function test_can_reverse_transaction()
     {
-        $this->markTestSkipped('Complex reverse logic - needs deep fixes');
+        $this->actingAs($this->admin);
 
         $transaction = Transaction::create([
             'user_id' => $this->admin->id,
@@ -169,7 +169,7 @@ class TransactionControllerTest extends TestCase
         $response->assertStatus(200);
         $this->assertEquals(1000, $this->cashBox->fresh()->balance);
         $this->assertDatabaseHas('transactions', [
-            'type' => 'عكس إيداع',
+            'type' => 'عكس_إيداع',
             'amount' => -500,
         ]);
     }

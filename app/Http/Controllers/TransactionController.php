@@ -448,34 +448,49 @@ class TransactionController extends Controller
 
                 // التحقق من نوع المعاملة
                 switch ($transaction->type) {
-                    case 'transfer':
+                    case 'تحويل_صادر':
                         $transaction->reverseTransfer();
                         break;
-                    case 'withdraw':
+                    case 'سحب':
                         $transaction->reverseWithdraw();
                         break;
-                    case 'deposit':
+                    case 'إيداع':
                         $transaction->reverseDeposit();
                         break;
                     default:
-                        throw new \Exception('نوع المعاملة غير مدعوم للعكس.');
+                        throw new \Exception('نوع المعاملة غير مدعوم للعكس: ' . $transaction->type);
                 }
 
-                // تسجيل المعاملة العكسية في جدول المعاملات
-                $reversedTransaction = Transaction::create([
-                    'user_id' => $transaction->target_user_id,
-                    'cashbox_id' => $transaction->target_cashbox_id,
-                    'target_user_id' => $transaction->user_id,
-                    'target_cashbox_id' => $transaction->cashbox_id,
+                // تحديد القيم للمعاملة العكسية بناءً على النوع
+                $reverseData = [
                     'created_by' => $authUser->id,
                     'company_id' => $companyId,
-                    'type' => 'عكس',
                     'amount' => $transaction->amount,
-                    'balance_before' => null,
-                    'balance_after' => null,
+                    'balance_before' => $transaction->cashbox?->balance + ($transaction->type === 'إيداع' ? $transaction->amount : -$transaction->amount),
+                    'balance_after' => $transaction->cashbox?->balance,
                     'description' => 'عكس المعاملة الأصلية رقم: ' . $transaction->id,
                     'original_transaction_id' => $transaction->id,
-                ]);
+                ];
+
+                if ($transaction->type === 'تحويل_صادر') {
+                    $reverseData['user_id'] = $transaction->target_user_id;
+                    $reverseData['cashbox_id'] = $transaction->target_cashbox_id;
+                    $reverseData['target_user_id'] = $transaction->user_id;
+                    $reverseData['target_cashbox_id'] = $transaction->cashbox_id;
+                    $reverseData['type'] = 'عكس_تحويل';
+                } elseif ($transaction->type === 'إيداع') {
+                    $reverseData['user_id'] = $transaction->user_id;
+                    $reverseData['cashbox_id'] = $transaction->cashbox_id;
+                    $reverseData['type'] = 'عكس_إيداع';
+                    $reverseData['amount'] = -$transaction->amount;
+                } elseif ($transaction->type === 'سحب') {
+                    $reverseData['user_id'] = $transaction->user_id;
+                    $reverseData['cashbox_id'] = $transaction->cashbox_id;
+                    $reverseData['type'] = 'عكس_سحب';
+                    $reverseData['amount'] = $transaction->amount;
+                }
+
+                $reversedTransaction = Transaction::create($reverseData);
 
                 DB::commit();
                 return api_success(new TransactionResource($reversedTransaction), 'تم عكس المعاملة بنجاح.');

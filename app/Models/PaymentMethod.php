@@ -6,11 +6,13 @@ use App\Traits\Scopes;
 use App\Traits\Blameable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class PaymentMethod extends Model
 {
-    use HasFactory, Scopes, Blameable;
+    use HasFactory, Scopes, Blameable, SoftDeletes;
 
-    protected $fillable = ['name', 'code', 'active', 'is_system'];
+    protected $fillable = ['name', 'code', 'active', 'is_system', 'company_id'];
 
     public function payments()
     {

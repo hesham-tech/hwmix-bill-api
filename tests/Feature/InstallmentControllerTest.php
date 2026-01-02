@@ -63,16 +63,18 @@ class InstallmentControllerTest extends TestCase
     /** @test */
     public function test_can_create_installment()
     {
-        $this->markTestSkipped('Skipped due to internal server error - needs investigation');
         $this->actingAs($this->admin);
 
-        $response = $this->postJson('/api/installment', [
+        $payload = [
             'invoice_id' => $this->invoice->id,
+            'user_id' => $this->admin->id,
+            'amount' => 100,
+            'due_date' => now()->addMonth()->toDateString(),
             'installment_plan_id' => $this->plan->id,
-            'amount' => 1000,
-            'due_date' => now()->addDays(30)->format('Y-m-d'),
             'status' => 'pending',
-        ]);
+        ];
+
+        $response = $this->postJson('/api/installment', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseCount('installments', 1);

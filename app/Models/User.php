@@ -479,7 +479,7 @@ class User extends Authenticatable
         $amount = floatval($amount);
 
         // يفترض وجود دالة hasAnyPermission من HasPermissions trait
-        if (!$this->hasAnyPermission(['super_admin', 'transfer'])) {
+        if (!$this->hasAnyPermission(['admin.super', 'transfer'])) {
             throw new Exception('Unauthorized: You do not have permission to transfer.');
         }
 

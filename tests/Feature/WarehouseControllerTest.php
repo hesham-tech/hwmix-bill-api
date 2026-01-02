@@ -21,7 +21,7 @@ class WarehouseControllerTest extends TestCase
         parent::setUp();
 
         $this->seed(AddPermissionsSeeder::class);
-        $this->company = Company::factory()->create(['id' => 1]);
+        $this->company = Company::factory()->create();
         $this->admin = User::factory()->create(['company_id' => $this->company->id]);
         $this->admin->givePermissionTo('admin.super');
     }

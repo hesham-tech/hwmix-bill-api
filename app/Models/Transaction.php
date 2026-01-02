@@ -43,12 +43,12 @@ class Transaction extends Model
 
     public function cashbox(): BelongsTo
     {
-        return $this->belongsTo(Cashbox::class, 'cashbox_id');
+        return $this->belongsTo(CashBox::class, 'cashbox_id');
     }
 
     public function targetCashbox(): BelongsTo
     {
-        return $this->belongsTo(Cashbox::class, 'target_cashbox_id');
+        return $this->belongsTo(CashBox::class, 'target_cashbox_id');
     }
 
     public function company(): BelongsTo
@@ -88,46 +88,40 @@ class Transaction extends Model
     // الدوال لعكس المعاملات
     public function reverseTransfer()
     {
-        $sender = $this->user;
-        $receiver = $this->targetUser;
+        $senderBox = $this->cashbox;
+        $receiverBox = $this->targetCashbox;
 
-        if (!$sender || !$receiver) {
-            throw new Exception("المستخدمون المرتبطون بالمعاملة غير موجودين.");
+        if (!$senderBox || !$receiverBox) {
+            throw new Exception("الصناديق المرتبطة بالمعاملة غير موجودة.");
         }
 
-        $sender->balance += $this->amount;
-        $receiver->balance -= $this->amount;
-
-        $sender->save();
-        $receiver->save();
+        $senderBox->increment('balance', $this->amount);
+        $receiverBox->decrement('balance', $this->amount);
     }
 
     public function reverseWithdraw()
     {
-        $user = $this->user;
+        $box = $this->cashbox;
 
-        if (!$user) {
-            throw new Exception("المستخدم المرتبط بالمعاملة غير موجود.");
+        if (!$box) {
+            throw new Exception("الصندوق المرتبط بالمعاملة غير موجود.");
         }
 
-        $user->balance += $this->amount;
-        $user->save();
+        $box->increment('balance', $this->amount);
     }
 
     public function reverseDeposit()
     {
-        $user = $this->user;
+        $box = $this->cashbox;
 
-        if (!$user) {
-            throw new Exception("المستخدم المرتبط بالمعاملة غير موجود.");
+        if (!$box) {
+            throw new Exception("الصندوق المرتبط بالمعاملة غير موجود.");
         }
 
-        $user->balance -= $this->amount;
-
-        if ($user->balance < 0) {
+        if ($box->balance < $this->amount) {
             throw new Exception("الرصيد غير كافٍ لعكس العملية.");
         }
 
-        $user->save();
+        $box->decrement('balance', $this->amount);
     }
 }
