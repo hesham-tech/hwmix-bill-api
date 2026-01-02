@@ -99,7 +99,7 @@ class InvoiceControllerTest extends TestCase
         $response = $this->postJson('/api/invoice', $payload);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('invoices', ['invoice_type_id' => 1]); // Verification by type id instead of exact number since it's dynamic
+        $this->assertDatabaseHas('invoices', ['invoice_type_id' => $invoiceType->id]);
     }
 
     public function test_resolves_invoice_type_code_if_not_provided()
@@ -135,6 +135,6 @@ class InvoiceControllerTest extends TestCase
         $response = $this->postJson('/api/invoice', $payload);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('invoices', ['invoice_type_id' => 2]);
+        $this->assertDatabaseHas('invoices', ['invoice_type_id' => $invoiceType->id]);
     }
 }

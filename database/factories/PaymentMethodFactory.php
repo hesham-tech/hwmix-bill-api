@@ -18,11 +18,8 @@ class PaymentMethodFactory extends Factory
     {
         return [
             'name' => $this->faker->randomElement(['Cash', 'Credit Card', 'Bank Transfer', 'Mobile Payment']),
-            'description' => $this->faker->sentence,
-            'is_system' => false,
-            'is_active' => true,
-            'company_id' => \App\Models\Company::factory(),
-            'created_by' => \App\Models\User::factory(),
+            'code' => $this->faker->unique()->slug(2),
+            'active' => true,
         ];
     }
 }
