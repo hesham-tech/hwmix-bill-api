@@ -26,6 +26,8 @@ abstract class BaseReportController extends Controller
         // Company scope
         if (!empty($filters['company_id'])) {
             $query->where('company_id', $filters['company_id']);
+        } elseif (method_exists($query->getModel(), 'scopeWhereCompanyIsCurrent')) {
+            $query->whereCompanyIsCurrent();
         }
 
         // User/Customer filtering
@@ -53,6 +55,29 @@ abstract class BaseReportController extends Controller
      */
     protected function groupByPeriod($query, string $period = 'day'): Collection
     {
+        $isSqlite = \DB::getDriverName() === 'sqlite';
+
+        if ($isSqlite) {
+            $dateFormat = match ($period) {
+                'day' => '%Y-%m-%d',
+                'week' => '%Y-%W',
+                'month' => '%Y-%m',
+                'year' => '%Y',
+                default => '%Y-%m-%d',
+            };
+
+            return $query->selectRaw("
+                strftime('{$dateFormat}', created_at) as period,
+                COUNT(*) as count,
+                SUM(net_amount) as total_amount,
+                SUM(paid_amount) as total_paid,
+                SUM(remaining_amount) as total_remaining
+            ")
+                ->groupBy('period')
+                ->orderBy('period')
+                ->get();
+        }
+
         $dateFormat = match ($period) {
             'day' => '%Y-%m-%d',
             'week' => '%Y-%u',
@@ -100,16 +125,16 @@ abstract class BaseReportController extends Controller
      */
     protected function groupByCustomer($query): Collection
     {
-        return $query->selectRaw('
-                invoices.user_id,
-                users.name as customer_name,
-                COUNT(*) as invoice_count,
-                SUM(invoices.net_amount) as total_amount,
-                SUM(invoices.paid_amount) as total_paid,
-                SUM(invoices.remaining_amount) as total_remaining,
-                AVG(invoices.net_amount) as avg_invoice
-            ')
-            ->join('users', 'invoices.user_id', '=', 'users.id')
+        return $query->join('users', 'invoices.user_id', '=', 'users.id')
+            ->select([
+                'invoices.user_id',
+                'users.full_name as customer_name',
+                \DB::raw('COUNT(*) as invoice_count'),
+                \DB::raw('SUM(invoices.net_amount) as total_amount'),
+                \DB::raw('SUM(invoices.paid_amount) as total_paid'),
+                \DB::raw('SUM(invoices.remaining_amount) as total_remaining'),
+                \DB::raw('AVG(invoices.net_amount) as avg_invoice')
+            ])
             ->groupBy('invoices.user_id', 'users.name')
             ->orderByDesc('total_amount')
             ->get();

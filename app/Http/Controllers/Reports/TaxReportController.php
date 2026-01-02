@@ -173,14 +173,17 @@ class TaxReportController extends BaseReportController
     {
         $query = Invoice::query()
             ->whereHas('invoiceType', fn($q) => $q->where('code', 'sale'))
-            ->whereBetween('created_at', [$from, $to])
+            ->whereDate('created_at', '>=', $from)
+            ->whereDate('created_at', '<=', $to)
             ->whereIn('status', ['confirmed', 'paid', 'partially_paid']);
 
         if ($companyId) {
             $query->where('company_id', $companyId);
+        } elseif (method_exists(Invoice::class, 'scopeWhereCompanyIsCurrent')) {
+            $query->whereCompanyIsCurrent();
         }
 
-        return $query->sum('total_tax');
+        return (float) $query->sum('total_tax');
     }
 
     /**
@@ -190,13 +193,16 @@ class TaxReportController extends BaseReportController
     {
         $query = Invoice::query()
             ->whereHas('invoiceType', fn($q) => $q->where('code', 'purchase'))
-            ->whereBetween('created_at', [$from, $to])
+            ->whereDate('created_at', '>=', $from)
+            ->whereDate('created_at', '<=', $to)
             ->whereIn('status', ['confirmed', 'paid', 'partially_paid']);
 
         if ($companyId) {
             $query->where('company_id', $companyId);
+        } elseif (method_exists(Invoice::class, 'scopeWhereCompanyIsCurrent')) {
+            $query->whereCompanyIsCurrent();
         }
 
-        return $query->sum('total_tax');
+        return (float) $query->sum('total_tax');
     }
 }

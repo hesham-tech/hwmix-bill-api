@@ -91,9 +91,7 @@ class InstallmentControllerTest extends TestCase
         ]);
 
         $response = $this->getJson("/api/installment/{$installment->id}");
-        if ($response->status() !== 200) {
-            dd($response->json());
-        }
+        $response->assertStatus(200);
         $response->assertStatus(200)->assertJsonPath('data.id', $installment->id);
     }
 

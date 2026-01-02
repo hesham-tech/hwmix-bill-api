@@ -497,8 +497,8 @@ class CashBoxController extends Controller
                 // تحديث أرصدة الخزن (إذا كانت `withdraw` و `deposit` تحدث الرصيد في قاعدة البيانات)
                 // تأكد أن هذه الدوال تقوم بتحديث الرصيد الفعلي للصناديق
                 // وإلا فسيتم تتبعها فقط في سجلات المعاملات وليس في حقل رصيد مباشر على صندوق
-                $authUser->withdraw($amount, $fromCashBoxId); // سحب من الصندوق المصدر
-                $toUser->deposit($amount, $toCashBoxId); // إيداع في الصندوق الهدف
+                $authUser->withdraw($amount, $fromCashBoxId, null, false); // سحب من الصندوق المصدر
+                $toUser->deposit($amount, $toCashBoxId, null, false); // إيداع في الصندوق الهدف
 
                 DB::commit();
                 // يمكن إرجاع تفاصيل التحويل أو المعاملات الجديدة إذا لزم الأمر

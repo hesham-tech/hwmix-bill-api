@@ -31,4 +31,23 @@ class Subscription extends Model
     {
         return $this->belongsTo(Service::class);
     }
+
+    /**
+     * التحقق مما إذا كان الاشتراك نشطاً.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active' && !$this->isExpired();
+    }
+
+    /**
+     * التحقق مما إذا كان الاشتراك منتهياً.
+     */
+    public function isExpired(): bool
+    {
+        if (!$this->next_billing_date) {
+            return false;
+        }
+        return \Carbon\Carbon::parse($this->next_billing_date)->isPast();
+    }
 }

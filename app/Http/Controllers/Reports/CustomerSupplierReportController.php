@@ -83,7 +83,7 @@ class CustomerSupplierReportController extends BaseReportController
             ->groupBy('user_id')
             ->get();
 
-        $allUsers = User::whereIn('id', $customerDebts->pluck('user_id')->merge($supplierDebts->pluck('user_id')))->get(['id', 'name', 'email']);
+        $allUsers = User::whereIn('id', $customerDebts->pluck('user_id')->merge($supplierDebts->pluck('user_id')))->get(['id', 'full_name', 'email']);
 
         $report = $allUsers->map(function ($user) use ($customerDebts, $supplierDebts) {
             $customerDebt = $customerDebts->where('user_id', $user->id)->first();
@@ -91,7 +91,7 @@ class CustomerSupplierReportController extends BaseReportController
 
             return [
                 'user_id' => $user->id,
-                'user_name' => $user->name,
+                'user_name' => $user->full_name,
                 'user_email' => $user->email,
                 'total_customer_debt' => round($customerDebt->total_debt ?? 0, 2),
                 'total_supplier_debt' => round($supplierDebt->total_debt ?? 0, 2),
@@ -131,7 +131,7 @@ class CustomerSupplierReportController extends BaseReportController
                 MIN(due_date) as oldest_due_date,
                 MAX(due_date) as latest_due_date
             ')
-            ->with('user:id,name,email')
+            ->with('user:id,full_name,email')
             ->groupBy('user_id')
             ->orderByDesc('total_debt')
             ->paginate($filters['per_page'] ?? 50);
@@ -170,7 +170,7 @@ class CustomerSupplierReportController extends BaseReportController
                 MIN(due_date) as oldest_due_date,
                 MAX(due_date) as latest_due_date
             ')
-            ->with('user:id,name,email')
+            ->with('user:id,full_name,email')
             ->groupBy('user_id')
             ->orderByDesc('total_debt')
             ->paginate($filters['per_page'] ?? 50);
@@ -234,7 +234,7 @@ class CustomerSupplierReportController extends BaseReportController
         });
 
         return response()->json([
-            'user' => User::find($userId, ['id', 'name', 'email']),
+            'user' => User::find($userId, ['id', 'full_name', 'email']),
             'period' => ['from' => $dateFrom, 'to' => $dateTo],
             'statement' => $statement,
             'final_balance' => round($balance, 2),
@@ -276,8 +276,11 @@ class CustomerSupplierReportController extends BaseReportController
         ];
 
         // Monthly trend
+        $isSqlite = \DB::getDriverName() === 'sqlite';
+        $monthFormat = $isSqlite ? "strftime('%Y-%m', created_at)" : "DATE_FORMAT(created_at, '%Y-%m')";
+
         $monthlyTrend = $salesQuery->selectRaw("
-                DATE_FORMAT(created_at, '%Y-%m') as month,
+                {$monthFormat} as month,
                 COUNT(*) as invoice_count,
                 SUM(net_amount) as total
             ")
@@ -302,7 +305,7 @@ class CustomerSupplierReportController extends BaseReportController
             ->get();
 
         return response()->json([
-            'user' => User::find($userId, ['id', 'name', 'email']),
+            'user' => User::find($userId, ['id', 'full_name', 'email']),
             'period' => ['from' => $dateFrom, 'to' => $dateTo],
             'sales_stats' => $salesStats,
             'monthly_trend' => $monthlyTrend,

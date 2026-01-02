@@ -333,7 +333,7 @@ class User extends Authenticatable
      * @return bool True عند النجاح.
      * @throws Exception عند الفشل (مثل عدم وجود خزنة أو رصيد غير كافي).
      */
-    public function withdraw(float $amount, $cashBoxId = null, $description = null): bool
+    public function withdraw(float $amount, $cashBoxId = null, $description = null, $log = true): bool
     {
         $amount = floatval($amount);
         $authCompanyId = Auth::user()->company_id ?? null;
@@ -366,17 +366,19 @@ class User extends Authenticatable
             $cashBox->decrement('balance', $amount);
             $balanceAfter = $cashBox->balance;
 
-            Transaction::create([
-                'user_id' => $this->id,
-                'cashbox_id' => $cashBox->id,
-                'created_by' => Auth::id() ?? $this->id,
-                'company_id' => $cashBox->company_id,
-                'type' => 'سحب',
-                'amount' => $amount,
-                'balance_before' => $balanceBefore,
-                'balance_after' => $balanceAfter,
-                'description' => $description ?? 'سحب نقدي',
-            ]);
+            if ($log) {
+                Transaction::create([
+                    'user_id' => $this->id,
+                    'cashbox_id' => $cashBox->id,
+                    'created_by' => Auth::id() ?? $this->id,
+                    'company_id' => $cashBox->company_id,
+                    'type' => 'سحب',
+                    'amount' => $amount,
+                    'balance_before' => $balanceBefore,
+                    'balance_after' => $balanceAfter,
+                    'description' => $description ?? 'سحب نقدي',
+                ]);
+            }
 
             DB::commit();
             return true;
@@ -402,7 +404,7 @@ class User extends Authenticatable
      * @throws Exception عند الفشل (مثل عدم وجود خزنة).
      */
 
-    public function deposit(float $amount, $cashBoxId = null, $description = null): bool
+    public function deposit(float $amount, $cashBoxId = null, $description = null, $log = true): bool
     {
         $amount = floatval($amount);
         DB::beginTransaction();
@@ -438,17 +440,19 @@ class User extends Authenticatable
             $cashBox->increment('balance', $amount);
             $balanceAfter = $cashBox->balance;
 
-            Transaction::create([
-                'user_id' => $this->id,
-                'cashbox_id' => $cashBox->id,
-                'created_by' => Auth::id() ?? $this->id,
-                'company_id' => $cashBox->company_id,
-                'type' => 'إيداع',
-                'amount' => $amount,
-                'balance_before' => $balanceBefore,
-                'balance_after' => $balanceAfter,
-                'description' => $description ?? 'إيداع نقدي',
-            ]);
+            if ($log) {
+                Transaction::create([
+                    'user_id' => $this->id,
+                    'cashbox_id' => $cashBox->id,
+                    'created_by' => Auth::id() ?? $this->id,
+                    'company_id' => $cashBox->company_id,
+                    'type' => 'إيداع',
+                    'amount' => $amount,
+                    'balance_before' => $balanceBefore,
+                    'balance_after' => $balanceAfter,
+                    'description' => $description ?? 'إيداع نقدي',
+                ]);
+            }
 
             DB::commit();
             return true;
@@ -691,8 +695,8 @@ class User extends Authenticatable
             $balanceBeforeTo = $toCashBox->balance;
             $fromCashBox->decrement('balance', $amount);
             $toCashBox->increment('balance', $amount);
-            Transaction::create(['user_id' => $this->id, 'cashbox_id' => $fromCashBox->id, 'target_user_id' => $targetUser->id, 'target_cashbox_id' => $toCashBox->id, 'created_by' => Auth::id() ?? $this->id, 'company_id' => $fromCashBox->company_id, 'type' => '????? ????', 'amount' => $amount, 'balance_before' => $balanceBeforeFrom, 'balance_after' => $fromCashBox->fresh()->balance, 'description' => $description]);
-            Transaction::create(['user_id' => $targetUser->id, 'cashbox_id' => $toCashBox->id, 'target_user_id' => $this->id, 'target_cashbox_id' => $fromCashBox->id, 'created_by' => Auth::id() ?? $this->id, 'company_id' => $toCashBox->company_id, 'type' => '????? ????', 'amount' => $amount, 'balance_before' => $balanceBeforeTo, 'balance_after' => $toCashBox->fresh()->balance, 'description' => $description]);
+            Transaction::create(['user_id' => $this->id, 'cashbox_id' => $fromCashBox->id, 'target_user_id' => $targetUser->id, 'target_cashbox_id' => $toCashBox->id, 'created_by' => Auth::id() ?? $this->id, 'company_id' => $fromCashBox->company_id, 'type' => 'تحويل صادر', 'amount' => $amount, 'balance_before' => $balanceBeforeFrom, 'balance_after' => $fromCashBox->fresh()->balance, 'description' => $description ?? 'تحويل للأرصدة']);
+            Transaction::create(['user_id' => $targetUser->id, 'cashbox_id' => $toCashBox->id, 'target_user_id' => $this->id, 'target_cashbox_id' => $fromCashBox->id, 'created_by' => Auth::id() ?? $this->id, 'company_id' => $toCashBox->company_id, 'type' => 'تحويل وارد', 'amount' => $amount, 'balance_before' => $balanceBeforeTo, 'balance_after' => $toCashBox->fresh()->balance, 'description' => $description ?? 'استلام أرصدة']);
             DB::commit();
             return true;
         } catch (\Throwable $e) {
