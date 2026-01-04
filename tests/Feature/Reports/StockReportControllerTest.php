@@ -50,6 +50,9 @@ class StockReportControllerTest extends TestCase
 
         $response = $this->getJson('/api/reports/stock');
 
+        if ($response->status() !== 200) {
+            fwrite(STDERR, $response->getContent());
+        }
         $response->assertStatus(200)
             ->assertJsonStructure(['report', 'summary', 'filters']);
     }

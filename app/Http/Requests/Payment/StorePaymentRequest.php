@@ -5,8 +5,12 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StorePaymentRequest extends FormRequest
 {
-    public function authorize() { return true; }
-    public function rules() {
+    public function authorize()
+    {
+        return true;
+    }
+    public function rules()
+    {
         return [
             'user_id' => 'required|exists:users,id',
             'payment_date' => 'required|date',
@@ -15,6 +19,7 @@ class StorePaymentRequest extends FormRequest
             'notes' => 'nullable|string',
             'is_split' => 'required|boolean',
             'payment_method_id' => 'nullable|exists:payment_methods,id',
+            'cash_box_id' => 'required|exists:cash_boxes,id',
         ];
     }
 }

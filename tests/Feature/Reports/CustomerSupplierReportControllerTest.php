@@ -44,6 +44,8 @@ class CustomerSupplierReportControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure(['period', 'top_customers']);
+
+        $this->assertEquals($this->admin->full_name, $response->json('top_customers.0.customer_name'));
     }
 
     public function test_can_view_customer_supplier_balances()

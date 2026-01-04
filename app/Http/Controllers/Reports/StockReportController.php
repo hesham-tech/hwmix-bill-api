@@ -24,16 +24,16 @@ class StockReportController extends BaseReportController
         $filters = $this->validateFilters($request);
 
         $query = Stock::query()
-            ->with(['product', 'warehouse', 'variant'])
+            ->join('product_variants', 'stocks.variant_id', '=', 'product_variants.id')
             ->select([
-                'product_id',
-                'variant_id',
-                'warehouse_id',
-                DB::raw('SUM(CASE WHEN type = "in" THEN quantity ELSE 0 END) as total_in'),
-                DB::raw('SUM(CASE WHEN type = "out" THEN quantity ELSE 0 END) as total_out'),
-                DB::raw('SUM(CASE WHEN status = "available" THEN quantity ELSE 0 END) as current_stock'),
+                'product_variants.product_id',
+                'stocks.variant_id',
+                'stocks.warehouse_id',
+                DB::raw("0 as total_in"),
+                DB::raw("0 as total_out"),
+                DB::raw("SUM(CASE WHEN stocks.status = 'available' THEN stocks.quantity ELSE 0 END) as current_stock"),
             ])
-            ->groupBy('product_id', 'variant_id', 'warehouse_id');
+            ->groupBy('product_variants.product_id', 'stocks.variant_id', 'stocks.warehouse_id');
 
         // Apply filters
         if (!empty($filters['date_from'])) {
@@ -50,22 +50,31 @@ class StockReportController extends BaseReportController
 
         if (!empty($filters['company_id'])) {
             $query->where('company_id', $filters['company_id']);
+        } elseif (method_exists(Stock::class, 'scopeWhereCompanyIsCurrent')) {
+            $query->whereCompanyIsCurrent();
         }
 
-        $report = $query->paginate($filters['per_page'] ?? 50);
+        try {
+            $report = $query->paginate($filters['per_page'] ?? 50);
 
-        $summary = [
-            'total_products' => $query->distinct('product_id')->count('product_id'),
-            'total_in' => Stock::where('type', 'in')->sum('quantity'),
-            'total_out' => Stock::where('type', 'out')->sum('quantity'),
-            'current_stock' => Stock::where('status', 'available')->sum('quantity'),
-        ];
+            $commonQuery = Stock::whereCompanyIsCurrent();
 
-        return response()->json([
-            'report' => $report,
-            'summary' => $summary,
-            'filters' => $filters,
-        ]);
+            $summary = [
+                'total_products' => Stock::whereCompanyIsCurrent()->distinct('product_id')->count('product_id'),
+                'total_in' => 0,
+                'total_out' => 0,
+                'current_stock' => (clone $commonQuery)->where('status', 'available')->sum('quantity'),
+            ];
+
+            return response()->json([
+                'report' => $report,
+                'summary' => $summary,
+                'filters' => $filters,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Stock Report Error: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
@@ -79,17 +88,25 @@ class StockReportController extends BaseReportController
     {
         $filters = $this->validateFilters($request);
 
-        $valuation = DB::table('stocks')
+        $valuationQuery = DB::table('stocks')
             ->join('product_variants', 'stocks.variant_id', '=', 'product_variants.id')
-            ->join('products', 'stocks.product_id', '=', 'products.id')
-            ->where('stocks.status', 'available')
+            ->join('products', 'product_variants.product_id', '=', 'products.id')
+            ->where('stocks.status', 'available');
+
+        if (!empty($filters['company_id'])) {
+            $valuationQuery->where('stocks.company_id', $filters['company_id']);
+        } elseif ($user = auth()->user()) {
+            $valuationQuery->where('stocks.company_id', $user->company_id);
+        }
+
+        $valuation = $valuationQuery
             ->select([
                 'products.id as product_id',
                 'products.name as product_name',
                 DB::raw('SUM(stocks.quantity) as total_quantity'),
-                DB::raw('AVG(product_variants.cost_price) as avg_cost'),
-                DB::raw('SUM(stocks.quantity * product_variants.cost_price) as total_cost_value'),
-                DB::raw('SUM(stocks.quantity * product_variants.price) as total_sale_value'),
+                DB::raw('AVG(stocks.cost) as avg_cost'),
+                DB::raw('SUM(stocks.quantity * stocks.cost) as total_cost_value'),
+                DB::raw('SUM(stocks.quantity * product_variants.retail_price) as total_sale_value'),
             ])
             ->groupBy('products.id', 'products.name')
             ->get();
@@ -119,10 +136,16 @@ class StockReportController extends BaseReportController
     {
         $threshold = $request->input('threshold', 10);
 
-        $lowStock = DB::table('stocks')
-            ->join('products', 'stocks.product_id', '=', 'products.id')
+        $itemQuery = DB::table('stocks')
             ->join('product_variants', 'stocks.variant_id', '=', 'product_variants.id')
-            ->where('stocks.status', 'available')
+            ->join('products', 'product_variants.product_id', '=', 'products.id')
+            ->where('stocks.status', 'available');
+
+        if ($user = auth()->user()) {
+            $itemQuery->where('stocks.company_id', $user->company_id);
+        }
+
+        $lowStock = $itemQuery
             ->select([
                 'products.id as product_id',
                 'products.name as product_name',
@@ -156,17 +179,28 @@ class StockReportController extends BaseReportController
         $days = $request->input('days', 90);
         $cutoffDate = now()->subDays($days);
 
-        $inactive = DB::table('stocks')
-            ->join('products', 'stocks.product_id', '=', 'products.id')
+        $isSqlite = DB::getDriverName() === 'sqlite';
+        $datediff = $isSqlite
+            ? "CAST(julianday('now') - julianday(MAX(stocks.updated_at)) AS INT)"
+            : "DATEDIFF(NOW(), MAX(stocks.updated_at))";
+
+        $inactiveQuery = DB::table('stocks')
+            ->join('product_variants', 'stocks.variant_id', '=', 'product_variants.id')
+            ->join('products', 'product_variants.product_id', '=', 'products.id')
             ->where('stocks.status', 'available')
-            ->where('stocks.updated_at', '<', $cutoffDate)
-            ->select([
-                'products.id as product_id',
-                'products.name as product_name',
-                DB::raw('SUM(stocks.quantity) as quantity'),
-                DB::raw('MAX(stocks.updated_at) as last_movement'),
-                DB::raw('DATEDIFF(NOW(), MAX(stocks.updated_at)) as days_inactive'),
-            ])
+            ->where('stocks.updated_at', '<', $cutoffDate);
+
+        if ($user = auth()->user()) {
+            $inactiveQuery->where('stocks.company_id', $user->company_id);
+        }
+
+        $inactive = $inactiveQuery->select([
+            'products.id as product_id',
+            'products.name as product_name',
+            DB::raw('SUM(stocks.quantity) as quantity'),
+            DB::raw('MAX(stocks.updated_at) as last_movement'),
+            DB::raw("{$datediff} as days_inactive"),
+        ])
             ->groupBy('products.id', 'products.name')
             ->orderByDesc('days_inactive')
             ->get();

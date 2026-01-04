@@ -16,10 +16,20 @@ class Service extends Model
     protected $fillable = [
         'name',
         'description',
-        'default_price'
+        'default_price',
+        'company_id',
+        'created_by',
     ];
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
+    }
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

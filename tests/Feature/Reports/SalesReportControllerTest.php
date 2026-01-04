@@ -62,6 +62,10 @@ class SalesReportControllerTest extends TestCase
 
         $response = $this->getJson('/api/reports/sales/top-customers');
 
+        if ($response->status() !== 200) {
+            // fwrite(STDERR, $response->getContent());
+        }
+
         $response->assertStatus(200)
             ->assertJsonStructure(['top_customers', 'period']);
     }

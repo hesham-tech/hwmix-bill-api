@@ -92,9 +92,11 @@ class ProfitLossReportController extends BaseReportController
 
         if ($companyId) {
             $query->where('company_id', $companyId);
+        } elseif (method_exists(Invoice::class, 'scopeWhereCompanyIsCurrent')) {
+            $query->whereCompanyIsCurrent();
         }
 
-        return $query->sum('net_amount');
+        return (float) $query->sum('net_amount');
     }
 
     /**
@@ -137,9 +139,11 @@ class ProfitLossReportController extends BaseReportController
 
         if ($companyId) {
             $query->where('company_id', $companyId);
+        } elseif (method_exists(Invoice::class, 'scopeWhereCompanyIsCurrent')) {
+            $query->whereCompanyIsCurrent();
         }
 
-        return $query->sum('net_amount');
+        return (float) $query->sum('net_amount');
     }
 
     /**

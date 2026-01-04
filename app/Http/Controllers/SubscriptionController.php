@@ -44,74 +44,74 @@ class SubscriptionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
+        // try {
+        /** @var \App\Models\User $authUser */
+        $authUser = Auth::user();
 
-            if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
-            }
-
-            $query = Subscription::query()->with($this->relations);
-            $companyId = $authUser->company_id ?? null;
-
-            // فلترة الصلاحيات
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                // المسؤول العام يرى جميع الاشتراكات
-            } elseif ($authUser->hasAnyPermission([perm_key('subscriptions.view_all'), perm_key('admin.company')])) {
-                $query->whereCompanyIsCurrent();
-            } elseif ($authUser->hasPermissionTo(perm_key('subscriptions.view_children'))) {
-                $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('subscriptions.view_self'))) {
-                $query->whereCompanyIsCurrent()->whereCreatedByUser();
-            } else {
-                return api_forbidden('ليس لديك إذن لعرض الاشتراكات.');
-            }
-
-            // فلاتر الطلب
-            if ($request->filled('user_id')) {
-                $query->where('user_id', $request->input('user_id'));
-            }
-            if ($request->filled('plan_id')) {
-                $query->where('plan_id', $request->input('plan_id'));
-            }
-            if ($request->filled('status')) {
-                $query->where('status', $request->input('status'));
-            }
-            if ($request->filled('starts_at_from')) {
-                $query->where('starts_at', '>=', $request->input('starts_at_from') . ' 00:00:00');
-            }
-            if ($request->filled('starts_at_to')) {
-                $query->where('starts_at', '<=', $request->input('starts_at_to') . ' 23:59:59');
-            }
-            if ($request->filled('ends_at_from')) {
-                $query->where('ends_at', '>=', $request->input('ends_at_from') . ' 00:00:00');
-            }
-            if ($request->filled('ends_at_to')) {
-                $query->where('ends_at', '<=', $request->input('ends_at_to') . ' 23:59:59');
-            }
-            if (!empty($request->get('created_at_from'))) {
-                $query->where('created_at', '>=', $request->get('created_at_from') . ' 00:00:00');
-            }
-            if (!empty($request->get('created_at_to'))) {
-                $query->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
-            }
-
-            // التصفح والفرز
-            $perPage = max(1, (int) $request->get('per_page', 20));
-            $sortField = $request->input('sort_by', 'id');
-            $sortOrder = $request->input('sort_order', 'desc');
-
-            $subscriptions = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
-
-            if ($subscriptions->isEmpty()) {
-                return api_success([], 'لم يتم العثور على اشتراكات.');
-            } else {
-                return api_success(SubscriptionResource::collection($subscriptions), 'تم جلب الاشتراكات بنجاح.');
-            }
-        } catch (Throwable $e) {
-            return api_exception($e);
+        if (!$authUser) {
+            return api_unauthorized('يتطلب المصادقة.');
         }
+
+        $query = Subscription::query()->with($this->relations);
+        $companyId = $authUser->company_id ?? null;
+
+        // فلترة الصلاحيات
+        if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+            // المسؤول العام يرى جميع الاشتراكات
+        } elseif ($authUser->hasAnyPermission([perm_key('subscriptions.view_all'), perm_key('admin.company')])) {
+            $query->whereCompanyIsCurrent();
+        } elseif ($authUser->hasPermissionTo(perm_key('subscriptions.view_children'))) {
+            $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
+        } elseif ($authUser->hasPermissionTo(perm_key('subscriptions.view_self'))) {
+            $query->whereCompanyIsCurrent()->whereCreatedByUser();
+        } else {
+            return api_forbidden('ليس لديك إذن لعرض الاشتراكات.');
+        }
+
+        // فلاتر الطلب
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+        if ($request->filled('plan_id')) {
+            $query->where('plan_id', $request->input('plan_id'));
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+        if ($request->filled('starts_at_from')) {
+            $query->where('starts_at', '>=', $request->input('starts_at_from') . ' 00:00:00');
+        }
+        if ($request->filled('starts_at_to')) {
+            $query->where('starts_at', '<=', $request->input('starts_at_to') . ' 23:59:59');
+        }
+        if ($request->filled('ends_at_from')) {
+            $query->where('ends_at', '>=', $request->input('ends_at_from') . ' 00:00:00');
+        }
+        if ($request->filled('ends_at_to')) {
+            $query->where('ends_at', '<=', $request->input('ends_at_to') . ' 23:59:59');
+        }
+        if (!empty($request->get('created_at_from'))) {
+            $query->where('created_at', '>=', $request->get('created_at_from') . ' 00:00:00');
+        }
+        if (!empty($request->get('created_at_to'))) {
+            $query->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
+        }
+
+        // التصفح والفرز
+        $perPage = max(1, (int) $request->get('per_page', 20));
+        $sortField = $request->input('sort_by', 'id');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        $subscriptions = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
+
+        if ($subscriptions->isEmpty()) {
+            return api_success([], 'لم يتم العثور على اشتراكات.');
+        } else {
+            return api_success(SubscriptionResource::collection($subscriptions), 'تم جلب الاشتراكات بنجاح.');
+        }
+        // } catch (Throwable $e) {
+        //     return api_exception($e);
+        // }
     }
 
     /**
@@ -145,6 +145,7 @@ class SubscriptionController extends Controller
             try {
                 $validatedData = $request->validated();
                 $validatedData['created_by'] = $authUser->id;
+                $validatedData['company_id'] = $companyId;
 
                 // تحقق من أن المستخدم والخطة ينتميان لنفس الشركة
                 $user = \App\Models\User::where('id', $validatedData['user_id'])

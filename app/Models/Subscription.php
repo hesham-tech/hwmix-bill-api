@@ -16,8 +16,13 @@ class Subscription extends Model
     protected $fillable = [
         'user_id',
         'service_id',
+        'plan_id',
+        'company_id',
+        'created_by',
         'start_date',
+        'starts_at',
         'next_billing_date',
+        'ends_at',
         'billing_cycle',
         'price',
         'status',
@@ -30,6 +35,18 @@ class Subscription extends Model
     public function service()
     {
         return $this->belongsTo(Service::class);
+    }
+    public function plan()
+    {
+        return $this->belongsTo(Plan::class);
+    }
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

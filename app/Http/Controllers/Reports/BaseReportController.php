@@ -135,7 +135,7 @@ abstract class BaseReportController extends Controller
                 \DB::raw('SUM(invoices.remaining_amount) as total_remaining'),
                 \DB::raw('AVG(invoices.net_amount) as avg_invoice')
             ])
-            ->groupBy('invoices.user_id', 'users.name')
+            ->groupBy('invoices.user_id', 'users.full_name')
             ->orderByDesc('total_amount')
             ->get();
     }

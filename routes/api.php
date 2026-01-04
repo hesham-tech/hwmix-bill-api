@@ -329,6 +329,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::put('installment-payment/{installmentPayment}', 'update');
             Route::delete('installment-payment/delete/{installmentPayment}', 'destroy');
         });
+    // InstallmentPlan Controller
+    Route::controller(InstallmentPlanController::class)
+        ->group(function () {
+            Route::get('installment-plans', 'index');
+            Route::post('installment-plan', 'store');
+            Route::get('installment-plan/{installmentPlan}', 'show');
+            Route::put('installment-plan/{id}', 'update');
+            Route::delete('installment-plan/delete/{id}', 'destroy');
+        });
     // Revenue Controller
     Route::controller(RevenueController::class)
         ->group(function () {
@@ -358,6 +367,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
     // Plan Controller
     Route::apiResource('plans', PlanController::class);
+    // InvoiceItem Controller
+    Route::controller(InvoiceItemController::class)
+        ->group(function () {
+            Route::get('invoice-items', 'index');
+            Route::post('invoice-item', 'store');
+            Route::get('invoice-item/{id}', 'show');
+            Route::put('invoice-item/{id}', 'update');
+            Route::delete('invoice-item/delete/{id}', 'destroy');
+        });
+    // InvoiceType Controller
+    Route::controller(InvoiceTypeController::class)
+        ->group(function () {
+            Route::get('invoice-types', 'index');
+            Route::post('invoice-type', 'store');
+            Route::get('invoice-type/{id}', 'show');
+            Route::put('invoice-type/{id}', 'update');
+            Route::delete('invoice-type/delete/{id}', 'destroy');
+        });
     Route::get('/permissions', [PermissionController::class, 'index']);
 });
 // Artisan commands routes

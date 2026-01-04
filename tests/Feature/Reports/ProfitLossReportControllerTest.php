@@ -53,10 +53,11 @@ class ProfitLossReportControllerTest extends TestCase
         $response = $this->getJson('/api/reports/profit-loss');
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['period', 'revenues', 'costs', 'result'])
-            ->assertJsonPath('revenues.total', 2000.0)
-            ->assertJsonPath('costs.total', 500.0)
-            ->assertJsonPath('result.net_profit', 1500.0);
+            ->assertJsonStructure(['period', 'revenues', 'costs', 'result']);
+
+        $this->assertEquals(2000, $response->json('revenues.total'));
+        $this->assertEquals(500, $response->json('costs.total'));
+        $this->assertEquals(1500, $response->json('result.net_profit'));
     }
 
     public function test_can_view_monthly_comparison()

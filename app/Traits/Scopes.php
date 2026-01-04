@@ -23,7 +23,7 @@ trait Scopes
             return $query->whereRaw('0 = 1');  // إرجاع استعلام لا يعيد أي نتائج
         }
 
-        return $query->where('company_id', $user->company_id);
+        return $query->where($this->qualifyColumn('company_id'), $user->company_id);
     }
 
     /**

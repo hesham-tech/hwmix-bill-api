@@ -25,11 +25,14 @@ class CustomerSupplierReportController extends BaseReportController
 
         $query = Invoice::query()
             ->whereHas('invoiceType', fn($q) => $q->where('code', 'sale'))
-            ->whereBetween('created_at', [$dateFrom, $dateTo])
-            ->whereIn('status', ['confirmed', 'paid', 'partially_paid']);
+            ->whereDate('invoices.created_at', '>=', $dateFrom)
+            ->whereDate('invoices.created_at', '<=', $dateTo)
+            ->whereIn('invoices.status', ['confirmed', 'paid', 'partially_paid']);
 
         if (!empty($filters['company_id'])) {
             $query->where('company_id', $filters['company_id']);
+        } elseif (method_exists(Invoice::class, 'scopeWhereCompanyIsCurrent')) {
+            $query->whereCompanyIsCurrent();
         }
 
         $topCustomers = $this->groupByCustomer($query)->take($limit);
@@ -58,6 +61,8 @@ class CustomerSupplierReportController extends BaseReportController
 
         if (!empty($filters['company_id'])) {
             $query->where('company_id', $filters['company_id']);
+        } elseif (method_exists(Invoice::class, 'scopeWhereCompanyIsCurrent')) {
+            $query->whereCompanyIsCurrent();
         }
 
         $customerDebts = $query->selectRaw('
@@ -74,6 +79,8 @@ class CustomerSupplierReportController extends BaseReportController
 
         if (!empty($filters['company_id'])) {
             $supplierQuery->where('company_id', $filters['company_id']);
+        } elseif (method_exists(Invoice::class, 'scopeWhereCompanyIsCurrent')) {
+            $supplierQuery->whereCompanyIsCurrent();
         }
 
         $supplierDebts = $supplierQuery->selectRaw('

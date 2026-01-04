@@ -28,11 +28,14 @@ class CashFlowReportController extends BaseReportController
         $dateTo = $filters['date_to'] ?? now()->endOfMonth()->toDateString();
 
         $query = Transaction::query()
-            ->with(['cashBox', 'user'])
-            ->whereBetween('created_at', [$dateFrom, $dateTo]);
+            ->with(['cashbox', 'user'])
+            ->whereDate('created_at', '>=', $dateFrom)
+            ->whereDate('created_at', '<=', $dateTo);
 
         if (!empty($filters['company_id'])) {
             $query->where('company_id', $filters['company_id']);
+        } elseif (method_exists(Transaction::class, 'scopeWhereCompanyIsCurrent')) {
+            $query->whereCompanyIsCurrent();
         }
 
         // Group by type
@@ -80,15 +83,22 @@ class CashFlowReportController extends BaseReportController
         $dateFrom = $filters['date_from'] ?? now()->startOfMonth()->toDateString();
         $dateTo = $filters['date_to'] ?? now()->endOfMonth()->toDateString();
 
-        $byCashBox = DB::table('transactions')
-            ->join('cash_boxes', 'transactions.cash_box_id', '=', 'cash_boxes.id')
-            ->whereBetween('transactions.created_at', [$dateFrom, $dateTo])
+        $byCashBoxQuery = DB::table('transactions')
+            ->join('cash_boxes', 'transactions.cashbox_id', '=', 'cash_boxes.id')
+            ->whereDate('transactions.created_at', '>=', $dateFrom)
+            ->whereDate('transactions.created_at', '<=', $dateTo);
+
+        if ($user = auth()->user()) {
+            $byCashBoxQuery->where('transactions.company_id', $user->company_id);
+        }
+
+        $byCashBox = $byCashBoxQuery
             ->select([
                 'cash_boxes.id as cash_box_id',
                 'cash_boxes.name as cash_box_name',
-                DB::raw('SUM(CASE WHEN transactions.type = "deposit" THEN transactions.amount ELSE 0 END) as total_deposits'),
-                DB::raw('SUM(CASE WHEN transactions.type = "withdraw" THEN transactions.amount ELSE 0 END) as total_withdrawals'),
-                DB::raw('SUM(CASE WHEN transactions.type = "deposit" THEN transactions.amount ELSE -transactions.amount END) as net_flow'),
+                DB::raw("SUM(CASE WHEN transactions.type = 'deposit' THEN transactions.amount ELSE 0 END) as total_deposits"),
+                DB::raw("SUM(CASE WHEN transactions.type = 'withdraw' THEN transactions.amount ELSE 0 END) as total_withdrawals"),
+                DB::raw("SUM(CASE WHEN transactions.type = 'deposit' THEN transactions.amount ELSE -transactions.amount END) as net_flow"),
             ])
             ->groupBy('cash_boxes.id', 'cash_boxes.name')
             ->get();
@@ -112,10 +122,12 @@ class CashFlowReportController extends BaseReportController
     {
         $companyId = $request->input('company_id');
 
-        $query = CashBox::query()->with('cashBoxType');
+        $query = CashBox::query()->with('typeBox');
 
         if ($companyId) {
             $query->where('company_id', $companyId);
+        } elseif (method_exists(CashBox::class, 'scopeWhereCompanyIsCurrent')) {
+            $query->whereCompanyIsCurrent();
         }
 
         $cashBoxes = $query->get();
@@ -125,7 +137,7 @@ class CashFlowReportController extends BaseReportController
             'total_balance' => round($cashBoxes->sum('balance'), 2),
             'by_type' => $cashBoxes->groupBy('cash_box_type_id')->map(function ($boxes, $typeId) {
                 return [
-                    'type' => $boxes->first()->cashBoxType->name ?? 'Unknown',
+                    'type' => $boxes->first()->typeBox->name ?? 'Unknown',
                     'count' => $boxes->count(),
                     'total_balance' => round($boxes->sum('balance'), 2),
                 ];

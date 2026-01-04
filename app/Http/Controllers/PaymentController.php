@@ -92,15 +92,15 @@ class PaymentController extends Controller
                 $query->where('amount', '<=', $request->input('amount_to'));
             }
             if ($request->filled('paid_at_from')) {
-                $query->where('paid_at', '>=', $request->input('paid_at_from') . ' 00:00:00');
+                $query->where('payment_date', '>=', $request->input('paid_at_from'));
             }
             if ($request->filled('paid_at_to')) {
-                $query->where('paid_at', '<=', $request->input('paid_at_to') . ' 23:59:59');
+                $query->where('payment_date', '<=', $request->input('paid_at_to'));
             }
 
             // تحديد عدد العناصر في الصفحة والفرز
             $perPage = max(1, (int) $request->input('per_page', 20));
-            $sortField = $request->input('sort_by', 'paid_at');
+            $sortField = $request->input('sort_by', 'payment_date');
             $sortOrder = $request->input('sort_order', 'desc');
 
             $payments = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
@@ -177,6 +177,15 @@ class PaymentController extends Controller
      * 
      * عرض دفعة محددة
      * 
+     * @urlParam id required معرف الدفعة. Example: 1
+     */
+    public function show($id): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+            $companyId = $authUser ? $authUser->company_id : null;
+
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
@@ -291,7 +300,7 @@ class PaymentController extends Controller
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
 
-            $payment = Payment::with(['company', 'creator', 'installmentPaymentDetails'])->findOrFail($id);
+            $payment = Payment::with(['company', 'creator', 'installments'])->findOrFail($id);
 
             $canDelete = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -310,10 +319,10 @@ class PaymentController extends Controller
 
             DB::beginTransaction();
             try {
-                // تحقق مما إذا كانت الدفعة مرتبطة بأي تفاصيل دفعات أقساط
-                if ($payment->installmentPaymentDetails()->exists()) {
+                // تحقق مما إذا كانت الدفعة مرتبطة بأي أقساط
+                if ($payment->installments()->exists()) {
                     DB::rollBack();
-                    return api_error('لا يمكن حذف الدفعة. إنها مرتبطة بتفاصيل دفعات أقساط موجودة.', [], 409);
+                    return api_error('لا يمكن حذف الدفعة. إنها مرتبطة بأقساط موجودة.', [], 409);
                 }
 
                 $deletedPayment = $payment->replicate();

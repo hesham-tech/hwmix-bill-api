@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Profit extends Model
 {
-    use Scopes, Blameable;
+    use \Illuminate\Database\Eloquent\Factories\HasFactory, Scopes, Blameable;
     protected $fillable = [
         'source_type',
         'source_id',

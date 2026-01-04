@@ -60,9 +60,13 @@ class CashFlowReportControllerTest extends TestCase
 
         $response = $this->getJson('/api/reports/cash-flow');
 
+        if ($response->status() !== 200) {
+            fwrite(STDERR, $response->getContent());
+        }
+
         $response->assertStatus(200)
             ->assertJsonStructure(['period', 'breakdown', 'by_type', 'transactions'])
-            ->assertJsonPath('breakdown.net_cash_flow', 700.0);
+            ->assertJsonPath('breakdown.net_cash_flow', 700);
     }
 
     public function test_can_view_cash_flow_by_cash_box()
