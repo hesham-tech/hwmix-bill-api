@@ -23,6 +23,8 @@ class CompanyResource extends JsonResource
             'address' => $this->address,
             'description' => $this->description,
             'email' => $this->email,
+            'tax_number' => $this->tax_number,
+            'website' => $this->website,
             'created_by' => $this->created_by,
             'logo' => $this->logo ? asset($this->logo->url) : null,
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,

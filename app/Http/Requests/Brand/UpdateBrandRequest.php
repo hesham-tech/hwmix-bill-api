@@ -26,6 +26,8 @@ class UpdateBrandRequest extends FormRequest
             'created_by' => 'sometimes|exists:users,id',
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
+            'image_id' => 'nullable|exists:images,id',
+            'active' => 'nullable|boolean',
         ];
     }
 }

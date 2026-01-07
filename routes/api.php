@@ -100,11 +100,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('users', 'index');
             Route::get('users/search', 'usersSearch');
             Route::get('users/search-advanced', 'indexWithSearch');
-            Route::post('user', 'store');
-            Route::get('user/{user}', 'show');
-            Route::put('user/{user}', 'update');
+            Route::post('users', 'store');
+            Route::get('users/{user}', 'show');
+            Route::put('users/{user}', 'update');
             Route::put('change-company/{user}', 'changeCompany');
-            Route::put('user/{user}/cashbox/{cashBoxId}/set-default', 'setDefaultCashBox');
+            Route::put('users/{user}/cashbox/{cashBoxId}/set-default', 'setDefaultCashBox');
             Route::post('users/delete', 'destroy');
         });
     // company Controller
@@ -117,12 +117,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('company/delete', 'destroy');
         });
 
-    // Image Controller 
+    // Images Controller
     Route::controller(ImageController::class)
         ->group(function () {
             Route::get('images', 'index');
-            Route::post('image', 'store');
-            Route::put('image/{Image}', 'update');
+            Route::post('images', 'store');
+            Route::put('images/{Image}', 'update');
             Route::post('images/delete', 'destroy');
         });
 
@@ -141,10 +141,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(InvoiceController::class)
         ->group(function () {
             Route::get('invoices', 'index');
-            Route::post('invoice', 'store');
-            Route::get('invoice/{invoice}', 'show');
-            Route::put('invoice/{invoice}', 'update');
-            Route::delete('invoice/{invoice}', 'destroy');
+            Route::post('invoices', 'store');
+            Route::get('invoices/{invoice}', 'show');
+            Route::put('invoices/{invoice}', 'update');
+            Route::delete('invoices/{invoice}', 'destroy');
             Route::post('invoices/deletes', 'deleteMultiple');
 
             // PDF Routes
@@ -168,22 +168,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // cashBoxTypes Controller
     Route::controller(CashBoxTypeController::class)
         ->group(function () {
-            Route::get('cashBoxTypes', 'index');
-            Route::post('cashBoxType', 'store');
-            Route::get('cashBoxType/{cashBoxType}', 'show');
-            Route::put('cashBoxType/{cashBoxType}', 'update');
-            Route::patch('cashBoxType/{id}/toggle', 'toggle');
-            Route::delete('cashBoxType/{cashBoxType}', 'destroy');
+            Route::get('cash-box-types', 'index');
+            Route::post('cash-box-types', 'store');
+            Route::get('cash-box-types/{cashBoxType}', 'show');
+            Route::put('cash-box-types/{cashBoxType}', 'update');
+            Route::patch('cash-box-types/{id}/toggle', 'toggle');
+            Route::delete('cash-box-types/{cashBoxType}', 'destroy');
         });
     // CashBox Controller
     Route::controller(CashBoxController::class)
         ->group(function () {
-            Route::get('cashBoxs', 'index');
-            Route::post('cashBox', 'store');
-            Route::get('cashBox/{cashBox}', 'show');
-            Route::put('cashBox/{cashBox}', 'update');
-            Route::delete('cashBox/{cashBox}', 'destroy');
-            Route::post('cashBox/transfer', 'transferFunds');
+            Route::get('cash-boxes', 'index');
+            Route::post('cash-boxes', 'store');
+            Route::get('cash-boxes/{cashBox}', 'show');
+            Route::put('cash-boxes/{cashBox}', 'update');
+            Route::delete('cash-boxes/{cashBox}', 'destroy');
+            Route::post('cash-boxes/transfer', 'transferFunds');
         });
     // Logs Controller
     Route::controller(LogController::class)
@@ -196,50 +196,50 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(ProductController::class)
         ->group(function () {
             Route::get('products', 'index');
-            Route::post('product', 'store');
-            Route::get('product/{product}', 'show');
-            Route::put('product/{product}', 'update');
-            Route::delete('product/delete/{product}', 'destroy');
+            Route::post('products', 'store');
+            Route::get('products/{product}', 'show');
+            Route::put('products/{product}', 'update');
+            Route::delete('products/{product}', 'destroy');
         });
     // Attribute Controller
     Route::controller(AttributeController::class)
         ->group(function () {
             Route::get('attributes', 'index');
-            Route::post('attribute', 'store');
-            Route::get('attribute/{attribute}', 'show');
-            Route::put('attribute/{attribute}', 'update');
-            Route::delete('attribute/{attribute}', 'destroy');
+            Route::post('attributes', 'store');
+            Route::get('attributes/{attribute}', 'show');
+            Route::put('attributes/{attribute}', 'update');
+            Route::delete('attributes/{attribute}', 'destroy');
             Route::post('attribute/deletes', 'deleteMultiple');
         });
     // Attribute Value Controller
     Route::controller(AttributeValueController::class)
         ->group(function () {
             Route::get('attribute-values', 'index');
-            Route::post('attribute-value', 'store');
-            Route::get('attribute-value/{attributeValue}', 'show');
-            Route::put('attribute-value/{attributeValue}', 'update');
-            Route::delete('attribute-value/{attributeValue}', 'destroy');
+            Route::post('attribute-values', 'store');
+            Route::get('attribute-values/{attributeValue}', 'show');
+            Route::put('attribute-values/{attributeValue}', 'update');
+            Route::delete('attribute-values/{attributeValue}', 'destroy');
             Route::post('attribute-value/deletes', 'deleteMultiple');
         });
     // Product Variant Controller
     Route::controller(ProductVariantController::class)
         ->group(function () {
             Route::get('product-variants', 'index');
-            Route::post('product-variant', 'store');
-            Route::get('product-variant/{productVariant}', 'show');
-            Route::put('product-variant/{productVariant}', 'update');
-            Route::delete('product-variant/{productVariant}', 'destroy');
-            Route::post('product-variant/delete', 'deleteMultiple');
+            Route::post('product-variants', 'store');
+            Route::get('product-variants/{productVariant}', 'show');
+            Route::put('product-variants/{productVariant}', 'update');
+            Route::delete('product-variants/{productVariant}', 'destroy');
+            Route::post('product-variants/delete', 'deleteMultiple');
             Route::get('product-variants/search-by-product', 'searchByProduct');
         });
     // Warehouse Controller
     Route::controller(WarehouseController::class)
         ->group(function () {
             Route::get('warehouses', 'index');
-            Route::post('warehouse', 'store');
-            Route::get('warehouse/{warehouse}', 'show');
-            Route::put('warehouse/{warehouse}', 'update');
-            Route::delete('warehouse/{warehouse}', 'destroy');
+            Route::post('warehouses', 'store');
+            Route::get('warehouses/{warehouse}', 'show');
+            Route::put('warehouses/{warehouse}', 'update');
+            Route::delete('warehouses/{warehouse}', 'destroy');
         });
     // Stock Controller
     Route::controller(StockController::class)
@@ -254,27 +254,27 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(CategoryController::class)
         ->group(function () {
             Route::get('categories', 'index');
-            Route::post('category', 'store');
-            Route::get('category/{category}', 'show');
-            Route::put('category/{category}', 'update');
-            Route::post('category/delete', 'destroy');
+            Route::post('categories', 'store');
+            Route::get('categories/{category}', 'show');
+            Route::put('categories/{category}', 'update');
+            Route::delete('categories/{category}', 'destroy');
         });
     // Brand Controller
     Route::controller(BrandController::class)
         ->group(function () {
             Route::get('brands', 'index');
-            Route::post('brand', 'store');
-            Route::get('brand/{brand}', 'show');
-            Route::put('brand/{brand}', 'update');
-            Route::delete('brand/delete/{brand}', 'destroy');
+            Route::post('brands', 'store');
+            Route::get('brands/{brand}', 'show');
+            Route::put('brands/{brand}', 'update');
+            Route::delete('brands/{brand}', 'destroy');
         });
     // InvoiceType Controller
     Route::controller(InvoiceTypeController::class)->group(function () {
         Route::get('invoice-types', 'index');
-        Route::post('invoice-type', 'store');
-        Route::get('invoice-type/{invoiceType}', 'show');
-        Route::put('invoice-type/{invoiceType}', 'update');
-        Route::delete('invoice-type/{invoiceType}', 'destroy');
+        Route::post('invoice-types', 'store');
+        Route::get('invoice-types/{invoiceType}', 'show');
+        Route::put('invoice-types/{invoiceType}', 'update');
+        Route::delete('invoice-types/{invoiceType}', 'destroy');
     });
 
     // InvoiceItem Controller
@@ -304,57 +304,57 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Payment Controller
     Route::controller(PaymentController::class)->group(function () {
         Route::get('payments', 'index');
-        Route::post('payment', 'store');
-        Route::get('payment/{payment}', 'show');
-        Route::put('payment/{payment}', 'update');
-        Route::delete('payment/{payment}', 'destroy');
+        Route::post('payments', 'store');
+        Route::get('payments/{payment}', 'show');
+        Route::put('payments/{payment}', 'update');
+        Route::delete('payments/{payment}', 'destroy');
     });
     // PaymentMethod Controller
     Route::controller(PaymentMethodController::class)
         ->group(function () {
             Route::get('payment-methods', 'index');
-            Route::post('payment-method', 'store');
+            Route::post('payment-methods', 'store');
 
-            Route::get('payment-method/{paymentMethod}', 'show');
-            Route::put('payment-method/{paymentMethod}', 'update');
-            Route::patch('payment-method/{id}/toggle', 'toggle');
-            Route::delete('payment-method/delete/{paymentMethod}', 'destroy');
+            Route::get('payment-methods/{paymentMethod}', 'show');
+            Route::put('payment-methods/{paymentMethod}', 'update');
+            Route::patch('payment-methods/{id}/toggle', 'toggle');
+            Route::delete('payment-methods/{paymentMethod}', 'destroy');
         });
     Route::controller(InstallmentPaymentController::class)
         ->group(function () {
             Route::get('installment-payments', 'index');
-            Route::post('installment-payment', 'store');
-            Route::post('installment-payment/pay', 'payInstallments');
-            Route::get('installment-payment/{installmentPayment}', 'show');
-            Route::put('installment-payment/{installmentPayment}', 'update');
-            Route::delete('installment-payment/delete/{installmentPayment}', 'destroy');
+            Route::post('installment-payments', 'store');
+            Route::post('installment-payments/pay', 'payInstallments');
+            Route::get('installment-payments/{installmentPayment}', 'show');
+            Route::put('installment-payments/{installmentPayment}', 'update');
+            Route::delete('installment-payments/{installmentPayment}', 'destroy');
         });
     // InstallmentPlan Controller
     Route::controller(InstallmentPlanController::class)
         ->group(function () {
             Route::get('installment-plans', 'index');
-            Route::post('installment-plan', 'store');
-            Route::get('installment-plan/{installmentPlan}', 'show');
-            Route::put('installment-plan/{id}', 'update');
-            Route::delete('installment-plan/delete/{id}', 'destroy');
+            Route::post('installment-plans', 'store');
+            Route::get('installment-plans/{id}', 'show');
+            Route::put('installment-plans/{id}', 'update');
+            Route::delete('installment-plans/{id}', 'destroy');
         });
     // Revenue Controller
     Route::controller(RevenueController::class)
         ->group(function () {
             Route::get('revenues', 'index');
-            Route::post('revenue', 'store');
-            Route::get('revenue/{revenue}', 'show');
-            Route::put('revenue/{revenue}', 'update');
-            Route::delete('revenue/delete/{revenue}', 'destroy');
+            Route::post('revenues', 'store');
+            Route::get('revenues/{revenue}', 'show');
+            Route::put('revenues/{revenue}', 'update');
+            Route::delete('revenues/{revenue}', 'destroy');
         });
     // Profit Controller
     Route::controller(ProfitController::class)
         ->group(function () {
             Route::get('profits', 'index');
-            Route::post('profit', 'store');
-            Route::get('profit/{profit}', 'show');
-            Route::put('profit/{profit}', 'update');
-            Route::delete('profit/delete/{profit}', 'destroy');
+            Route::post('profits', 'store');
+            Route::get('profits/{profit}', 'show');
+            Route::put('profits/{profit}', 'update');
+            Route::delete('profits/{profit}', 'destroy');
         });
     // InstallmentPaymentDetail Controller
     Route::controller(InstallmentPaymentDetailController::class)
@@ -371,10 +371,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(InvoiceItemController::class)
         ->group(function () {
             Route::get('invoice-items', 'index');
-            Route::post('invoice-item', 'store');
-            Route::get('invoice-item/{id}', 'show');
-            Route::put('invoice-item/{id}', 'update');
-            Route::delete('invoice-item/delete/{id}', 'destroy');
+            Route::post('invoice-items', 'store');
+            Route::get('invoice-items/{id}', 'show');
+            Route::put('invoice-items/{id}', 'update');
+            Route::delete('invoice-items/{id}', 'destroy');
         });
     // InvoiceType Controller
     Route::controller(InvoiceTypeController::class)

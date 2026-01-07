@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PaymentMethod\StorePaymentMethodRequest;
+use App\Http\Requests\PaymentMethod\UpdatePaymentMethodRequest;
+use App\Http\Resources\PaymentMethod\PaymentMethodResource;
 use App\Models\PaymentMethod;
-use App\Models\Payment; // لاستخدامه في التحقق من العلاقات قبل الحذف
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use App\Services\ImageService;
 use Throwable;
 
 class PaymentMethodController extends Controller
@@ -19,9 +22,10 @@ class PaymentMethodController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'company',   // للتحقق من belongsToCurrentCompany
-            'creator',   // للتحقق من createdByCurrentUser/OrChildren
-            'payments',  // للتحقق من المدفوعات المرتبطة قبل الحذف
+            'company',
+            'creator',
+            'payments',
+            'image',
         ];
     }
 
@@ -42,49 +46,41 @@ class PaymentMethodController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-
-            if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
-            }
+            $companyId = $authUser->company_id;
 
             $query = PaymentMethod::query()->with($this->relations);
 
-            // فلاتر الطلب الإضافية
-            if ($request->filled('name')) {
-                $query->where('name', 'like', '%' . $request->input('name') . '%');
+            // تطبيق عزل الشركات
+            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                // السوبر أدمن يرى طرق دفع السيستم فقط (الديفولت)
+                $query->where('is_system', true)->whereNull('company_id');
+            } else {
+                $query->where('company_id', $companyId);
             }
-            if ($request->filled('code')) {
-                $query->where('code', $request->input('code'));
+
+            // فلاتر البحث
+            if ($request->filled('search')) {
+                $query->where('name', 'like', '%' . $request->input('search') . '%');
             }
             if ($request->filled('active')) {
                 $query->where('active', (bool) $request->input('active'));
             }
-            if (!empty($request->get('created_at_from'))) {
-                $query->where('created_at', '>=', $request->get('created_at_from') . ' 00:00:00');
-            }
-            if (!empty($request->get('created_at_to'))) {
-                $query->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
-            }
 
-            // تحديد عدد العناصر في الصفحة والفرز
-            $perPage = (int) $request->input('per_page', 10);
+            // الفرز والتصفح
+            $perPage = (int) $request->input('per_page', 12);
             $sortField = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'asc');
 
             $query->orderBy($sortField, $sortOrder);
-            if ($perPage == -1) {
-                // هات كل النتائج بدون باجينيشن
-                $paymentMethods = $query->get();
-            } else {
-                // هات النتائج بباجينيشن
-                $paymentMethods = $query->paginate(max(1, $perPage));
-            }
 
-            if ($paymentMethods->isEmpty()) {
-                return api_success([], 'لم يتم العثور على طرق دفع.');
-            } else {
-                return api_success($paymentMethods, 'تم جلب طرق الدفع بنجاح.');
-            }
+            $paymentMethods = ($perPage == -1) ? $query->get() : $query->paginate(max(1, $perPage));
+
+            $resource = PaymentMethodResource::collection($paymentMethods);
+
+            return api_success(
+                ($perPage == -1) ? $resource : $resource->response()->getData(true),
+                'تم جلب طرق الدفع بنجاح.'
+            );
         } catch (Throwable $e) {
             return api_exception($e);
         }
@@ -99,51 +95,65 @@ class PaymentMethodController extends Controller
      * @bodyParam code string required كود فريد للطريقة. Example: VFC
      * @bodyParam active boolean الحالة. Example: true
      */
-    public function store(Request $request): JsonResponse
+    public function store(StorePaymentMethodRequest $request): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
-
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
-            }
-
-            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('payment_methods.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
-                return api_forbidden('ليس لديك إذن لإنشاء طرق دفع.');
-            }
+            $companyId = $authUser->company_id;
 
             DB::beginTransaction();
             try {
-                $validatedData = $request->validate([
-                    'name' => 'required|string|max:255',
-                    'code' => 'required|string|max:255|unique:payment_methods,code',
-                    'active' => 'required|boolean',
-                    'company_id' => 'nullable|exists:companies,id', // السماح بتحديد الشركة للسوبر أدمن
-                ]);
-
+                $validatedData = $request->validated();
                 $validatedData['created_by'] = $authUser->id;
 
-                // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمستخدم.
-                $methodCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
+                $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
+
+                // تحديد الشركة
+                $validatedData['company_id'] = ($isSuperAdmin && isset($validatedData['company_id']))
                     ? $validatedData['company_id']
                     : $companyId;
 
-                // التأكد من أن المستخدم مصرح له بإنشاء طريقة دفع لهذه الشركة
-                if ($methodCompanyId != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    DB::rollBack();
-                    return api_forbidden('يمكنك فقط إنشاء طرق دفع لشركتك الحالية ما لم تكن مسؤولاً عامًا.');
+                // إذا كان سوبر أدمن، نجعلها طريقة سيستم افتراضياً إذا لم تكن لشركة محددة
+                if ($isSuperAdmin && !isset($validatedData['company_id'])) {
+                    $validatedData['is_system'] = true;
                 }
-                $validatedData['company_id'] = $methodCompanyId;
 
                 $paymentMethod = PaymentMethod::create($validatedData);
+
+                // ربط الصورة
+                if (!empty($validatedData['image_id'])) {
+                    if ($isSuperAdmin && $paymentMethod->is_system) {
+                        // منطق السوبر أدمن: حفظ في مجلد seeders باسم الكود
+                        $tempImage = \App\Models\Image::find($validatedData['image_id']);
+                        if ($tempImage) {
+                            $oldPath = str_replace(\Illuminate\Support\Facades\Storage::url(''), '', $tempImage->url);
+                            $oldPath = ltrim($oldPath, '/');
+                            $ext = pathinfo($tempImage->url, PATHINFO_EXTENSION);
+                            $newPath = "seeders/payment-methods/{$paymentMethod->code}.{$ext}";
+
+                            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                                \Illuminate\Support\Facades\Storage::disk('public')->move($oldPath, $newPath);
+                            }
+
+                            $tempImage->update([
+                                'url' => \Illuminate\Support\Facades\Storage::url($newPath),
+                                'imageable_id' => $paymentMethod->id,
+                                'imageable_type' => PaymentMethod::class,
+                                'is_temp' => 0,
+                                'type' => 'logo',
+                                'company_id' => null,
+                            ]);
+                        }
+                    } else {
+                        // منطق الشركة العادي
+                        ImageService::attachImagesToModel([$validatedData['image_id']], $paymentMethod, 'logo');
+                    }
+                }
+
                 $paymentMethod->load($this->relations);
                 DB::commit();
-                return api_success($paymentMethod, 'تم إنشاء طريقة الدفع بنجاح.', 201);
-            } catch (ValidationException $e) {
-                DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تخزين طريقة الدفع.', $e->errors(), 422);
+                return api_success(new PaymentMethodResource($paymentMethod), 'تم إنشاء طريقة الدفع بنجاح.', 201);
             } catch (Throwable $e) {
                 DB::rollBack();
                 return api_error('حدث خطأ أثناء حفظ طريقة الدفع.', [], 500);
@@ -202,62 +212,85 @@ class PaymentMethodController extends Controller
      * @urlParam id required معرف الطريقة. Example: 1
      * @bodyParam name string اسم الطريقة. Example: تحويل بنكي
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(UpdatePaymentMethodRequest $request, string $id): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
-            }
+            $paymentMethod = PaymentMethod::findOrFail($id);
 
-            $paymentMethod = PaymentMethod::with(['company', 'creator'])->findOrFail($id);
-
-            $canUpdate = false;
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $canUpdate = true;
-            } elseif ($authUser->hasAnyPermission([perm_key('payment_methods.update_all'), perm_key('admin.company')])) {
-                $canUpdate = $paymentMethod->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('payment_methods.update_children'))) {
-                $canUpdate = $paymentMethod->belongsToCurrentCompany() && $paymentMethod->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('payment_methods.update_self'))) {
-                $canUpdate = $paymentMethod->belongsToCurrentCompany() && $paymentMethod->createdByCurrentUser();
-            }
-
-            if (!$canUpdate) {
+            // صلاحيات التحديث
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $paymentMethod->company_id !== $authUser->company_id) {
                 return api_forbidden('ليس لديك إذن لتحديث طريقة الدفع هذه.');
             }
 
             DB::beginTransaction();
             try {
-                $validatedData = $request->validate([
-                    'name' => 'sometimes|string|max:255',
-                    'code' => 'sometimes|string|max:255|unique:payment_methods,code,' . $id,
-                    'active' => 'sometimes|boolean',
-                    'company_id' => 'nullable|exists:companies,id', // السماح بتحديد الشركة للسوبر أدمن
-                ]);
-
+                $validatedData = $request->validated();
                 $validatedData['updated_by'] = $authUser->id;
+                $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
 
-                // التأكد من أن المستخدم مصرح له بتغيير company_id إذا كان سوبر أدمن
-                if (isset($validatedData['company_id']) && $validatedData['company_id'] != $paymentMethod->company_id && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    DB::rollBack();
-                    return api_forbidden('لا يمكنك تغيير شركة طريقة الدفع إلا إذا كنت مدير عام.');
-                }
-                // إذا لم يتم تحديد company_id في الطلب ولكن المستخدم سوبر أدمن، لا تغير company_id الخاصة بالطريقة الحالية
-                if (!$authUser->hasPermissionTo(perm_key('admin.super')) || !isset($validatedData['company_id'])) {
+                // حماية تغيير الشركة لغير السوبر أدمن
+                if (isset($validatedData['company_id']) && !$isSuperAdmin) {
                     unset($validatedData['company_id']);
                 }
 
                 $paymentMethod->update($validatedData);
+
+                // تحديث الصورة
+                if (isset($validatedData['image_id'])) {
+                    if ($isSuperAdmin && $paymentMethod->is_system) {
+                        // منطق السوبر أدمن: استبدال الصورة في مجلد seeders
+                        $oldImage = $paymentMethod->image;
+                        if ($oldImage) {
+                            $oldPhysicalPath = str_replace(\Illuminate\Support\Facades\Storage::url(''), '', $oldImage->url);
+                            $oldPhysicalPath = ltrim($oldPhysicalPath, '/');
+                            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($oldPhysicalPath)) {
+                                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPhysicalPath);
+                            }
+                            $oldImage->delete();
+                        }
+
+                        $tempImage = \App\Models\Image::find($validatedData['image_id']);
+                        if ($tempImage) {
+                            $tempPath = str_replace(\Illuminate\Support\Facades\Storage::url(''), '', $tempImage->url);
+                            $tempPath = ltrim($tempPath, '/');
+                            $ext = pathinfo($tempImage->url, PATHINFO_EXTENSION);
+                            $newPath = "seeders/payment-methods/{$paymentMethod->code}.{$ext}";
+
+                            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($tempPath)) {
+                                \Illuminate\Support\Facades\Storage::disk('public')->move($tempPath, $newPath);
+                            }
+
+                            $tempImage->update([
+                                'url' => \Illuminate\Support\Facades\Storage::url($newPath),
+                                'imageable_id' => $paymentMethod->id,
+                                'imageable_type' => PaymentMethod::class,
+                                'is_temp' => 0,
+                                'type' => 'logo',
+                                'company_id' => null,
+                            ]);
+                        }
+                    } else {
+                        // منطق الشركة العادي
+                        $oldImage = $paymentMethod->image;
+                        if ($oldImage && str_contains($oldImage->url, 'seeders/')) {
+                            // إذا كانت الصورة الحالية من السـيدر، نحذف السجل فقط ولا نحذف الملف فيزيائياً
+                            $oldImage->delete();
+                            // ثم نربط الجديدة
+                            ImageService::attachImagesToModel([$validatedData['image_id']], $paymentMethod, 'logo');
+                        } else {
+                            // المنطق الطبيعي للمزامنة (سيبوم بحذف الملف القديم إذا لم يكن سـيدر)
+                            $newImageIds = $validatedData['image_id'] ? [$validatedData['image_id']] : [];
+                            ImageService::syncImagesWithModel($newImageIds, $paymentMethod, 'logo');
+                        }
+                    }
+                }
+
                 $paymentMethod->load($this->relations);
                 DB::commit();
-                return api_success($paymentMethod, 'تم تحديث طريقة الدفع بنجاح.');
-            } catch (ValidationException $e) {
-                DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تحديث طريقة الدفع.', $e->errors(), 422);
+                return api_success(new PaymentMethodResource($paymentMethod), 'تم تحديث طريقة الدفع بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
                 return api_error('حدث خطأ أثناء تحديث طريقة الدفع.', [], 500);
@@ -302,8 +335,8 @@ class PaymentMethodController extends Controller
                 return api_forbidden('ليس لديك إذن لحذف طريقة الدفع هذه.');
             }
 
-            // ✅ حماية من حذف طرق الدفع الأساسية (is_system)
-            if ($paymentMethod->is_system) {
+            // ✅ حماية من حذف طرق الدفع الأساسية (إلا للسوبر أدمن)
+            if ($paymentMethod->is_system && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
                 return api_error(
                     'لا يمكن حذف طريقة دفع أساسية من النظام. يمكنك تعطيلها بدلاً من ذلك.',
                     [
@@ -321,8 +354,28 @@ class PaymentMethodController extends Controller
 
             DB::beginTransaction();
             try {
+                $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
                 $deletedPaymentMethod = $paymentMethod->replicate();
                 $deletedPaymentMethod->setRelations($paymentMethod->getRelations());
+
+                if ($paymentMethod->image) {
+                    if ($isSuperAdmin && $paymentMethod->is_system) {
+                        // حذف السجل والملف الفيزيائي للسوبر أدمن
+                        $physicalPath = str_replace(\Illuminate\Support\Facades\Storage::url(''), '', $paymentMethod->image->url);
+                        $physicalPath = ltrim($physicalPath, '/');
+                        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($physicalPath)) {
+                            \Illuminate\Support\Facades\Storage::disk('public')->delete($physicalPath);
+                        }
+                        $paymentMethod->image->delete();
+                    } else {
+                        // للمستخدم العادي: حذف السجل فقط إذا كان سـيدر، وإلا حذف طبيعي
+                        if (str_contains($paymentMethod->image->url, 'seeders/')) {
+                            $paymentMethod->image->delete();
+                        } else {
+                            ImageService::deleteImages([$paymentMethod->image->id]);
+                        }
+                    }
+                }
 
                 $paymentMethod->delete();
                 DB::commit();

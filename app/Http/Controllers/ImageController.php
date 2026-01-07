@@ -21,9 +21,11 @@ class ImageController extends Controller
             $query = Image::query()->where('created_by', Auth::id());
 
             if ($request->filled('linked')) {
-                $request->linked === '1'
-                    ? $query->whereNotNull('imageable_id')
-                    : $query->whereNull('imageable_id');
+                if ($request->linked === '1') {
+                    $query->whereNotNull('imageable_id')->where('is_temp', false);
+                } else {
+                    $query->whereNull('imageable_id')->where('is_temp', true);
+                }
             }
 
             if ($request->filled('is_temp') && in_array($request->is_temp, ['0', '1'], true)) {
@@ -62,6 +64,7 @@ class ImageController extends Controller
             ]);
 
             $user = Auth::user();
+            $companyId = $user->company_id;
             $type = $request->input('type', 'misc');
             $uploadedImages = [];
 
@@ -69,9 +72,9 @@ class ImageController extends Controller
                 // اسم الملف الفريد
                 $fileName = "temp_{$user->id}_" . uniqid() . '.' . $file->getClientOriginalExtension();
 
-                // تخزين الملف باستخدام قرص 'public'
-                // المسار سيكون public/uploads/temp داخل storage/app
-                $path = $file->storeAs('uploads/temp', $fileName, 'public');
+                // تخزين الملف في مجلد مؤقت خاص بالشركة
+                // المسار: uploads/{company_id}/temp
+                $path = $file->storeAs("uploads/{$companyId}/temp", $fileName, 'public');
 
                 // URL العام للملف المخزن
                 $url = Storage::url($path);
@@ -79,8 +82,9 @@ class ImageController extends Controller
                 $image = Image::create([
                     'url' => $url,
                     'type' => $type,
-                    'company_id' => $user->company_id,
+                    'company_id' => $companyId,
                     'created_by' => $user->id,
+                    'is_temp' => 1, // تأكيد أنها صورة مؤقتة
                 ]);
 
                 $uploadedImages[] = $image;

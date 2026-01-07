@@ -16,6 +16,7 @@ class PaymentMethodSeeder extends Seeder
                 'code' => 'cash',
                 'active' => true,
                 'is_system' => true,
+                'logo' => 'cash.png',
             ],
             [
                 'name' => 'آجل',
@@ -30,18 +31,21 @@ class PaymentMethodSeeder extends Seeder
                 'code' => 'credit_card',
                 'active' => true,
                 'is_system' => true,
+                'logo' => 'credit_card.png',
             ],
             [
                 'name' => 'بطاقة خصم مباشر',
                 'code' => 'debit_card',
                 'active' => true,
                 'is_system' => true,
+                'logo' => 'credit_card.png',
             ],
             [
                 'name' => 'تحويل بنكي',
                 'code' => 'bank_transfer',
                 'active' => true,
                 'is_system' => true,
+                'logo' => 'bank_transfer.png',
             ],
             [
                 'name' => 'شيك',
@@ -56,6 +60,7 @@ class PaymentMethodSeeder extends Seeder
                 'code' => 'vodafone_cash',
                 'active' => true,
                 'is_system' => true,
+                'logo' => 'vodafone_cash.png',
             ],
             [
                 'name' => 'اتصالات كاش',
@@ -74,12 +79,14 @@ class PaymentMethodSeeder extends Seeder
                 'code' => 'instapay',
                 'active' => true,
                 'is_system' => true,
+                'logo' => 'instapay.png',
             ],
             [
                 'name' => 'فوري',
                 'code' => 'fawry',
                 'active' => true,
                 'is_system' => true,
+                'logo' => 'fawry.png',
             ],
 
             // خدمات الدفع الإلكتروني
@@ -88,18 +95,21 @@ class PaymentMethodSeeder extends Seeder
                 'code' => 'paypal',
                 'active' => true,
                 'is_system' => true,
+                'logo' => 'paypal.png',
             ],
             [
                 'name' => 'فيزا أونلاين',
                 'code' => 'visa_online',
                 'active' => true,
                 'is_system' => true,
+                'logo' => 'credit_card.png',
             ],
             [
                 'name' => 'ماستركارد أونلاين',
                 'code' => 'mastercard_online',
                 'active' => true,
                 'is_system' => true,
+                'logo' => 'credit_card.png',
             ],
 
             // التقسيط
@@ -130,10 +140,31 @@ class PaymentMethodSeeder extends Seeder
         ];
 
         foreach ($methods as $method) {
-            PaymentMethod::firstOrCreate(
+            $logo = $method['logo'] ?? null;
+            unset($method['logo']);
+
+            $paymentMethod = PaymentMethod::updateOrCreate(
                 ['code' => $method['code']],
                 $method
             );
+
+            if ($logo) {
+                $logoPath = "seeders/payment-methods/{$logo}";
+                // ونحن نفترض أن الصـور موجودة في storage/app/public/seeders/payment-methods
+                \App\Models\Image::updateOrCreate(
+                    [
+                        'imageable_id' => $paymentMethod->id,
+                        'imageable_type' => PaymentMethod::class,
+                        'type' => 'logo',
+                    ],
+                    [
+                        'url' => \Illuminate\Support\Facades\Storage::url($logoPath),
+                        'is_temp' => false,
+                        'company_id' => $paymentMethod->company_id ?? 1,
+                        'created_by' => 1,
+                    ]
+                );
+            }
         }
     }
 }

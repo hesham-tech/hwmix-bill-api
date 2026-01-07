@@ -33,4 +33,14 @@ class InvoiceType extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * العلاقة مع الشركات عبر جدول الربط company_invoice_type
+     */
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class, 'company_invoice_type')
+            ->withPivot('is_active')
+            ->withTimestamps();
+    }
 }

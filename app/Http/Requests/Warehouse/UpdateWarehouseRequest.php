@@ -24,6 +24,7 @@ class UpdateWarehouseRequest extends FormRequest
         return [
             'name' => 'sometimes|required|string|max:255',
             'location' => 'sometimes|nullable|string|max:255',
+            'description' => 'sometimes|nullable|string', // تم إضافة الوصف
             'manager' => 'sometimes|nullable|string|max:255',
             'capacity' => 'sometimes|nullable|integer|min:0',
             'status' => 'sometimes|required|in:active,inactive',

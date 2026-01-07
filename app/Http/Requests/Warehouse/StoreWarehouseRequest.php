@@ -24,6 +24,7 @@ class StoreWarehouseRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'location' => 'nullable|string|max:255',
+            'description' => 'nullable|string', // تم إضافة الوصف
             'manager' => 'nullable|string|max:255',
             'capacity' => 'nullable|integer|min:0',
             'status' => 'nullable|in:active,inactive',

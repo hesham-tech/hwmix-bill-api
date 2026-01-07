@@ -8,9 +8,10 @@ use App\Http\Requests\Brand\UpdateBrandRequest;
 use App\Http\Resources\Brand\BrandResource;
 use App\Models\Brand;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse; // للتأكد من استيراد JsonResponse
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\ImageService;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -29,8 +30,9 @@ class BrandController extends Controller
     {
         $this->relations = [
             'creator',
-            'company',   // للتحقق من belongsToCurrentCompany
-            'products',  // للتحقق من المنتجات المرتبطة قبل الحذف
+            'company',
+            'products',
+            'image',
         ];
     }
 
@@ -143,6 +145,11 @@ class BrandController extends Controller
                 $validatedData['created_by'] = $authUser->id;
 
                 $brand = Brand::create($validatedData);
+
+                if (!empty($validatedData['image_id'])) {
+                    ImageService::attachImagesToModel([$validatedData['image_id']], $brand, 'logo');
+                }
+
                 $brand->load($this->relations);
                 DB::commit();
                 return api_success(new BrandResource($brand), 'تم إنشاء العلامة التجارية بنجاح.');
@@ -253,6 +260,12 @@ class BrandController extends Controller
                 $validatedData['updated_by'] = $updatedBy; // من قام بالتعديل
 
                 $brand->update($validatedData);
+
+                if (isset($validatedData['image_id'])) {
+                    $newImageIds = $validatedData['image_id'] ? [$validatedData['image_id']] : [];
+                    ImageService::syncImagesWithModel($newImageIds, $brand, 'logo');
+                }
+
                 $brand->load($this->relations);
                 DB::commit();
                 return api_success(new BrandResource($brand), 'تم تحديث العلامة التجارية بنجاح.');
@@ -313,7 +326,12 @@ class BrandController extends Controller
 
                 // حفظ نسخة من العلامة التجارية قبل حذفها لإرجاعها في الاستجابة
                 $deletedBrand = $brand->replicate();
-                $deletedBrand->setRelations($brand->getRelations()); // نسخ العلاقات المحملة
+                $deletedBrand->setRelations($brand->getRelations());
+
+                // حذف الصورة المرتبطة
+                if ($brand->image) {
+                    ImageService::deleteImages([$brand->image->id]);
+                }
 
                 $brand->delete();
                 DB::commit();

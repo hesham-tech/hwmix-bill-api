@@ -29,6 +29,8 @@ class CompanyUpdateRequest extends FormRequest
             'address' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:15',
             'email' => "nullable|email|unique:companies,email,{$this->company->id}",
+            'tax_number' => 'nullable|string|max:100',
+            'website' => 'nullable|url|max:255',
             'created_by' => 'nullable|integer|exists:users,id',
             'company_id' => 'nullable|integer|exists:companies,id',
             'images_ids' => 'nullable|array',

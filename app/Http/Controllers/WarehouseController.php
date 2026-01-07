@@ -78,11 +78,16 @@ class WarehouseController extends Controller
                 }
                 $query->where('company_id', $request->input('company_id'));
             }
-            if ($request->filled('active')) {
-                $query->where('active', (bool) $request->input('active'));
+            if ($request->filled('status')) {
+                $query->where('status', $request->input('status'));
             }
-            if ($request->filled('name')) { // إضافة فلتر الاسم
-                $query->where('name', 'like', '%' . $request->input('name') . '%');
+            if ($request->filled('search')) {
+                $searchTerm = $request->input('search');
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('location', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('description', 'like', '%' . $searchTerm . '%');
+                });
             }
             if (!empty($request->get('created_at_from'))) {
                 $query->where('created_at', '>=', $request->get('created_at_from') . ' 00:00:00');
@@ -93,8 +98,9 @@ class WarehouseController extends Controller
 
             // التصفح والفرز
             $perPage = (int) $request->get('per_page', 20);
-            $sortField = $request->input('sort_by', 'id'); // تغيير الحقل الافتراضي للفرز
-            $sortOrder = $request->input('sort_order', 'desc');
+            $sortField = $request->input('sort_by');
+            $sortField = (!empty($sortField)) ? $sortField : 'id';
+            $sortOrder = $request->input('order', 'desc');
 
             $warehouses = $query->orderBy($sortField, $sortOrder);
             $warehouses = $perPage == -1

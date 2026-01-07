@@ -10,7 +10,7 @@ use App\Models\CashBox;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse; // للتأكد من استيراد JsonResponse
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -65,30 +65,19 @@ class CashBoxController extends Controller
             $cashBoxQuery = CashBox::query()->with($this->relations);
             $companyId = $authUser->company_id ?? null;
 
-            // منطق خاص لعرض صناديق المستخدم الحالي فقط
-            if ($request->query('current_user') == 1) {
-                $cashBoxQuery->where('user_id', $authUser->id)->whereCompanyIsCurrent();
+            // تطبيق منطق الصلاحيات العامة
+            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                // المسؤول العام يرى جميع الصناديق (لا قيود إضافية)
+            } elseif ($authUser->hasAnyPermission([perm_key('cash_boxes.view_all'), perm_key('admin.company')])) {
+                // يرى جميع الصناديق (تلقائياً للشركة الحالية عبر السكوب)
+            } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_children'))) {
+                // يرى الصناديق التي أنشأها المستخدم أو المستخدمون التابعون له
+                $cashBoxQuery->whereCreatedByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_self'))) {
+                // يرى الصناديق التي أنشأها المستخدم فقط
+                $cashBoxQuery->whereCreatedByUser();
             } else {
-                // فلترة الصناديق الافتراضية للنظام (إذا لم تكن لـ current_user)
-                $cashBoxQuery->whereDoesntHave('typeBox', function ($query) {
-                    $query->where('description', 'النوع الافتراضي للسيستم');
-                });
-
-                // تطبيق منطق الصلاحيات العامة
-                if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    // المسؤول العام يرى جميع الصناديق (لا قيود إضافية)
-                } elseif ($authUser->hasAnyPermission([perm_key('cash_boxes.view_all'), perm_key('admin.company')])) {
-                    // يرى جميع الصناديق الخاصة بالشركة النشطة (بما في ذلك مديرو الشركة)
-                    $cashBoxQuery->whereCompanyIsCurrent();
-                } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_children'))) {
-                    // يرى الصناديق التي أنشأها المستخدم أو المستخدمون التابعون له، ضمن الشركة النشطة
-                    $cashBoxQuery->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-                } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_self'))) {
-                    // يرى الصناديق التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
-                    $cashBoxQuery->whereCompanyIsCurrent()->whereCreatedByUser();
-                } else {
-                    return api_forbidden('ليس لديك إذن لعرض الخزن.');
-                }
+                return api_forbidden('ليس لديك إذن لعرض الخزن.');
             }
 
             // التصفية باستخدام الحقول المقدمة
@@ -218,14 +207,11 @@ class CashBoxController extends Controller
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canView = true; // المسؤول العام يرى أي صندوق
             } elseif ($authUser->hasAnyPermission([perm_key('cash_boxes.view_all'), perm_key('admin.company')])) {
-                // يرى إذا كان الصندوق ينتمي للشركة النشطة (بما في ذلك مديرو الشركة)
-                $canView = $cashBox->belongsToCurrentCompany();
+                $canView = true; // يرى صناديق شركته (تلقائياً عبر السكوب)
             } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_children'))) {
-                // يرى إذا كان الصندوق أنشأه هو أو أحد التابعين له وتابع للشركة النشطة
-                $canView = $cashBox->belongsToCurrentCompany() && $cashBox->createdByUserOrChildren();
+                $canView = $cashBox->createdByUserOrChildren();
             } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_self'))) {
-                // يرى إذا كان الصندوق أنشأه هو وتابع للشركة النشطة
-                $canView = $cashBox->belongsToCurrentCompany() && $cashBox->createdByCurrentUser();
+                $canView = $cashBox->createdByCurrentUser();
             }
 
             if ($canView) {
@@ -263,14 +249,11 @@ class CashBoxController extends Controller
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canUpdate = true; // المسؤول العام يمكنه تعديل أي صندوق
             } elseif ($authUser->hasAnyPermission([perm_key('cash_boxes.update_all'), perm_key('admin.company')])) {
-                // يمكنه تعديل أي صندوق داخل الشركة النشطة (بما في ذلك مديرو الشركة)
-                $canUpdate = $cashBox->belongsToCurrentCompany();
+                $canUpdate = true; // يمكنه تعديل صناديق شركته (تلقائياً عبر السكوب)
             } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.update_children'))) {
-                // يمكنه تعديل الصناديق التي أنشأها هو أو أحد التابعين له وتابعة للشركة النشطة
-                $canUpdate = $cashBox->belongsToCurrentCompany() && $cashBox->createdByUserOrChildren();
+                $canUpdate = $cashBox->createdByUserOrChildren();
             } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.update_self'))) {
-                // يمكنه تعديل صندوقه الخاص الذي أنشأه وتابع للشركة النشطة
-                $canUpdate = $cashBox->belongsToCurrentCompany() && $cashBox->createdByCurrentUser();
+                $canUpdate = $cashBox->createdByCurrentUser();
             }
 
             if (!$canUpdate) {
@@ -332,15 +315,12 @@ class CashBoxController extends Controller
             $canDelete = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canDelete = true;
-            } elseif ($authUser->hasAnyPermission([perm_key('cash_boxes.delete_all'), perm_key('admin.company')])) {
-                // يمكنه حذف أي صندوق داخل الشركة النشطة (بما في ذلك مديرو الشركة)
-                $canDelete = $cashBox->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.delete_children'))) {
-                // يمكنه حذف الصناديق التي أنشأها هو أو أحد التابعين له وتابعة للشركة النشطة
-                $canDelete = $cashBox->belongsToCurrentCompany() && $cashBox->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.delete_self'))) {
-                // يمكنه حذف صندوقه الخاص الذي أنشأه وتابع للشركة النشطة
-                $canDelete = $cashBox->belongsToCurrentCompany() && $cashBox->createdByCurrentUser();
+            } elseif ($authUser->hasAnyPermission([perm_key('cash_box_types.delete_all'), perm_key('admin.company')])) {
+                $canDelete = true; // يمكنه حذف صناديق شركته (تلقائياً عبر السكوب)
+            } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.delete_children'))) {
+                $canDelete = $cashBox->createdByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.delete_self'))) {
+                $canDelete = $cashBox->createdByCurrentUser();
             }
 
             if (!$canDelete) {

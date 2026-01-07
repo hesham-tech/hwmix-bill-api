@@ -10,6 +10,7 @@ use App\Traits\HasImages;
 use App\Traits\LogsActivity;
 use App\Traits\RolePermissions;
 use App\Traits\Scopes;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,10 +22,10 @@ use Spatie\Permission\Traits\HasRoles;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Observers\CompanyObserver;
 
 // #[ScopedBy([CompanyScope::class])]
-
-
+#[ObservedBy([CompanyObserver::class])]
 class Company extends Model
 {
     use HasFactory, Notifiable, Translatable, HasRoles, Filterable, Scopes, RolePermissions, LogsActivity, HasImages;
@@ -37,6 +38,8 @@ class Company extends Model
         'address',
         'phone',
         'email',
+        'tax_number',
+        'website',
         'created_by',
         'company_id',
     ];
@@ -100,5 +103,23 @@ class Company extends Model
     public function logo()
     {
         return $this->morphOne(Image::class, 'imageable')->where('type', 'logo');
+    }
+
+    /**
+     * العلاقة مع أنواع الفواتير عبر جدول الربط company_invoice_type
+     */
+    public function invoiceTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(InvoiceType::class, 'company_invoice_type')
+            ->withPivot('is_active')
+            ->withTimestamps();
+    }
+
+    /**
+     * أنواع الفواتير النشطة فقط لهذه الشركة
+     */
+    public function activeInvoiceTypes(): BelongsToMany
+    {
+        return $this->invoiceTypes()->wherePivot('is_active', true);
     }
 }

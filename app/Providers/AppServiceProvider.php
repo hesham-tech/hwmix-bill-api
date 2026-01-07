@@ -25,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
         // Register Observers
         \App\Models\Invoice::observe(\App\Observers\InvoiceObserver::class);
         \App\Models\InvoicePayment::observe(\App\Observers\PaymentObserver::class);
+        // Company Observer registered via #[ObservedBy] attribute in Company model
         Role::observe(RoleObserver::class);
     }
 }

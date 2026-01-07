@@ -11,11 +11,22 @@ use App\Traits\Scopes;
 /**
  * @mixin IdeHelperBrand
  */
+use App\Models\Image;
+
 class Brand extends Model
 {
     use HasFactory, Blameable, Scopes;
 
-    protected $fillable = ['company_id', 'created_by', 'name', 'description'];
+    protected $fillable = ['company_id', 'created_by', 'name', 'description', 'active'];
+
+    protected $casts = [
+        'active' => 'boolean'
+    ];
+
+    public function image()
+    {
+        return $this->morphOne(Image::class, 'imageable');
+    }
 
     public function company()
     {

@@ -24,6 +24,7 @@ class WarehouseResource extends JsonResource
             'manager' => $this->manager,
             'capacity' => $this->capacity,
             'status' => $this->status,
+            'description' => $this->description, // تم إضافة حقل الوصف
             'company' => new CompanyResource($this->whenLoaded('company')),
             'creator' => new UserResource($this->whenLoaded('creator')),
             'stocks' => StockResource::collection($this->whenLoaded('stocks')),
