@@ -29,7 +29,7 @@ jobs:
 
       - name: Deploy via Rsync
         run: |
-          rsync -avz --delete -e "ssh -p 65002 -o StrictHostKeyChecking=no" \
+          rsync -avz --delete -e "ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
           --exclude='.git/' \
           --exclude='.github/' \
           --exclude='node_modules/' \
@@ -38,4 +38,4 @@ jobs:
           --exclude='.env' \
           --exclude='phpunit.xml' \
           --exclude='README.md' \
-          ./ u715355537@212.107.17.234:/home/u715355537/domains/hwnix.com/public_html/api-teste/
+          ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/u715355537/domains/hwnix.com/public_html/api-teste/
