@@ -22,22 +22,20 @@ jobs:
       - name: Install Composer Dependencies
         run: composer install --no-dev --optimize-autoloader
 
-      - name: Deploy via SSH/Rsync
-        uses: easedit/rsync-deploy-action@v1
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT }}
-          user: ${{ secrets.SSH_USER }}
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          local-dir: ./
-          remote-dir: /home/u715355537/domains/hwnix.com/public_html/api-teste/
-          args: -az --delete
-          exclude: |
-            .git/
-            .github/
-            node_modules/
-            tests/
-            storage/logs/
-            .env
-            phpunit.xml
-            README.md
+
+      - name: Deploy via Rsync
+        run: |
+          rsync -avz --delete -e "ssh -p 65002 -o StrictHostKeyChecking=no" \
+          --exclude='.git/' \
+          --exclude='.github/' \
+          --exclude='node_modules/' \
+          --exclude='tests/' \
+          --exclude='storage/logs/' \
+          --exclude='.env' \
+          --exclude='phpunit.xml' \
+          --exclude='README.md' \
+          ./ u715355537@212.107.17.234:/home/u715355537/domains/hwnix.com/public_html/api-teste/
