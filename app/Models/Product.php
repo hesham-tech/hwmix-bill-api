@@ -137,11 +137,13 @@ class Product extends Model
 
     // ==================== العلاقات ====================
 
-    // // علاقة المنتج مع الصور
-    // public function images()
-    // {
-    //     return $this->hasMany(ProductImage::class);  // إذا كان هناك صور متعددة
-    // }
+    /**
+     * علاقة المنتج مع الصور عبر التحويل المتعدد (Polymorphic)
+     */
+    public function images()
+    {
+        return $this->morphMany(Image::class, 'imageable');
+    }
 
     // دالة لتوليد الـ slug
     public static function generateSlug($name)

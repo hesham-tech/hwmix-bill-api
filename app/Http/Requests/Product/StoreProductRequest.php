@@ -12,6 +12,23 @@ class StoreProductRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Decode JSON strings if sent via FormData
+     */
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->variants)) {
+            $this->merge([
+                'variants' => json_decode($this->variants, true)
+            ]);
+        }
+        if (is_string($this->tags)) {
+            $this->merge([
+                'tags' => json_decode($this->tags, true)
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         $rules = [

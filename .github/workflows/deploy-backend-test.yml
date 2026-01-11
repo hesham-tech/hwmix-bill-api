@@ -1,0 +1,43 @@
+name: Deploy Laravel Backend to Test Subdomain (SSH)
+
+on:
+  push:
+    branches:
+      - restructure-v2 # هذا هو البرانش الذي تعمل عليه حالياً
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
+
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Deploy via SSH/Rsync
+        uses: easedit/rsync-deploy-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          user: ${{ secrets.SSH_USER }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          local-dir: ./
+          remote-dir: /home/u715355537/domains/hwnix.com/public_html/api-teste/
+          args: -az --delete
+          exclude: |
+            .git/
+            .github/
+            node_modules/
+            tests/
+            storage/logs/
+            .env
+            phpunit.xml
+            README.md

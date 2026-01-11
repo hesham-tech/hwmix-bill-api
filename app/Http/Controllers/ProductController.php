@@ -197,7 +197,6 @@ class ProductController extends Controller
                 return api_unauthorized('يجب أن تكون مرتبطًا بشركة.');
             }
 
-            // صلاحيات إنشاء منتج
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('products.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
                 return api_forbidden('ليس لديك صلاحية لإنشاء المنتجات.');
             }
@@ -205,79 +204,96 @@ class ProductController extends Controller
             DB::beginTransaction();
             try {
                 $validatedData = $request->validated();
-
-                // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمنتج.
                 $validatedData['company_id'] = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
                     ? $validatedData['company_id']
                     : $companyId;
 
-                // التأكد من أن المستخدم مصرح له بإنشاء منتج لهذه الشركة
-                if ($validatedData['company_id'] != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    DB::rollBack();
-                    return api_forbidden('يمكنك فقط إنشاء منتجات لشركتك النشطة.');
-                }
-
                 $validatedData['created_by'] = $authUser->id;
-                $validatedData['active'] = (bool) ($validatedData['active'] ?? false);
+                $validatedData['active'] = (bool) ($validatedData['active'] ?? true);
                 $validatedData['featured'] = (bool) ($validatedData['featured'] ?? false);
-                $validatedData['returnable'] = (bool) ($validatedData['returnable'] ?? false);
+                $validatedData['returnable'] = (bool) ($validatedData['returnable'] ?? true);
                 $validatedData['slug'] = Product::generateSlug($validatedData['name']);
 
                 $product = Product::create($validatedData);
 
-                if ($request->has('variants') && is_array($request->input('variants'))) {
-                    foreach ($request->input('variants') as $variantData) {
-                        $variantCreateData = collect($variantData)->except(['attributes', 'stocks'])->toArray();
-                        $variantCreateData['company_id'] = $validatedData['company_id']; // تأكد من ربطها بنفس شركة المنتج
-                        $variantCreateData['created_by'] = $validatedData['created_by'];
+                // Handling Product Images (Polymorphic)
+                if ($request->hasFile('images')) {
+                    foreach ($request->file('images') as $file) {
+                        $fileName = "product_{$product->id}_" . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs("uploads/{$companyId}/products", $fileName, 'public');
+                        $url = Storage::url($path);
 
-                        $variant = $product->variants()->create($variantCreateData);
+                        $product->images()->create([
+                            'url' => $url,
+                            'type' => 'product_gallery',
+                            'company_id' => $companyId,
+                            'created_by' => $authUser->id,
+                            'file_name' => $fileName,
+                            'mime_type' => $file->getMimeType(),
+                            'size' => $file->getSize(),
+                        ]);
+                    }
+                }
 
-                        if (!empty($variantData['attributes']) && is_array($variantData['attributes'])) {
-                            foreach ($variantData['attributes'] as $attributeData) {
-                                if (empty($attributeData['attribute_id']) || empty($attributeData['attribute_value_id'])) {
-                                    continue;
-                                }
-                                $variant->attributes()->create([
-                                    'attribute_id' => $attributeData['attribute_id'],
-                                    'attribute_value_id' => $attributeData['attribute_value_id'],
-                                    'company_id' => $validatedData['company_id'], // تأكد من ربطها بنفس شركة المنتج
-                                    'created_by' => $validatedData['created_by'],
-                                    'min_quantity' => $validatedData['min_quantity'] ?? 0,
-                                ]);
-                            }
+                // Handling Variants
+                $variantsData = $request->input('variants', []);
+
+                // If no variants provided, create a default one from main pricing fields
+                if (empty($variantsData)) {
+                    $variantsData[] = [
+                        'sku' => $request->input('sku') ?? ProductVariant::generateUniqueSKU(),
+                        'barcode' => $request->input('barcode') ?? ProductVariant::generateUniqueBarcode(),
+                        'retail_price' => $request->input('retail_price', 0),
+                        'wholesale_price' => $request->input('wholesale_price', 0),
+                        'tax' => $request->input('tax', 0),
+                        'weight' => $request->input('weight', 0),
+                        'status' => 'active',
+                        'stocks' => [
+                            [
+                                'quantity' => $request->input('stock_quantity', 0),
+                                'min_quantity' => $request->input('min_quantity', 0),
+                                'warehouse_id' => $request->input('warehouse_id'),
+                            ]
+                        ]
+                    ];
+                }
+
+                foreach ($variantsData as $variantData) {
+                    $variantCreateData = collect($variantData)->except(['attributes', 'stocks'])->toArray();
+                    $variantCreateData['company_id'] = $validatedData['company_id'];
+                    $variantCreateData['created_by'] = $validatedData['created_by'];
+
+                    $variant = $product->variants()->create($variantCreateData);
+
+                    // Attributes handling
+                    if (!empty($variantData['attributes']) && is_array($variantData['attributes'])) {
+                        foreach ($variantData['attributes'] as $attr) {
+                            $variant->attributes()->create([
+                                'attribute_id' => $attr['attribute_id'] ?? $attr['id'],
+                                'attribute_value_id' => $attr['attribute_value_id'] ?? ($attr['value_id'] ?? null),
+                                'company_id' => $validatedData['company_id'],
+                                'created_by' => $validatedData['created_by'],
+                            ]);
                         }
+                    }
 
-                        if (!empty($variantData['stocks']) && is_array($variantData['stocks'])) {
-                            foreach ($variantData['stocks'] as $stockData) {
-                                $stockCreateData = [
-                                    'quantity' => $stockData['quantity'] ?? 0,
-                                    'reserved' => $stockData['reserved'] ?? 0,
-                                    'min_quantity' => $stockData['min_quantity'] ?? 0,
-                                    'cost' => $stockData['cost'] ?? null,
-                                    'batch' => $stockData['batch'] ?? null,
-                                    'expiry' => $stockData['expiry'] ?? null,
-                                    'loc' => $stockData['loc'] ?? null,
-                                    'status' => $stockData['status'] ?? 'available',
-                                    'warehouse_id' => $stockData['warehouse_id'] ?? null,
-                                    'company_id' => $validatedData['company_id'], // تأكد من ربطها بنفس شركة المنتج
-                                    'created_by' => $validatedData['created_by'],
-                                ];
-                                $variant->stocks()->create($stockCreateData);
-                            }
+                    // Stocks handling
+                    if (!empty($variantData['stocks']) && is_array($variantData['stocks'])) {
+                        foreach ($variantData['stocks'] as $stockData) {
+                            $variant->stocks()->create(array_merge($stockData, [
+                                'company_id' => $validatedData['company_id'],
+                                'created_by' => $validatedData['created_by'],
+                            ]));
                         }
                     }
                 }
 
                 DB::commit();
-
                 return api_success(ProductResource::make($product->load($this->relations)), 'تم إنشاء المنتج بنجاح', 201);
-            } catch (ValidationException $e) {
-                DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تخزين المنتج.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء حفظ المنتج.', [], 500);
+                logger()->error("Store Product Error: " . $e->getMessage());
+                return api_error('حدث خطأ أثناء حفظ المنتج: ' . $e->getMessage(), [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -352,149 +368,85 @@ class ProductController extends Controller
                 return api_unauthorized('يجب أن تكون مرتبطًا بشركة.');
             }
 
-            // التحقق من صلاحيات التحديث
-            $canUpdate = false;
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $canUpdate = true; // المسؤول العام يمكنه تعديل أي منتج
-            } elseif ($authUser->hasAnyPermission([perm_key('products.update_all'), perm_key('admin.company')])) {
-                // يمكنه تعديل أي منتج داخل الشركة النشطة (بما في ذلك مديرو الشركة)
-                $canUpdate = $product->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('products.update_children'))) {
-                // يمكنه تعديل المنتجات التي أنشأها هو أو أحد التابعين له وتابعة للشركة النشطة
-                $canUpdate = $product->belongsToCurrentCompany() && $product->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('products.update_self'))) {
-                // يمكنه تعديل منتجه الخاص الذي أنشأه وتابع للشركة النشطة
-                $canUpdate = $product->belongsToCurrentCompany() && $product->createdByCurrentUser();
-            }
-
-            if (!$canUpdate) {
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasAnyPermission([perm_key('products.update_all'), perm_key('admin.company')]) && !$product->createdByCurrentUser()) {
                 return api_forbidden('ليس لديك صلاحية لتحديث هذا المنتج.');
             }
 
             DB::beginTransaction();
             try {
                 $validatedData = $request->validated();
-                $updatedBy = $authUser->id;
+                $product->update($validatedData);
 
-                // إذا كان المستخدم سوبر ادمن ويحدد معرف الشركه، يسمح بذلك. وإلا، استخدم معرف الشركه للمنتج.
-                $validatedData['company_id'] = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
-                    ? $validatedData['company_id']
-                    : $product->company_id;
+                // Handling Product Images (Polymorphic)
+                if ($request->hasFile('images')) {
+                    foreach ($request->file('images') as $file) {
+                        $fileName = "product_{$product->id}_" . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs("uploads/{$companyId}/products", $fileName, 'public');
+                        $url = Storage::url($path);
 
-                // التأكد من أن المستخدم مصرح له بتعديل منتج لهذه الشركة
-                if ($validatedData['company_id'] != $product->company_id && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    DB::rollBack();
-                    return api_forbidden('لا يمكنك تغيير شركة المنتج إلا إذا كنت مدير عام.');
+                        $product->images()->create([
+                            'url' => $url,
+                            'type' => 'product_gallery',
+                            'company_id' => $companyId,
+                            'created_by' => $authUser->id,
+                            'file_name' => $fileName,
+                            'mime_type' => $file->getMimeType(),
+                            'size' => $file->getSize(),
+                        ]);
+                    }
                 }
 
-                $validatedData['active'] = (bool) ($validatedData['active'] ?? $product->active); // احتفظ بالقيمة الحالية إذا لم ترسل
-                $validatedData['featured'] = (bool) ($validatedData['featured'] ?? $product->featured);
-                $validatedData['returnable'] = (bool) ($validatedData['returnable'] ?? $product->returnable);
-                $validatedData['slug'] = $validatedData['slug'] ?? Product::generateSlug($validatedData['name']);
+                // Handling Variants Logic (Clean old and update/create new)
+                $variantsData = $request->input('variants', []);
+                if (!empty($variantsData)) {
+                    $requestedIds = collect($variantsData)->pluck('id')->filter()->all();
+                    $product->variants()->whereNotIn('id', $requestedIds)->delete();
 
-                $productData = [
-                    'name' => $validatedData['name'],
-                    'slug' => $validatedData['slug'],
-                    'desc' => $validatedData['desc'] ?? null,
-                    'desc_long' => $validatedData['desc_long'] ?? null,
-                    'published_at' => $validatedData['published_at'] ?? null,
-                    'category_id' => $validatedData['category_id'],
-                    'brand_id' => $validatedData['brand_id'] ?? null,
-                    'company_id' => $validatedData['company_id'],
-                    'active' => $validatedData['active'],
-                    'featured' => $validatedData['featured'],
-                    'returnable' => $validatedData['returnable'],
-                ];
-
-                $product->update($productData);
-
-                // معالجة المتغيرات (Variants)
-                $requestedVariantIds = collect($validatedData['variants'] ?? [])->pluck('id')->filter()->all();
-                $product->variants()->whereNotIn('id', $requestedVariantIds)->get()->each->delete();
-
-                if (!empty($validatedData['variants']) && is_array($validatedData['variants'])) {
-                    foreach ($validatedData['variants'] as $variantData) {
-                        $variantCreateUpdateData = [
-                            'barcode' => $variantData['barcode'] ?? null,
-                            'sku' => $variantData['sku'] ?? null,
-                            'retail_price' => $variantData['retail_price'] ?? null,
-                            'wholesale_price' => $variantData['wholesale_price'] ?? null,
-                            'image' => $variantData['image'] ?? null,
-                            'weight' => $variantData['weight'] ?? null,
-                            'dimensions' => $variantData['dimensions'] ?? null,
-                            'min_quantity' => $variantData['min_quantity'] ?? null,
-                            'tax' => $variantData['tax'] ?? null,
-                            'discount' => $variantData['discount'] ?? null,
-                            'status' => $variantData['status'] ?? 'active',
-                            'company_id' => $validatedData['company_id'], // استخدام company_id للمنتج
-                            'created_by' => $variantData['created_by'] ?? $authUser->id,
-                        ];
-
-                        $variant = ProductVariant::updateOrCreate(
-                            ['id' => $variantData['id'] ?? null, 'product_id' => $product->id],
-                            $variantCreateUpdateData
+                    foreach ($variantsData as $variantData) {
+                        $variant = $product->variants()->updateOrCreate(
+                            ['id' => $variantData['id'] ?? null],
+                            array_merge(collect($variantData)->except(['attributes', 'stocks'])->toArray(), [
+                                'company_id' => $product->company_id,
+                                'created_by' => $variantData['created_by'] ?? $authUser->id,
+                            ])
                         );
 
-                        // معالجة خصائص المتغير (Attributes)
-                        $requestedAttributeIds = collect($variantData['attributes'] ?? [])
-                            ->filter(fn($attr) => isset($attr['attribute_id']) && isset($attr['attribute_value_id']))
-                            ->map(fn($attr) => [
-                                'attribute_id' => $attr['attribute_id'],
-                                'attribute_value_id' => $attr['attribute_value_id'],
-                                'company_id' => $validatedData['company_id'], // استخدام company_id للمنتج
-                                'created_by' => $authUser->id, // منشئ الـ attribute هو المستخدم الحالي
-                            ])
-                            ->all();
-
-                        $variant->attributes->each->delete(); // حذف القديم وإعادة الإنشاء
-                        if (!empty($requestedAttributeIds)) {
-                            $variant->attributes()->createMany($requestedAttributeIds);
+                        // Sync Attributes
+                        $variant->attributes()->delete();
+                        if (!empty($variantData['attributes'])) {
+                            foreach ($variantData['attributes'] as $attr) {
+                                $variant->attributes()->create([
+                                    'attribute_id' => $attr['attribute_id'] ?? $attr['id'],
+                                    'attribute_value_id' => $attr['attribute_value_id'] ?? ($attr['value_id'] ?? null),
+                                    'company_id' => $product->company_id,
+                                    'created_by' => $authUser->id,
+                                ]);
+                            }
                         }
 
-                        // معالجة سجلات المخزون (Stocks)
-                        $requestedStockIds = collect($variantData['stocks'] ?? [])->pluck('id')->filter()->all();
-                        $variant->stocks()->whereNotIn('id', $requestedStockIds)->get()->each->delete();
-
-                        if (!empty($variantData['stocks']) && is_array($variantData['stocks'])) {
+                        // Sync Stocks
+                        if (!empty($variantData['stocks'])) {
+                            $stockIds = collect($variantData['stocks'])->pluck('id')->filter()->all();
+                            $variant->stocks()->whereNotIn('id', $stockIds)->delete();
                             foreach ($variantData['stocks'] as $stockData) {
-                                $stockCreateUpdateData = [
-                                    'quantity' => $stockData['quantity'] ?? 0,
-                                    'reserved' => $stockData['reserved'] ?? 0,
-                                    'min_quantity' => $stockData['min_quantity'] ?? 0,
-                                    'cost' => $stockData['cost'] ?? null,
-                                    'batch' => $stockData['batch'] ?? null,
-                                    'expiry' => $stockData['expiry'] ?? null,
-                                    'loc' => $stockData['loc'] ?? null,
-                                    'status' => $stockData['status'] ?? 'available',
-                                    'warehouse_id' => $stockData['warehouse_id'] ?? null,
-                                    'company_id' => $validatedData['company_id'], // استخدام company_id للمنتج
-                                    'created_by' => $stockData['created_by'] ?? $authUser->id,
-                                    'updated_by' => $updatedBy,
-                                    'variant_id' => $variant->id,
-                                ];
-
-                                Stock::updateOrCreate(
-                                    ['id' => $stockData['id'] ?? null, 'variant_id' => $variant->id],
-                                    $stockCreateUpdateData
+                                $variant->stocks()->updateOrCreate(
+                                    ['id' => $stockData['id'] ?? null],
+                                    array_merge($stockData, [
+                                        'company_id' => $product->company_id,
+                                        'created_by' => $stockData['created_by'] ?? $authUser->id,
+                                    ])
                                 );
                             }
-                        } else {
-                            $variant->stocks->each->delete(); // حذف المخزون إذا لم يتم إرسال بيانات له
                         }
                     }
-                } else {
-                    $product->variants->each->delete(); // حذف جميع المتغيرات إذا لم يتم إرسال بيانات لها
                 }
 
                 DB::commit();
-
                 return api_success(ProductResource::make($product->load($this->relations)), 'تم تحديث المنتج بنجاح');
-            } catch (ValidationException $e) {
-                DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تحديث المنتج.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء تحديث المنتج.', [], 500);
+                logger()->error("Update Product Error: " . $e->getMessage());
+                return api_error('حدث خطأ أثناء تحديث المنتج: ' . $e->getMessage(), [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
