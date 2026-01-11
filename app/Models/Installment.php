@@ -16,6 +16,14 @@ class Installment extends Model
 {
     use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes;
 
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "قسط ({$this->installment_number}) - مبلغ: {$this->amount}";
+    }
+
     protected $fillable = [
         'installment_plan_id',
         'installment_number',

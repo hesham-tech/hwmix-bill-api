@@ -7,9 +7,11 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\LogsActivity;
+
 class Product extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Blameable, Scopes, LogsActivity;
 
     protected $fillable = [
         'name',
@@ -163,5 +165,12 @@ class Product extends Model
 
         return $slug;
     }
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "المنتج ({$this->name})";
+    }
 }
-;

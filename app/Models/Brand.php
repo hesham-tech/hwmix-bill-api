@@ -2,30 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Traits\Blameable;
 use App\Traits\LogsActivity;
-use App\Traits\RolePermissions;
+use App\Traits\Blameable;
+use App\Traits\HasImages;
 use App\Traits\Scopes;
-/**
- * @mixin IdeHelperBrand
- */
-use App\Models\Image;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Brand extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Scopes, Blameable, LogsActivity, HasImages;
 
-    protected $fillable = ['company_id', 'created_by', 'name', 'description', 'active'];
+    protected $fillable = ['name', 'slug', 'description', 'active', 'company_id', 'created_by'];
 
-    protected $casts = [
-        'active' => 'boolean'
-    ];
-
-    public function image()
+    public function products()
     {
-        return $this->morphOne(Image::class, 'imageable');
+        return $this->hasMany(Product::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function company()
@@ -33,12 +30,12 @@ class Brand extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function products()
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
     {
-        return $this->hasMany(Product::class);
-    }
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
+        return "الماركة ({$this->name})";
     }
 }

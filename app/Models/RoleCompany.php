@@ -15,7 +15,15 @@ use Illuminate\Database\Eloquent\Relations\Pivot;  // استيراد فئة Pivo
  */
 class RoleCompany extends Pivot  // **** التعديل الرئيسي: يجب أن يمتد من Pivot ****
 {
-    use HasFactory, Scopes, Blameable;
+    use HasFactory, Scopes, Blameable, \App\Traits\LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "ربط دور ({$this->role?->name}) بشركة ({$this->company?->name})";
+    }
 
     // اسم الجدول الذي يمثله هذا النموذج
     protected $table = 'role_company';

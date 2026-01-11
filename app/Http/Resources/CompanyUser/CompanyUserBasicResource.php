@@ -37,23 +37,24 @@ class CompanyUserBasicResource extends JsonResource
             // البيانات الأساسية للمستخدم (من جدول users)
             'id' => $this->user_id,
             'id_company_user' => $this->id,
-            'username' =>  $this->user_username,
-            'email' =>  $this->user_email,
-            'phone' =>  $this->user_phone,
+            'username' => $this->user_username,
+            'email' => $this->email,
+            'phone' => $this->phone,
             'company_id' => $this->company_id,
             'company_name' => $this->whenLoaded('company', fn() => $this->company->name),
 
             // البيانات الخاصة بالشركة (من جدول company_user)
-            'nickname' => $this->nickname_in_company,
-            'balance' => $this->balance_in_company,
-            'full_name' => $this->full_name_in_company,
-            'customer_type' => $this->customer_type_in_company,
+            'nickname' => $this->nickname,
+            'balance' => $this->balance,
+            'full_name' => $this->full_name,
+            'customer_type' => $this->customer_type,
             'position' => $this->position_in_company,
             'status' => $this->status,
 
             // بيانات الخزنة الافتراضية
             'cash_box_id' => $defaultCashBox?->id,
             'avatar_url' => $avatarUrl,
+            'roles' => $this->whenLoaded('user', fn() => $this->user->roles->pluck('name')),
 
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,

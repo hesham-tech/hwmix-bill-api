@@ -7,12 +7,22 @@ use App\Traits\Blameable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use App\Traits\LogsActivity;
+
 /**
  * @mixin IdeHelperWarehouse
  */
 class Warehouse extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Blameable, Scopes, LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "المخزن ({$this->name})";
+    }
 
     protected $guarded = [];
 

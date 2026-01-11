@@ -16,7 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'scope_company' => \App\Http\Middleware\ScopePermissionsByCompany::class,
         ]);
+        $middleware->appendToGroup('api', \App\Http\Middleware\ScopePermissionsByCompany::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

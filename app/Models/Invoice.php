@@ -130,4 +130,12 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoicePayment::class, 'invoice_id');
     }
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "الفاتورة ({$this->invoice_number})";
+    }
 }

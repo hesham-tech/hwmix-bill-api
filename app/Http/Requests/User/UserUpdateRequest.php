@@ -41,6 +41,10 @@ class UserUpdateRequest extends FormRequest
             'company_id' => 'nullable|exists:companies,id',
             'company_ids' => 'nullable|array',
             'company_ids.*' => 'nullable|exists:companies,id',
+            'roles' => 'nullable|array',
+            'roles.*' => 'string|exists:roles,name',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|exists:permissions,name',
         ];
     }
 }

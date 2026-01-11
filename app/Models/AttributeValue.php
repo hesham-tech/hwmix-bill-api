@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class AttributeValue extends Model
 {
-    use HasFactory, Blameable, Scopes, SoftDeletes;
+    use HasFactory, Blameable, Scopes, SoftDeletes, \App\Traits\LogsActivity;
 
     protected $fillable = [
         'attribute_id',
@@ -23,6 +23,14 @@ class AttributeValue extends Model
         'name',
         'color',
     ];
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "قيمة السمة ({$this->name})";
+    }
 
     public function attribute()
     {

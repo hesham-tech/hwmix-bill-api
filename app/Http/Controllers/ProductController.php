@@ -410,7 +410,7 @@ class ProductController extends Controller
 
                 // معالجة المتغيرات (Variants)
                 $requestedVariantIds = collect($validatedData['variants'] ?? [])->pluck('id')->filter()->all();
-                $product->variants()->whereNotIn('id', $requestedVariantIds)->delete();
+                $product->variants()->whereNotIn('id', $requestedVariantIds)->get()->each->delete();
 
                 if (!empty($validatedData['variants']) && is_array($validatedData['variants'])) {
                     foreach ($validatedData['variants'] as $variantData) {
@@ -446,14 +446,14 @@ class ProductController extends Controller
                             ])
                             ->all();
 
-                        $variant->attributes()->delete(); // حذف القديم وإعادة الإنشاء
+                        $variant->attributes->each->delete(); // حذف القديم وإعادة الإنشاء
                         if (!empty($requestedAttributeIds)) {
                             $variant->attributes()->createMany($requestedAttributeIds);
                         }
 
                         // معالجة سجلات المخزون (Stocks)
                         $requestedStockIds = collect($variantData['stocks'] ?? [])->pluck('id')->filter()->all();
-                        $variant->stocks()->whereNotIn('id', $requestedStockIds)->delete();
+                        $variant->stocks()->whereNotIn('id', $requestedStockIds)->get()->each->delete();
 
                         if (!empty($variantData['stocks']) && is_array($variantData['stocks'])) {
                             foreach ($variantData['stocks'] as $stockData) {
@@ -479,11 +479,11 @@ class ProductController extends Controller
                                 );
                             }
                         } else {
-                            $variant->stocks()->delete(); // حذف المخزون إذا لم يتم إرسال بيانات له
+                            $variant->stocks->each->delete(); // حذف المخزون إذا لم يتم إرسال بيانات له
                         }
                     }
                 } else {
-                    $product->variants()->delete(); // حذف جميع المتغيرات إذا لم يتم إرسال بيانات لها
+                    $product->variants->each->delete(); // حذف جميع المتغيرات إذا لم يتم إرسال بيانات لها
                 }
 
                 DB::commit();

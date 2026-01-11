@@ -41,6 +41,10 @@ class UserRequest extends FormRequest
             'company_ids.*' => 'nullable|exists:companies,id',
             'created_by' => 'nullable|exists:users,id',
             'customer_type' => 'nullable|in:retail,wholesale',
+            'roles' => 'nullable|array',
+            'roles.*' => 'string|exists:roles,name',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|exists:permissions,name',
         ];
     }
 }

@@ -67,4 +67,12 @@ class CashBox extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "الصندوق ({$this->name})";
+    }
 }

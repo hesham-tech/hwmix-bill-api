@@ -41,7 +41,7 @@ use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, Translatable, HasRoles, HasApiTokens, Filterable, Scopes, HasPermissions, LogsActivity, HasImages, \App\Traits\HasTransferTo;
+    use HasFactory, Notifiable, Translatable, HasRoles, HasApiTokens, Filterable, Scopes, HasPermissions, LogsActivity, HasImages, \App\Traits\HasTransferTo, \App\Traits\FilterableByCompany;
 
 
     /**
@@ -60,6 +60,13 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['avatar_url'];
 
     /**
      * تعريف أنواع البيانات للمحولات (Casts).
@@ -331,7 +338,7 @@ class User extends Authenticatable
      * @param float $amount المبلغ المراد سحبه.
      * @param int|null $cashBoxId معرف صندوق النقدية المحدد (اختياري).
      * @return bool True عند النجاح.
-     * @throws Exception عند الفشل (مثل عدم وجود خزنة أو رصيد غير كافي).
+     * @throws Exception عند الفشل (مثل عدم وجود خزنة أو رصيد غير كاف).
      */
     public function withdraw(float $amount, $cashBoxId = null, $description = null, $log = true): bool
     {
@@ -359,11 +366,12 @@ class User extends Authenticatable
 
             if ($cashBox->balance < $amount) {
                 DB::rollBack();
-                throw new Exception("رصيد الخزنة غير كافٍ.");
+                throw new Exception("رصيد الخزنة غير كاف.");
             }
 
             $balanceBefore = $cashBox->balance;
-            $cashBox->decrement('balance', $amount);
+            $cashBox->balance -= $amount;
+            $cashBox->save(); // استخدام save بدلاً من decrement لتشغيل أحداث Eloquent للسجل
             $balanceAfter = $cashBox->balance;
 
             if ($log) {
@@ -384,7 +392,7 @@ class User extends Authenticatable
             return true;
         } catch (\Throwable $e) {
             DB::rollBack();
-            \Log::error('User Model Withdraw: فشل السحب.', [
+            Log::error('User Model Withdraw: فشل السحب.', [
                 'error' => $e->getMessage(),
                 'user_id' => $this->id,
                 'amount' => $amount,
@@ -437,7 +445,8 @@ class User extends Authenticatable
             }
 
             $balanceBefore = $cashBox->balance;
-            $cashBox->increment('balance', $amount);
+            $cashBox->balance += $amount;
+            $cashBox->save(); // استخدام save بدلاً من increment لتشغيل أحداث Eloquent للسجل
             $balanceAfter = $cashBox->balance;
 
             if ($log) {
@@ -476,7 +485,7 @@ class User extends Authenticatable
      * @param int $targetUserId معرف المستخدم المستهدف.
      * @param float $amount المبلغ المراد تحويله.
      * @param string|null $description وصف العملية.
-     * @throws Exception في حال عدم وجود صلاحية، عدم وجود شركة نشطة، رصيد غير كافٍ، أو عدم وجود صندوق مطابق للمستهدف.
+     * @throws Exception في حال عدم وجود صلاحية، عدم وجود شركة نشطة، رصيد غير كاف، أو عدم وجود صندوق مطابق للمستههدف.
      */
     public function transfer($cashBoxId, $targetUserId, $amount, $description = null)
     {
@@ -516,8 +525,11 @@ class User extends Authenticatable
                 throw new Exception('Target user does not have a matching cash box in the active company.');
             }
 
-            $cashBox->decrement('balance', $amount);
-            $targetCashBox->increment('balance', $amount);
+            $cashBox->balance -= $amount;
+            $cashBox->save();
+
+            $targetCashBox->balance += $amount;
+            $targetCashBox->save();
 
             // يجب استيراد Transaction في الجزء العلوي
             $senderTransaction = Transaction::create([
@@ -628,7 +640,7 @@ class User extends Authenticatable
     {
         // يتطلب استيراد Company
         if ($this->hasPermissionTo(perm_key('admin.super'))) {
-            return \App\Models\Company::all();
+            return Company::all();
         }
         return $this->companies;
     }
@@ -689,7 +701,7 @@ class User extends Authenticatable
             $fromCashBox = CashBox::findOrFail($fromCashBoxId);
             $toCashBox = CashBox::findOrFail($toCashBoxId);
             if ($fromCashBox->balance < $amount) {
-                throw new \Exception('?????? ??? ???');
+                throw new Exception('الرصيد غير كاف');
             }
             $balanceBeforeFrom = $fromCashBox->balance;
             $balanceBeforeTo = $toCashBox->balance;
@@ -703,5 +715,21 @@ class User extends Authenticatable
             DB::rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "المستخدم ({$this->nickname})";
+    }
+
+    /**
+     * Get the user's avatar URL.
+     */
+    public function getAvatarUrlAttribute()
+    {
+        return $this->image?->url ? asset($this->image->url) : null;
     }
 }

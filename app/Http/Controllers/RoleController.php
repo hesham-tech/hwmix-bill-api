@@ -22,7 +22,7 @@ class RoleController extends Controller
      */
     protected array $relations = [
         'permissions',
-        'companies',
+        'company',
         'creator'
     ];
 
@@ -60,31 +60,29 @@ class RoleController extends Controller
                 if (!$companyId) {
                     return api_unauthorized('المستخدم غير مرتبط بشركة.');
                 }
-                $query->whereHas('companies', function ($q) use ($companyId) {
-                    $q->where('companies.id', $companyId);
-                });
+                $query->where('company_id', $companyId);
             } elseif ($authUser->hasPermissionTo(perm_key('roles.view_children'))) {
                 if (!$companyId) {
                     return api_unauthorized('المستخدم غير مرتبط بشركة.');
                 }
                 $descendantUserIds = $authUser->getDescendantUserIds();
                 $descendantUserIds[] = $authUser->id;
-                $query->whereHas('companies', function ($q) use ($companyId, $descendantUserIds) {
-                    $q
-                        ->where('companies.id', $companyId)
-                        ->whereIn('role_company.created_by', $descendantUserIds);
-                });
+                $query->where('company_id', $companyId)
+                    ->whereIn('created_by', $descendantUserIds);
             } elseif ($authUser->hasPermissionTo(perm_key('roles.view_self'))) {
                 if (!$companyId) {
                     return api_unauthorized('المستخدم غير مرتبط بشركة.');
                 }
-                $query->whereHas('companies', function ($q) use ($companyId, $authUser) {
-                    $q
-                        ->where('companies.id', $companyId)
-                        ->where('role_company.created_by', $authUser->id);
-                });
+                $query->where('company_id', $companyId)
+                    ->where('created_by', $authUser->id);
             } else {
                 return api_forbidden('ليس لديك صلاحية لعرض الأدوار.');
+            }
+
+            // [جديد] تطبيق القيد الهرمي: غير المدراء لا يرون إلا أدوارهم الخاصة
+            if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')])) {
+                $myRoleNames = $authUser->getRoleNames()->toArray();
+                $query->whereIn('name', $myRoleNames);
             }
 
             if ($request->filled('company_id')) {
@@ -92,9 +90,7 @@ class RoleController extends Controller
                 if ($request->input('company_id') != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
                     return api_forbidden('ليس لديك إذن لعرض الأدوار لشركة أخرى.');
                 }
-                $query->whereHas('companies', function ($q) use ($request) {
-                    $q->where('companies.id', $request->input('company_id'));
-                });
+                $query->where('company_id', $request->input('company_id'));
             }
             if ($request->filled('role_id')) {
                 $query->where('id', $request->input('role_id'));
@@ -157,9 +153,10 @@ class RoleController extends Controller
             }
 
             $validator = Validator::make($request->all(), [
-                'name' => ['required', 'string', 'max:255', 'unique:roles,name'],
-                'company_ids' => ['nullable', 'array'],
-                'company_ids.*' => ['exists:companies,id'],
+                'name' => ['nullable', 'string', 'max:255', 'unique:roles,name'],
+                'label' => ['required', 'string', 'max:255'],
+                'description' => ['nullable', 'string'],
+                'company_id' => ['sometimes', 'exists:companies,id'],
                 'permissions' => ['sometimes', 'array'],
                 'permissions.*' => ['exists:permissions,name'],
             ]);
@@ -169,40 +166,57 @@ class RoleController extends Controller
             }
 
             $validatedData = $validator->validated();
-            $validatedData['company_ids'] = $validatedData['company_ids'] ?? [$companyId];
+            $targetCompanyId = $request->input('company_id', $companyId);
 
-            // تحقق من أن الشركات المحددة تنتمي للمستخدم الحالي أو أن المستخدم super_admin
-            $allowedCompanyIds = [];
-            foreach ($validatedData['company_ids'] as $id) {
-                if ($id == $companyId || $authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    $allowedCompanyIds[] = $id;
-                }
+            if ($targetCompanyId != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                return api_forbidden('لا يمكنك إنشاء أدوار لشركة أخرى.');
             }
 
-            if (empty($allowedCompanyIds)) {
-                return api_forbidden('لا يمكنك إنشاء أدوار إلا لشركتك النشطة ما لم تكن مسؤولاً عامًا.');
+            if (!$targetCompanyId) {
+                return api_error('المستخدم غير مرتبط بشركة ولا يمكن إنشاء دور بدون شركة.');
             }
 
             DB::beginTransaction();
             try {
+                // توليد اسم الدور تلقائياً إذا لم يتم إدخاله
+                if (empty($validatedData['name'])) {
+                    $validatedData['name'] = \Illuminate\Support\Str::slug($validatedData['label'], '_');
+                    // التأكد من أن الاسم باللغة الإنجليزية فقط
+                    $validatedData['name'] = preg_replace('/[^a-z0-9_]/', '_', strtolower($validatedData['name']));
+                    $validatedData['name'] = preg_replace('/_+/', '_', $validatedData['name']); // إزالة الـ underscores المتكررة
+                    $validatedData['name'] = trim($validatedData['name'], '_'); // إزالة الـ underscores من البداية والنهاية
+
+                    // التحقق من التفرد
+                    $baseName = $validatedData['name'];
+                    $counter = 1;
+                    while (Role::where('name', $validatedData['name'])->where('company_id', $targetCompanyId)->exists()) {
+                        $validatedData['name'] = $baseName . '_' . $counter;
+                        $counter++;
+                    }
+                }
+
                 $roleName = $validatedData['name'];
                 $assignedCreatedBy = $authUser->id;
 
+                // [جديد] التحقق الهرمي من الصلاحيات
+                if (!empty($validatedData['permissions']) && !$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')])) {
+                    $myPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
+                    $unauthorizedPermissions = array_diff($validatedData['permissions'], $myPermissions);
+
+                    if (!empty($unauthorizedPermissions)) {
+                        return api_forbidden('لا يمكنك إنشاء دور يحتوي على صلاحيات لا تملكها: ' . implode(', ', $unauthorizedPermissions));
+                    }
+                }
+
                 $role = Role::firstOrCreate(
-                    ['name' => $roleName],
+                    ['name' => $roleName, 'company_id' => $targetCompanyId],
                     [
                         'guard_name' => 'web',
                         'created_by' => $assignedCreatedBy,
-                        // لا نضع company_id هنا لأن الدور يمكن أن يكون مرتبطًا بعدة شركات عبر جدول pivot
+                        'label' => $validatedData['label'] ?? $roleName,
+                        'description' => $validatedData['description'] ?? null,
                     ]
                 );
-
-                $pivotData = [];
-                foreach ($allowedCompanyIds as $comp_id) {
-                    $pivotData[$comp_id] = ['created_by' => $assignedCreatedBy];
-                }
-
-                $role->companies()->syncWithoutDetaching($pivotData);
 
                 if (!empty($validatedData['permissions'])) {
                     $role->syncPermissions($validatedData['permissions']);
@@ -242,8 +256,8 @@ class RoleController extends Controller
 
             // تحميل العلاقات اللازمة للتحقق من الصلاحيات
             $role->load([
-                'companies' => function ($q) use ($companyId) {
-                    $q->where('companies.id', $companyId)->withPivot('created_by');
+                'company' => function ($q) use ($companyId) {
+                    $q->where('companies.id', $companyId);
                 },
                 'creator'
             ]);
@@ -252,17 +266,13 @@ class RoleController extends Controller
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canUpdate = true;
             } elseif ($authUser->hasPermissionTo(perm_key('roles.update_all'))) {
-                $canUpdate = $role->companies->isNotEmpty(); // الدور مرتبط بالشركة الحالية
+                $canUpdate = $role->company_id == $companyId;
             } elseif ($authUser->hasPermissionTo(perm_key('roles.update_children'))) {
                 $descendantUserIds = $authUser->getDescendantUserIds();
                 $descendantUserIds[] = $authUser->id;
-                $canUpdate = $role->companies->contains(function ($company) use ($authUser, $descendantUserIds) {
-                    return $company->pivot->created_by === $authUser->id || in_array($company->pivot->created_by, $descendantUserIds);
-                });
+                $canUpdate = $role->company_id == $companyId && in_array($role->created_by, $descendantUserIds);
             } elseif ($authUser->hasPermissionTo(perm_key('roles.update_self'))) {
-                $canUpdate = $role->companies->contains(function ($company) use ($authUser) {
-                    return $company->pivot->created_by === $authUser->id;
-                });
+                $canUpdate = $role->company_id == $companyId && $role->created_by === $authUser->id;
             }
 
             if (!$canUpdate) {
@@ -271,8 +281,9 @@ class RoleController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'name' => ['sometimes', 'string', 'max:255', 'unique:roles,name,' . $role->id],
-                'company_ids' => ['sometimes', 'array'],
-                'company_ids.*' => ['exists:companies,id'],
+                'label' => ['sometimes', 'string', 'max:255'],
+                'description' => ['sometimes', 'nullable', 'string'],
+                'company_id' => ['sometimes', 'exists:companies,id'],
                 'permissions' => ['sometimes', 'array'],
                 'permissions.*' => ['exists:permissions,name'],
             ]);
@@ -282,33 +293,36 @@ class RoleController extends Controller
             }
 
             $validatedData = $validator->validated();
-            $validatedData['updated_by'] = $authUser->id; // تعيين من قام بالتعديل
+            $validatedData['updated_by'] = $authUser->id;
+
+            // [جديد] التحقق الهرمي من الصلاحيات
+            if (!empty($validatedData['permissions']) && !$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')])) {
+                $myPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
+                $unauthorizedPermissions = array_diff($validatedData['permissions'], $myPermissions);
+
+                if (!empty($unauthorizedPermissions)) {
+                    return api_forbidden('لا يمكنك إعطاء الدور صلاحيات لا تملكها: ' . implode(', ', $unauthorizedPermissions));
+                }
+            }
 
             DB::beginTransaction();
             try {
-                if (isset($validatedData['name']) && $validatedData['name'] !== $role->name) {
-                    $role->update(['name' => $validatedData['name']]);
+                if (isset($validatedData['name']))
+                    $role->name = $validatedData['name'];
+                if (isset($validatedData['label']))
+                    $role->label = $validatedData['label'];
+                if (isset($validatedData['description']))
+                    $role->description = $validatedData['description'];
+
+                if (isset($validatedData['company_id'])) {
+                    if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                        $role->company_id = $validatedData['company_id'];
+                    } else {
+                        return api_forbidden('لا يمكنك تغيير شركة الدور ما لم تكن مسؤولا عاما.');
+                    }
                 }
 
-                if (isset($validatedData['company_ids'])) {
-                    $newCompanyIds = [];
-                    foreach ($validatedData['company_ids'] as $comp_id) {
-                        // السماح بتغيير company_ids فقط إذا كان المستخدم super_admin
-                        // أو إذا كانت الشركة الجديدة هي نفس الشركة الحالية للمستخدم
-                        if ($comp_id == $companyId || $authUser->hasPermissionTo(perm_key('admin.super'))) {
-                            $newCompanyIds[] = $comp_id;
-                        } else {
-                            DB::rollBack();
-                            return api_forbidden('لا يمكنك ربط الدور بشركة أخرى ما لم تكن مسؤولاً عامًا.');
-                        }
-                    }
-
-                    $pivotData = [];
-                    foreach ($newCompanyIds as $comp_id) {
-                        $pivotData[$comp_id] = ['created_by' => $authUser->id]; // من قام بربط الدور بالشركة
-                    }
-                    $role->companies()->sync($pivotData);
-                }
+                $role->save();
 
                 if (isset($validatedData['permissions']) && is_array($validatedData['permissions'])) {
                     $role->syncPermissions($validatedData['permissions']);
@@ -344,28 +358,19 @@ class RoleController extends Controller
             }
 
             // تحميل العلاقات اللازمة للتحقق من الصلاحيات
-            $role->load([
-                'companies' => function ($q) use ($companyId) {
-                    $q->where('companies.id', $companyId)->withPivot('created_by');
-                },
-                'creator'
-            ]);
+            $role->load(['company', 'creator']);
 
             $canView = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canView = true;
             } elseif ($authUser->hasPermissionTo(perm_key('roles.view_all'))) {
-                $canView = $role->companies->isNotEmpty(); // الدور مرتبط بالشركة الحالية
+                $canView = $role->company_id == $companyId;
             } elseif ($authUser->hasPermissionTo(perm_key('roles.view_children'))) {
                 $descendantUserIds = $authUser->getDescendantUserIds();
                 $descendantUserIds[] = $authUser->id;
-                $canView = $role->companies->contains(function ($company) use ($authUser, $descendantUserIds) {
-                    return $company->pivot->created_by === $authUser->id || in_array($company->pivot->created_by, $descendantUserIds);
-                });
+                $canView = $role->company_id == $companyId && in_array($role->created_by, $descendantUserIds);
             } elseif ($authUser->hasPermissionTo(perm_key('roles.view_self'))) {
-                $canView = $role->companies->contains(function ($company) use ($authUser) {
-                    return $company->pivot->created_by === $authUser->id;
-                });
+                $canView = $role->company_id == $companyId && $role->created_by === $authUser->id;
             }
 
             if ($canView) {
@@ -381,11 +386,12 @@ class RoleController extends Controller
     /**
      * @group 05. إدراة المستخدمين
      * 
-     * حذف أدوار (Batch Delete)
+     * حذف دور واحد أو عدة أدوار (Single/Batch Delete)
      * 
-     * @bodyParam item_ids integer[] required مصفوفة معرفات الأدوار. Example: [2, 3]
+     * @urlParam role integer معرف الدور للحذف المفرد. Example: 1
+     * @bodyParam item_ids integer[] مصفوفة معرفات الأدوار للحذف الجماعي. Example: [2, 3]
      */
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request, Role $role = null): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
@@ -396,40 +402,38 @@ class RoleController extends Controller
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
 
-            $roleIds = $request->input('item_ids');
-            if (!is_array($roleIds) || empty($roleIds)) {
-                return api_error('معرفات الدور غير صالحة.', [], 400);
+            // Determine if single or batch delete
+            $roleIds = [];
+            if ($role) {
+                // Single delete from route parameter
+                $roleIds = [$role->id];
+            } else {
+                // Batch delete from request body
+                $roleIds = $request->input('item_ids');
+                if (!is_array($roleIds) || empty($roleIds)) {
+                    return api_error('معرفات الدور غير صالحة.', [], 400);
+                }
             }
 
             DB::beginTransaction();
             try {
-                $deletedRoles = collect();
                 foreach ($roleIds as $roleId) {
-                    $role = Role::with([
-                        'companies' => function ($q) use ($companyId) {
-                            $q->where('companies.id', $companyId)->withPivot('created_by');
-                        }
-                    ])->find($roleId);
+                    $role = Role::find($roleId);
 
-                    if (!$role) {
+                    if (!$role)
                         continue;
-                    }
 
                     $canDelete = false;
                     if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                         $canDelete = true;
                     } elseif ($authUser->hasPermissionTo(perm_key('roles.delete_all'))) {
-                        $canDelete = $role->companies->isNotEmpty();
+                        $canDelete = $role->company_id == $companyId;
                     } elseif ($authUser->hasPermissionTo(perm_key('roles.delete_children'))) {
                         $descendantUserIds = $authUser->getDescendantUserIds();
                         $descendantUserIds[] = $authUser->id;
-                        $canDelete = $role->companies->contains(function ($company) use ($authUser, $descendantUserIds) {
-                            return in_array($company->pivot->created_by, $descendantUserIds);
-                        });
+                        $canDelete = $role->company_id == $companyId && in_array($role->created_by, $descendantUserIds);
                     } elseif ($authUser->hasPermissionTo(perm_key('roles.delete_self'))) {
-                        $canDelete = $role->companies->contains(function ($company) use ($authUser) {
-                            return $company->pivot->created_by === $authUser->id;
-                        });
+                        $canDelete = $role->company_id == $companyId && $role->created_by === $authUser->id;
                     }
 
                     if (!$canDelete) {
@@ -444,16 +448,11 @@ class RoleController extends Controller
                         return api_error('لا يمكن حذف الدور "' . $role->name . '". إنه مرتبط بمستخدم واحد أو أكثر.', [], 409);
                     }
 
-                    $replicatedRole = $role->replicate();
-                    $replicatedRole->setRelations($role->getRelations());
-
-                    $role->companies()->detach();
                     $role->delete();
-                    $deletedRoles->push($replicatedRole);
                 }
 
                 DB::commit();
-                return api_success(RoleResource::collection($deletedRoles), 'تم حذف الأدوار بنجاح.');
+                return api_success(null, 'تم حذف الأدوار المحددة بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
                 return api_error('حدث خطأ أثناء حذف الأدوار.', [], 500);
@@ -516,9 +515,7 @@ class RoleController extends Controller
 
                 // التحقق من أن الأدوار التي يتم تعيينها متاحة للمستخدم الحالي
                 $requestedRoleNames = $validatedData['roles'];
-                $availableRoles = Role::whereHas('companies', function ($q) use ($companyId) {
-                    $q->where('companies.id', $companyId);
-                })->whereIn('name', $requestedRoleNames)->pluck('name')->toArray();
+                $availableRoles = Role::where('company_id', $companyId)->whereIn('name', $requestedRoleNames)->pluck('name')->toArray();
 
                 $diff = array_diff($requestedRoleNames, $availableRoles);
                 if (!empty($diff)) {

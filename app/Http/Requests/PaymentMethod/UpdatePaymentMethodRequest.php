@@ -29,6 +29,7 @@ class UpdatePaymentMethodRequest extends FormRequest
                 })->ignore($paymentMethodId),
             ],
             'active' => 'sometimes|boolean',
+            'is_system' => 'sometimes|boolean',
             'company_id' => 'nullable|exists:companies,id',
             'image_id' => 'nullable|exists:images,id',
         ];

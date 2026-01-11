@@ -30,15 +30,15 @@ class InstallmentService
             $planData = $data['installment_plan'];
             $userId = $data['user_id'];
             $startDate = Carbon::parse($planData['start_date']);
-            $roundStep = isset($planData['round_step']) && $planData['round_step'] > 0 ? (int)$planData['round_step'] : 10;
+            $roundStep = isset($planData['round_step']) && $planData['round_step'] > 0 ? (int) $planData['round_step'] : 10;
 
             $totalAmount = $planData['total_amount'];
             $downPayment = $planData['down_payment'];
             $installmentsN = (int) $planData['number_of_installments'];
 
             $remaining = bcsub($totalAmount, $downPayment, 2);
-            $avgInst = bcdiv($remaining, (string)$installmentsN, 2);
-            $stdInst = number_format(ceil((float)$avgInst / $roundStep) * $roundStep, 2, '.', '');
+            $avgInst = bcdiv($remaining, (string) $installmentsN, 2);
+            $stdInst = number_format(ceil((float) $avgInst / $roundStep) * $roundStep, 2, '.', '');
 
             $planModel = InstallmentPlan::create([
                 'invoice_id' => $invoiceId,
@@ -61,7 +61,8 @@ class InstallmentService
 
             for ($i = 1; $i <= $installmentsN; $i++) {
                 $left = bcsub($remaining, $paidSum, 2);
-                if (bccomp($left, '0.00', 2) <= 0) break;
+                if (bccomp($left, '0.00', 2) <= 0)
+                    break;
 
                 $amount = (bccomp($stdInst, $left, 2) === 1 || $i === $installmentsN) ? $left : $stdInst;
                 $due = $startDate->copy()->addMonths($i)->format('Y-m-d');
@@ -127,20 +128,19 @@ class InstallmentService
             }
 
             // حذف سجل الدفع وتفاصيله
-            InstallmentPaymentDetail::where('installment_payment_id', $payment->id)->delete();
+            $payment->details->each->delete();
             Log::info('InstallmentService: تم حذف تفاصيل الدفع المرتبطة.', ['payment_id' => $payment->id]);
             $payment->delete();
             Log::info('InstallmentService: تم حذف سجل الدفع الرئيسي.', ['payment_id' => $payment->id]);
         }
 
         // تحديث حالة جميع الأقساط التابعة لخطة الأقساط إلى 'canceled'
-        // باستخدام 'remaining' بدلاً من 'remaining_amount'
-        // وتعيين 'paid_amount' إلى 0 (إذا كان هذا هو المطلوب للدلالة على عدم وجود مدفوعات)
-        $installmentPlan->installments()->update([
-            'status' => 'canceled',
-            'remaining' => \DB::raw('amount'), // إعادة 'remaining' إلى قيمة 'amount' الأصلية للقسط
-            'paid_at' => null,
-        ]);
+        $installmentPlan->installments->each(function ($inst) {
+            $inst->status = 'canceled';
+            $inst->remaining = $inst->amount; // إعادة 'remaining' إلى قيمة 'amount' الأصلية للقسط
+            $inst->paid_at = null;
+            $inst->save();
+        });
         Log::info('InstallmentService: تم تحديث حالة جميع الأقساط إلى ملغاة.', ['plan_id' => $installmentPlan->id]);
 
         // تحديث حالة خطة الأقساط إلى 'canceled'

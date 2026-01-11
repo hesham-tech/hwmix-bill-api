@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
-    use Blameable, Scopes;
+    use Blameable, Scopes, \App\Traits\LogsActivity;
     protected $fillable = [
         'user_id',
         'cashbox_id',
@@ -95,8 +95,11 @@ class Transaction extends Model
             throw new Exception("الصناديق المرتبطة بالمعاملة غير موجودة.");
         }
 
-        $senderBox->increment('balance', $this->amount);
-        $receiverBox->decrement('balance', $this->amount);
+        $senderBox->balance += $this->amount;
+        $senderBox->save();
+
+        $receiverBox->balance -= $this->amount;
+        $receiverBox->save();
     }
 
     public function reverseWithdraw()
@@ -107,7 +110,8 @@ class Transaction extends Model
             throw new Exception("الصندوق المرتبط بالمعاملة غير موجود.");
         }
 
-        $box->increment('balance', $this->amount);
+        $box->balance += $this->amount;
+        $box->save();
     }
 
     public function reverseDeposit()
@@ -122,6 +126,15 @@ class Transaction extends Model
             throw new Exception("الرصيد غير كافٍ لعكس العملية.");
         }
 
-        $box->decrement('balance', $this->amount);
+        $box->balance -= $this->amount;
+        $box->save();
+    }
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "المعاملة #{$this->id} ({$this->type})";
     }
 }

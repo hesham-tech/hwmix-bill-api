@@ -15,8 +15,12 @@ class CashBoxTypeResource extends JsonResource
             'is_default' => (bool) $this->is_default,
             'is_system' => (bool) $this->is_system,
             'is_active' => (bool) $this->is_active,
+            'image_url' => $this->image?->url,
+            'image_id' => $this->image?->id,
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,
+            'creator_name' => $this->creator?->nickname,
+            'cash_boxes_count' => $this->cash_boxes_count ?? $this->cashBoxes()->count(),
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
         ];

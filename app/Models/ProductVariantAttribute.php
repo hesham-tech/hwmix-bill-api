@@ -12,7 +12,15 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProductVariantAttribute extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Blameable, Scopes, \App\Traits\LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "سمة متغير ({$this->attribute?->name}: {$this->attributeValue?->name})";
+    }
 
     protected $fillable = [
         'product_variant_id',

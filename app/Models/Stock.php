@@ -32,6 +32,14 @@ class Stock extends Model
         'updated_by'
     ];
 
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "المخزون ({$this->variant?->name}) - كمية: {$this->quantity}";
+    }
+
     protected $casts = [
         'quantity' => 'integer',
         'reserved' => 'integer',

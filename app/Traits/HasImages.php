@@ -18,6 +18,14 @@ trait HasImages
     }
 
     /**
+     * علاقة صورة واحدة (افتراضية - Polymorphic)
+     */
+    public function image(): MorphOne
+    {
+        return $this->morphOne(Image::class, 'imageable');
+    }
+
+    /**
      * علاقة اللوجو (صورة واحدة - Polymorphic)
      */
     public function logo(): MorphOne

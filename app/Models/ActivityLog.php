@@ -2,24 +2,20 @@
 
 namespace App\Models;
 
-use App\Traits\Translations\Translatable;
-use App\Traits\Blameable;
-use App\Traits\Filterable;
-use App\Traits\LogsActivity;
-use App\Traits\RolePermissions;
 use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
 
-/**
- * @mixin IdeHelperActivityLog
- */
 class ActivityLog extends Model
 {
-    use HasFactory, Notifiable, Translatable, HasRoles, HasApiTokens, Filterable, Scopes, RolePermissions, LogsActivity, Blameable;
+    use HasFactory, Scopes;
+
+    protected $table = 'activity_logs';
+
+    /**
+     * Prevent logging for this model to avoid infinite recursion.
+     */
+    protected $doNotLog = ['created', 'updated', 'deleted'];
 
     protected $fillable = [
         'action',
@@ -39,5 +35,29 @@ class ActivityLog extends Model
     protected $casts = [
         'old_values' => 'array',
         'new_values' => 'array',
+        'metadata' => 'array',
     ];
+
+    /**
+     * Relationships
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function subject()
+    {
+        return $this->morphTo();
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

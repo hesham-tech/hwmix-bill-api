@@ -43,8 +43,6 @@ class ServiceInvoiceService implements DocumentServiceInterface
             // 2. إنشاء بنود الفاتورة (خدمات)
             $this->createInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['created_by'] ?? null);
 
-            // 3. تسجيل عملية الإنشاء في سجل النشاط
-            $invoice->logCreated('إنشاء فاتورة خدمة رقم ' . $invoice->invoice_number);
 
             $authUser = Auth::user();
             $cashBoxId = $data['cash_box_id'] ?? null;
@@ -289,7 +287,6 @@ class ServiceInvoiceService implements DocumentServiceInterface
                 Log::info('SaleInvoiceService: تم إنشاء/تحديث خطة أقساط.');
             }
 
-            $invoice->logUpdated('تحديث فاتورة بيع رقم ' . $invoice->invoice_number);
             Log::info('SaleInvoiceService: تم تحديث فاتورة البيع بنجاح.', ['invoice_id' => $invoice->id]);
 
             return $invoice;

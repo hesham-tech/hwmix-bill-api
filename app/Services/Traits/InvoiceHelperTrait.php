@@ -190,7 +190,7 @@ trait InvoiceHelperTrait
     protected function deleteInvoiceItems(Invoice $invoice): void
     {
         try {
-            InvoiceItem::where('invoice_id', $invoice->id)->delete();
+            $invoice->items->each->delete(); // استخدام each->delete لتشغيل أحداث Eloquent
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -263,7 +263,8 @@ trait InvoiceHelperTrait
 
                     $deduct = min($remaining, $stock->quantity);
                     if ($deduct > 0) {
-                        $stock->decrement('quantity', $deduct);
+                        $stock->quantity -= $deduct;
+                        $stock->save(); // استخدام save لتشغيل أحداث السجل
                         $remaining -= $deduct;
                     }
                 }
@@ -293,7 +294,8 @@ trait InvoiceHelperTrait
                 $stock = $variant->stocks()->where('status', 'available')->orderBy('created_at', 'desc')->first();
 
                 if ($stock) {
-                    $stock->increment('quantity', $remaining);
+                    $stock->quantity += $remaining;
+                    $stock->save(); // استخدام save لتشغيل أحداث السجل
                 } else {
                     // إذا لم يكن هناك مخزون متاح، قد تحتاج لإنشاء سجل مخزون جديد
                     Stock::create([
@@ -330,7 +332,8 @@ trait InvoiceHelperTrait
                 $stock = $variant->stocks()->where('status', 'available')->orderBy('created_at', 'desc')->first();
 
                 if ($stock) {
-                    $stock->increment('quantity', $item['quantity']);
+                    $stock->quantity += $item['quantity'];
+                    $stock->save(); // استخدام save لتشغيل أحداث السجل
                 } else {
                     // إذا لم يكن هناك مخزون متاح، نقوم بإنشاء سجل مخزون جديد
                     Stock::create([
@@ -373,7 +376,8 @@ trait InvoiceHelperTrait
 
                     $deduct = min($remainingToDeduct, $stock->quantity);
                     if ($deduct > 0) {
-                        $stock->decrement('quantity', $deduct);
+                        $stock->quantity -= $deduct;
+                        $stock->save(); // استخدام save لتشغيل أحداث السجل
                         $remainingToDeduct -= $deduct;
                     }
                 }

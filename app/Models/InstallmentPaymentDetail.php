@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class InstallmentPaymentDetail extends Model
 {
-    use HasFactory, Scopes, Blameable;
+    use HasFactory, Scopes, Blameable, \App\Traits\LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "تفاصيل دفعة قسط ({$this->installment?->installment_number}) - مبلغ: {$this->amount_paid}";
+    }
 
     protected $table = 'installment_payment_details';
     protected $guarded = [];

@@ -98,6 +98,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(UserController::class)
         ->group(function () {
             Route::get('users', 'index');
+            Route::get('users/lookup', 'lookup');
+            Route::get('users/stats', 'stats');
             Route::get('users/search', 'usersSearch');
             Route::get('users/search-advanced', 'indexWithSearch');
             Route::post('users', 'store');
@@ -159,11 +161,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(RoleController::class)
         ->group(function () {
             Route::get('roles', 'index');
-            Route::post('role', 'store');
-            Route::post('role/delete', 'destroy');
-            Route::post('role/assignRole', 'assignRole');
-            Route::get('role/{role}', 'show');
-            Route::put('role/{role}', 'update');
+            Route::post('roles', 'store');
+            Route::get('roles/{role}', 'show');
+            Route::put('roles/{role}', 'update');
+            Route::delete('roles/{role}', 'destroy'); // Single delete
+            Route::post('roles/batch-delete', 'destroy'); // Batch delete
+            Route::post('roles/assign', 'assignRole');
         });
     // cashBoxTypes Controller
     Route::controller(CashBoxTypeController::class)
@@ -209,6 +212,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('attributes/{attribute}', 'show');
             Route::put('attributes/{attribute}', 'update');
             Route::delete('attributes/{attribute}', 'destroy');
+            Route::patch('attributes/{id}/toggle', 'toggle');
             Route::post('attribute/deletes', 'deleteMultiple');
         });
     // Attribute Value Controller
@@ -257,6 +261,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('categories', 'store');
             Route::get('categories/{category}', 'show');
             Route::put('categories/{category}', 'update');
+            Route::patch('categories/{id}/toggle', 'toggle');
+            Route::get('categories/{id}/breadcrumbs', 'breadcrumbs');
             Route::delete('categories/{category}', 'destroy');
         });
     // Brand Controller
@@ -266,6 +272,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('brands', 'store');
             Route::get('brands/{brand}', 'show');
             Route::put('brands/{brand}', 'update');
+            Route::patch('brands/{id}/toggle', 'toggle');
             Route::delete('brands/{brand}', 'destroy');
         });
     // InvoiceType Controller

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Activity;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -30,9 +30,10 @@ class ActivityController extends Controller
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'per_page' => 'nullable|integer|min:10|max:100',
+            'search' => 'nullable|string',
         ]);
 
-        $query = Activity::query()->with(['user', 'company']);
+        $query = ActivityLog::query()->with(['user.image', 'company']);
 
         // Apply filters
         if ($request->filled('user_id')) {
@@ -59,15 +60,20 @@ class ActivityController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('description', 'LIKE', "%{$request->search}%")
+                    ->orWhere('ip_address', 'LIKE', "%{$request->search}%")
+                    ->orWhere('action', 'LIKE', "%{$request->search}%");
+            });
+        }
+
         // Sort by latest
         $query->latest();
 
         $activities = $query->paginate($request->input('per_page', 50));
 
-        return response()->json([
-            'success' => true,
-            'data' => $activities,
-        ]);
+        return api_success($activities, 'تم جلب سجلات النشاط بنجاح.');
     }
 
     /**
@@ -79,12 +85,9 @@ class ActivityController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $activity = Activity::with(['user', 'company', 'subject'])->findOrFail($id);
+        $activity = ActivityLog::with(['user.image', 'company', 'subject'])->findOrFail($id);
 
-        return response()->json([
-            'success' => true,
-            'data' => $activity,
-        ]);
+        return api_success($activity, 'تم جلب تفاصيل السجل بنجاح.');
     }
 
     /**
@@ -97,17 +100,14 @@ class ActivityController extends Controller
             'subject_id' => 'required|integer',
         ]);
 
-        $activities = Activity::query()
+        $activities = ActivityLog::query()
             ->with(['user', 'company'])
             ->where('subject_type', $request->subject_type)
             ->where('subject_id', $request->subject_id)
             ->latest()
             ->paginate(50);
 
-        return response()->json([
-            'success' => true,
-            'data' => $activities,
-        ]);
+        return api_success($activities, 'تم جلب سجلات النشاط لهذا العنصر بنجاح.');
     }
 
     /**
@@ -115,16 +115,13 @@ class ActivityController extends Controller
      */
     public function userActivity($userId, Request $request): JsonResponse
     {
-        $activities = Activity::query()
+        $activities = ActivityLog::query()
             ->with(['company', 'subject'])
             ->where('user_id', $userId)
             ->latest()
             ->paginate($request->input('per_page', 50));
 
-        return response()->json([
-            'success' => true,
-            'data' => $activities,
-        ]);
+        return api_success($activities, 'تم جلب سجلات نشاط المستخدم بنجاح.');
     }
 
     /**
@@ -136,17 +133,14 @@ class ActivityController extends Controller
      */
     public function invoiceActivities($invoiceId): JsonResponse
     {
-        $activities = Activity::query()
+        $activities = ActivityLog::query()
             ->with(['user', 'company'])
             ->where('subject_type', 'App\\Models\\Invoice')
             ->where('subject_id', $invoiceId)
             ->latest()
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $activities,
-        ]);
+        return api_success($activities, 'تم جلب سجلات نشاط الفاتورة بنجاح.');
     }
 
     /**
@@ -166,7 +160,7 @@ class ActivityController extends Controller
             'format' => 'nullable|in:csv,excel',
         ]);
 
-        $activities = Activity::query()
+        $activities = ActivityLog::query()
             ->with(['user', 'company'])
             ->whereBetween('created_at', [$request->date_from, $request->date_to])
             ->get();

@@ -9,11 +9,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Image;
 
+use App\Traits\LogsActivity;
+
 class PaymentMethod extends Model
 {
-    use HasFactory, Scopes, Blameable, SoftDeletes;
+    use HasFactory, Scopes, Blameable, SoftDeletes, LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "طريقة الدفع ({$this->name})";
+    }
 
     protected $fillable = ['name', 'code', 'active', 'is_system', 'company_id', 'created_by', 'updated_by'];
+
+    protected $casts = [
+        'active' => 'boolean',
+        'is_system' => 'boolean',
+    ];
 
     public function image()
     {

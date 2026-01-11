@@ -20,7 +20,7 @@ class CashBoxTypeSeeder extends Seeder
             [
                 'name' => 'حساب بنكي',
                 'description' => 'حساب بنكي - للتحويلات والمعاملات البنكية',
-                'is_system' => true,
+                'is_system' => false,
                 'is_active' => true,
             ],
 
@@ -28,31 +28,31 @@ class CashBoxTypeSeeder extends Seeder
             [
                 'name' => 'فودافون كاش',
                 'description' => 'محفظة فودافون كاش الإلكترونية',
-                'is_system' => true,
+                'is_system' => false,
                 'is_active' => true,
             ],
             [
                 'name' => 'اتصالات كاش',
                 'description' => 'محفظة اتصالات كاش الإلكترونية',
-                'is_system' => true,
+                'is_system' => false,
                 'is_active' => true,
             ],
             [
                 'name' => 'أورنج كاش',
                 'description' => 'محفظة أورنج كاش الإلكترونية',
-                'is_system' => true,
+                'is_system' => false,
                 'is_active' => true,
             ],
             [
                 'name' => 'إنستاباي',
                 'description' => 'حساب إنستاباي للتحويلات الفورية',
-                'is_system' => true,
+                'is_system' => false,
                 'is_active' => true,
             ],
             [
                 'name' => 'فوري',
                 'description' => 'حساب فوري للدفع الإلكتروني',
-                'is_system' => true,
+                'is_system' => false,
                 'is_active' => true,
             ],
 
@@ -60,21 +60,27 @@ class CashBoxTypeSeeder extends Seeder
             [
                 'name' => 'باي بال',
                 'description' => 'حساب باي بال للمدفوعات الدولية',
-                'is_system' => true,
+                'is_system' => false,
                 'is_active' => true,
             ],
             [
                 'name' => 'بطاقة ائتمان',
                 'description' => 'حساب مخصص لمدفوعات البطاقات الائتمانية',
-                'is_system' => true,
+                'is_system' => false,
                 'is_active' => true,
             ],
         ];
 
         foreach ($types as $type) {
-            CashBoxType::firstOrCreate(
-                ['name' => $type['name']],
-                $type
+            CashBoxType::updateOrCreate(
+                ['name' => $type['name'], 'company_id' => null],
+                [
+                    'name' => $type['name'],
+                    'description' => $type['description'],
+                    'is_system' => $type['name'] === 'نقدي' ? true : false,
+                    'is_active' => true,
+                    'company_id' => null,
+                ]
             );
         }
     }

@@ -121,7 +121,6 @@ class CompanyController extends Controller
             $authUser->company_id = $company->id;
             $authUser->save();
 
-            $company->logCreated("بإنشاء شركة باسم {$company->name}");
             DB::commit();
             return api_success(new CompanyResource($company->load($this->relations)), 'تم إنشاء الشركة بنجاح');
         } catch (\Exception $e) {
@@ -176,7 +175,6 @@ class CompanyController extends Controller
                     $imagesIds = $request->input('images_ids');
                     $company->syncImages($imagesIds, 'logo');
                 }
-                $company->logUpdated('الشركة ' . $company->name);
                 DB::commit();
                 return api_success(new CompanyResource($company->load($this->relations)), 'تم تحديث الشركة بنجاح');
             } catch (\Exception $e) {
@@ -227,7 +225,6 @@ class CompanyController extends Controller
                     $company->deleteImage($logo);
                 }
                 $company->delete();
-                $company->logForceDeleted('الشركة ' . $company->name);
             }
             DB::commit();
             return api_success([], 'تم حذف الشركات بنجاح');

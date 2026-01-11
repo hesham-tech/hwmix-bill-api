@@ -83,8 +83,8 @@ class AttributeController extends Controller
             $sortOrder = $request->input('sort_order', 'desc');
             $query->orderBy($sortBy, $sortOrder);
 
-            $perPage = max(1, (int) $request->get('per_page', 10));
-            $attributes = $query->get();
+            $perPage = max(1, (int) $request->get('per_page', 12));
+            $attributes = $query->paginate($perPage);
 
             if ($attributes->isEmpty()) {
                 return api_success($attributes, 'لم يتم العثور على سمات.');
@@ -295,7 +295,7 @@ class AttributeController extends Controller
 
                 // تحديث أو إنشاء قيم السمات (AttributeValues)
                 $requestedValueIds = collect($validatedData['values'] ?? [])->pluck('id')->filter()->all();
-                $attribute->values()->whereNotIn('id', $requestedValueIds)->delete(); // حذف القيم غير المرسلة
+                $attribute->values()->whereNotIn('id', $requestedValueIds)->get()->each->delete(); // حذف القيم غير المرسلة مع تشغيل أحداث Eloquent
 
                 if (!empty($validatedData['values']) && is_array($validatedData['values'])) {
                     foreach ($validatedData['values'] as $valueData) {
@@ -374,8 +374,8 @@ class AttributeController extends Controller
                 $deletedAttribute = $attribute->replicate();
                 $deletedAttribute->setRelation('values', $attribute->values); // حفظ القيم المرتبطة أيضًا
 
-                // حذف قيم السمة المرتبطة
-                $attribute->values()->delete();
+                // حذف قيم السمة المرتبطة مع تشغيل أحداث Eloquent
+                $attribute->values->each->delete();
                 $attribute->delete();
 
                 DB::commit();
@@ -386,6 +386,22 @@ class AttributeController extends Controller
                 throw $e;
                 return api_error('حدث خطأ أثناء حذف السمة.', [], 500);
             }
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * تغيير حالة السمة (تفعيل/تعطيل)
+     */
+    public function toggle(string $id): JsonResponse
+    {
+        try {
+            $attribute = Attribute::findOrFail($id);
+            $attribute->update(['active' => !$attribute->active]);
+            return api_success(new AttributeResource($attribute), 'تم تغيير حالة السمة بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }

@@ -77,7 +77,7 @@ class BrandController extends Controller
                 $query->where(function ($q) use ($search) {
                     $q
                         ->where('name', 'like', "%$search%")
-                        ->orWhere('desc', 'like', "%$search%");
+                        ->orWhere('description', 'like', "%$search%");
                 });
             }
             if ($request->filled('name')) {
@@ -89,8 +89,8 @@ class BrandController extends Controller
             $sortOrder = $request->input('sort_order', 'desc');
             $query->orderBy($sortBy, $sortOrder);
 
-            $perPage = max(1, (int) $request->get('per_page', 10));
-            $brands = $query->get();
+            $perPage = max(1, (int) $request->get('per_page', 12));
+            $brands = $query->paginate($perPage);
 
             if ($brands->isEmpty()) {
                 return api_success($brands, 'لم يتم العثور على علامات تجارية.');
@@ -340,6 +340,22 @@ class BrandController extends Controller
                 DB::rollBack();
                 return api_error('حدث خطأ أثناء حذف العلامة التجارية.', [], 500);
             }
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 04. نظام المنتجات
+     * 
+     * تغيير حالة الماركة (تفعيل/تعطيل)
+     */
+    public function toggle(string $id): JsonResponse
+    {
+        try {
+            $brand = Brand::findOrFail($id);
+            $brand->update(['active' => !$brand->active]);
+            return api_success(new BrandResource($brand), 'تم تغيير حالة العلامة التجارية بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }

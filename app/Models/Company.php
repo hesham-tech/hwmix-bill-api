@@ -40,12 +40,20 @@ class Company extends Model
         'email',
         'tax_number',
         'website',
+        'social_links',
         'created_by',
         'company_id',
     ];
 
-    // Define the many-to-many relationship
+    protected $casts = [
+        'social_links' => 'array',
+    ];
 
+    // Define the many-to-many relationship
+    protected $dates = [
+        'created_at',
+        'updated_at',
+    ];
     // يجيب المستخدمين مباشرة (Many To Many)
     public function users(): BelongsToMany
     {
@@ -121,5 +129,13 @@ class Company extends Model
     public function activeInvoiceTypes(): BelongsToMany
     {
         return $this->invoiceTypes()->wherePivot('is_active', true);
+    }
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "الشركة ({$this->name})";
     }
 }

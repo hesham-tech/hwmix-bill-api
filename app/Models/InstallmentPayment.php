@@ -12,7 +12,15 @@ use Illuminate\Database\Eloquent\Model;
  */
 class InstallmentPayment extends Model
 {
-    use HasFactory, Scopes, Blameable;
+    use HasFactory, Scopes, Blameable, \App\Traits\LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "دفعة أقساط ({$this->payment_date}) - مبلغ: {$this->amount_paid}";
+    }
 
     protected $fillable = [
         'installment_plan_id',

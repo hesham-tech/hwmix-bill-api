@@ -20,16 +20,6 @@ class MaintenanceController extends Controller
      */
     public function fixMissingCashBoxes(): JsonResponse
     {
-        // افتراض ID نوع الخزنة النقدي
-        $cashType = CashBoxType::where('name', 'نقدي')->first();
-
-        if (!$cashType) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'لم يتم العثور على نوع الخزنة "نقدي". لا يمكن إكمال العملية.'
-            ], 500);
-        }
-
         $missingCount = 0;
 
         // 1. جلب جميع ارتباطات المستخدمين بالشركات
@@ -45,6 +35,15 @@ class MaintenanceController extends Controller
                     ->exists();
 
                 if (!$exists) {
+                    $cashType = CashBoxType::where('name', 'نقدي')
+                        ->where('company_id', $cu->company_id)
+                        ->first();
+
+                    if (!$cashType) {
+                        Log::warning("MaintenanceController: Missing 'نقدي' type for company {$cu->company_id}");
+                        continue;
+                    }
+
                     $companyName = $cu->company ? $cu->company->name : 'غير محدد';
 
                     CashBox::create([

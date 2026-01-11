@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\FilterableByCompany;
 use Illuminate\Database\Eloquent\Relations\Pivot; // تم التغيير من Model إلى Pivot
 
 // تم إزالة Traits مثل HasRoles, HasPermissions, HasImages, LogsActivity 
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot; // تم التغيير من Mo
 class CompanyUser extends Pivot
 {
     // تم الإبقاء على HasFactory فقط من الـ Traits الأساسية للنماذج
-    use HasFactory; 
+    use HasFactory, FilterableByCompany;
 
     protected $table = 'company_user';
 
@@ -35,7 +36,7 @@ class CompanyUser extends Pivot
     public function user(): BelongsTo
     {
         // تم التأكيد على المفتاح الخارجي إذا لم يكن قياسياً (لكن هنا قياسي)
-        return $this->belongsTo(User::class, 'user_id'); 
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**
@@ -66,6 +67,54 @@ class CompanyUser extends Pivot
         return $this->hasOne(CashBox::class, 'user_id', 'user_id')
             ->where('is_default', true)
             ->where('company_id', $this->company_id);
+    }
+
+    /**
+     * الحصول على الاسم الكامل للمستخدم في هذه الشركة (مع ارتداد للاسم العالمي)
+     */
+    public function getFullNameAttribute()
+    {
+        return $this->full_name_in_company ?? $this->user?->full_name;
+    }
+
+    /**
+     * الحصول على اللقب للمستخدم في هذه الشركة (مع ارتداد للقب العالمي)
+     */
+    public function getNicknameAttribute()
+    {
+        return $this->nickname_in_company ?? $this->user?->nickname;
+    }
+
+    /**
+     * الحصول على الرصيد الفعلي للمستخدم في هذه الشركة
+     */
+    public function getBalanceAttribute()
+    {
+        return (float) ($this->balance_in_company ?? 0);
+    }
+
+    /**
+     * الحصول على نوع العميل في هذه الشركة
+     */
+    public function getCustomerTypeAttribute()
+    {
+        return $this->customer_type_in_company ?? 'retail';
+    }
+
+    /**
+     * الحصول على رقم الهاتف للتواصل في هذه الشركة (مع ارتداد للرقم العالمي)
+     */
+    public function getPhoneAttribute()
+    {
+        return $this->phone_in_company ?? $this->user_phone ?? $this->user?->phone;
+    }
+
+    /**
+     * الحصول على البريد الإلكتروني للتواصل في هذه الشركة (مع ارتداد للبريد العالمي)
+     */
+    public function getEmailAttribute()
+    {
+        return $this->email_in_company ?? $this->user_email ?? $this->user?->email;
     }
 
     /**

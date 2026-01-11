@@ -43,6 +43,20 @@ class UserObserver
     public function updated(User $user): void
     {
         LogFacade::info('User Updated: ' . $user->nickname);
+
+        // Sync cache fields to company_user table
+        $changedFields = [];
+        if ($user->isDirty('phone'))
+            $changedFields['user_phone'] = $user->phone;
+        if ($user->isDirty('email'))
+            $changedFields['user_email'] = $user->email;
+        if ($user->isDirty('username'))
+            $changedFields['user_username'] = $user->username;
+
+        if (!empty($changedFields)) {
+            $user->companyUsers()->update($changedFields);
+        }
+
         $creator = auth()->user();
         ActivityLog::create([
             'action' => 'updated',

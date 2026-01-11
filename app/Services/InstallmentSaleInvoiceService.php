@@ -101,7 +101,6 @@ class InstallmentSaleInvoiceService implements DocumentServiceInterface
             }
 
             // تسجيل عملية الإنشاء
-            $invoice->logCreated('إنشاء فاتورة بيع بالتقسيط رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {
@@ -129,7 +128,6 @@ class InstallmentSaleInvoiceService implements DocumentServiceInterface
             $newInvoice = $this->create($data);
 
             // تسجيل عملية التحديث للفاتورة الجديدة
-            $newInvoice->logUpdated('تحديث فاتورة بيع بالتقسيط رقم ' . $newInvoice->invoice_number . ' (تم استبدال الفاتورة القديمة ' . $invoice->invoice_number . ')');
 
             return $newInvoice;
         } catch (\Throwable $e) {
@@ -264,7 +262,6 @@ class InstallmentSaleInvoiceService implements DocumentServiceInterface
             $this->deleteInvoiceItems($invoice);
 
             // تسجيل عملية الإلغاء
-            $invoice->logCanceled('إلغاء فاتورة بيع بالتقسيط رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {

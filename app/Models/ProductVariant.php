@@ -13,7 +13,15 @@ use Illuminate\Support\Str;
  */
 class ProductVariant extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Blameable, Scopes, \App\Traits\LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "متغير منتج ({$this->product?->name} - {$this->sku})";
+    }
 
     protected $fillable = [
         'barcode',

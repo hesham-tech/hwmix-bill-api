@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Register Observers
+        \App\Models\User::observe(\App\Observers\UserObserver::class);
         \App\Models\Invoice::observe(\App\Observers\InvoiceObserver::class);
         \App\Models\InvoicePayment::observe(\App\Observers\PaymentObserver::class);
         // Company Observer registered via #[ObservedBy] attribute in Company model

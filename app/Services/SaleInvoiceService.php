@@ -105,7 +105,6 @@ class SaleInvoiceService implements DocumentServiceInterface
                 }
             }
 
-            $invoice->logCreated('إنشاء فاتورة بيع رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {
@@ -221,7 +220,6 @@ class SaleInvoiceService implements DocumentServiceInterface
                 app(InstallmentService::class)->createInstallments($data, $invoice->id);
             }
 
-            $invoice->logUpdated('تحديث فاتورة بيع رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {
@@ -301,7 +299,6 @@ class SaleInvoiceService implements DocumentServiceInterface
                 }
             }
 
-            $invoice->logCanceled('إلغاء فاتورة بيع رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {

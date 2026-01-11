@@ -28,6 +28,7 @@ class StorePaymentMethodRequest extends FormRequest
                 }),
             ],
             'active' => 'required|boolean',
+            'is_system' => 'sometimes|boolean',
             'company_id' => 'nullable|exists:companies,id',
             'image_id' => 'nullable|exists:images,id',
         ];

@@ -81,7 +81,6 @@ class PurchaseInvoiceService implements DocumentServiceInterface
             }
 
             // تسجيل عملية الإنشاء
-            $invoice->logCreated('إنشاء فاتورة شراء رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {
@@ -191,7 +190,6 @@ class PurchaseInvoiceService implements DocumentServiceInterface
             $this->incrementStockForItems($data['items'], $data['company_id'] ?? null, $data['updated_by'] ?? null);
 
             // تسجيل عملية التحديث
-            $invoice->logUpdated('تحديث فاتورة شراء رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {
@@ -260,7 +258,6 @@ class PurchaseInvoiceService implements DocumentServiceInterface
                 }
             }
 
-            $invoice->logCanceled('إلغاء فاتورة شراء رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {

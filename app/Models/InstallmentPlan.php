@@ -13,7 +13,15 @@ use Illuminate\Database\Eloquent\SoftDeletes; // ← ✅ استيراد السو
  */
 class InstallmentPlan extends Model
 {
-    use HasFactory, Blameable, Scopes, SoftDeletes; // ← ✅ استخدم السوفت دليت
+    use HasFactory, Blameable, Scopes, SoftDeletes, \App\Traits\LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "خطة تقسيط ({$this->user?->name}) - إجمالي: {$this->total_amount}";
+    }
 
     protected $fillable = [
         'invoice_id',

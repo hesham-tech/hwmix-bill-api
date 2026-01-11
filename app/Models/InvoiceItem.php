@@ -11,7 +11,15 @@ use App\Traits\Scopes;
 
 class InvoiceItem extends Model
 {
-    use HasFactory, SoftDeletes, Blameable, Scopes;
+    use HasFactory, SoftDeletes, Blameable, Scopes, \App\Traits\LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "بند فاتورة ({$this->name}) - كمية: {$this->quantity}";
+    }
 
     protected $guarded = [];
 

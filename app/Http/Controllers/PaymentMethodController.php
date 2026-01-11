@@ -50,20 +50,30 @@ class PaymentMethodController extends Controller
 
             $query = PaymentMethod::query()->with($this->relations);
 
-            // تطبيق عزل الشركات
+            // تطبيق منطق الصلاحيات والسكوبس
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                // السوبر أدمن يرى طرق دفع السيستم فقط (الديفولت)
-                $query->where('is_system', true)->whereNull('company_id');
+                // المسؤول العام يرى الجميع
+            } elseif ($authUser->hasAnyPermission([perm_key('payment_methods.view_all'), perm_key('admin.company')])) {
+                $query->whereCompanyIsCurrent();
+            } elseif ($authUser->hasPermissionTo(perm_key('payment_methods.view_children'))) {
+                $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('payment_methods.view_self'))) {
+                $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                $query->where('company_id', $companyId);
+                return api_forbidden('ليس لديك إذن لعرض طرق الدفع.');
             }
 
             // فلاتر البحث
             if ($request->filled('search')) {
                 $query->where('name', 'like', '%' . $request->input('search') . '%');
             }
+
+            if ($request->has('is_system')) {
+                $query->where('is_system', (bool) $request->get('is_system'));
+            }
+
             if ($request->filled('active')) {
-                $query->where('active', (bool) $request->input('active'));
+                $query->where('active', (bool) $request->get('active'));
             }
 
             // الفرز والتصفح
@@ -183,6 +193,7 @@ class PaymentMethodController extends Controller
 
             $paymentMethod = PaymentMethod::with($this->relations)->findOrFail($id);
 
+            // التحقق من صلاحيات العرض
             $canView = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canView = true;
@@ -194,11 +205,11 @@ class PaymentMethodController extends Controller
                 $canView = $paymentMethod->belongsToCurrentCompany() && $paymentMethod->createdByCurrentUser();
             }
 
-            if ($canView) {
-                return api_success($paymentMethod, 'تم استرداد طريقة الدفع بنجاح.');
+            if (!$canView) {
+                return api_forbidden('ليس لديك إذن لعرض طريقة الدفع هذه.');
             }
 
-            return api_forbidden('ليس لديك إذن لعرض طريقة الدفع هذه.');
+            return api_success(new PaymentMethodResource($paymentMethod), 'تم استرداد طريقة الدفع بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e);
         }
@@ -220,8 +231,19 @@ class PaymentMethodController extends Controller
 
             $paymentMethod = PaymentMethod::findOrFail($id);
 
-            // صلاحيات التحديث
-            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $paymentMethod->company_id !== $authUser->company_id) {
+            // التحقق من صلاحيات التحديث
+            $canUpdate = false;
+            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                $canUpdate = true;
+            } elseif ($authUser->hasAnyPermission([perm_key('payment_methods.update_all'), perm_key('admin.company')])) {
+                $canUpdate = $paymentMethod->belongsToCurrentCompany();
+            } elseif ($authUser->hasPermissionTo(perm_key('payment_methods.update_children'))) {
+                $canUpdate = $paymentMethod->belongsToCurrentCompany() && $paymentMethod->createdByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('payment_methods.update_self'))) {
+                $canUpdate = $paymentMethod->belongsToCurrentCompany() && $paymentMethod->createdByCurrentUser();
+            }
+
+            if (!$canUpdate) {
                 return api_forbidden('ليس لديك إذن لتحديث طريقة الدفع هذه.');
             }
 
@@ -320,6 +342,7 @@ class PaymentMethodController extends Controller
 
             $paymentMethod = PaymentMethod::with(['company', 'creator', 'payments'])->findOrFail($id);
 
+            // التحقق من صلاحيات الحذف
             $canDelete = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canDelete = true;
@@ -409,7 +432,7 @@ class PaymentMethodController extends Controller
 
             $paymentMethod = PaymentMethod::findOrFail($id);
 
-            // التحقق من الصلاحيات (نفس منطق update)
+            // التحقق من صلاحيات التحديث (التبديل)
             $canUpdate = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canUpdate = true;
