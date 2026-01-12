@@ -29,11 +29,11 @@ jobs:
 
       - name: Ensure Remote Directory Exists
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /home/u715355537/domains/hwnix.com/public_html/api-teste/"
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "mkdir -p /home/u715355537/domains/hwnix.com/public_html/api-teste/"
 
       - name: Deploy via Rsync
         run: |
-          rsync -avz --delete -e "ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
+          rsync -avz --delete -e "ssh -p 65002 -o StrictHostKeyChecking=no" \
           --exclude='.git/' \
           --exclude='.github/' \
           --exclude='node_modules/' \
@@ -42,4 +42,4 @@ jobs:
           --exclude='.env' \
           --exclude='phpunit.xml' \
           --exclude='README.md' \
-          ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/u715355537/domains/hwnix.com/public_html/api-teste/
+          ./ u715355537@212.107.17.234:/home/u715355537/domains/hwnix.com/public_html/api-teste/
