@@ -1,0 +1,57 @@
+##php artisan key:generate
+##php artisan storage:link
+APP_NAME="HWMix Bill API (Test)"
+APP_ENV=production
+APP_KEY=base64:YyJ0wQ148wlyfYcZt0EIkcrAHrcNBRht8kqaRSB3m2I=
+APP_DEBUG=false
+APP_TIMEZONE=UTC
+APP_URL=https://api-teste.hwnix.com
+
+APP_LOCALE=ar
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+
+APP_MAINTENANCE_DRIVER=file
+
+PHP_CLI_SERVER_WORKERS=4
+BCRYPT_ROUNDS=12
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_LEVEL=error
+
+# إعدادات قاعدة البيانات (Hostinger)
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=u715355537_api_teste
+DB_USERNAME=u715355537_api_teste
+DB_PASSWORD="29Qjbd$J"
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=.hwnix.com
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=public
+QUEUE_CONNECTION=database
+
+CACHE_STORE=database
+CACHE_PREFIX=hwmix_test_
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=log
+MAIL_FROM_ADDRESS="no-reply@hwnix.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+# إعدادات Sanctum و CORS للمشروع الجديد
+SANCTUM_STATEFUL_DOMAINS=api-teste.hwnix.com,bill-teste.hwnix.com
+CORS_ALLOWED_ORIGINS=https://bill-teste.hwnix.com,https://api-teste.hwnix.com
