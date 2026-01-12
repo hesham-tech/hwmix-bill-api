@@ -55,6 +55,7 @@ class AuthController extends Controller
             $company = \App\Models\Company::first();
             $companyId = $company ? $company->id : 1;
 
+            \Log::info('Attempting to create user', ['phone' => $validated['phone'], 'email' => $validated['email'] ?? 'N/A']);
             $user = User::create([
                 'phone' => $validated['phone'],
                 'company_id' => $companyId, // الشركة الرئيسية/النشطة (افتراضية)
@@ -62,6 +63,7 @@ class AuthController extends Controller
                 'nickname' => $validated['nickname'] ?? null,
                 'password' => Hash::make($validated['password']),
             ]);
+            \Log::info('User created successfully', ['user_id' => $user->id]);
 
             // **[التعديل الجديد]: ربط المستخدم بالشركة الافتراضية**
             // هذا السطر هو الذي ينشئ سجل في جدول company_user ويطلق المراقب.
