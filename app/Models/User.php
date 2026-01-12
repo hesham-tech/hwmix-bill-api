@@ -86,9 +86,12 @@ class User extends Authenticatable
      */
     protected static function booted(): void
     {
-        //    static::created(function (User $user) {
-        //        app(CashBoxService::class)->ensure-CashBoxForUser($user);
-        //    });
+        static::saving(function (User $user) {
+            // Automatically combine first and last name into full_name if they are changed
+            if ($user->isDirty(['first_name', 'last_name'])) {
+                $user->full_name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+            }
+        });
     }
 
     /**
