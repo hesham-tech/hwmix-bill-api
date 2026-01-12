@@ -26,6 +26,12 @@ class RolesAndPermissionsSeeder extends Seeder
         if (!$admin) {
             $this->createSystemOwner($permissions);
         } else {
+            // تحديث بيانات الدخول للتأكد من مطابقتها للسيدر
+            $admin->update([
+                'phone' => '1234567890',
+                'password' => bcrypt('12345678'),
+            ]);
+
             // إخبار النظام برقم الشركة قبل مزامنة الصلاحيات (Spatie Teams)
             if (config('permission.teams')) {
                 $company = Company::first();
