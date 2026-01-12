@@ -123,10 +123,25 @@ class AuthController extends Controller
             ]);
 
             $loginField = filter_var($validated['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+            \Log::info('Login attempt started', ['field' => $loginField, 'value' => $validated['login']]);
 
-            if (!Auth::attempt([$loginField => $validated['login'], 'password' => $validated['password']])) {
+            $user = User::where($loginField, $validated['login'])->first();
+            if (!$user) {
+                \Log::warning('Login failed: User not found in database', ['login' => $validated['login']]);
                 return api_error('بيانات الاعتماد غير صالحة.', [], 422);
             }
+
+            \Log::info('User found, checking password', ['user_id' => $user->id]);
+            if (!Hash::check($validated['password'], $user->password)) {
+                \Log::warning('Login failed: Password hashing mismatch', ['user_id' => $user->id]);
+                return api_error('بيانات الاعتماد غير صالحة.', [], 422);
+            }
+
+            if (!Auth::attempt([$loginField => $validated['login'], 'password' => $validated['password']])) {
+                \Log::error('Login failed: Auth::attempt returned false but Hash::check passed', ['user_id' => $user->id]);
+                return api_error('بيانات الاعتماد غير صالحة.', [], 422);
+            }
+            \Log::info('Login successful', ['user_id' => $user->id]);
 
             /** @var \App\Models\User $user */
             $user = Auth::user();
