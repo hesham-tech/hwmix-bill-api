@@ -58,6 +58,9 @@ class AuthController extends Controller
 
             $fullName = $validated['full_name'] ?? trim(($validated['first_name'] ?? '') . ' ' . ($validated['last_name'] ?? ''));
 
+            $company = \App\Models\Company::first();
+            $companyId = $company ? $company->id : 1;
+
             $user = User::create([
                 'phone' => $validated['phone'],
                 'company_id' => $companyId,
