@@ -58,6 +58,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'phone' => '1234567890',
             'company_id' => $company ? $company->id : null,
         ]);
+        // إخبار النظام برقم الشركة قبل منح الصلاحيات (Spatie Teams)
+        if (config('permission.teams')) {
+            setPermissionsTeamId($company->id);
+        }
         $user->givePermissionTo($permissions);
 
         // مزامنة المستخدم مع جميع الشركات
