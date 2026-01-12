@@ -72,7 +72,8 @@ class PaymentController extends Controller
                 // يرى المدفوعات التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض المدفوعات.');
+                // الوضع الافتراضي للعملاء: رؤية المدفوعات الخاصة بهم فقط
+                $query->where('user_id', $authUser->id);
             }
 
             // فلاتر الطلب الإضافية

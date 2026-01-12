@@ -62,7 +62,8 @@ class InstallmentController extends Controller
                 // يرى الأقساط التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض الأقساط.');
+                // الوضع الافتراضي للعملاء: رؤية الأقساط الخاصة بهم فقط
+                $query->where('user_id', $authUser->id);
             }
 
             // التصفية بناءً على طلب المستخدم

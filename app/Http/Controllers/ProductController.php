@@ -86,7 +86,8 @@ class ProductController extends Controller
             } elseif ($authUser->hasPermissionTo($permKeys['view_self'])) {
                 $baseQuery->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك صلاحية لعرض المنتجات.');
+                // الوضع الافتراضي للعملاء: رؤية المنتجات النشطة فقط في شركتهم
+                $baseQuery->whereCompanyIsCurrent()->where('active', true);
             }
 
             // إعدادات عامة

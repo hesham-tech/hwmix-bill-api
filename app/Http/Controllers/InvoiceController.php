@@ -186,7 +186,8 @@ class InvoiceController extends Controller
             } elseif ($authUser->hasPermissionTo(perm_key('invoices.view_self'))) {
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك صلاحية لعرض الفواتير.');
+                // الوضع الافتراضي للعملاء: رؤية الفواتير الخاصة بهم فقط
+                $query->where('user_id', $authUser->id);
             }
 
             // فلاتر الطلب الإضافية
