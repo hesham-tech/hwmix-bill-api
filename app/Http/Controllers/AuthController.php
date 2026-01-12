@@ -46,20 +46,22 @@ class AuthController extends Controller
             $validated = $request->validate([
                 'phone' => 'required|unique:users,phone',
                 'password' => 'required|string|min:8',
-                'company_id' => 'nullable|string|min:8', // يُفضل إزالته إذا لم يكن يُستخدم لتحديد الشركة الرئيسية
+                'company_id' => 'nullable|string|min:8',
                 'email' => 'nullable|email|unique:users,email',
                 'full_name' => 'nullable|string|max:255',
+                'first_name' => 'nullable|string|max:255',
+                'last_name' => 'nullable|string|max:255',
                 'nickname' => 'nullable|string|max:255',
             ]);
 
-            $company = \App\Models\Company::first();
-            $companyId = $company ? $company->id : 1;
-
             \Log::info('Attempting to create user', ['phone' => $validated['phone'], 'email' => $validated['email'] ?? 'N/A']);
+
+            $fullName = $validated['full_name'] ?? trim(($validated['first_name'] ?? '') . ' ' . ($validated['last_name'] ?? ''));
+
             $user = User::create([
                 'phone' => $validated['phone'],
-                'company_id' => $companyId, // الشركة الرئيسية/النشطة (افتراضية)
-                'full_name' => $validated['full_name'] ?? null,
+                'company_id' => $companyId,
+                'full_name' => $fullName ?: null,
                 'nickname' => $validated['nickname'] ?? null,
                 'password' => Hash::make($validated['password']),
             ]);
@@ -87,6 +89,10 @@ class AuthController extends Controller
                 'token' => $token,
             ], 'تم تسجيل المستخدم بنجاح.', 201);
         } catch (ValidationException $e) {
+            \Log::warning('Registration Validation Failed', [
+                'errors' => $e->errors(),
+                'input' => $request->except(['password', 'password_confirmation'])
+            ]);
             return api_error('فشل التحقق من صحة البيانات أثناء التسجيل.', $e->errors(), 422);
         } catch (Throwable $e) {
             \Log::error('Registration Error: ' . $e->getMessage(), [
