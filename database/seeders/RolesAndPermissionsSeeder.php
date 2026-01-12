@@ -26,6 +26,13 @@ class RolesAndPermissionsSeeder extends Seeder
         if (!$admin) {
             $this->createSystemOwner($permissions);
         } else {
+            // إخبار النظام برقم الشركة قبل مزامنة الصلاحيات (Spatie Teams)
+            if (config('permission.teams')) {
+                $company = Company::first();
+                if ($company) {
+                    setPermissionsTeamId($company->id);
+                }
+            }
             $admin->syncPermissions($permissions);
         }
     }
