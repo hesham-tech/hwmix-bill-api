@@ -25,7 +25,14 @@ jobs:
       - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: |
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+            QyNTUxOQAAACA6g37ShyPiZgfHaFfVnmicCN5PLQIWh4/t247UWaQcEAAAAIgdHZUuHR2V
+            LgAAAAtzc2gtZWQyNTUxOQAAACA6g37ShyPiZgfHaFfVnmicCN5PLQIWh4/t247UWaQcEA
+            AAAEBclRKUG/1G65MQ0XImU2COe0ZPBRsZaFhBvYsDc2sHlDqDftKHI+JmB8doV9WeaJwI
+            3k8tAhaHj+3bjtRZpBwQAAAABWh3bml4
+            -----END OPENSSH PRIVATE KEY-----
 
       - name: Ensure Remote Directory Exists
         run: |
