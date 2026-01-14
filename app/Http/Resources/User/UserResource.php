@@ -26,7 +26,7 @@ class UserResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'nickname' => $this->nickname,
+            'nickname' => $this->activeCompanyUser?->nickname_in_company ?? $this->nickname,
             'balance' => optional($this->cashBoxDefault)->balance ?? 0,
             'full_name' => $this->full_name,
             'first_name' => $this->activeCompanyUser?->first_name_in_company ?? $this->first_name,

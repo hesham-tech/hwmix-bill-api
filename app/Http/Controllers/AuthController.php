@@ -51,7 +51,7 @@ class AuthController extends Controller
                 'full_name' => 'nullable|string|max:255',
                 'first_name' => 'nullable|string|max:255',
                 'last_name' => 'nullable|string|max:255',
-                'nickname' => 'nullable|string|max:255',
+                'nickname' => 'required|string|max:255',
             ]);
 
             \Log::info('Attempting to create user', ['phone' => $validated['phone'], 'email' => $validated['email'] ?? 'N/A']);

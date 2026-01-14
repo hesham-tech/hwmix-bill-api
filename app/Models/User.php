@@ -217,6 +217,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Groups this user belongs to.
+     */
+    public function taskGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(TaskGroup::class, 'task_group_user');
+    }
+
+    /**
      * الحصول على صناديق النقد الخاصة بالمستخدم ضمن شركة معينة.
      *
      * @param int|null $companyId

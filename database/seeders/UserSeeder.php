@@ -42,7 +42,16 @@ class UserSeeder extends Seeder
             $user = User::create($userData);
             $pivotData = [];
             foreach ($companyIds as $companyId) {
-                $pivotData[$companyId] = ['created_by' => $userData['created_by']];
+                $pivotData[$companyId] = [
+                    'created_by' => $userData['created_by'],
+                    'nickname_in_company' => $user->nickname,
+                    'full_name_in_company' => $user->full_name,
+                    'user_phone' => $user->phone,
+                    'user_email' => $user->email,
+                    'user_username' => $user->username,
+                    'customer_type_in_company' => $userData['customer_type'] ?? 'retail',
+                    'status' => 'active',
+                ];
             }
             $user->companies()->sync($pivotData);
             // إنشاء صناديق المستخدم الافتراضية لكل شركة

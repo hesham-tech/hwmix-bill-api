@@ -81,7 +81,15 @@ class RolesAndPermissionsSeeder extends Seeder
         $companyIds = Company::pluck('id')->toArray();
         $pivotData = [];
         foreach ($companyIds as $companyId) {
-            $pivotData[$companyId] = ['created_by' => $user->id];
+            $pivotData[$companyId] = [
+                'created_by' => $user->id,
+                'nickname_in_company' => $user->nickname,
+                'full_name_in_company' => $user->full_name,
+                'user_phone' => $user->phone,
+                'user_email' => $user->email,
+                'user_username' => $user->username,
+                'status' => 'active',
+            ];
         }
         $user->companies()->sync($pivotData);
         // إنشاء صناديق المستخدم الافتراضية لكل شركة

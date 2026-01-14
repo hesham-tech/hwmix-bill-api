@@ -239,6 +239,24 @@ class UserController extends Controller
                     'full_name' => $validatedData['full_name'] ?? null,
                     'nickname' => $validatedData['nickname'] ?? null,
                 ]);
+
+                // [NEW] Sync Companies (Super Admin or Company Admin with scoping)
+                if ($request->has('company_ids')) {
+                    $isSuperAdmin = $authUser->can(perm_key('admin.super'));
+                    $isCompanyAdmin = $authUser->can(perm_key('admin.company'));
+
+                    if ($isSuperAdmin) {
+                        $user->companies()->sync($validatedData['company_ids']);
+                    } elseif ($isCompanyAdmin) {
+                        $myCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
+                        $allowedCompanyIds = array_intersect($validatedData['company_ids'], $myCompanyIds);
+
+                        $user->companies()->syncWithPivotValues($allowedCompanyIds, [
+                            'created_by' => $authUser->id,
+                            'status' => 'active'
+                        ], false);
+                    }
+                }
             }
 
             // التأكد من عدم ارتباطه مسبقاً بنفس الشركة
@@ -441,7 +459,7 @@ class UserController extends Controller
         if (!$authUser)
             return api_unauthorized();
 
-        $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
+        $isSuperAdmin = $authUser->can(perm_key('admin.super'));
         $activeCompanyId = $authUser->company_id;
 
         DB::beginTransaction();
@@ -463,6 +481,26 @@ class UserController extends Controller
                 ]));
                 if (!empty($userData)) {
                     $user->update($userData);
+                }
+            }
+
+            // [NEW] Sync Companies (Super Admin or Company Admin with scoping)
+            if ($request->has('company_ids')) {
+                $isCompanyAdmin = $authUser->can(perm_key('admin.company'));
+
+                if ($isSuperAdmin) {
+                    $user->companies()->sync($validated['company_ids']);
+                } elseif ($isCompanyAdmin) {
+                    // Company Admin can only sync companies they themselves belong to
+                    $myCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
+                    $allowedCompanyIds = array_intersect($validated['company_ids'], $myCompanyIds);
+
+                    // We use syncWithoutDetaching or a manual sync to ensure we don't accidentally
+                    // remove links to companies the admin DOESN'T manage.
+                    $user->companies()->syncWithPivotValues($allowedCompanyIds, [
+                        'created_by' => $authUser->id,
+                        'status' => 'active'
+                    ], false); // false = don't detach others (very important for company admins)
                 }
             }
 
@@ -498,7 +536,7 @@ class UserController extends Controller
 
             // 3. تحديث الأدوار والصلاحيات (سياق الشركة الحالية)
             if ($activeCompanyId && !$isUpdatingSelf) {
-                $isSystemAdmin = $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')]);
+                $isSystemAdmin = $isSuperAdmin || $authUser->can(perm_key('admin.company'));
 
                 if ($request->has('roles')) {
                     $requestedRoles = $validated['roles'];

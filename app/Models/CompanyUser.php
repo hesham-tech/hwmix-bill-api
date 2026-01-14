@@ -19,6 +19,44 @@ class CompanyUser extends Pivot
 
     protected $guarded = [];
 
+    protected static function booted()
+    {
+        static::creating(function ($pivot) {
+            if (!$pivot->user_id)
+                return;
+
+            $user = User::find($pivot->user_id);
+            if (!$user)
+                return;
+
+            // Fallback for nickname
+            if (empty($pivot->nickname_in_company)) {
+                $pivot->nickname_in_company = $user->nickname ?? $user->username;
+            }
+
+            // Fallback for full name
+            if (empty($pivot->full_name_in_company)) {
+                $pivot->full_name_in_company = $user->full_name;
+            }
+
+            // Fallback for phone/email
+            if (empty($pivot->user_phone)) {
+                $pivot->user_phone = $user->phone;
+            }
+            if (empty($pivot->user_email)) {
+                $pivot->user_email = $user->email;
+            }
+            if (empty($pivot->user_username)) {
+                $pivot->user_username = $user->username;
+            }
+
+            // Set creator if not set
+            if (empty($pivot->created_by)) {
+                $pivot->created_by = auth()->id() ?? $user->id;
+            }
+        });
+    }
+
     /**
      * العلاقات التي يجب تحميلها تلقائيا عند جلب الموديل.
      *

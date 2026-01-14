@@ -32,6 +32,9 @@ use App\Http\Controllers\InstallmentPlanController;
 use App\Http\Controllers\InstallmentPaymentController;
 use App\Http\Controllers\InstallmentPaymentDetailController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\Api\DevToolController;
+use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\TaskGroupController;
 
 Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceController::class, 'fixMissingCashBoxes'])->name('emergency.fix.cashboxes');
 
@@ -393,6 +396,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::delete('invoice-type/delete/{id}', 'destroy');
         });
     Route::get('/permissions', [PermissionController::class, 'index']);
+
+    // ================== Task Management ==================
+    Route::apiResource('tasks', TaskController::class);
+    Route::post('tasks/{task}/comments', [TaskController::class, 'addComment']);
+    Route::post('tasks/{task}/attachments', [TaskController::class, 'uploadAttachment']);
+    Route::apiResource('task-groups', TaskGroupController::class);
+
+    // ================== Dev Tools ==================
+    Route::prefix('dev')->group(function () {
+        Route::get('/testing-checklist', [DevToolController::class, 'getTestingChecklist']);
+        Route::post('/testing-checklist', [DevToolController::class, 'saveTestingChecklist']);
+    });
 });
 // Artisan commands routes
 Route::controller(ArtisanController::class)->prefix('php')->group(function () {
