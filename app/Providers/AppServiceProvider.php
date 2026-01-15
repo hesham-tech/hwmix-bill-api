@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Enforce Arabic locale for all requests
+        app()->setLocale(config('app.locale', 'ar'));
+
         // Register Observers
         \App\Models\User::observe(\App\Observers\UserObserver::class);
         \App\Models\Invoice::observe(\App\Observers\InvoiceObserver::class);
