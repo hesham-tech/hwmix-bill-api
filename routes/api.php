@@ -43,11 +43,19 @@ Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceC
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+Route::post('error-reports', [ErrorReportController::class, 'store']);
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('/auth/check', [AuthController::class, 'checkLogin']);
     // Health check
     Route::get('/artisan/health', [ArtisanController::class, 'health']);
+
+    // Error Reporting Management
+    Route::controller(ErrorReportController::class)->group(function () {
+        Route::get('error-reports', 'index');
+        Route::patch('error-reports/{errorReport}', 'update');
+    });
 
     // ================== Reports Routes ==================
     Route::prefix('reports')->group(function () {
@@ -114,12 +122,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::put('users/{user}/cashbox/{cashBoxId}/set-default', 'setDefaultCashBox');
             Route::post('users/delete', 'destroy');
         });
-    // Error Reporting
-    Route::controller(ErrorReportController::class)->group(function () {
-        Route::get('error-reports', 'index');
-        Route::post('error-reports', 'store');
-        Route::patch('error-reports/{errorReport}', 'update');
-    });
 
     // company Controller
     Route::controller(CompanyController::class)

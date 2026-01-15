@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ErrorReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ErrorReportController extends Controller
 {
@@ -32,35 +33,48 @@ class ErrorReportController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'message' => 'required|string',
-            'type' => 'nullable|string',
-            'stack_trace' => 'nullable|string',
-            'url' => 'nullable|string',
-            'browser' => 'nullable|string',
-            'os' => 'nullable|string',
-            'payload' => 'nullable|array',
-            'severity' => 'nullable|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'message' => 'required|string',
+                'type' => 'nullable|string',
+                'stack_trace' => 'nullable|string',
+                'url' => 'nullable|string',
+                'browser' => 'nullable|string',
+                'os' => 'nullable|string',
+                'payload' => 'nullable|array',
+                'severity' => 'nullable|string',
+            ]);
 
-        $report = ErrorReport::create([
-            'user_id' => Auth::id(),
-            'company_id' => Auth::user()?->company_id,
-            'type' => $validated['type'] ?? 'error',
-            'message' => $validated['message'],
-            'stack_trace' => $validated['stack_trace'] ?? null,
-            'url' => $validated['url'] ?? null,
-            'browser' => $validated['browser'] ?? null,
-            'os' => $validated['os'] ?? null,
-            'payload' => $validated['payload'] ?? null,
-            'severity' => $validated['severity'] ?? 'medium',
-            'status' => 'pending',
-        ]);
+            $report = ErrorReport::create([
+                'user_id' => Auth::id(),
+                'company_id' => Auth::user()?->company_id,
+                'type' => $validated['type'] ?? 'error',
+                'message' => $validated['message'],
+                'stack_trace' => $validated['stack_trace'] ?? null,
+                'url' => $validated['url'] ?? null,
+                'browser' => $validated['browser'] ?? null,
+                'os' => $validated['os'] ?? null,
+                'payload' => $validated['payload'] ?? null,
+                'severity' => $validated['severity'] ?? 'medium',
+                'status' => 'pending',
+            ]);
 
-        return response()->json([
-            'message' => 'تم استلام تقرير الخطأ بنجاح، شكراً لمساعدتنا في تحسين النظام.',
-            'report_id' => $report->id,
-        ], 201);
+            return response()->json([
+                'message' => 'تم استلام تقرير الخطأ بنجاح، شكراً لمساعدتنا في تحسين النظام.',
+                'report_id' => $report->id,
+            ], 201);
+        } catch (\Exception $e) {
+            \Log::error('Error Report Store Failure: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all(),
+                'user_id' => Auth::id()
+            ]);
+
+            return response()->json([
+                'message' => 'حدث خطأ أثناء حفظ تقرير الخطأ.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 
     /**
