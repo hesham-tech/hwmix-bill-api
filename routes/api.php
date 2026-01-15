@@ -435,6 +435,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::controller(ArtisanController::class)->prefix('php')->group(function () {
     Route::get('runComposerDump', 'runComposerDump'); // عمل اوتو لود للملفات 
     Route::get('generateBackup', 'generateBackup'); //  توليد السيدرز الاحتياطية
+    Route::get('migrate', 'migrate'); // تحديث الجداول
     Route::get('migrateAndSeed', 'migrateAndSeed'); // ميجريشن ريفرش وعمل سيدرنج لقاعدة البيانات من جديد
     Route::get('applyBackup', 'applyBackup');     //  تطبيق السيدرز الاحتياطية
     Route::get('PermissionsSeeder', 'PermissionsSeeder'); // تشغيل PermissionsSeeder

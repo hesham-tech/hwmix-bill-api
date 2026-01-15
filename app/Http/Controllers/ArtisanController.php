@@ -34,6 +34,21 @@ class ArtisanController extends Controller
 
     /**
      * @return \Illuminate\Http\JsonResponse
+     * // تشغيل الميجريشن (تحديث الجداول دون مسح البيانات)
+     */
+    public function migrate(): JsonResponse
+    {
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+            $output = Artisan::output();
+            return api_success(['output' => $output], 'تم تنفيذ الميجريشن بنجاح لتحديث هيكل قاعدة البيانات.');
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
      * // ميجريشن ريفرش وعمل سيدرنج لقاعدة البيانات من جديد
      */
     public function migrateAndSeed(): JsonResponse

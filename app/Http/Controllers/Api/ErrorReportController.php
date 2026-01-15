@@ -74,7 +74,8 @@ class ErrorReportController extends Controller
 
             return response()->json([
                 'message' => 'حدث خطأ أثناء حفظ تقرير الخطأ.',
-                'error' => config('app.debug') ? $e->getMessage() : null,
+                'error' => $e->getMessage(), // Temporarily return error to help user debug hosting
+                'trace' => config('app.debug') ? $e->getTraceAsString() : null,
             ], 500);
         }
     }
