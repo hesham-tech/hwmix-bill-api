@@ -15,9 +15,7 @@ class ErrorReportController extends Controller
      */
     public function index()
     {
-        // Permission check is usually handled via middleware in routes, 
-        // but adding local check for safety.
-        if (!Auth::user()->hasPermission('admin.super')) {
+        if (!Auth::user()->hasPermissionTo('admin.super')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -85,7 +83,7 @@ class ErrorReportController extends Controller
      */
     public function update(Request $request, ErrorReport $errorReport)
     {
-        if (!Auth::user()->hasPermission('admin.super')) {
+        if (!Auth::user()->hasPermissionTo('admin.super')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
