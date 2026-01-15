@@ -36,7 +36,7 @@ class TaskGroupController extends Controller
                 'company_id' => $request->user()->company_id,
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
-                'color' => $validated['color'] ?? '#primary',
+                'color' => $validated['color'] ?? 'primary',
                 'created_by' => $request->user()->id,
             ]);
 

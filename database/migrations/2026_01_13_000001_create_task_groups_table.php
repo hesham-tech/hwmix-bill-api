@@ -15,7 +15,7 @@ return new class extends Migration {
             $seq->foreignId('company_id')->constrained()->onDelete('cascade');
             $seq->string('name');
             $seq->string('description')->nullable();
-            $seq->string('color')->default('#primary');
+            $seq->string('color')->default('primary');
             $seq->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $seq->timestamps();
             $seq->softDeletes();

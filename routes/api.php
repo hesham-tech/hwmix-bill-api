@@ -35,6 +35,7 @@ use App\Http\Controllers\PlanController;
 use App\Http\Controllers\Api\DevToolController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TaskGroupController;
+use App\Http\Controllers\Api\BackupController;
 
 Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceController::class, 'fixMissingCashBoxes'])->name('emergency.fix.cashboxes');
 
@@ -130,6 +131,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::put('images/{Image}', 'update');
             Route::post('images/delete', 'destroy');
         });
+
+    // Backup Controller
+    Route::controller(BackupController::class)->group(function () {
+        Route::get('backups', 'index');
+        Route::post('backups/run', 'run');
+        Route::get('backups/{id}/download', 'download');
+        Route::delete('backups/{id}', 'destroy');
+        Route::get('backups/settings', 'getSettings');
+        Route::put('backups/settings', 'updateSettings');
+        Route::post('backups/{id}/restore', 'restore');
+    });
 
 
     // Transaction Controller

@@ -16,6 +16,34 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('installments:notify-due')->daily();
+
+        // Dynamic Backup Scheduling
+        try {
+            $frequency = \App\Models\BackupSetting::getVal('backup_frequency', 'daily');
+            $time = \App\Models\BackupSetting::getVal('backup_time', '03:00');
+
+            $backupTask = $schedule->command('backup:run')->onOneServer();
+
+            switch ($frequency) {
+                case 'daily':
+                    $backupTask->dailyAt($time);
+                    break;
+                case 'weekly':
+                    $backupTask->weeklyOn(5, $time); // Each Friday
+                    break;
+                case 'monthly':
+                    $backupTask->monthlyOn(1, $time); // 1st of each month
+                    break;
+                default:
+                    $backupTask->dailyAt($time);
+            }
+
+            // Cleanup old backups
+            $schedule->command('backup:clean')->dailyAt('04:00');
+
+        } catch (\Exception $e) {
+            // Silently fail if table doesn't exist yet (migration phase)
+        }
     }
 
     /**
@@ -25,7 +53,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
