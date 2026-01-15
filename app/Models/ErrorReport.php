@@ -18,6 +18,7 @@ class ErrorReport extends Model
         'url',
         'browser',
         'os',
+        'user_notes',
         'payload',
         'status',
         'severity',

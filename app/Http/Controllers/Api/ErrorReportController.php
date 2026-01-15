@@ -41,6 +41,7 @@ class ErrorReportController extends Controller
                 'url' => 'nullable|string',
                 'browser' => 'nullable|string',
                 'os' => 'nullable|string',
+                'user_notes' => 'nullable|string',
                 'payload' => 'nullable|array',
                 'severity' => 'nullable|string',
             ]);
@@ -54,6 +55,7 @@ class ErrorReportController extends Controller
                 'url' => $validated['url'] ?? null,
                 'browser' => $validated['browser'] ?? null,
                 'os' => $validated['os'] ?? null,
+                'user_notes' => $validated['user_notes'] ?? null,
                 'payload' => $validated['payload'] ?? null,
                 'severity' => $validated['severity'] ?? 'medium',
                 'status' => 'pending',
@@ -87,7 +89,7 @@ class ErrorReportController extends Controller
         }
 
         $validated = $request->validate([
-            'status' => 'required|string|in:pending,investigating,resolved,closed',
+            'status' => 'required|string|in:pending,in_review,investigating,resolved,closed,ignored',
             'severity' => 'nullable|string|in:low,medium,high,critical',
         ]);
 
