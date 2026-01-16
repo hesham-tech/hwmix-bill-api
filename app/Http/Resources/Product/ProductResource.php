@@ -37,7 +37,7 @@ class ProductResource extends JsonResource
             'company_id' => $this->company_id,
             'total_available_quantity' => $totalAvailableQuantity,
             'company' => new CompanyResource($this->whenLoaded('company')),
-            'company' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
+            'installment_plan' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'brand' => new BrandResource($this->whenLoaded('brand')),
             'category' => new CategoryResource($this->whenLoaded('category')),

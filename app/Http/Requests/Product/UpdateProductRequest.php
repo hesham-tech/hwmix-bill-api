@@ -52,6 +52,7 @@ class UpdateProductRequest extends FormRequest
             'variants.*.id' => 'sometimes|nullable|exists:product_variants,id',
             'variants.*.retail_price' => 'sometimes|nullable|numeric|min:0',
             'variants.*.wholesale_price' => 'sometimes|nullable|numeric|min:0',
+            'variants.*.purchase_price' => 'sometimes|nullable|numeric|min:0',
             'variants.*.profit_margin' => 'sometimes|nullable|numeric|min:0|max:100',
             'variants.*.image' => 'sometimes|nullable|string|max:255',
             'variants.*.weight' => 'sometimes|nullable|numeric|min:0',
@@ -100,5 +101,13 @@ class UpdateProductRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    /**
+     * Map the request data to a ProductData DTO
+     */
+    public function toSimpleProductData(): \App\DTOs\ProductData
+    {
+        return \App\DTOs\ProductData::fromArray($this->validated());
     }
 }

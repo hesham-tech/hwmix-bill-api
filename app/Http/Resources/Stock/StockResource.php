@@ -21,6 +21,7 @@ class StockResource extends JsonResource
         // dd($this->quantity);
         return [
             'id' => $this->id,
+            'warehouse_id' => $this->warehouse_id,
             'quantity' => $this->quantity,
             'reserved' => $this->reserved,
             'min_quantity' => $this->min_quantity,

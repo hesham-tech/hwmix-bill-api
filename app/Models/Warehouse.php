@@ -28,7 +28,28 @@ class Warehouse extends Model
 
     protected $casts = [
         'capacity' => 'integer',
+        'is_default' => 'boolean',
     ];
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        static::saving(function ($warehouse) {
+            // If this is the first warehouse for the company, make it default
+            if (static::where('company_id', $warehouse->company_id)->count() === 0) {
+                $warehouse->is_default = true;
+            }
+
+            if ($warehouse->is_default) {
+                // Set other warehouses for this company to NOT default
+                static::where('company_id', $warehouse->company_id)
+                    ->where('id', '!=', $warehouse->id)
+                    ->update(['is_default' => false]);
+            }
+        });
+    }
 
     public function company()
     {

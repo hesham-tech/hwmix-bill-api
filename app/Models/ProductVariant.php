@@ -28,6 +28,7 @@ class ProductVariant extends Model
         'sku',
         'retail_price',
         'wholesale_price',
+        'purchase_price',
         'image',
         'weight',
         'dimensions',
@@ -41,6 +42,7 @@ class ProductVariant extends Model
     protected $casts = [
         'retail_price' => 'decimal:2',
         'wholesale_price' => 'decimal:2',
+        'purchase_price' => 'decimal:2',
         'weight' => 'decimal:2',
         'dimensions' => 'array',  // Assuming dimensions is stored as an array
         'tax' => 'decimal:2',
@@ -104,11 +106,13 @@ class ProductVariant extends Model
 
     private static function generateUniqueBarcode()
     {
-        // الحصول على آخر قيمة للباركود من قاعدة البيانات
-        $lastBarcode = self::orderBy('barcode', 'desc')->first();
+        // الحصول على آخر قيمة للباركود من قاعدة البيانات (رقمية فقط)
+        $lastBarcode = self::whereRaw("barcode REGEXP '^[0-9]+$'")
+            ->orderByRaw('CAST(barcode AS UNSIGNED) DESC')
+            ->first();
 
         // إذا لم يكن هناك باركودات سابقة، ابدأ من الرقم 1000000000
-        $nextBarcode = $lastBarcode ? $lastBarcode->barcode + 1 : 1000000000;
+        $nextBarcode = $lastBarcode ? (int) $lastBarcode->barcode + 1 : 1000000000;
 
         // ملء الأصفار لتأكيد أن الباركود طويل بما يكفي (على سبيل المثال 10 خانات)
         $barcode = str_pad($nextBarcode, 10, '0', STR_PAD_LEFT);

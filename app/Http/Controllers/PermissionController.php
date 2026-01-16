@@ -28,27 +28,15 @@ class PermissionController extends Controller
             $isAdmin = $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')]);
 
             if (!$isAdmin) {
-                $filteredConfig = [];
-                foreach ($permissionsConfig as $groupKey => $group) {
-                    $filteredGroup = [];
-                    foreach ($group as $pKey => $p) {
-                        if ($pKey === 'name') {
-                            $filteredGroup[$pKey] = $p;
-                            continue;
-                        }
+                $permissionsConfig = collect($permissionsConfig)->map(function ($group) use ($authUser) {
+                    $filteredGroup = collect($group)->filter(function ($p, $pKey) use ($authUser) {
+                        if ($pKey === 'name')
+                            return true;
+                        return $authUser->hasPermissionTo($p['key']);
+                    });
 
-                        // Check if user has this exact permission
-                        if ($authUser->hasPermissionTo($p['key'])) {
-                            $filteredGroup[$pKey] = $p;
-                        }
-                    }
-
-                    // Only add group if it has permissions (other than just 'name')
-                    if (count($filteredGroup) > 1) {
-                        $filteredConfig[$groupKey] = $filteredGroup;
-                    }
-                }
-                $permissionsConfig = $filteredConfig;
+                    return $filteredGroup->count() > 1 ? $filteredGroup->toArray() : null;
+                })->filter()->toArray();
             }
 
             if (empty($permissionsConfig)) {

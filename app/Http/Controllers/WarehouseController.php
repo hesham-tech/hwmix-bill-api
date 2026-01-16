@@ -81,6 +81,9 @@ class WarehouseController extends Controller
             if ($request->filled('status')) {
                 $query->where('status', $request->input('status'));
             }
+            if ($request->filled('is_default')) {
+                $query->where('is_default', $request->boolean('is_default'));
+            }
             if ($request->filled('search')) {
                 $searchTerm = $request->input('search');
                 $query->where(function ($q) use ($searchTerm) {
@@ -332,6 +335,42 @@ class WarehouseController extends Controller
                 DB::rollBack();
 
                 return api_error('حدث خطأ أثناء حذف المستودع.', [], 500);
+            }
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
+    /**
+     * @group 04. نظام المنتجات
+     * 
+     * تعيين المستودع كافتراضي
+     * 
+     * @urlParam warehouse required معرف المستودع. Example: 1
+     */
+    public function setDefault(Warehouse $warehouse): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('warehouses.update_all')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+                return api_forbidden('ليس لديك إذن لتحديث المستودعات.');
+            }
+
+            if (!$warehouse->belongsToCurrentCompany() && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                return api_forbidden('هذا المستودع لا ينتمي لشركتك.');
+            }
+
+            DB::beginTransaction();
+            try {
+                $warehouse->update(['is_default' => true]);
+                // الموديل سيتكفل بجعل الباقي false في الـ boot method
+
+                DB::commit();
+                return api_success(new WarehouseResource($warehouse->fresh($this->relations)), 'تم تعيين المستودع كافتراضي بنجاح.');
+            } catch (Throwable $e) {
+                DB::rollBack();
+                return api_exception($e);
             }
         } catch (Throwable $e) {
             return api_exception($e);

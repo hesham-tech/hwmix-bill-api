@@ -269,6 +269,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('warehouses/{warehouse}', 'show');
             Route::put('warehouses/{warehouse}', 'update');
             Route::delete('warehouses/{warehouse}', 'destroy');
+            Route::patch('warehouses/{warehouse}/set-default', 'setDefault');
         });
     // Stock Controller
     Route::controller(StockController::class)
