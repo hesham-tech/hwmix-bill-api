@@ -230,123 +230,51 @@ class UserController extends Controller
      * @bodyParam nickname string اللقب.
      */
     public function store(UserRequest $request)
-    {
-        $authUser = Auth::user();
-        if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('users.create')])) {
-            return api_forbidden();
-        }
+{
+    $authUser = Auth::user();
+    Log::info('=== بدء إنشاء مستخدم جديد ===', [
+        'auth_user_id' => $authUser->id,
+        'auth_user_phone' => $authUser->phone,
+        'company_id' => $authUser->company_id,
+    ]);
+    
+    if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('users.create')])) {
+        Log::warning('محاولة إنشاء مستخدم بدون صلاحيات', ['user_id' => $authUser->id]);
+        return api_forbidden();
+    }
 
-        DB::beginTransaction();
-        try {
-            $validatedData = $request->validated();
-            $activeCompanyId = $authUser->company_id;
+    DB::beginTransaction();
+    try {
+        $validatedData = $request->validated();
+        $activeCompanyId = $authUser->company_id;
+        
+        Log::info('بيانات المستخدم المطلوب إنشاؤه', [
+            'phone' => $validatedData['phone'],
+            'email' => $validatedData['email'] ?? null,
+            'nickname' => $validatedData['nickname'],
+            'active_company_id' => $activeCompanyId,
+        ]);
 
-            // البحث عن مستخدم موجود مسبقاً في النظام بالكامل
-            $userQuery = User::withoutGlobalScope('company');
+        // البحث عن مستخدم موجود مسبقاً في النظام بالكامل
+        $userQuery = User::withoutGlobalScope('company');
 
-            $user = $userQuery->where(function ($q) use ($validatedData) {
-                $q->where('phone', $validatedData['phone']);
-                if (!empty($validatedData['email'])) {
-                    $q->orWhere('email', $validatedData['email']);
-                }
-            })->first();
-
-            if (!$user) {
-                // إنشاء مستخدم عالمي جديد
-                $user = User::create([
-                    'username' => $validatedData['username'] ?? $validatedData['phone'],
-                    'email' => $validatedData['email'] ?? null,
-                    'phone' => $validatedData['phone'],
-                    'password' => $validatedData['password'] ?? 'password', // الافتراضي إذا لم يُحدد
-                    'created_by' => $authUser->id,
-                    'company_id' => $activeCompanyId, // الشركة النشطة عند الإنشاء
-                    'full_name' => $validatedData['full_name'],
-                    'nickname' => $validatedData['nickname'],
-                ]);
-
-                // [NEW] Sync Companies (Super Admin or Company Admin with scoping)
-                if ($request->has('company_ids')) {
-                    $companyIds = (array) $request->input('company_ids');
-                    if ($activeCompanyId && !in_array($activeCompanyId, $companyIds)) {
-                        $companyIds[] = $activeCompanyId;
-                    }
-                    $companyIds = array_unique(array_filter($companyIds));
-
-                    $isSuperAdmin = $authUser->can(perm_key('admin.super'));
-                    $isCompanyAdmin = $authUser->can(perm_key('admin.company'));
-
-                    if ($isSuperAdmin) {
-                        $user->companies()->sync($companyIds);
-                    } elseif ($isCompanyAdmin) {
-                        $myCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
-                        $allowedCompanyIds = array_intersect($companyIds, $myCompanyIds);
-
-                        $user->companies()->syncWithPivotValues($allowedCompanyIds, [
-                            'created_by' => $authUser->id,
-                            'status' => 'active'
-                        ], false);
-                    }
-                }
+        $user = $userQuery->where(function ($q) use ($validatedData) {
+            $q->where('phone', $validatedData['phone']);
+            if (!empty($validatedData['email'])) {
+                $q->orWhere('email', $validatedData['email']);
             }
+        })->first();
 
-            // التأكد من عدم ارتباطه مسبقاً بنفس الشركة
-            $companyUser = CompanyUser::where('user_id', $user->id)
-                ->where('company_id', $activeCompanyId)
-                ->first();
-
-            if ($companyUser) {
-                DB::rollback();
-                return api_error('هذا المستخدم مرتبط مسبقاً بهذه الشركة.', [], 409);
-            }
-
-            // إنشاء سجل العلاقة مع الشركة (Contextual Data)
-            $companyUser = CompanyUser::create([
-                'user_id' => $user->id,
-                'company_id' => $activeCompanyId,
-                'nickname_in_company' => $validatedData['nickname'] ?? $user->nickname,
-                'full_name_in_company' => $validatedData['full_name'] ?? $user->full_name,
-                'balance_in_company' => $validatedData['balance'] ?? 0,
-                'customer_type_in_company' => $validatedData['customer_type'] ?? 'default',
-                'status' => $validatedData['status'] ?? 'active',
+        if (!$user) {
+            Log::info('مستخدم غير موجود - سيتم إنشاء مستخدم جديد');
+            
+            // إنشاء مستخدم عالمي جديد
+            $user = User::create([
+                'username' => $validatedData['username'] ?? $validatedData['phone'],
+                'email' => $validatedData['email'] ?? null,
+                'phone' => $validatedData['phone'],
+                'password' => $validatedData['password'] ?? 'password', // الافتراضي إذا لم يُحدد
                 'created_by' => $authUser->id,
-            ]);
-
-            // التأكد من وجود الخزنة
-            $user->load('cashBoxes');
-            if (!$user->cashBoxes()->where('company_id', $activeCompanyId)->exists()) {
-                // البحث عن نوع الخزنة الافتراضي (نقدي)
-                $defaultType = CashBoxType::where('is_system', true)->first();
-
-                // إنشاء خزنة افتراضية للشركة الجديدة
-                $user->cashBoxes()->create([
-                    'company_id' => $activeCompanyId,
-                    'name' => 'خزنة ' . ($companyUser->nickname_in_company),
-                    'is_default' => true,
-                    'balance' => $validatedData['balance'] ?? 0,
-                    'cash_box_type_id' => $defaultType ? $defaultType->id : 1, // استخدام 1 كقيمة احتياطية نهائية
-                ]);
-            }
-
-            if ($request->has('images_ids')) {
-                $user->syncImages($request->input('images_ids'), 'avatar');
-            }
-
-            // تعيين الأدوار والصلاحيات الأولية
-            if ($activeCompanyId) {
-                $isSystemAdmin = $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')]);
-
-                if ($request->has('roles')) {
-                    $requestedRoles = $validatedData['roles'];
-                    if (!$isSystemAdmin) {
-                        $myRoles = $authUser->getRoleNames()->toArray();
-                        $unauthorizedRoles = array_diff($requestedRoles, $myRoles);
-                        if (!empty($unauthorizedRoles)) {
-                            return api_forbidden('لا يمكنك منح أدوار لا تملكها: ' . implode(', ', $unauthorizedRoles));
-                        }
-                    }
-                    $user->syncRoles($requestedRoles);
-                }
-
                 if ($request->has('permissions')) {
                     $requestedPermissions = $validatedData['permissions'];
                     if (!$isSystemAdmin) {
