@@ -50,3 +50,22 @@ jobs:
           --exclude='phpunit.xml' \
           --exclude='README.md' \
           ./ u715355537@212.107.17.234:/home/u715355537/domains/hwnix.com/public_html/api-teste/
+
+      - name: Run Database Migrations
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && php artisan migrate --force"
+
+      - name: Clear All Caches
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan event:clear"
+
+      - name: Rebuild Composer Autoloader
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && composer dump-autoload -o"
+
+      - name: Optimize for Production
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && php artisan config:cache && php artisan route:cache && php artisan optimize"
+
+      - name: Deployment Complete
+        run: echo "✅ Deployment successful! Migrations run, caches cleared, and application optimized."
