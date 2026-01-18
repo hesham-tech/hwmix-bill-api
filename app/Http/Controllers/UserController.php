@@ -230,53 +230,145 @@ class UserController extends Controller
      * @bodyParam nickname string اللقب.
      */
     public function store(UserRequest $request)
-{
-    $authUser = Auth::user();
-    Log::info('=== بدء إنشاء مستخدم جديد ===', [
-        'auth_user_id' => $authUser->id,
-        'auth_user_phone' => $authUser->phone,
-        'company_id' => $authUser->company_id,
-    ]);
-    
-    if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('users.create')])) {
-        Log::warning('محاولة إنشاء مستخدم بدون صلاحيات', ['user_id' => $authUser->id]);
-        return api_forbidden();
-    }
+    {
+        $authUser = Auth::user();
+        Log::info('=== USER CREATION START ===', ['auth_user' => $authUser->id, 'company' => $authUser->company_id, 'request' => $request->all()]);
 
-    DB::beginTransaction();
-    try {
-        $validatedData = $request->validated();
-        $activeCompanyId = $authUser->company_id;
-        
-        Log::info('بيانات المستخدم المطلوب إنشاؤه', [
-            'phone' => $validatedData['phone'],
-            'email' => $validatedData['email'] ?? null,
-            'nickname' => $validatedData['nickname'],
-            'active_company_id' => $activeCompanyId,
-        ]);
+        if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('users.create')])) {
+            Log::warning('Unauthorized user creation attempt', ['user_id' => $authUser->id]);
+            return api_forbidden();
+        }
 
-        // البحث عن مستخدم موجود مسبقاً في النظام بالكامل
-        $userQuery = User::withoutGlobalScope('company');
+        DB::beginTransaction();
+        try {
+            $validatedData = $request->validated();
+            $activeCompanyId = $authUser->company_id;
+            Log::info('Step 1: Validated data', ['phone' => $validatedData['phone'], 'company_id' => $activeCompanyId]);
 
-        $user = $userQuery->where(function ($q) use ($validatedData) {
-            $q->where('phone', $validatedData['phone']);
-            if (!empty($validatedData['email'])) {
-                $q->orWhere('email', $validatedData['email']);
+            // البحث عن مستخدم موجود مسبقاً في النظام بالكامل
+            $userQuery = User::withoutGlobalScope('company');
+
+            $user = $userQuery->where(function ($q) use ($validatedData) {
+                $q->where('phone', $validatedData['phone']);
+                if (!empty($validatedData['email'])) {
+                    $q->orWhere('email', $validatedData['email']);
+                }
+            })->first();
+
+            if ($user) {
+                // إذا كان المستخدم موجوداً، نتحقق من عدم ارتباطه مسبقاً بنفس الشركة
+                $companyUser = CompanyUser::where('user_id', $user->id)
+                    ->where('company_id', $activeCompanyId)
+                    ->first();
+
+                if ($companyUser) {
+                    Log::warning('CONFLICT: User already exists in company', [
+                        'user_id' => $user->id,
+                        'company_id' => $activeCompanyId,
+                        'company_user_id' => $companyUser->id,
+                        'phone' => $validatedData['phone']
+                    ]);
+                    DB::rollback();
+                    return api_error('هذا المستخدم مرتبط مسبقاً بهذه الشركة.', [
+                        'user_id' => $user->id,
+                        'phone' => $validatedData['phone']
+                    ], 409);
+                }
+                Log::info('Existing user found - will link to current company');
+            } else {
+                Log::info('Step 2: User not found - creating new user');
+                // إنشاء مستخدم عالمي جديد
+                $user = User::create([
+                    'username' => $validatedData['username'] ?? $validatedData['phone'],
+                    'email' => $validatedData['email'] ?? null,
+                    'phone' => $validatedData['phone'],
+                    'password' => $validatedData['password'] ?? 'password', // الافتراضي إذا لم يُحدد
+                    'created_by' => $authUser->id,
+                    'company_id' => $activeCompanyId, // الشركة النشطة عند الإنشاء
+                    'full_name' => $validatedData['full_name'],
+                    'nickname' => $validatedData['nickname'],
+                ]);
+                Log::info('New user created', ['user_id' => $user->id]);
             }
-        })->first();
 
-        if (!$user) {
-            Log::info('مستخدم غير موجود - سيتم إنشاء مستخدم جديد');
-            
-            // إنشاء مستخدم عالمي جديد
-            $user = User::create([
-                'username' => $validatedData['username'] ?? $validatedData['phone'],
-                'email' => $validatedData['email'] ?? null,
-                'phone' => $validatedData['phone'],
-                'password' => $validatedData['password'] ?? 'password', // الافتراضي إذا لم يُحدد
+            // إنشاء أو تحديث سجل العلاقة مع الشركة (Contextual Data)
+            $companyUser = CompanyUser::updateOrCreate([
+                'user_id' => $user->id,
+                'company_id' => $activeCompanyId,
+            ], [
+                'nickname_in_company' => $validatedData['nickname'] ?? $user->nickname,
+                'full_name_in_company' => $validatedData['full_name'] ?? $user->full_name,
+                'balance_in_company' => $validatedData['balance'] ?? 0,
+                'customer_type_in_company' => $validatedData['customer_type'] ?? 'default',
+                'status' => $validatedData['status'] ?? 'active',
                 'created_by' => $authUser->id,
+            ]);
+            Log::info('CompanyUser record established', ['company_user_id' => $companyUser->id]);
+
+            // مزامنة الشركات الإضافية (إذا وجدت)
+            if ($request->has('company_ids') && !empty($request->input('company_ids'))) {
+                $companyIds = (array) $request->input('company_ids');
+                if ($activeCompanyId && !in_array($activeCompanyId, $companyIds)) {
+                    $companyIds[] = $activeCompanyId;
+                }
+                $companyIds = array_unique(array_filter($companyIds));
+
+                $isSuperAdmin = $authUser->can(perm_key('admin.super'));
+                $isCompanyAdmin = $authUser->can(perm_key('admin.company'));
+
+                Log::info('Syncing additional companies', ['company_ids' => $companyIds]);
+
+                if ($isSuperAdmin) {
+                    $user->companies()->syncWithoutDetaching($companyIds);
+                } elseif ($isCompanyAdmin) {
+                    $myCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
+                    $allowedCompanyIds = array_intersect($companyIds, $myCompanyIds);
+
+                    $user->companies()->syncWithPivotValues($allowedCompanyIds, [
+                        'created_by' => $authUser->id,
+                        'status' => 'active'
+                    ], false);
+                }
+            }
+
+            // التأكد من وجود الخزنة
+            $user->load('cashBoxes');
+            if (!$user->cashBoxes()->where('company_id', $activeCompanyId)->exists()) {
+                // البحث عن نوع الخزنة الافتراضي (نقدي)
+                $defaultType = CashBoxType::where('is_system', true)->first();
+
+                // إنشاء خزنة افتراضية للشركة الجديدة
+                $user->cashBoxes()->create([
+                    'company_id' => $activeCompanyId,
+                    'name' => 'خزنة ' . ($companyUser->nickname_in_company),
+                    'is_default' => true,
+                    'balance' => $validatedData['balance'] ?? 0,
+                    'cash_box_type_id' => $defaultType ? $defaultType->id : 1, // استخدام 1 كقيمة احتياطية نهائية
+                ]);
+            }
+
+            if ($request->has('images_ids')) {
+                $user->syncImages($request->input('images_ids'), 'avatar');
+            }
+
+            // تعيين الأدوار والصلاحيات الأولية
+            if ($activeCompanyId) {
+                $isSystemAdmin = $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')]);
+
+                if ($request->has('roles')) {
+                    $requestedRoles = (array) $validatedData['roles'];
+                    if (!$isSystemAdmin) {
+                        $myRoles = $authUser->getRoleNames()->toArray();
+                        $unauthorizedRoles = array_diff($requestedRoles, $myRoles);
+                        if (!empty($unauthorizedRoles)) {
+                            return api_forbidden('لا يمكنك منح أدوار لا تملكها: ' . implode(', ', $unauthorizedRoles));
+                        }
+                    }
+                    $user->syncRoles($requestedRoles);
+                }
+
                 if ($request->has('permissions')) {
-                    $requestedPermissions = $validatedData['permissions'];
+                    $requestedPermissions = (array) $validatedData['permissions'];
                     if (!$isSystemAdmin) {
                         $myPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
                         $unauthorizedPermissions = array_diff($requestedPermissions, $myPermissions);
@@ -289,10 +381,25 @@ class UserController extends Controller
             }
 
             DB::commit();
-            return api_success(new CompanyUserResource($companyUser->load('user', 'company')), 'تمت إضافة المستخدم للشركة بنجاح.');
-        } catch (Throwable $e) {
+            Log::info('=== USER CREATION SUCCESS ===', ['user_id' => $user->id]);
+
+            return api_success(new CompanyUserResource($companyUser->load('user', 'company')), 'تمت إضافة المستخدم بنجاح.');
+
+        } catch (\Throwable $e) {
             DB::rollback();
-            return api_exception($e);
+            Log::error('USER CREATION FAILED', [
+                'error_message' => $e->getMessage(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'request_data' => $request->all(),
+            ]);
+
+            return api_error('حدث خطأ أثناء إضافة المستخدم: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
         }
     }
     /**
