@@ -59,7 +59,7 @@ class UserController extends Controller
             }
 
             $activeCompanyId = $authUser->company_id;
-            $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
+            $isSuperAdmin = $authUser->can(perm_key('admin.super'));
             $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
             $canViewAll = $authUser->hasPermissionTo(perm_key('users.view_all'));
             $canViewChildren = $authUser->hasPermissionTo(perm_key('users.view_children'));
@@ -110,8 +110,6 @@ class UserController extends Controller
                     } else {
                         $q->where('nickname_in_company', 'like', "%{$search}%")
                             ->orWhere('full_name_in_company', 'like', "%{$search}%")
-                            ->orWhere('phone_in_company', 'like', "%{$search}%")
-                            ->orWhere('email_in_company', 'like', "%{$search}%")
                             ->orWhereHas('user', function ($uq) use ($search) {
                                 $uq->where('email', 'like', "%{$search}%")
                                     ->orWhere('phone', 'like', "%{$search}%")
@@ -121,8 +119,34 @@ class UserController extends Controller
                 });
             }
 
-            // ... (بقية الفلاتر والفرز)
+            // فلترة حسب نوع العميل
+            if ($request->filled('customer_type')) {
+                $customerType = $request->input('customer_type');
+                if ($isGlobalView) {
+                    $query->whereHas('companyUsers', function ($q) use ($customerType, $activeCompanyId) {
+                        $q->where('customer_type_in_company', $customerType);
+                        if ($activeCompanyId) {
+                            $q->where('company_id', $activeCompanyId);
+                        }
+                    });
+                } else {
+                    $query->where('customer_type_in_company', $customerType);
+                }
+            }
+
+            // تحديد عدد العناصر في الصفحة والفرز
             $perPage = max(1, $request->input('per_page', 10));
+            $sortField = $request->input('sort_by');
+            if (empty($sortField)) {
+                $sortField = $isGlobalView ? 'created_at' : 'sales_count';
+            }
+            $sortOrder = $request->input('sort_order', 'desc');
+
+            $query->orderBy($sortField, $sortOrder);
+            if ($sortField !== 'created_at') {
+                $query->orderBy('created_at', 'desc');
+            }
+
             $data = $query->paginate($perPage);
 
             $resourceClass = $isGlobalView ? UserResource::class : CompanyUserBasicResource::class;
@@ -236,20 +260,26 @@ class UserController extends Controller
                     'password' => $validatedData['password'] ?? 'password', // الافتراضي إذا لم يُحدد
                     'created_by' => $authUser->id,
                     'company_id' => $activeCompanyId, // الشركة النشطة عند الإنشاء
-                    'full_name' => $validatedData['full_name'] ?? null,
-                    'nickname' => $validatedData['nickname'] ?? null,
+                    'full_name' => $validatedData['full_name'],
+                    'nickname' => $validatedData['nickname'],
                 ]);
 
                 // [NEW] Sync Companies (Super Admin or Company Admin with scoping)
                 if ($request->has('company_ids')) {
+                    $companyIds = (array) $request->input('company_ids');
+                    if ($activeCompanyId && !in_array($activeCompanyId, $companyIds)) {
+                        $companyIds[] = $activeCompanyId;
+                    }
+                    $companyIds = array_unique(array_filter($companyIds));
+
                     $isSuperAdmin = $authUser->can(perm_key('admin.super'));
                     $isCompanyAdmin = $authUser->can(perm_key('admin.company'));
 
                     if ($isSuperAdmin) {
-                        $user->companies()->sync($validatedData['company_ids']);
+                        $user->companies()->sync($companyIds);
                     } elseif ($isCompanyAdmin) {
                         $myCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
-                        $allowedCompanyIds = array_intersect($validatedData['company_ids'], $myCompanyIds);
+                        $allowedCompanyIds = array_intersect($companyIds, $myCompanyIds);
 
                         $user->companies()->syncWithPivotValues($allowedCompanyIds, [
                             'created_by' => $authUser->id,
@@ -273,7 +303,7 @@ class UserController extends Controller
             $companyUser = CompanyUser::create([
                 'user_id' => $user->id,
                 'company_id' => $activeCompanyId,
-                'nickname_in_company' => $validatedData['nickname'] ?? $user->username,
+                'nickname_in_company' => $validatedData['nickname'] ?? $user->nickname,
                 'full_name_in_company' => $validatedData['full_name'] ?? $user->full_name,
                 'balance_in_company' => $validatedData['balance'] ?? 0,
                 'customer_type_in_company' => $validatedData['customer_type'] ?? 'default',
@@ -356,7 +386,7 @@ class UserController extends Controller
         }
 
         $activeCompanyId = $authUser->company_id;
-        $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
+        $isSuperAdmin = $authUser->can(perm_key('admin.super'));
         $canViewAll = $authUser->hasPermissionTo(perm_key('users.view_all'));
         $canViewChildren = $authUser->hasPermissionTo(perm_key('users.view_children'));
         $canViewSelf = $authUser->hasPermissionTo(perm_key('users.view_self'));
@@ -444,6 +474,14 @@ class UserController extends Controller
             }
         }
 
+        // Fallback for Admins: If they can't find it in the current company context, try to see if it's the User itself
+        // but it should have been caught by the self-view or admin.super check.
+        // We return UserResource if they have view_all but the user is not in the active company.
+        if ($canViewAll) {
+            $user->load($this->relations);
+            return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح (عرض عام).');
+        }
+
         return api_forbidden('ليس لديك صلاحية لعرض هذا المستخدم.');
     }
     /**
@@ -475,6 +513,7 @@ class UserController extends Controller
                     'email',
                     'phone',
                     'full_name',
+                    'nickname',
                     'password',
                     'position',
                     'settings'
@@ -486,14 +525,20 @@ class UserController extends Controller
 
             // [NEW] Sync Companies (Super Admin or Company Admin with scoping)
             if ($request->has('company_ids')) {
+                $companyIds = (array) $request->input('company_ids');
+                if ($activeCompanyId && !in_array($activeCompanyId, $companyIds)) {
+                    $companyIds[] = $activeCompanyId;
+                }
+                $companyIds = array_unique(array_filter($companyIds));
+
                 $isCompanyAdmin = $authUser->can(perm_key('admin.company'));
 
                 if ($isSuperAdmin) {
-                    $user->companies()->sync($validated['company_ids']);
+                    $user->companies()->sync($companyIds);
                 } elseif ($isCompanyAdmin) {
                     // Company Admin can only sync companies they themselves belong to
                     $myCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
-                    $allowedCompanyIds = array_intersect($validated['company_ids'], $myCompanyIds);
+                    $allowedCompanyIds = array_intersect($companyIds, $myCompanyIds);
 
                     // We use syncWithoutDetaching or a manual sync to ensure we don't accidentally
                     // remove links to companies the admin DOESN'T manage.
@@ -509,12 +554,10 @@ class UserController extends Controller
                 $companyUser = $user->companyUsers()->where('company_id', $activeCompanyId)->first();
                 if ($companyUser) {
                     $contextData = [];
-                    if (isset($validated['phone']))
-                        $contextData['phone_in_company'] = $validated['phone'];
-                    if (isset($validated['email']))
-                        $contextData['email_in_company'] = $validated['email'];
                     if (isset($validated['nickname']))
                         $contextData['nickname_in_company'] = $validated['nickname'];
+                    if (isset($validated['full_name']))
+                        $contextData['full_name_in_company'] = $validated['full_name'];
                     if (isset($validated['status']))
                         $contextData['status'] = $validated['status'];
                     if (isset($validated['balance']))

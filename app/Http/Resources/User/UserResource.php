@@ -27,16 +27,14 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'nickname' => $this->activeCompanyUser?->nickname_in_company ?? $this->nickname,
-            'balance' => optional($this->cashBoxDefault)->balance ?? 0,
-            'full_name' => $this->full_name,
-            'first_name' => $this->activeCompanyUser?->first_name_in_company ?? $this->first_name,
-            'last_name' => $this->activeCompanyUser?->last_name_in_company ?? $this->last_name,
+            'balance' => $this->getDefaultCashBoxForCompany()?->balance ?? 0,
+            'full_name' => $this->activeCompanyUser?->full_name_in_company ?? $this->full_name,
             'username' => $this->username,
-            'email' => $this->activeCompanyUser?->email_in_company ?? $this->activeCompanyUser?->user_email ?? $this->email,
-            'phone' => $this->activeCompanyUser?->phone_in_company ?? $this->activeCompanyUser?->user_phone ?? $this->phone,
+            'email' => $this->email,
+            'phone' => $this->phone,
             'position' => $this->position,
             'settings' => $this->settings,
-            'cash_box_id' => optional($this->cashBoxDefault)->id,
+            'cash_box_id' => $this->getDefaultCashBoxForCompany()?->id,
             'company_logo' => $logoUrl,
             'last_login_at' => $this->last_login_at,
             'email_verified_at' => $this->email_verified_at,
@@ -50,8 +48,12 @@ class UserResource extends JsonResource
             // الشركات التي يمكن للمستخدم الوصول إليها
             'companies' => CompanyResource::collection($this->getVisibleCompaniesForUser()),
             'cashBoxes' => CashBoxResource::collection($this->cashBoxes),
-            'permissions' => $this->getAllPermissions()->pluck('name'),
-            'direct_permissions' => $this->getDirectPermissions()->pluck('name'),
+            'permissions' => $this->resource->hasPermissionTo(perm_key('admin.super'))
+                ? \Spatie\Permission\Models\Permission::all()->pluck('name')
+                : $this->getAllPermissions()->pluck('name'),
+            'direct_permissions' => $this->resource->hasPermissionTo(perm_key('admin.super'))
+                ? collect([perm_key('admin.super')])
+                : $this->getDirectPermissions()->pluck('name'),
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
         ];

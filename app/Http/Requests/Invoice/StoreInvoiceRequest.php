@@ -35,6 +35,9 @@ class StoreInvoiceRequest extends FormRequest
             'round_step' => 'nullable|integer',
 
             'due_date' => 'nullable|date|after_or_equal:today',
+            'issue_date' => 'nullable|date',
+            'reference_number' => 'nullable|string',
+            'warehouse_id' => 'nullable|integer|exists:warehouses,id',
             'cash_box_id' => 'nullable|integer|exists:cash_boxes,id',
             'user_cash_box_id' => 'nullable|integer|exists:cash_boxes,id',
             'user_id' => 'required|integer|exists:users,id',

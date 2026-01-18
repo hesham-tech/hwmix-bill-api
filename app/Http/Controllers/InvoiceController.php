@@ -232,6 +232,38 @@ class InvoiceController extends Controller
     /**
      * @group 02. إدارة الفواتير
      * 
+     * عرض تفاصيل فاتورة
+     * 
+     * استرجاع كافة تفاصيل الفاتورة بما في ذلك الأصناف، العميل، والشركة.
+     * 
+     * @urlParam id required معرف الفاتورة. Example: 1
+     * 
+     * @apiResource App\Http\Resources\Invoice\InvoiceResource
+     * @apiResourceModel App\Models\Invoice
+     */
+    public function show($id): JsonResponse
+    {
+        try {
+            $invoice = Invoice::with($this->relations)->findOrFail($id);
+
+            // التحقق من صلاحية الوصول
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                if ($invoice->company_id !== $authUser->company_id && $invoice->user_id !== $authUser->id) {
+                    return api_forbidden('ليس لديك صلاحية للوصول لهذه الفاتورة.');
+                }
+            }
+
+            return api_success(new InvoiceResource($invoice), 'تم جلب بيانات الفاتورة بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * @group 02. إدارة الفواتير
+     * 
      * إنشاء فاتورة جديدة
      * 
      * يدعم إنشاء فواتير البيع والشراء والخدمات مع معالجة المخزون والحسابات تلقائياً.

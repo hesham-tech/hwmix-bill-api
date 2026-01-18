@@ -103,7 +103,7 @@ class ImageService
     /**
      * مزامنة الصور: حذف الصور غير الموجودة في القائمة الجديدة، وربط الجديدة
      */
-    public static function syncImagesWithModel(array $newImageIds, Model $model, string $type = 'gallery'): void
+    public static function syncImagesWithModel(array $newImageIds, Model $model, string $type = 'gallery', ?int $primaryImageId = null): void
     {
         $modelClass = get_class($model);
 
@@ -123,6 +123,43 @@ class ImageService
         $toAttach = array_diff($newImageIds, $currentImageIds);
         if (!empty($toAttach)) {
             self::attachImagesToModel($toAttach, $model, $type);
+        }
+
+        // 3. التعامل مع الصورة الأساسية (Primary)
+        self::handlePrimaryImage($model, $newImageIds, $primaryImageId);
+    }
+
+    /**
+     * تحديد الصورة الأساسية للموديل
+     */
+    public static function handlePrimaryImage(Model $model, array $imageIds, ?int $primaryImageId = null): void
+    {
+        if (empty($imageIds)) {
+            return;
+        }
+
+        $modelClass = get_class($model);
+
+        // إذا تم تحديد ID معين كصورة أساسية
+        if ($primaryImageId && in_array($primaryImageId, $imageIds)) {
+            // تصفير كل الصور الأخرى لهذا الموديل
+            Image::where('imageable_type', $modelClass)
+                ->where('imageable_id', $model->id)
+                ->update(['is_primary' => false]);
+
+            // تعيين الصورة المختارة كصورة أساسية
+            Image::where('id', $primaryImageId)->update(['is_primary' => true]);
+            return;
+        }
+
+        // لو مفيش صورة أساسية محددة حالياً لهذا الموديل، نختار أول واحدة في القائمة
+        $hasPrimary = Image::where('imageable_type', $modelClass)
+            ->where('imageable_id', $model->id)
+            ->where('is_primary', true)
+            ->exists();
+
+        if (!$hasPrimary) {
+            Image::where('id', $imageIds[0])->update(['is_primary' => true]);
         }
     }
 }

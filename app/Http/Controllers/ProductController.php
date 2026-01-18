@@ -36,6 +36,8 @@ class ProductController extends Controller
         'creator',
         'category',
         'brand',
+        'images',
+        'variants.images',
         'variants.stocks.warehouse',
         'variants.attributes.attribute',
         'variants.attributes.attributeValue',
@@ -101,7 +103,7 @@ class ProductController extends Controller
             // إعدادات عامة
             $perPage = max(1, $request->input('per_page', 20));
             $page = max(1, $request->input('page', 1));
-            $sortField = $request->input('sort_by', 'created_at');
+            $sortField = $request->input('sort_by', 'sales_count');
             $sortOrder = $request->input('sort_order', 'desc');
 
             $search = $request->input('search');
@@ -141,6 +143,9 @@ class ProductController extends Controller
 
             // الترتيب
             $baseQuery->orderBy($sortField, $sortOrder);
+            if ($sortField !== 'created_at') {
+                $baseQuery->orderBy('created_at', 'desc');
+            }
 
             // النتائج الأساسية
             $products = $baseQuery->paginate($perPage);

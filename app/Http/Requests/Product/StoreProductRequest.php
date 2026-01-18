@@ -33,6 +33,9 @@ class StoreProductRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'image_ids' => 'sometimes|array',
+            'image_ids.*' => 'integer|exists:images,id',
+            'primary_image_id' => 'nullable|integer|exists:images,id',
             'published_at' => 'sometimes|nullable|date',
             'desc' => 'sometimes|nullable|string',
             'desc_long' => 'sometimes|nullable|string',
@@ -51,6 +54,9 @@ class StoreProductRequest extends FormRequest
             'variants.*.stocks.*.id' => 'sometimes|nullable|integer|exists:stocks,id',
             'variants.*.stocks.*.quantity' => 'required|integer|min:0',
             'variants.*.stocks.*.warehouse_id' => 'required|exists:warehouses,id',
+            'variants.*.image_ids' => 'sometimes|array',
+            'variants.*.image_ids.*' => 'integer|exists:images,id',
+            'variants.*.primary_image_id' => 'nullable|integer|exists:images,id',
         ];
     }
 

@@ -24,9 +24,7 @@ class UserUpdateRequest extends FormRequest
         // $userId = $this->route('user');
 
         return [
-            'email' => 'nullable|email',
-            'full_name' => 'nullable|string|max:255',
-            'username' => 'nullable|string|max:255',
+            'full_name' => 'sometimes|required|string|max:255',
             'nickname' => 'sometimes|required|string|max:255',
             'phone' => 'sometimes|required|string|max:15|unique:users,phone,' . ($this->route('user')?->id ?? $this->route('user')),
             'password' => 'nullable|string|min:8',
@@ -41,6 +39,7 @@ class UserUpdateRequest extends FormRequest
             'company_id' => 'nullable|exists:companies,id',
             'company_ids' => 'nullable|array',
             'company_ids.*' => 'nullable|exists:companies,id',
+            'customer_type' => 'nullable|in:retail,wholesale',
             'roles' => 'nullable|array',
             'roles.*' => 'string|exists:roles,name',
             'permissions' => 'nullable|array',

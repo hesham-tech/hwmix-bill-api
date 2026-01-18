@@ -126,11 +126,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // company Controller
     Route::controller(CompanyController::class)
         ->group(function () {
-            Route::get('companys', 'index');
-            Route::post('company', 'store');
-            Route::get('company/{company}', 'show');
-            Route::put('company/{company}', 'update');
-            Route::post('company/delete', 'destroy');
+            Route::get('companies', 'index');
+            Route::post('companies', 'store');
+            Route::get('companies/{company}', 'show');
+            Route::put('companies/{company}', 'update');
+            Route::post('companies/delete', 'destroy');
         });
 
     // Images Controller
@@ -138,7 +138,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->group(function () {
             Route::get('images', 'index');
             Route::post('images', 'store');
-            Route::put('images/{Image}', 'update');
+            Route::put('images/{image}', 'update');
+            Route::post('images/{image}/set-primary', 'setPrimary');
             Route::post('images/delete', 'destroy');
         });
 
@@ -255,11 +256,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->group(function () {
             Route::get('product-variants', 'index');
             Route::post('product-variants', 'store');
+            Route::get('product-variants/search-by-product', 'searchByProduct');
             Route::get('product-variants/{productVariant}', 'show');
             Route::put('product-variants/{productVariant}', 'update');
             Route::delete('product-variants/{productVariant}', 'destroy');
             Route::post('product-variants/delete', 'deleteMultiple');
-            Route::get('product-variants/search-by-product', 'searchByProduct');
         });
     // Warehouse Controller
     Route::controller(WarehouseController::class)

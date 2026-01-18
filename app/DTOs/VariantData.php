@@ -25,6 +25,8 @@ class VariantData
         public array $stocks = [],
         public ?int $company_id = null,
         public ?int $created_by = null,
+        public array $image_ids = [],
+        public ?int $primary_image_id = null,
     ) {
     }
 
@@ -48,6 +50,8 @@ class VariantData
             stocks: array_map(fn($stock) => StockData::fromArray($stock), $data['stocks'] ?? []),
             company_id: $data['company_id'] ?? null,
             created_by: $data['created_by'] ?? null,
+            image_ids: $data['image_ids'] ?? [],
+            primary_image_id: $data['primary_image_id'] ?? null,
         );
     }
 

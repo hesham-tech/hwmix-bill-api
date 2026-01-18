@@ -39,13 +39,23 @@ class InvoicePaymentHandler
             Log::info("InvoicePaymentHandler: إيداع {$paidAmount} في خزنة البائع");
         }
 
-        // المبلغ المتبقي → دين على العميل
-        if ($buyer && $remainingAmount > 0) {
-            $result = $buyer->withdraw($remainingAmount, $buyerCashBoxId);
-            if ($result !== true) {
-                throw new \Exception('فشل خصم الدين من رصيد العميل: ' . json_encode($result));
+        // المبلغ المتبقي → دين على العميل (أو رصيد له في حالة دفع زيادة)
+        if ($buyer && $remainingAmount != 0) {
+            if ($remainingAmount > 0) {
+                // دين على العميل
+                $result = $buyer->withdraw($remainingAmount, $buyerCashBoxId);
+                $logMsg = "InvoicePaymentHandler: خصم دين {$remainingAmount} من رصيد العميل";
+            } else {
+                // دفع زيادة → تضاف لرصيد العميل
+                $overAmount = abs($remainingAmount);
+                $result = $buyer->deposit($overAmount, $buyerCashBoxId);
+                $logMsg = "InvoicePaymentHandler: إيداع مبلغ متبقي {$overAmount} في رصيد العميل";
             }
-            Log::info("InvoicePaymentHandler: خصم دين {$remainingAmount} من رصيد العميل");
+
+            if ($result !== true) {
+                throw new \Exception('فشل معالجة رصيد العميل المتبقي: ' . json_encode($result));
+            }
+            Log::info($logMsg);
         }
 
         // تحديث حالة الدفع
@@ -83,13 +93,23 @@ class InvoicePaymentHandler
             Log::info("InvoicePaymentHandler: سحب {$paidAmount} من خزنة الشركة");
         }
 
-        // المبلغ المتبقي → دين للمورد على الشركة
-        if ($supplier && $remainingAmount > 0) {
-            $result = $supplier->deposit($remainingAmount, $supplierCashBoxId);
-            if ($result !== true) {
-                throw new \Exception('فشل إضافة الدين لرصيد المورد: ' . json_encode($result));
+        // المبلغ المتبقي → دين للمورد على الشركة (أو رصيد للشركة عند دفع زيادة)
+        if ($supplier && $remainingAmount != 0) {
+            if ($remainingAmount > 0) {
+                // دين للمورد على الشركة
+                $result = $supplier->deposit($remainingAmount, $supplierCashBoxId);
+                $logMsg = "InvoicePaymentHandler: إضافة دين {$remainingAmount} لرصيد المورد";
+            } else {
+                // دفع زيادة → يُخصم من رصيد المورد (يصبح مديناً للشركة)
+                $overAmount = abs($remainingAmount);
+                $result = $supplier->withdraw($overAmount, $supplierCashBoxId);
+                $logMsg = "InvoicePaymentHandler: خصم {$overAmount} من رصيد المورد (دفع زيادة)";
             }
-            Log::info("InvoicePaymentHandler: إضافة دين {$remainingAmount} لرصيد المورد");
+
+            if ($result !== true) {
+                throw new \Exception('فشل معالجة رصيد المورد المتبقي: ' . json_encode($result));
+            }
+            Log::info($logMsg);
         }
 
         $invoice->updatePaymentStatus();
@@ -137,13 +157,18 @@ class InvoicePaymentHandler
             }
         }
 
-        // عكس الدين (إرجاع لرصيد العميل)
-        if ($invoice->user_id && $invoice->remaining_amount > 0) {
+        // عكس الدين/الرصيد المتبقي
+        if ($invoice->user_id && $invoice->remaining_amount != 0) {
             $buyer = User::find($invoice->user_id);
             if ($buyer) {
-                $result = $buyer->deposit($invoice->remaining_amount, $buyerCashBoxId);
+                if ($invoice->remaining_amount > 0) {
+                    $result = $buyer->deposit($invoice->remaining_amount, $buyerCashBoxId);
+                } else {
+                    $result = $buyer->withdraw(abs($invoice->remaining_amount), $buyerCashBoxId);
+                }
+
                 if ($result !== true) {
-                    Log::error('InvoicePaymentHandler: فشل عكس الدين', ['result' => $result]);
+                    Log::error('InvoicePaymentHandler: فشل عكس الرصيد المتبقي للعميل', ['result' => $result]);
                 }
             }
         }
@@ -166,13 +191,18 @@ class InvoicePaymentHandler
             }
         }
 
-        // عكس الدين (سحب من رصيد المورد)
-        if ($invoice->user_id && $invoice->remaining_amount > 0) {
+        // عكس الدين/الرصيد للمورد
+        if ($invoice->user_id && $invoice->remaining_amount != 0) {
             $supplier = User::find($invoice->user_id);
             if ($supplier) {
-                $result = $supplier->withdraw($invoice->remaining_amount, $supplierCashBoxId);
+                if ($invoice->remaining_amount > 0) {
+                    $result = $supplier->withdraw($invoice->remaining_amount, $supplierCashBoxId);
+                } else {
+                    $result = $supplier->deposit(abs($invoice->remaining_amount), $supplierCashBoxId);
+                }
+
                 if ($result !== true) {
-                    Log::error('InvoicePaymentHandler: فشل عكس دين المورد', ['result' => $result]);
+                    Log::error('InvoicePaymentHandler: فشل عكس رصيد المورد المتبقي', ['result' => $result]);
                 }
             }
         }

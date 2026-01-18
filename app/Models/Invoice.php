@@ -20,6 +20,8 @@ class Invoice extends Model
         'total_tax' => 'decimal:2',
         'tax_rate' => 'decimal:2',
         'tax_inclusive' => 'boolean',
+        'issue_date' => 'date',
+        'due_date' => 'date',
     ];
 
     // Status Constants

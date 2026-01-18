@@ -10,6 +10,7 @@ use App\Http\Resources\Company\CompanyResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\Category\CategoryResource;
 use App\Http\Resources\Warehouse\WarehouseResource;
+use App\Http\Resources\Image\ImageResource;
 use App\Http\Resources\ProductVariant\ProductVariantResource;
 use App\Http\Resources\InstallmentPlan\InstallmentPlanBasicResource;
 use App\Http\Resources\ProductVariantAttribute\ProductVariantAttributeResource;
@@ -42,7 +43,8 @@ class ProductResource extends JsonResource
             'brand' => new BrandResource($this->whenLoaded('brand')),
             'category' => new CategoryResource($this->whenLoaded('category')),
             'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
-            'images' => $this->whenLoaded('images'), // Polymorphic images
+            'images' => ImageResource::collection($this->whenLoaded('images')), // Polymorphic images
+            'primary_image_url' => $this->images->firstWhere('is_primary', true)?->url ? asset($this->images->firstWhere('is_primary', true)->url) : ($this->images->first()?->url ? asset($this->images->first()->url) : null),
             'tags' => $this->tags ?? [],
             'published_at' => $this->whenNotNull($this->published_at ? $this->published_at->format('Y-m-d H:i:s') : null),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),

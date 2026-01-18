@@ -96,6 +96,10 @@ class CashBoxController extends Controller
             if (!empty($request->get('created_at_to'))) {
                 $cashBoxQuery->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
             }
+            if ($request->boolean('current_user')) {
+                $cashBoxQuery->where('user_id', $authUser->id);
+            }
+
             if (!empty($request->get('user_id'))) { // فلتر جديد لتحديد الصناديق الخاصة بمستخدم معين
                 $cashBoxQuery->where('user_id', $request->get('user_id'));
             }

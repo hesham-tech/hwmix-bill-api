@@ -54,7 +54,12 @@ class PurchaseInvoiceService implements DocumentServiceInterface
             $this->createInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['created_by'] ?? null);
 
             // زيادة الكمية في المخزون للبنود المشتراة
-            $this->incrementStockForItems($data['items'], $data['company_id'] ?? null, $data['created_by'] ?? null);
+            $this->incrementStockForItems(
+                $data['items'],
+                $data['company_id'] ?? null,
+                $data['created_by'] ?? null,
+                $data['warehouse_id'] ?? null
+            );
 
             $authUser = Auth::user();
             $cashBoxId = $data['cash_box_id'] ?? null;
@@ -187,7 +192,12 @@ class PurchaseInvoiceService implements DocumentServiceInterface
             $this->syncInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['updated_by'] ?? null);
 
             // زيادة المخزون للبنود الجديدة/المحدثة
-            $this->incrementStockForItems($data['items'], $data['company_id'] ?? null, $data['updated_by'] ?? null);
+            $this->incrementStockForItems(
+                $data['items'],
+                $data['company_id'] ?? null,
+                $data['updated_by'] ?? null,
+                $data['warehouse_id'] ?? null
+            );
 
             // تسجيل عملية التحديث
 

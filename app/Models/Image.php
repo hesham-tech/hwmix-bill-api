@@ -15,6 +15,7 @@ class Image extends Model
         'company_id',
         'created_by',
         'is_temp',
+        'is_primary',
         'file_name',
         'mime_type',
         'size'
@@ -22,6 +23,7 @@ class Image extends Model
 
     protected $casts = [
         'is_temp' => 'boolean',
+        'is_primary' => 'boolean',
         'imageable_id' => 'integer',
         'company_id' => 'integer',
         'created_by' => 'integer',

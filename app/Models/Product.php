@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Blameable;
 use App\Traits\Scopes;
+use App\Traits\HasImages;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,7 +12,7 @@ use App\Traits\LogsActivity;
 
 class Product extends Model
 {
-    use HasFactory, Blameable, Scopes, LogsActivity;
+    use HasFactory, Blameable, Scopes, LogsActivity, HasImages;
 
     protected $fillable = [
         'name',
@@ -25,7 +26,8 @@ class Product extends Model
         'category_id',
         'brand_id',
         'company_id',
-        'created_by'
+        'created_by',
+        'sales_count'
     ];
 
     protected $guarded = [];
@@ -48,6 +50,7 @@ class Product extends Model
         'featured' => 'boolean',
         'returnable' => 'boolean',
         'published_at' => 'datetime',
+        'sales_count' => 'integer',
     ];
 
     public function creator()

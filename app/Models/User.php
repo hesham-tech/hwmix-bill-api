@@ -41,7 +41,11 @@ use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, Translatable, HasRoles, HasApiTokens, Filterable, Scopes, HasPermissions, LogsActivity, HasImages, \App\Traits\HasTransferTo, \App\Traits\FilterableByCompany;
+    use HasFactory, Notifiable, Translatable, HasApiTokens, Filterable, Scopes, LogsActivity, HasImages, \App\Traits\HasTransferTo, \App\Traits\FilterableByCompany;
+    use HasRoles, HasPermissions {
+        HasPermissions::hasPermissionTo insteadof HasRoles;
+        HasPermissions::hasPermissionTo as traitHasPermissionTo;
+    }
 
 
     /**
@@ -86,12 +90,6 @@ class User extends Authenticatable
      */
     protected static function booted(): void
     {
-        static::saving(function (User $user) {
-            // Automatically combine first and last name into full_name if they are changed
-            if ($user->isDirty(['first_name', 'last_name'])) {
-                $user->full_name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
-            }
-        });
     }
 
     /**
@@ -129,10 +127,33 @@ class User extends Authenticatable
             return null;
         }
 
-        return $this->cashBoxes()
+        $cashBox = $this->cashBoxes()
             ->where('is_default', true)
             ->where('company_id', $companyId)
             ->first();
+
+        // إذا لم يتم العثور على خزنة افتراضية، نحاول البحث عن أي خزنة نشطة
+        if (!$cashBox) {
+            $cashBox = $this->cashBoxes()
+                ->where('company_id', $companyId)
+                ->where('is_active', true)
+                ->first();
+        }
+
+        // إذا لم يوجد، نقوم بإنشاء واحدة تلقائياً للمستخدم في هذه الشركة لضمان استمرارية العمليات المالية
+        if (!$cashBox && $companyId) {
+            try {
+                $cashBox = app(\App\Services\CashBoxService::class)->createDefaultCashBoxForUserCompany(
+                    $this->id,
+                    $companyId,
+                    Auth::id() ?? $this->id
+                );
+            } catch (\Exception $e) {
+                \Log::error("فشل إنشاء خزنة تلقائية للمستخدم {$this->id} في الشركة {$companyId}: " . $e->getMessage());
+            }
+        }
+
+        return $cashBox;
     }
 
     /**
@@ -171,9 +192,6 @@ class User extends Authenticatable
                 'balance_in_company',
                 'customer_type_in_company',
                 'status',
-                'user_phone',
-                'user_email',
-                'user_username',
                 'created_by'
             ]);
     }
@@ -361,7 +379,10 @@ class User extends Authenticatable
             $cashBox = null;
 
             if ($cashBoxId) {
-                $cashBox = CashBox::query()->where('id', $cashBoxId)->where('user_id', $this->id)->first();
+                // قيد صارم: لا يمكن استخدام خزنة لا تخص المستخدم
+                $cashBox = CashBox::where('id', $cashBoxId)
+                    ->where('user_id', $this->id)
+                    ->first();
             } else {
                 if (is_null($authCompanyId)) {
                     DB::rollBack();
@@ -375,10 +396,12 @@ class User extends Authenticatable
                 throw new Exception("لم يتم العثور على خزنة مناسبة للمستخدم : {$this->nickname}");
             }
 
+            /*
             if ($cashBox->balance < $amount) {
                 DB::rollBack();
                 throw new Exception("رصيد الخزنة غير كاف.");
             }
+            */
 
             $balanceBefore = $cashBox->balance;
             $cashBox->balance -= $amount;
@@ -432,10 +455,14 @@ class User extends Authenticatable
         try {
             $cashBox = null;
             if ($cashBoxId) {
-                $cashBox = CashBox::query()->where('id', $cashBoxId)->where('user_id', $this->id)->first();
+                // قيد صارم: لا يمكن استخدام خزنة لا تخص المستخدم
+                $cashBox = CashBox::where('id', $cashBoxId)
+                    ->where('user_id', $this->id)
+                    ->first();
+
                 if (!$cashBox) {
                     DB::rollBack();
-                    throw new Exception(" معرف الخزنه cashBoxId{$cashBoxId}المستخدم ليس له خزنة.");
+                    throw new Exception(" معرف الخزنه cashBoxId: {$cashBoxId} غير صالح أو لا ينتمي للمستخدم {$this->nickname}.");
                 }
             } else {
                 if (is_null($authCompanyId)) {
@@ -739,8 +766,45 @@ class User extends Authenticatable
     /**
      * Get the user's avatar URL.
      */
+    /**
+     * Get the user's avatar URL.
+     */
     public function getAvatarUrlAttribute()
     {
         return $this->image?->url ? asset($this->image->url) : null;
+    }
+
+    /**
+     * Override hasPermissionTo to handle 'admin.super' globally.
+     */
+    public function hasPermissionTo($permission, $guardName = null): bool
+    {
+        $superAdminKey = perm_key('admin.super');
+
+        // Check for super admin permission in any context (team-blind)
+        // This is necessary because super admin should have global access
+        // even if the permission is seeded within a specific company.
+        if ($permission === $superAdminKey || (is_object($permission) && $permission->name === $superAdminKey)) {
+            static $isSuperAdmin = [];
+            if (!isset($isSuperAdmin[$this->id])) {
+                $isSuperAdmin[$this->id] = \DB::table('model_has_permissions')
+                    ->join('permissions', 'model_has_permissions.permission_id', '=', 'permissions.id')
+                    ->where('model_id', $this->id)
+                    ->where('model_type', get_class($this))
+                    ->where('permissions.name', $superAdminKey)
+                    ->exists();
+            }
+            return $isSuperAdmin[$this->id];
+        }
+
+        return $this->traitHasPermissionTo($permission, $guardName);
+    }
+
+    /**
+     * الحصول على نوع العميل في الشركة النشطة
+     */
+    public function getCustomerTypeAttribute()
+    {
+        return $this->activeCompanyUser?->customer_type ?? 'retail';
     }
 }

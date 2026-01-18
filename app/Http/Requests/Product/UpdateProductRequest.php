@@ -35,6 +35,9 @@ class UpdateProductRequest extends FormRequest
 
         $rules = [
             'name' => 'required|string|max:255',
+            'image_ids' => 'sometimes|array',
+            'image_ids.*' => 'integer|exists:images,id',
+            'primary_image_id' => 'nullable|integer|exists:images,id',
             'slug' => [
                 'nullable',
                 'string',
@@ -63,6 +66,9 @@ class UpdateProductRequest extends FormRequest
             'variants.*.status' => 'sometimes|nullable|string|in:active,inactive,discontinued',
             'variants.*.created_by' => 'sometimes|nullable|exists:users,id',
             'variants.*.company_id' => 'sometimes|nullable|exists:companies,id',
+            'variants.*.image_ids' => 'sometimes|array',
+            'variants.*.image_ids.*' => 'integer|exists:images,id',
+            'variants.*.primary_image_id' => 'nullable|integer|exists:images,id',
             // التعديل هنا: السماح بأن تكون الخصائص اختيارية تماماً أو تحتوي على قيم فارغة
             'variants.*.attributes' => 'sometimes|nullable|array',  // يمكن أن تكون موجودة كـ [] أو null
             'variants.*.attributes.*.attribute_id' => 'sometimes|nullable|exists:attributes,id',  // ليست مطلوبة إذا كانت موجودة

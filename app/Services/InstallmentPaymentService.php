@@ -21,7 +21,7 @@ class InstallmentPaymentService
      * @param array $installmentIds معرفات الأقساط المراد دفعها.
      * @param float $amount المبلغ الإجمالي المدفوع.
      * @param array $options خيارات إضافية (user_id, installment_plan_id, payment_method_id, cash_box_id, notes, paid_at).
-     * @return \App\Models\InstallmentPayment الدفعة الرئيسية التي تم إنشاؤها.
+     * @return array يحتوي على الدفعة الرئيسية والأقساط المتأثرة.
      * @throws \Throwable
      */
     public function payInstallments(array $installmentIds, float $amount, array $options = [])
@@ -104,7 +104,7 @@ class InstallmentPaymentService
 
                 if (bccomp($newRemaining, '0.00', 2) <= 0) {
                     $newStatus = 'paid'; // تم الدفع بالكامل
-                } elseif (bccomp((string)$amountToApplyToCurrentInstallment, '0.00', 2) > 0 && bccomp($newRemaining, '0.00', 2) > 0) {
+                } elseif (bccomp((string) $amountToApplyToCurrentInstallment, '0.00', 2) > 0 && bccomp($newRemaining, '0.00', 2) > 0) {
                     $newStatus = 'partially_paid'; // مدفوع جزئيًا
                 }
 
@@ -138,6 +138,21 @@ class InstallmentPaymentService
             }
 
             DB::commit();
+
+            // تحديث الفاتورة الأم بالمبالغ المدفوعة فور نجاح المعاملة
+            try {
+                $parentInvoice = $installmentPlan->invoice;
+                if ($parentInvoice) {
+                    $parentInvoice->paid_amount += $totalAmountSuccessfullyPaid;
+                    $parentInvoice->remaining_amount = max(0, $parentInvoice->net_amount - $parentInvoice->paid_amount);
+                    $parentInvoice->updatePaymentStatus(); // سيقوم بالحفظ
+                    Log::info('InstallmentPaymentService: تم تحديث الفاتورة الأم بنجاح.', ['invoice_id' => $parentInvoice->id, 'new_paid_amount' => $parentInvoice->paid_amount]);
+                }
+            } catch (\Exception $e) {
+                Log::error('InstallmentPaymentService: فشل تحديث الفاتورة الأم.', ['error' => $e->getMessage()]);
+                // لا نلقي استثناء هنا لأن المعاملة الرئيسية تمت بنجاح (DB::commit)
+            }
+
             if (bccomp($remainingAmountToDistribute, '0.00', 2) > 0) {
                 $installmentPayment->excess_amount = $remainingAmountToDistribute;
             }

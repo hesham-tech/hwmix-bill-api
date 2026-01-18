@@ -37,6 +37,11 @@ trait InvoiceHelperTrait
                 'paid_amount' => $data['paid_amount'] ?? 0,
                 'remaining_amount' => $data['remaining_amount'] ?? 0,
                 'round_step' => $data['round_step'] ?? null,
+                'cash_box_id' => $data['cash_box_id'] ?? null,
+                'warehouse_id' => $data['warehouse_id'] ?? null,
+                'reference_number' => $data['reference_number'] ?? null,
+                'issue_date' => $data['issue_date'] ?? null,
+                'notes' => $data['notes'] ?? null,
                 'company_id' => $data['company_id'] ?? null,
                 'created_by' => $data['created_by'] ?? null,
             ]);
@@ -74,6 +79,11 @@ trait InvoiceHelperTrait
                 'paid_amount' => $data['paid_amount'] ?? 0,
                 'remaining_amount' => $data['remaining_amount'] ?? 0,
                 'round_step' => $data['round_step'] ?? null,
+                'cash_box_id' => $data['cash_box_id'] ?? null,
+                'warehouse_id' => $data['warehouse_id'] ?? null,
+                'reference_number' => $data['reference_number'] ?? null,
+                'issue_date' => $data['issue_date'] ?? null,
+                'notes' => $data['notes'] ?? null,
                 'company_id' => $data['company_id'] ?? null,
                 'updated_by' => $data['updated_by'] ?? null,
             ]);
@@ -201,16 +211,21 @@ trait InvoiceHelperTrait
      *
      * @param array $items بنود الفاتورة للتحقق.
      * @param string $mode وضع التحقق ('deduct' للخصم، 'none' للتجاهل).
+     * @param int|null $warehouseId معرف المخزن (اختياري).
      * @throws ValidationException إذا كانت الكمية غير متوفرة.
      * @throws \Throwable
      */
-    protected function checkVariantsStock(array $items, string $mode = 'deduct'): void
+    protected function checkVariantsStock(array $items, string $mode = 'deduct', ?int $warehouseId = null): void
     {
         try {
-            if ($mode === 'none')
+            if ($mode === 'none') {
                 return;
+            }
 
             foreach ($items as $index => $item) {
+                // استخدام المستودع المحدد في البند أو المستودع العام للفاتورة
+                $itemWarehouseId = $item['warehouse_id'] ?? $warehouseId;
+
                 $variantId = $item['variant_id'] ?? null;
                 $variant = $variantId ? ProductVariant::find($variantId) : null;
 
@@ -226,7 +241,13 @@ trait InvoiceHelperTrait
                     continue; // تخطي فحص المخزون
                 }
 
-                $totalAvailableQuantity = $variant->stocks()->where('status', 'available')->sum('quantity');
+                $totalAvailableQuantity = $variant->stocks()
+                    ->where('status', 'available')
+                    ->when($itemWarehouseId, function ($query) use ($itemWarehouseId) {
+                        return $query->where('warehouse_id', $itemWarehouseId);
+                    })
+                    ->sum('quantity');
+
                 if ($mode === 'deduct' && $totalAvailableQuantity < $item['quantity']) {
                     throw ValidationException::withMessages([
                         "items.$index.quantity" => ['الكمية غير متوفرة في المخزون.'],
@@ -244,18 +265,26 @@ trait InvoiceHelperTrait
      * خصم الكمية من المخزون لبنود الفاتورة.
      *
      * @param array $items بنود الفاتورة لخصم المخزون.
+     * @param int|null $warehouseId معرف المخزن (اختياري).
      * @throws \Throwable
      */
-    protected function deductStockForItems(array $items): void
+    protected function deductStockForItems(array $items, ?int $warehouseId = null): void
     {
         try {
             foreach ($items as $item) {
+                $itemWarehouseId = $item['warehouse_id'] ?? $warehouseId;
                 $variant = ProductVariant::find($item['variant_id'] ?? null);
                 if (!$variant)
                     continue;
 
                 $remaining = $item['quantity'];
-                $stocks = $variant->stocks()->where('status', 'available')->orderBy('created_at', 'asc')->get();
+                $stocks = $variant->stocks()
+                    ->where('status', 'available')
+                    ->when($itemWarehouseId, function ($query) use ($itemWarehouseId) {
+                        return $query->where('warehouse_id', $itemWarehouseId);
+                    })
+                    ->orderBy('created_at', 'asc')
+                    ->get();
 
                 foreach ($stocks as $stock) {
                     if ($remaining <= 0)
@@ -289,17 +318,25 @@ trait InvoiceHelperTrait
                     continue;
 
                 $remaining = $item->quantity;
+                $itemWarehouseId = $item->warehouse_id ?? $invoice->warehouse_id;
 
-                // نبحث عن أحدث مخزون متاح لإعادة الكمية إليه
-                $stock = $variant->stocks()->where('status', 'available')->orderBy('created_at', 'desc')->first();
+                // نبحث عن أحدث مخزون متاح لإعادة الكمية إليه في نفس المخزن
+                $stock = $variant->stocks()
+                    ->where('status', 'available')
+                    ->when($itemWarehouseId, function ($query) use ($itemWarehouseId) {
+                        return $query->where('warehouse_id', $itemWarehouseId);
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->first();
 
                 if ($stock) {
                     $stock->quantity += $remaining;
                     $stock->save(); // استخدام save لتشغيل أحداث السجل
                 } else {
-                    // إذا لم يكن هناك مخزون متاح، قد تحتاج لإنشاء سجل مخزون جديد
+                    // إذا لم يكن هناك مخزون متاح في هذا المخزن، نقوم بإنشاء سجل مخزون جديد
                     Stock::create([
                         'variant_id' => $variant->id,
+                        'warehouse_id' => $itemWarehouseId,
                         'quantity' => $remaining,
                         'status' => 'available',
                         'company_id' => $invoice->company_id,
@@ -318,26 +355,36 @@ trait InvoiceHelperTrait
      * @param array $items بنود الفاتورة لزيادة المخزون.
      * @param int|null $companyId معرف الشركة.
      * @param int|null $createdBy معرف المستخدم المنشئ.
+     * @param int|null $warehouseId معرف المخزن.
      * @throws \Throwable
      */
-    protected function incrementStockForItems(array $items, ?int $companyId = null, ?int $createdBy = null): void
+    protected function incrementStockForItems(array $items, ?int $companyId = null, ?int $createdBy = null, ?int $warehouseId = null): void
     {
         try {
             foreach ($items as $item) {
+                $itemWarehouseId = $item['warehouse_id'] ?? $warehouseId;
                 $variant = ProductVariant::find($item['variant_id'] ?? null);
-                if (!$variant)
+                if (!$variant) {
                     continue;
+                }
 
-                // نبحث عن أحدث مخزون متاح لإضافة الكمية إليه
-                $stock = $variant->stocks()->where('status', 'available')->orderBy('created_at', 'desc')->first();
+                // نبحث عن أحدث مخزون متاح لإضافة الكمية إليه في نفس المخزن
+                $stock = $variant->stocks()
+                    ->where('status', 'available')
+                    ->when($itemWarehouseId, function ($query) use ($itemWarehouseId) {
+                        return $query->where('warehouse_id', $itemWarehouseId);
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->first();
 
                 if ($stock) {
                     $stock->quantity += $item['quantity'];
                     $stock->save(); // استخدام save لتشغيل أحداث السجل
                 } else {
-                    // إذا لم يكن هناك مخزون متاح، نقوم بإنشاء سجل مخزون جديد
+                    // إذا لم يكن هناك سجل مخزون في هذا المخزن، نقوم بإنشاء سجل مخزون جديد
                     Stock::create([
                         'variant_id' => $item['variant_id'],
+                        'warehouse_id' => $itemWarehouseId,
                         'quantity' => $item['quantity'],
                         'status' => 'available',
                         'company_id' => $companyId,
@@ -365,10 +412,16 @@ trait InvoiceHelperTrait
                     continue;
 
                 $remainingToDeduct = $item->quantity;
+                $itemWarehouseId = $item->warehouse_id ?? $invoice->warehouse_id;
 
-                // نبحث عن المخزون المتاح لخصم الكمية منه (من الأقدم للأحدث أو حسب سياسة FIFO/LIFO)
-                // هنا نستخدم الأحدث لتبسيط المثال، ولكن قد تحتاج إلى منطق أكثر تعقيدًا
-                $stocks = $variant->stocks()->where('status', 'available')->orderBy('created_at', 'desc')->get();
+                // نبحث عن المخزون المتاح لخصم الكمية منه في نفس المخزن
+                $stocks = $variant->stocks()
+                    ->where('status', 'available')
+                    ->when($itemWarehouseId, function ($query) use ($itemWarehouseId) {
+                        return $query->where('warehouse_id', $itemWarehouseId);
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->get();
 
                 foreach ($stocks as $stock) {
                     if ($remainingToDeduct <= 0)

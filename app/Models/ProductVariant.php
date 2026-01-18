@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Blameable;
 use App\Traits\Scopes;
+use App\Traits\HasImages;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -13,7 +14,7 @@ use Illuminate\Support\Str;
  */
 class ProductVariant extends Model
 {
-    use HasFactory, Blameable, Scopes, \App\Traits\LogsActivity;
+    use HasFactory, Blameable, Scopes, \App\Traits\LogsActivity, HasImages;
 
     /**
      * Label for activity logs.
@@ -36,7 +37,8 @@ class ProductVariant extends Model
         'discount',
         'min_quantity',
         'status',
-        'product_id'
+        'product_id',
+        'sales_count'
     ];
 
     protected $casts = [
@@ -47,6 +49,7 @@ class ProductVariant extends Model
         'dimensions' => 'array',  // Assuming dimensions is stored as an array
         'tax' => 'decimal:2',
         'discount' => 'decimal:2',
+        'sales_count' => 'integer',
     ];
 
     public function creator()

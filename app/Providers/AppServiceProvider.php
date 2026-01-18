@@ -28,24 +28,32 @@ class AppServiceProvider extends ServiceProvider
         // Register Observers
         \App\Models\User::observe(\App\Observers\UserObserver::class);
         \App\Models\Invoice::observe(\App\Observers\InvoiceObserver::class);
+        \App\Models\InvoiceItem::observe(\App\Observers\InvoiceItemObserver::class);
         \App\Models\InvoicePayment::observe(\App\Observers\PaymentObserver::class);
         // Company Observer registered via #[ObservedBy] attribute in Company model
         Role::observe(RoleObserver::class);
 
-        // Super Admin bypass (Global access if user has 'admin.super' permission in any company context)
+        // Super Admin bypass (Global access if user has 'admin.super' permission)
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
-            static $superAdmins = [];
+            static $isSuperAdmin = [];
 
-            if (!isset($superAdmins[$user->id])) {
-                $superAdmins[$user->id] = \Illuminate\Support\Facades\DB::table('model_has_permissions')
-                    ->join('permissions', 'model_has_permissions.permission_id', '=', 'permissions.id')
-                    ->where('model_id', $user->id)
-                    ->where('model_type', get_class($user))
-                    ->where('permissions.name', perm_key('admin.super'))
-                    ->exists();
+            if (!isset($isSuperAdmin[$user->id])) {
+                // We check if the user has 'admin.super' permission globally (ignoring teams/companies)
+                // This is safer and more performance-efficient than manual DB queries
+                try {
+                    // Temporarily unset team id to check global permission if teams are used
+                    $originalTeamId = getPermissionsTeamId();
+                    setPermissionsTeamId(null);
+
+                    $isSuperAdmin[$user->id] = $user->hasPermissionTo(perm_key('admin.super'));
+
+                    setPermissionsTeamId($originalTeamId);
+                } catch (\Throwable $e) {
+                    $isSuperAdmin[$user->id] = false;
+                }
             }
 
-            if ($superAdmins[$user->id]) {
+            if ($isSuperAdmin[$user->id]) {
                 return true;
             }
         });

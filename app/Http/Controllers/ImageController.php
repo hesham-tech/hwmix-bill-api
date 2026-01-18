@@ -123,6 +123,36 @@ class ImageController extends Controller
     }
 
     /**
+     * تعيين الصورة كصورة أساسية فوراً
+     */
+    public function setPrimary(Image $image)
+    {
+        try {
+            if (!$image->imageable_id || !$image->imageable_type) {
+                return api_error('هذه الصورة غير مرتبطة بمنتج أو متغير للتغيير.', [], 400);
+            }
+
+            $model = $image->imageable;
+            if (!$model) {
+                return api_error('مورد الصورة غير موجود.', [], 404);
+            }
+
+            // جلب كل IDs الصور المرتبطة بهذا الموديل
+            $imageIds = Image::where('imageable_type', $image->imageable_type)
+                ->where('imageable_id', $image->imageable_id)
+                ->pluck('id')
+                ->toArray();
+
+            ImageService::handlePrimaryImage($model, $imageIds, $image->id);
+
+            return api_success(new ImageResource($image), 'تم تعيين الصورة كصورة أساسية بنجاح');
+        } catch (Throwable $e) {
+            logger()->error("خطأ أثناء تعيين الصورة الأساسية: " . $e->getMessage());
+            return api_exception($e, 500, 'خطأ أثناء تعيين الصورة الأساسية');
+        }
+    }
+
+    /**
      * حذف مجموعة صور
      */
     public function destroy(Request $request)

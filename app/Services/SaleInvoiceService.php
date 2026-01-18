@@ -35,7 +35,7 @@ class SaleInvoiceService implements DocumentServiceInterface
             // دمج البيانات المحسوبة مع البيانات المدخلة
             $data = array_merge($data, $calculatedData);
 
-            $this->checkVariantsStock($data['items']);
+            $this->checkVariantsStock($data['items'], 'deduct', $data['warehouse_id'] ?? null);
 
             $invoice = $this->createInvoice($data);
             if (!$invoice || !$invoice->id) {
@@ -44,7 +44,7 @@ class SaleInvoiceService implements DocumentServiceInterface
 
             $this->createInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['created_by'] ?? null);
 
-            $this->deductStockForItems($data['items']);
+            $this->deductStockForItems($data['items'], $data['warehouse_id'] ?? null);
 
             $authUser = Auth::user();
             $cashBoxId = $data['cash_box_id'] ?? null;
@@ -212,9 +212,9 @@ class SaleInvoiceService implements DocumentServiceInterface
                 }
             }
 
-            $this->checkVariantsStock($data['items']);
+            $this->checkVariantsStock($data['items'], 'deduct', $data['warehouse_id'] ?? null);
             $this->syncInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['updated_by'] ?? null);
-            $this->deductStockForItems($data['items']);
+            $this->deductStockForItems($data['items'], $data['warehouse_id'] ?? null);
 
             if (isset($data['installment_plan'])) {
                 app(InstallmentService::class)->createInstallments($data, $invoice->id);

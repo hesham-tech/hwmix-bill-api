@@ -25,6 +25,11 @@ class ProductService
 
             $product = Product::create($productData);
 
+            // Sync Product Images
+            if (!empty($data->image_ids)) {
+                $product->syncImages($data->image_ids);
+            }
+
             $this->handleVariants($product, $data->variants, $user, $companyId);
 
             return $product;
@@ -39,6 +44,11 @@ class ProductService
         return DB::transaction(function () use ($product, $data, $user) {
             $companyId = $product->company_id;
             $product->update($data->toArray());
+
+            // Sync Product Images
+            if (isset($data->image_ids)) {
+                $product->syncImages($data->image_ids);
+            }
 
             $this->handleVariants($product, $data->variants, $user, $companyId);
 
@@ -69,6 +79,11 @@ class ProductService
                     'created_by' => $user->id,
                 ])
             );
+
+            // Sync Variant Images
+            if (isset($variantData->image_ids)) {
+                $variant->syncImages($variantData->image_ids, 'gallery', $variantData->primary_image_id);
+            }
 
             // Sync Attributes
             $variant->attributes()->delete();

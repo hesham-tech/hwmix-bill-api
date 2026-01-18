@@ -30,11 +30,16 @@ class InvoiceResource extends JsonResource
             'total_discount' => number_format($this->total_discount, 2, '.', ''),
 
             'status' => $this->status,
-            'status_label' => $this->getStatusLabel(), // إضافة status_label
+            'status_label' => $this->getStatusLabel(),
+            'payment_status' => $this->payment_status,
+            'payment_status_label' => $this->getPaymentStatusLabel(),
             'notes' => $this->notes,
+            'cash_box_id' => $this->cash_box_id,
+            'warehouse_id' => $this->warehouse_id,
+            'reference_number' => $this->reference_number,
 
-            'issue_date' => optional($this->issue_date)->format('Y-m-d H:i:s'),
-            'due_date' => optional($this->due_date)->format('Y-m-d H:i:s'),
+            'issue_date' => $this->issue_date ? $this->issue_date->format('Y-m-d') : null,
+            'due_date' => $this->due_date ? $this->due_date->format('Y-m-d') : null,
             'created_at' => optional($this->created_at)->format('Y-m-d H:i:s'),
             'updated_at' => optional($this->updated_at)->format('Y-m-d H:i:s'),
 
@@ -63,7 +68,21 @@ class InvoiceResource extends JsonResource
             'confirmed' => 'مؤكدة',
             'canceled' => 'ملغاة',
             'paid' => 'مدفوعة بالكامل',
-            'partially_paid' => 'مدفوعة جزئياً', // إضافة حالة محتملة
+            'partially_paid' => 'مدفوعة جزئياً',
+            default => 'غير معروفة',
+        };
+    }
+
+    /**
+     * ترجمة حالة الدفع.
+     */
+    protected function getPaymentStatusLabel()
+    {
+        return match ($this->payment_status) {
+            'unpaid' => 'غير مدفوعة',
+            'partially_paid' => 'مدفوعة جزئياً',
+            'paid' => 'مدفوعة بالكامل',
+            'overpaid' => 'مدفوعة بزيادة',
             default => 'غير معروفة',
         };
     }

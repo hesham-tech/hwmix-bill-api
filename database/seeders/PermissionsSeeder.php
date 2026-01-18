@@ -78,6 +78,8 @@ class PermissionsSeeder extends Seeder
                 'actions' => [
                     'change_active_company',
                     'page',
+                    'stocks',
+                    'stocks.page',
                     'view_all',
                     'view_children',
                     'view_self',
@@ -88,6 +90,9 @@ class PermissionsSeeder extends Seeder
                     'delete_all',
                     'delete_children',
                     'delete_self',
+                    'view_wholesale_price',
+                    'view_purchase_price',
+                    'manual_adjustment',
                 ],
             ],
             [

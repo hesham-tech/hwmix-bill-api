@@ -17,6 +17,7 @@ class ImageResource extends JsonResource
             'size' => $this->size,
             'type' => $this->type,
             'is_temp' => (bool) $this->is_temp,
+            'is_primary' => (bool) $this->is_primary,
             'imageable_id' => $this->imageable_id,
             'imageable_type' => $this->imageable_type,
             'company_id' => $this->company_id,

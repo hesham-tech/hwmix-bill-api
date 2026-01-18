@@ -24,7 +24,7 @@ class UserBasicResource extends JsonResource
             'full_name' => $this->full_name,
             'nickname' => $this->nickname,
             'phone' => $this->phone,
-            'customer_type' => $this->customer_type,
+            'customer_type' => $this->activeCompanyUser?->customer_type ?? $this->customer_type ?? 'retail',
             'username' => $this->username,
             'email' => $this->email,
             'position' => $this->position,

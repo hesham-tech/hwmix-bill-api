@@ -19,13 +19,17 @@ class CompanyUser extends Pivot
 
     protected $guarded = [];
 
+    protected $casts = [
+        'sales_count' => 'integer',
+    ];
+
     protected static function booted()
     {
         static::creating(function ($pivot) {
             if (!$pivot->user_id)
                 return;
 
-            $user = User::find($pivot->user_id);
+            $user = User::query()->withoutGlobalScopes()->find($pivot->user_id);
             if (!$user)
                 return;
 
@@ -37,17 +41,6 @@ class CompanyUser extends Pivot
             // Fallback for full name
             if (empty($pivot->full_name_in_company)) {
                 $pivot->full_name_in_company = $user->full_name;
-            }
-
-            // Fallback for phone/email
-            if (empty($pivot->user_phone)) {
-                $pivot->user_phone = $user->phone;
-            }
-            if (empty($pivot->user_email)) {
-                $pivot->user_email = $user->email;
-            }
-            if (empty($pivot->user_username)) {
-                $pivot->user_username = $user->username;
             }
 
             // Set creator if not set
@@ -128,7 +121,7 @@ class CompanyUser extends Pivot
      */
     public function getBalanceAttribute()
     {
-        return (float) ($this->balance_in_company ?? 0);
+        return (float) ($this->defaultCashBox?->balance ?? 0);
     }
 
     /**
@@ -144,7 +137,7 @@ class CompanyUser extends Pivot
      */
     public function getPhoneAttribute()
     {
-        return $this->phone_in_company ?? $this->user_phone ?? $this->user?->phone;
+        return $this->user?->phone;
     }
 
     /**
@@ -152,7 +145,7 @@ class CompanyUser extends Pivot
      */
     public function getEmailAttribute()
     {
-        return $this->email_in_company ?? $this->user_email ?? $this->user?->email;
+        return $this->user?->email;
     }
 
     /**

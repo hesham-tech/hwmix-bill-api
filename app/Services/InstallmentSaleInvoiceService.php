@@ -34,7 +34,7 @@ class InstallmentSaleInvoiceService implements DocumentServiceInterface
     {
         try {
             // التحقق من توافر المنتجات في المخزون
-            $this->checkVariantsStock($data['items']);
+            $this->checkVariantsStock($data['items'], 'deduct', $data['warehouse_id'] ?? null);
 
             // إنشاء الفاتورة الرئيسية
             $invoice = $this->createInvoice($data);
@@ -46,7 +46,7 @@ class InstallmentSaleInvoiceService implements DocumentServiceInterface
             $this->createInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['created_by'] ?? null);
 
             // خصم الكمية من المخزون
-            $this->deductStockForItems($data['items']);
+            $this->deductStockForItems($data['items'], $data['warehouse_id'] ?? null);
 
             $authUser = Auth::user();
             $cashBoxId = $data['cash_box_id'] ?? null;
@@ -209,7 +209,8 @@ class InstallmentSaleInvoiceService implements DocumentServiceInterface
                     // أو أنه يقوم بتسوية شاملة تأخذ في الاعتبار الدفعة المقدمة والأقساط والدين الأصلي
                     // إذا لم يكن كذلك، فقد تحتاج إلى تمرير netCustomerBalanceChange و netStaffBalanceChange
                     // إلى خدمة userSelfDebtService أو معالجتها هنا مباشرةً
-                    $this->userSelfDebtService->clearSelfSaleDebt($authUser, $invoice, $cashBoxId, $userCashBoxId);
+                    // تم تحديث هذه الدالة لتقبل مبالغ الأقساط المسددة وردها للموظف
+                    $this->userSelfDebtService->clearSelfSaleDebt($authUser, $invoice, $totalPaidInstallmentsAmount, $cashBoxId, $userCashBoxId);
                     Log::info('InstallmentSaleInvoiceService: تم معالجة دين البيع للنفس.', ['user_id' => $authUser->id]);
                 } else {
                     // العميل هو مستخدم آخر - تطبيق التغيير الصافي

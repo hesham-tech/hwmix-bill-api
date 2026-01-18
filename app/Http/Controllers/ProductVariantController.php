@@ -26,6 +26,8 @@ class ProductVariantController extends Controller
         'product.company',
         'product.category',
         'product.brand',
+        'product.image',
+        'image',
         'attributes.attributeValue',
         'stocks.warehouse',
     ];
@@ -83,6 +85,12 @@ class ProductVariantController extends Controller
             }
             if ($request->filled('status')) {
                 $query->where('status', $request->input('status'));
+            }
+
+            if ($request->boolean('has_stock')) {
+                $query->whereHas('stocks', function ($q) {
+                    $q->where('quantity', '>', 0);
+                });
             }
 
             $perPage = max(1, (int) $request->get('per_page', 20));
@@ -544,66 +552,80 @@ class ProductVariantController extends Controller
             }
 
             $search = $request->get('search');
-            if (empty($search) || mb_strlen($search) <= 2) {
-                return api_success([], 'لا توجد نتائج بحث.');
-            }
 
-            $productQuery = Product::query();
+            $query = ProductVariant::with($this->relations);
 
             // صلاحيات
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                //
-            } elseif ($authUser->hasAnyPermission([perm_key('products.view_all'), perm_key('admin.company'), perm_key('product_variants.view_all')])) {
-                $productQuery->whereCompanyIsCurrent();
-            } elseif ($authUser->hasAnyPermission([perm_key('products.view_children'), perm_key('product_variants.view_children')])) {
-                $productQuery->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-            } elseif ($authUser->hasAnyPermission([perm_key('products.view_self'), perm_key('product_variants.view_self')])) {
-                $productQuery->whereCompanyIsCurrent()->whereCreatedByUser();
+                // المسؤول العام يرى كل شيء
+            } elseif ($authUser->hasAnyPermission([perm_key('product_variants.view_all'), perm_key('admin.company')])) {
+                $query->whereCompanyIsCurrent();
+            } elseif ($authUser->hasPermissionTo(perm_key('product_variants.view_children'))) {
+                $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('product_variants.view_self'))) {
+                $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك صلاحية لعرض المنتجات أو متغيراتها.');
+                return api_forbidden('ليس لديك صلاحية لعرض متغيرات المنتجات.');
             }
 
-            // فلتر بحث عادي
-            $productQuery->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%$search%")
-                    ->orWhere('desc', 'like', "%$search%");
-            });
-
-            $perPage = max(1, (int) $request->get('per_page', 20));
-
-            $productsWithVariants = $productQuery->with([
-                'variants' => function ($query) {
-                    $query->with($this->relations);
-                }
-            ])->paginate($perPage);
-
-            $variants = collect($productsWithVariants->items())->flatMap(function ($product) {
-                return $product->variants;
-            });
-
-            // ✅ لو مفيش نتائج نستخدم similar_text
-            if ($variants->isEmpty()) {
-                $allProducts = Product::limit(100)->with([
-                    'variants' => function ($query) {
-                        $query->with($this->relations);
-                    }
-                ])->get();
-                $similarProducts = [];
-
-                foreach ($allProducts as $product) {
-                    similar_text($product->name, $search, $percent);
-                    if ($percent >= 70) {
-                        $similarProducts[] = $product;
-                    }
-                }
-
-                // استخراج المتغيرات
-                $similarVariants = collect($similarProducts)->flatMap(function ($product) {
-                    return $product->variants;
+            // البحث المباشر في المتغيرات والأب
+            if (!empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('sku', 'like', "%$search%")
+                        ->orWhere('barcode', 'like', "%$search%")
+                        ->orWhereHas('product', function ($pq) use ($search) {
+                            $pq->where('name', 'like', "%$search%")
+                                ->orWhere('desc', 'like', "%$search%");
+                        });
                 });
-
-                return api_success(ProductVariantResource::collection($similarVariants), 'تم العثور على نتائج مشابهة بناءً على البحث.');
             }
+
+            // الترتيب حسب الأكثر استخداماً
+            $query->orderBy('sales_count', 'desc')
+                ->orderBy('created_at', 'desc');
+
+            // ✅ فلترة حسب توفر المخزون (بناءً على طلب المستخدم)
+            if ($request->get('has_stock', true)) {
+                $query->whereHas('stocks', function ($q) {
+                    $q->where('quantity', '>', 0);
+                });
+            }
+
+            $perPage = max(1, (int) $request->get('per_page', 50));
+            $variants = $query->paginate($perPage);
+
+            // ✅ إضافة منطق similar_text كبديل إذا لم توجد نتائج مباشرة
+            if ($variants->isEmpty() && !empty($search)) {
+                $allVariantsQuery = ProductVariant::with($this->relations)
+                    ->whereCompanyIsCurrent();
+
+                if ($request->get('has_stock', true)) {
+                    $allVariantsQuery->whereHas('stocks', function ($q) {
+                        $q->where('quantity', '>', 0);
+                    });
+                }
+
+                $allVariants = $allVariantsQuery->limit(200)->get();
+
+                $similarVariants = [];
+                foreach ($allVariants as $variant) {
+                    // البحث في اسم المنتج أو الـ SKU
+                    similar_text(mb_strtolower($variant->product->name), mb_strtolower($search), $percentProduct);
+                    similar_text(mb_strtolower($variant->sku), mb_strtolower($search), $percentSku);
+
+                    $maxPercent = max($percentProduct, $percentSku);
+                    if ($maxPercent >= 60) { // خفضنا النسبة قليلاً لزيادة المرونة
+                        $variant->similarity_score = $maxPercent;
+                        $similarVariants[] = $variant;
+                    }
+                }
+
+                if (!empty($similarVariants)) {
+                    $similarVariants = collect($similarVariants)->sortByDesc('similarity_score')->values();
+                    return api_success(ProductVariantResource::collection($similarVariants), 'تم العثور على نتائج مشابهة بناءً على البحث.');
+                }
+            }
+
             return api_success(ProductVariantResource::collection($variants), 'تم العثور على متغيرات المنتجات بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e);
