@@ -16,20 +16,37 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([
-            CashBoxTypeSeeder::class,
+                // ============================================
+                // المرحلة 1: الصلاحيات والبيانات الأساسية
+                // ============================================
             PermissionsSeeder::class,
-            // UserSeeder::class,
-            // CompanySeeder::class,
+
+                // ============================================
+                // المرحلة 2: أنواع الفواتير وطرق الدفع (قبل الشركات!)
+                // ============================================
+            InvoiceTypeSeeder::class,
+            PaymentMethodSeeder::class,
+            CashBoxTypeSeeder::class,
+
+                // ============================================
+                // المرحلة 3: الشركات والمستخدمين
+                // (سيتم ربط InvoiceTypes تلقائياً عبر CompanyObserver)
+                // ============================================
+            CompanySeeder::class,
+            UserSeeder::class,
+
+                // ============================================
+                // المرحلة 4: بيانات المنتجات والمخازن
+                //============================================
             WarehouseSeeder::class,
             CategorySeeder::class,
             BrandSeeder::class,
-            ProductSeeder::class,
-            InvoiceTypeSeeder::class,
-            // InvoiceItemSeeder::class,
             AttributeSeeder::class,
             AttributeValueSeeder::class,
+            ProductSeeder::class,
+
+            // InvoiceItemSeeder::class,
             // RevenueSeeder::class,
-            PaymentMethodSeeder::class,
         ]);
     }
 }
