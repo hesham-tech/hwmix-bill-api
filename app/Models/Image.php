@@ -29,6 +29,30 @@ class Image extends Model
         'created_by' => 'integer',
     ];
 
+    /**
+     * Get the full URL for the image.
+     */
+    public function getUrlAttribute($value)
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        // If it's already a full URL, return it
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        // Use request root if possible, otherwise fallback to asset()
+        $baseUrl = request()?->getSchemeAndHttpHost() ?: config('app.url', '');
+
+        $path = ltrim($value, '/');
+
+        // If baseUrl is empty or still localhost but we are not on local, this might still be an issue.
+        // But request() should handle it dynamically.
+        return $baseUrl . '/' . $path;
+    }
+
     public function imageable()
     {
         return $this->morphTo();
