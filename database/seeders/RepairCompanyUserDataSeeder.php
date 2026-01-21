@@ -27,18 +27,6 @@ class RepairCompanyUserDataSeeder extends Seeder
                 $update['full_name_in_company'] = $user->full_name;
             }
 
-            if (empty($cu->user_phone)) {
-                $update['user_phone'] = $user->phone;
-            }
-
-            if (empty($cu->user_email)) {
-                $update['user_email'] = $user->email;
-            }
-
-            if (empty($cu->user_username)) {
-                $update['user_username'] = $user->username;
-            }
-
             if (empty($cu->status)) {
                 $update['status'] = 'active';
             }

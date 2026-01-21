@@ -46,9 +46,6 @@ class UserSeeder extends Seeder
                     'created_by' => $userData['created_by'],
                     'nickname_in_company' => $user->nickname,
                     'full_name_in_company' => $user->full_name,
-                    'user_phone' => $user->phone,
-                    'user_email' => $user->email,
-                    'user_username' => $user->username,
                     'customer_type_in_company' => $userData['customer_type'] ?? 'retail',
                     'status' => 'active',
                 ];

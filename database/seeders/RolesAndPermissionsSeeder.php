@@ -85,9 +85,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 'created_by' => $user->id,
                 'nickname_in_company' => $user->nickname,
                 'full_name_in_company' => $user->full_name,
-                'user_phone' => $user->phone,
-                'user_email' => $user->email,
-                'user_username' => $user->username,
                 'status' => 'active',
             ];
         }
