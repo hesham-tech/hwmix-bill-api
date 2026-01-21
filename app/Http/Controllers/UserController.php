@@ -971,10 +971,11 @@ class UserController extends Controller
 
             $activeCompanyId = $authUser->company_id;
             $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
+            $isGlobal = filter_var($request->input('global', false), FILTER_VALIDATE_BOOLEAN) && $isSuperAdmin;
 
             $query = CompanyUser::query();
 
-            if (!$isSuperAdmin && $activeCompanyId) {
+            if (!$isGlobal && $activeCompanyId) {
                 $query->where('company_id', $activeCompanyId);
             }
 
