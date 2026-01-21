@@ -13,7 +13,6 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'customer_type' => 'retail',
                 'phone' => '01006444991',
                 'email' => 'wael1.for@gmail.com',
                 'full_name' => 'عميل تجزئة',
@@ -24,7 +23,6 @@ class UserSeeder extends Seeder
                 'company_id' => 1,
             ],
             [
-                'customer_type' => 'wholesale',
                 'phone' => '01006444992',
                 'email' => 'wael2.for@gmail.com',
                 'full_name' => 'عميل جملة',
