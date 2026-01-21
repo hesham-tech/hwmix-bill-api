@@ -38,8 +38,8 @@ class CashFlowReportController extends BaseReportController
             $query->whereCompanyIsCurrent();
         }
 
-        // Group by type
-        $byType = $query->select([
+        // Group by type (Clone query to avoid mutating base query)
+        $byType = (clone $query)->select([
             'type',
             DB::raw('COUNT(*) as count'),
             DB::raw('SUM(amount) as total_amount'),
@@ -47,9 +47,13 @@ class CashFlowReportController extends BaseReportController
             ->groupBy('type')
             ->get();
 
-        $totalDeposits = $byType->where('type', 'deposit')->sum('total_amount');
-        $totalWithdrawals = $byType->where('type', 'withdraw')->sum('total_amount');
-        $netCashFlow = $totalDeposits - $totalWithdrawals;
+        // Standardize types for reporting
+        $inflowTypes = ['deposit', 'income', 'transfer_in'];
+        $outflowTypes = ['withdraw', 'expense', 'transfer_out'];
+
+        $totalInflow = $byType->whereIn('type', $inflowTypes)->sum('total_amount');
+        $totalOutflow = $byType->whereIn('type', $outflowTypes)->sum('total_amount');
+        $netCashFlow = $totalInflow - $totalOutflow;
 
         $result = [
             'period' => [
@@ -57,8 +61,8 @@ class CashFlowReportController extends BaseReportController
                 'to' => $dateTo,
             ],
             'breakdown' => [
-                'deposits' => round($totalDeposits, 2),
-                'withdrawals' => round($totalWithdrawals, 2),
+                'deposits' => round($totalInflow, 2),
+                'withdrawals' => round($totalOutflow, 2),
                 'net_cash_flow' => round($netCashFlow, 2),
             ],
             'by_type' => $byType,
@@ -154,5 +158,54 @@ class CashFlowReportController extends BaseReportController
         ];
 
         return response()->json($summary);
+    }
+    /**
+     * @group 05. التقارير المالية
+     * 
+     * اتجاه التدفق النقدي (التدفقات الداخلة والخارجة عبر الزمن)
+     */
+    public function trend(Request $request)
+    {
+        $filters = $this->validateFilters($request);
+        $period = $request->input('period', 'day');
+        $dateFrom = $filters['date_from'] ?? now()->startOfMonth()->toDateString();
+        $dateTo = $filters['date_to'] ?? now()->toDateString();
+
+        $query = Transaction::query()
+            ->whereDate('created_at', '>=', $dateFrom)
+            ->whereDate('created_at', '<=', $dateTo);
+
+        if (!empty($filters['company_id'])) {
+            $query->where('company_id', $filters['company_id']);
+        }
+
+        $isSqlite = DB::getDriverName() === 'sqlite';
+        $dateFormat = match ($period) {
+            'day' => '%Y-%m-%d',
+            'month' => '%Y-%m',
+            'year' => '%Y',
+            default => '%Y-%m-%d',
+        };
+
+        $selectRaw = $isSqlite
+            ? "strftime('{$dateFormat}', created_at) as period"
+            : "DATE_FORMAT(created_at, '{$dateFormat}') as period";
+
+        $trend = $query->selectRaw("
+                {$selectRaw},
+                SUM(CASE WHEN type IN ('deposit', 'income', 'transfer_in') THEN amount ELSE 0 END) as total_in,
+                SUM(CASE WHEN type IN ('withdraw', 'expense', 'transfer_out') THEN amount ELSE 0 END) as total_out
+            ")
+            ->groupBy('period')
+            ->orderBy('period')
+            ->get();
+
+        // Fill gaps
+        $trend = $this->fillDateGaps($trend, $dateFrom, $dateTo, $period);
+
+        return response()->json([
+            'trend' => $trend,
+            'period_type' => $period,
+        ]);
     }
 }

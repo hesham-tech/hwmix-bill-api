@@ -14,13 +14,15 @@ abstract class BaseReportController extends Controller
      */
     protected function applyFilters(Builder $query, array $filters): Builder
     {
-        // Date range filtering
+        // Date range filtering - Prioritize issue_date if it exists on the model
+        $dateColumn = method_exists($query->getModel(), 'getIssueDateColumn') ? 'issue_date' : 'created_at';
+
         if (!empty($filters['date_from'])) {
-            $query->whereDate('created_at', '>=', $filters['date_from']);
+            $query->whereDate($dateColumn, '>=', $filters['date_from']);
         }
 
         if (!empty($filters['date_to'])) {
-            $query->whereDate('created_at', '<=', $filters['date_to']);
+            $query->whereDate($dateColumn, '<=', $filters['date_to']);
         }
 
         // Company scope
@@ -56,40 +58,25 @@ abstract class BaseReportController extends Controller
     protected function groupByPeriod($query, string $period = 'day'): Collection
     {
         $isSqlite = \DB::getDriverName() === 'sqlite';
-
-        if ($isSqlite) {
-            $dateFormat = match ($period) {
-                'day' => '%Y-%m-%d',
-                'week' => '%Y-%W',
-                'month' => '%Y-%m',
-                'year' => '%Y',
-                default => '%Y-%m-%d',
-            };
-
-            return $query->selectRaw("
-                strftime('{$dateFormat}', created_at) as period,
-                COUNT(*) as count,
-                SUM(net_amount) as total_amount,
-                SUM(paid_amount) as total_paid,
-                SUM(remaining_amount) as total_remaining
-            ")
-                ->groupBy('period')
-                ->orderBy('period')
-                ->get();
-        }
-
         $dateFormat = match ($period) {
             'day' => '%Y-%m-%d',
-            'week' => '%Y-%u',
+            'week' => $isSqlite ? '%Y-%W' : '%Y-%u',
             'month' => '%Y-%m',
             'year' => '%Y',
             default => '%Y-%m-%d',
         };
 
+        $dateColumn = method_exists($query->getModel(), 'getIssueDateColumn') ? 'issue_date' : 'created_at';
+
+        $selectRaw = $isSqlite
+            ? "strftime('{$dateFormat}', {$dateColumn}) as period"
+            : "DATE_FORMAT({$dateColumn}, '{$dateFormat}') as period";
+
         return $query->selectRaw("
-                DATE_FORMAT(created_at, '{$dateFormat}') as period,
+                {$selectRaw},
                 COUNT(*) as count,
                 SUM(net_amount) as total_amount,
+                SUM(net_amount) as total_sales,
                 SUM(paid_amount) as total_paid,
                 SUM(remaining_amount) as total_remaining
             ")
@@ -150,6 +137,7 @@ abstract class BaseReportController extends Controller
         return [
             'total_invoices' => $invoices->count(),
             'total_amount' => round($invoices->sum('net_amount'), 2),
+            'total_sales' => round($invoices->sum('net_amount'), 2),
             'total_paid' => round($invoices->sum('paid_amount'), 2),
             'total_remaining' => round($invoices->sum('remaining_amount'), 2),
             'average_invoice' => $invoices->count() > 0
@@ -176,7 +164,7 @@ abstract class BaseReportController extends Controller
     /**
      * Export to PDF using PDFService
      */
-    protected function exportPDF($data, string $filename): \Illuminate\Http\Response
+    protected function exportPDF($data, string $filename)
     {
         try {
             return app(\App\Services\PDFService::class)->generateReportPDF($data, 'report', $filename);
@@ -251,5 +239,53 @@ abstract class BaseReportController extends Controller
             'export' => 'nullable|in:pdf,excel,csv',
             'per_page' => 'nullable|integer|min:10|max:100',
         ]);
+    }
+
+    /**
+     * Fill date gaps in a collection with zero values.
+     */
+    protected function fillDateGaps(Collection $data, string $dateFrom, string $dateTo, string $period = 'day'): Collection
+    {
+        $startDate = \Carbon\Carbon::parse($dateFrom);
+        $endDate = \Carbon\Carbon::parse($dateTo);
+        $keyedData = $data->keyBy('period');
+        $filled = collect();
+
+        for ($date = $startDate->copy(); $date->lte($endDate); ) {
+            $format = match ($period) {
+                'day' => 'Y-m-d',
+                'month' => 'Y-m',
+                'year' => 'Y',
+                default => 'Y-m-d',
+            };
+
+            $periodStr = $date->format($format);
+            $entry = $keyedData->get($periodStr);
+
+            if ($entry) {
+                $filled->push($entry);
+            } else {
+                $filled->push([
+                    'period' => $periodStr,
+                    'count' => 0,
+                    'total_amount' => 0,
+                    'total_sales' => 0,
+                    'total_paid' => 0,
+                    'total_remaining' => 0,
+                ]);
+            }
+
+            // Increment date based on period
+            if ($period === 'day')
+                $date->addDay();
+            elseif ($period === 'month')
+                $date->addMonth();
+            elseif ($period === 'year')
+                $date->addYear();
+            else
+                $date->addDay();
+        }
+
+        return $filled;
     }
 }

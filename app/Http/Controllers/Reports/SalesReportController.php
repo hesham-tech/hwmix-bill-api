@@ -174,6 +174,11 @@ class SalesReportController extends BaseReportController
 
         $trend = $this->groupByPeriod($query, $period);
 
+        // Fill gaps if dates are provided
+        if ($request->date_from && $request->date_to) {
+            $trend = $this->fillDateGaps($trend, $request->date_from, $request->date_to, $period);
+        }
+
         return response()->json([
             'trend' => $trend,
             'period_type' => $period,

@@ -7,10 +7,10 @@ use App\Http\Resources\Company\CompanyResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
 
-class CompanyUserResource extends JsonResource
+class CompanyUserWithPermissionsResource extends JsonResource
 {
     /**
-     * تحويل المورد إلى مصفوفة.
+     * Transform the resource into an array.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return array<string, mixed>
@@ -88,7 +88,12 @@ class CompanyUserResource extends JsonResource
             'company_id' => $this->company_id,
             'company_logo' => $companyLogoUrl,
 
-            // صورة الأفاتار
+            // الأدوار والصلاحيات
+            'roles' => $this->whenLoaded('user', fn() => $this->user->getRolesWithPermissions()),
+            'permissions' => $this->whenLoaded('user', fn() => $this->user->getAllPermissions()->pluck('name')),
+            'direct_permissions' => $this->whenLoaded('user', fn() => $this->user->getDirectPermissions()->pluck('name')),
+
+            // الصورة
             'avatar_url' => $avatarUrl,
 
             // الشركات المرتبطة بالمستخدم

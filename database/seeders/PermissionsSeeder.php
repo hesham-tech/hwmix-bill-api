@@ -93,6 +93,14 @@ class PermissionsSeeder extends Seeder
                     'view_wholesale_price',
                     'view_purchase_price',
                     'manual_adjustment',
+                    // الجديد: التقارير والمالية
+                    'sales',
+                    'stock',
+                    'profit',
+                    'expenses',
+                    'cash_flow',
+                    'tax',
+                    'export',
                 ],
             ],
             [

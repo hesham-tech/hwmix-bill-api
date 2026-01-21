@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\User\UserResource;
+use App\Http\Resources\User\UserWithPermissionsResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -88,7 +89,7 @@ class AuthController extends Controller
 
             // إنشاء صناديق المستخدم الافتراضية لكل شركة (تتم الآن تلقائياً بواسطة المراقب)
             return api_success([
-                'user' => new UserResource($user),
+                'user' => new UserWithPermissionsResource($user),
                 'token' => $token,
             ], 'تم تسجيل المستخدم بنجاح.', 201);
         } catch (ValidationException $e) {
@@ -157,7 +158,7 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return api_success([
-                'user' => new UserResource($user),
+                'user' => new UserWithPermissionsResource($user),
                 'token' => $token,
             ], 'تم تسجيل دخول المستخدم بنجاح.');
         } catch (ValidationException $e) {
@@ -212,7 +213,7 @@ class AuthController extends Controller
                 return api_unauthorized('المستخدم غير مصادق عليه.');
             }
 
-            return api_success(new UserResource($user), 'تم استرداد بيانات المستخدم بنجاح.');
+            return api_success(new UserWithPermissionsResource($user), 'تم استرداد بيانات المستخدم بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
@@ -230,7 +231,7 @@ class AuthController extends Controller
             $user = Auth::user();
 
             if (Auth::check()) {
-                return api_success(new UserResource($user), 'المستخدم مسجل الدخول.');
+                return api_success(new UserWithPermissionsResource($user), 'المستخدم مسجل الدخول.');
             }
 
             return api_unauthorized('المستخدم غير مصادق عليه.');

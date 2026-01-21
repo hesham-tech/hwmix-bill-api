@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
                 // ============================================
             CompanySeeder::class,
             UserSeeder::class,
+            ExpenseCategorySeeder::class,
 
                 // ============================================
                 // المرحلة 4: بيانات المنتجات والمخازن

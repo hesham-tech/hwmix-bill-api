@@ -59,10 +59,15 @@ class TaxReportController extends BaseReportController
 
         $dateFrom = $filters['date_from'] ?? now()->startOfMonth()->toDateString();
         $dateTo = $filters['date_to'] ?? now()->endOfMonth()->toDateString();
+        $dateColumn = method_exists(Invoice::class, 'getIssueDateColumn') ? 'issue_date' : 'created_at';
 
         $query = Invoice::query()
             ->whereHas('invoiceType', fn($q) => $q->where('code', 'sale'))
-            ->whereBetween('created_at', [$dateFrom, $dateTo])
+            ->where(function ($q) use ($dateColumn, $dateFrom, $dateTo) {
+                $q->whereDate($dateColumn, '>=', $dateFrom)
+                    ->whereDate($dateColumn, '<=', $dateTo)
+                    ->orWhere(fn($q2) => $q2->whereNull($dateColumn)->whereBetween('created_at', [$dateFrom, $dateTo]));
+            })
             ->whereIn('status', ['confirmed', 'paid', 'partially_paid']);
 
         if (!empty($filters['company_id'])) {
@@ -103,10 +108,15 @@ class TaxReportController extends BaseReportController
 
         $dateFrom = $filters['date_from'] ?? now()->startOfMonth()->toDateString();
         $dateTo = $filters['date_to'] ?? now()->endOfMonth()->toDateString();
+        $dateColumn = method_exists(Invoice::class, 'getIssueDateColumn') ? 'issue_date' : 'created_at';
 
         $query = Invoice::query()
             ->whereHas('invoiceType', fn($q) => $q->where('code', 'purchase'))
-            ->whereBetween('created_at', [$dateFrom, $dateTo])
+            ->where(function ($q) use ($dateColumn, $dateFrom, $dateTo) {
+                $q->whereDate($dateColumn, '>=', $dateFrom)
+                    ->whereDate($dateColumn, '<=', $dateTo)
+                    ->orWhere(fn($q2) => $q2->whereNull($dateColumn)->whereBetween('created_at', [$dateFrom, $dateTo]));
+            })
             ->whereIn('status', ['confirmed', 'paid', 'partially_paid']);
 
         if (!empty($filters['company_id'])) {
@@ -171,10 +181,15 @@ class TaxReportController extends BaseReportController
      */
     private function getTaxCollected(string $from, string $to, ?int $companyId): float
     {
+        $dateColumn = method_exists(Invoice::class, 'getIssueDateColumn') ? 'issue_date' : 'created_at';
+
         $query = Invoice::query()
             ->whereHas('invoiceType', fn($q) => $q->where('code', 'sale'))
-            ->whereDate('created_at', '>=', $from)
-            ->whereDate('created_at', '<=', $to)
+            ->where(function ($q) use ($dateColumn, $from, $to) {
+                $q->whereDate($dateColumn, '>=', $from)
+                    ->whereDate($dateColumn, '<=', $to)
+                    ->orWhere(fn($q2) => $q2->whereNull($dateColumn)->whereBetween('created_at', [$from, $to]));
+            })
             ->whereIn('status', ['confirmed', 'paid', 'partially_paid']);
 
         if ($companyId) {
@@ -191,10 +206,15 @@ class TaxReportController extends BaseReportController
      */
     private function getTaxPaid(string $from, string $to, ?int $companyId): float
     {
+        $dateColumn = method_exists(Invoice::class, 'getIssueDateColumn') ? 'issue_date' : 'created_at';
+
         $query = Invoice::query()
             ->whereHas('invoiceType', fn($q) => $q->where('code', 'purchase'))
-            ->whereDate('created_at', '>=', $from)
-            ->whereDate('created_at', '<=', $to)
+            ->where(function ($q) use ($dateColumn, $from, $to) {
+                $q->whereDate($dateColumn, '>=', $from)
+                    ->whereDate($dateColumn, '<=', $to)
+                    ->orWhere(fn($q2) => $q2->whereNull($dateColumn)->whereBetween('created_at', [$from, $to]));
+            })
             ->whereIn('status', ['confirmed', 'paid', 'partially_paid']);
 
         if ($companyId) {

@@ -79,6 +79,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/cash-flow', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'index']);
         Route::get('/cash-flow/by-cash-box', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'byCashBox']);
         Route::get('/cash-flow/summary', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'summary']);
+        Route::get('/cash-flow/trend', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'trend']);
 
         // Tax Reports
         Route::get('/tax', [\App\Http\Controllers\Reports\TaxReportController::class, 'index']);
@@ -420,6 +421,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::delete('invoice-type/delete/{id}', 'destroy');
         });
     Route::get('/permissions', [PermissionController::class, 'index']);
+
+    // ================== Financials (Expenses & Ledger) ==================
+    Route::apiResource('expenses', \App\Http\Controllers\ExpenseController::class);
+    Route::get('expenses/summary', [\App\Http\Controllers\ExpenseController::class, 'getSummary']);
+    Route::apiResource('expense-categories', \App\Http\Controllers\ExpenseCategoryController::class);
+    Route::get('financial-ledger', [\App\Http\Controllers\FinancialLedgerController::class, 'index']);
+    Route::post('financial-ledger/export', [\App\Http\Controllers\FinancialLedgerController::class, 'export']);
+
+    // Summary Reports (High Performance)
+    Route::get('reports/profit-loss-summary', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'profitLossSummary']);
 
     // ================== Task Management ==================
     Route::apiResource('tasks', TaskController::class);

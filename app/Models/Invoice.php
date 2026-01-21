@@ -140,4 +140,12 @@ class Invoice extends Model
     {
         return "الفاتورة ({$this->invoice_number})";
     }
+
+    /**
+     * Get the column name for accounting date filtering
+     */
+    public function getIssueDateColumn(): string
+    {
+        return 'issue_date';
+    }
 }

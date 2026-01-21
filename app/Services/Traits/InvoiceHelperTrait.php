@@ -107,6 +107,8 @@ trait InvoiceHelperTrait
     {
         foreach ($items as $item) {
             try {
+                $costPrice = $this->resolveItemCostPrice($invoice->invoice_type_code, $item['variant_id'] ?? null, $item['unit_price']);
+
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
                     'product_id' => $item['product_id'] ?? null,
@@ -114,6 +116,8 @@ trait InvoiceHelperTrait
                     'name' => $item['name'],
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
+                    'cost_price' => $costPrice,
+                    'total_cost' => $costPrice * $item['quantity'],
                     'discount' => $item['discount'] ?? 0,
                     'tax_rate' => $item['tax_rate'] ?? 0,
                     'tax_amount' => $item['tax_amount'] ?? 0,
@@ -152,6 +156,8 @@ trait InvoiceHelperTrait
             // تحديث أو إضافة البنود
             foreach ($newItemsCollection as $itemData) {
                 if (isset($itemData['id']) && $existingItem = $currentItems->get($itemData['id'])) {
+                    $costPrice = $this->resolveItemCostPrice($invoice->invoice_type_code, $itemData['variant_id'] ?? null, $itemData['unit_price']);
+
                     // البند موجود: تحديثه
                     $existingItem->update([
                         'product_id' => $itemData['product_id'] ?? null,
@@ -159,6 +165,8 @@ trait InvoiceHelperTrait
                         'name' => $itemData['name'],
                         'quantity' => $itemData['quantity'],
                         'unit_price' => $itemData['unit_price'],
+                        'cost_price' => $costPrice,
+                        'total_cost' => $costPrice * $itemData['quantity'],
                         'discount' => $itemData['discount'] ?? 0,
                         'tax_rate' => $itemData['tax_rate'] ?? 0,
                         'tax_amount' => $itemData['tax_amount'] ?? 0,
@@ -168,6 +176,8 @@ trait InvoiceHelperTrait
                         'updated_by' => $updatedBy,
                     ]);
                 } else {
+                    $costPrice = $this->resolveItemCostPrice($invoice->invoice_type_code, $itemData['variant_id'] ?? null, $itemData['unit_price']);
+
                     // البند جديد: إنشاؤه
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
@@ -176,6 +186,8 @@ trait InvoiceHelperTrait
                         'name' => $itemData['name'],
                         'quantity' => $itemData['quantity'],
                         'unit_price' => $itemData['unit_price'],
+                        'cost_price' => $costPrice,
+                        'total_cost' => $costPrice * $itemData['quantity'],
                         'discount' => $itemData['discount'] ?? 0,
                         'tax_rate' => $itemData['tax_rate'] ?? 0,
                         'tax_amount' => $itemData['tax_amount'] ?? 0,
@@ -443,5 +455,29 @@ trait InvoiceHelperTrait
         } catch (\Throwable $e) {
             throw $e;
         }
+    }
+
+    /**
+     * حساب سعر التكلفة للبند بناءً على نوع الفاتورة والمتغير.
+     *
+     * @param string|null $invoiceTypeCode كود نوع الفاتورة.
+     * @param int|null $variantId معرف متغير المنتج.
+     * @param float $unitPrice سعر الوحدة في الفاتورة.
+     * @return float سعر التكلفة.
+     */
+    protected function resolveItemCostPrice(?string $invoiceTypeCode, $variantId, float $unitPrice): float
+    {
+        // إذا كانت فاتورة مشتريات أو مرتجع مشتريات، فالتكلفة هي سعر الوحدة في الفاتورة
+        if (in_array($invoiceTypeCode, ['purchase', 'return_purchase'])) {
+            return (float) $unitPrice;
+        }
+
+        // إذا كانت فاتورة بيع أو مرتجع بيع، نجلب سعر الشراء الحالي من المنتج
+        if ($variantId) {
+            $variant = ProductVariant::find($variantId);
+            return (float) ($variant->purchase_price ?? 0);
+        }
+
+        return 0;
     }
 }

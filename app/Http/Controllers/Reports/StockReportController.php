@@ -23,47 +23,59 @@ class StockReportController extends BaseReportController
     {
         $filters = $this->validateFilters($request);
 
-        $query = Stock::query()
+        $query = DB::table('stocks')
             ->join('product_variants', 'stocks.variant_id', '=', 'product_variants.id')
+            ->leftJoin('invoice_items', 'product_variants.id', '=', 'invoice_items.variant_id')
+            ->leftJoin('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+            ->leftJoin('invoice_types', 'invoices.invoice_type_id', '=', 'invoice_types.id')
             ->select([
                 'product_variants.product_id',
                 'stocks.variant_id',
                 'stocks.warehouse_id',
-                DB::raw("0 as total_in"),
-                DB::raw("0 as total_out"),
-                DB::raw("SUM(CASE WHEN stocks.status = 'available' THEN stocks.quantity ELSE 0 END) as current_stock"),
+                DB::raw("SUM(CASE WHEN invoice_types.code = 'purchase' THEN invoice_items.quantity ELSE 0 END) as total_in"),
+                DB::raw("SUM(CASE WHEN invoice_types.code = 'sale' THEN invoice_items.quantity ELSE 0 END) as total_out"),
+                DB::raw("ANY_VALUE(stocks.quantity) as current_stock"), // Or use a separate subquery for precision if status matches
             ])
+            ->where('stocks.company_id', auth()->user()->company_id)
             ->groupBy('product_variants.product_id', 'stocks.variant_id', 'stocks.warehouse_id');
 
         // Apply filters
         if (!empty($filters['date_from'])) {
-            $query->whereDate('created_at', '>=', $filters['date_from']);
+            $query->where(function ($q) use ($filters) {
+                $q->whereDate('invoices.issue_date', '>=', $filters['date_from'])
+                    ->orWhereNull('invoices.issue_date');
+            });
         }
 
         if (!empty($filters['date_to'])) {
-            $query->whereDate('created_at', '<=', $filters['date_to']);
+            $query->where(function ($q) use ($filters) {
+                $q->whereDate('invoices.issue_date', '<=', $filters['date_to'])
+                    ->orWhereNull('invoices.issue_date');
+            });
         }
 
         if (!empty($filters['product_id'])) {
-            $query->where('product_id', $filters['product_id']);
-        }
-
-        if (!empty($filters['company_id'])) {
-            $query->where('company_id', $filters['company_id']);
-        } elseif (method_exists(Stock::class, 'scopeWhereCompanyIsCurrent')) {
-            $query->whereCompanyIsCurrent();
+            $query->where('product_variants.product_id', $filters['product_id']);
         }
 
         try {
             $report = $query->paginate($filters['per_page'] ?? 50);
 
-            $commonQuery = Stock::whereCompanyIsCurrent();
-
             $summary = [
-                'total_products' => Stock::whereCompanyIsCurrent()->distinct('product_id')->count('product_id'),
-                'total_in' => 0,
-                'total_out' => 0,
-                'current_stock' => (clone $commonQuery)->where('status', 'available')->sum('quantity'),
+                'total_products' => Stock::whereCompanyIsCurrent()->distinct('variant_id')->count('variant_id'),
+                'total_in' => (float) DB::table('invoice_items')
+                    ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+                    ->join('invoice_types', 'invoices.invoice_type_id', '=', 'invoice_types.id')
+                    ->where('invoices.company_id', auth()->user()->company_id)
+                    ->where('invoice_types.code', 'purchase')
+                    ->sum('invoice_items.quantity'),
+                'total_out' => (float) DB::table('invoice_items')
+                    ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+                    ->join('invoice_types', 'invoices.invoice_type_id', '=', 'invoice_types.id')
+                    ->where('invoices.company_id', auth()->user()->company_id)
+                    ->where('invoice_types.code', 'sale')
+                    ->sum('invoice_items.quantity'),
+                'current_stock' => (float) Stock::whereCompanyIsCurrent()->where('status', 'available')->sum('quantity'),
             ];
 
             return response()->json([
@@ -99,13 +111,25 @@ class StockReportController extends BaseReportController
             $valuationQuery->where('stocks.company_id', $user->company_id);
         }
 
+        // Apply Status Filters
+        if (!empty($filters['stock_status'])) {
+            $threshold = $filters['threshold'] ?? 10;
+            if ($filters['stock_status'] === 'in_stock') {
+                $valuationQuery->havingRaw('SUM(stocks.quantity) > ?', [$threshold]);
+            } elseif ($filters['stock_status'] === 'low_stock') {
+                $valuationQuery->havingRaw('SUM(stocks.quantity) <= ? AND SUM(stocks.quantity) > 0', [$threshold]);
+            } elseif ($filters['stock_status'] === 'out_of_stock') {
+                $valuationQuery->havingRaw('SUM(stocks.quantity) <= 0');
+            }
+        }
+
         $valuation = $valuationQuery
             ->select([
                 'products.id as product_id',
                 'products.name as product_name',
                 DB::raw('SUM(stocks.quantity) as total_quantity'),
-                DB::raw('AVG(stocks.cost) as avg_cost'),
-                DB::raw('SUM(stocks.quantity * stocks.cost) as total_cost_value'),
+                DB::raw('AVG(COALESCE(NULLIF(stocks.cost, 0), product_variants.purchase_price)) as avg_cost'),
+                DB::raw('SUM(stocks.quantity * COALESCE(NULLIF(stocks.cost, 0), product_variants.purchase_price)) as total_cost_value'),
                 DB::raw('SUM(stocks.quantity * product_variants.retail_price) as total_sale_value'),
             ])
             ->groupBy('products.id', 'products.name')
@@ -154,7 +178,7 @@ class StockReportController extends BaseReportController
                 DB::raw('SUM(stocks.quantity) as current_stock'),
             ])
             ->groupBy('products.id', 'products.name', 'product_variants.id', 'product_variants.sku')
-            ->havingRaw('SUM(stocks.quantity) <= ?', [$threshold])
+            ->havingRaw('SUM(stocks.quantity) <= ? AND SUM(stocks.quantity) > 0', [$threshold])
             ->orderBy('current_stock', 'asc')
             ->get();
 

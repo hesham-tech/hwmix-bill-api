@@ -3,7 +3,7 @@
 namespace App\Http\Resources\Warehouse;
 
 use Illuminate\Http\Request;
-use App\Http\Resources\User\UserResource;
+use App\Http\Resources\User\UserBasicResource;
 use App\Http\Resources\Stock\StockResource;
 use App\Http\Resources\Company\CompanyResource;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -27,7 +27,7 @@ class WarehouseResource extends JsonResource
             'is_default' => $this->is_default,
             'description' => $this->description, // تم إضافة حقل الوصف
             'company' => new CompanyResource($this->whenLoaded('company')),
-            'creator' => new UserResource($this->whenLoaded('creator')),
+            'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'stocks' => StockResource::collection($this->whenLoaded('stocks')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
