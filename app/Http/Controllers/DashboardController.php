@@ -37,6 +37,7 @@ class DashboardController extends Controller
                 ->sum('net_amount'),
 
             'pending_payments' => Invoice::where('company_id', $companyId)
+                ->where('remaining_amount', '>', 0)
                 ->sum('remaining_amount'),
 
             'total_customers' => \App\Models\CompanyUser::where('company_id', $companyId)
