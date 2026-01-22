@@ -11,55 +11,64 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        for ($i = 0; $i < 2; $i++) {
+        $products = [
+            [
+                'name' => 'iPhone 15 Pro Max - 256GB',
+                'brand_id' => 1, // Apple
+                'category_id' => 1, // موبايلات
+                'cost' => 55000,
+                'wholesale' => 58000,
+                'retail' => 62000,
+            ],
+            [
+                'name' => 'Samsung Galaxy S24 Ultra - 512GB',
+                'brand_id' => 2, // Samsung
+                'category_id' => 1, // موبايلات
+                'cost' => 45000,
+                'wholesale' => 48000,
+                'retail' => 52000,
+            ],
+        ];
+
+        foreach ($products as $index => $pData) {
             $product = Product::create([
-                'name' => 'منتج ' . ($i + 1),
-                'slug' => 'product-' . ($i + 1),
+                'name' => $pData['name'],
+                'slug' => \Illuminate\Support\Str::slug($pData['name']),
                 'active' => true,
-                'featured' => false,
+                'featured' => true,
                 'returnable' => true,
                 'published_at' => now(),
-                'desc' => 'وصف المنتج ' . ($i + 1),
-                'desc_long' => 'تفاصيل المنتج ' . ($i + 1),
+                'desc' => 'أحدث إصدار من ' . $pData['name'],
+                'desc_long' => 'تفاصيل كاملة عن ' . $pData['name'] . ' مع الضمان المحلي.',
                 'company_id' => 1,
-                'category_id' => 1,
-                'brand_id' => 1,
+                'category_id' => $pData['category_id'],
+                'brand_id' => $pData['brand_id'],
                 'created_by' => 1,
             ]);
 
-            // إضافة متغير (Variant)
             $variant = ProductVariant::create([
                 'product_id' => $product->id,
-                'barcode' => 'BR-' . rand(100000, 999999),
-                'sku' => 'SKU-' . rand(1000, 9999),
-                'wholesale_price' => 60,
-                'retail_price' => 75,
-                'profit_margin' => 0.25,  // هامش الربح تمت إضافته
-                'image' => null,  // تم تغيير 'image_url' إلى 'image'
-                'weight' => 1.5,
-                'dimensions' => '20x30x10',
-                'tax' => 5,  // تم تغيير 'tax_rate' إلى 'tax'
-                'discount' => 0,
+                'barcode' => 'BR-' . (100000 + $index),
+                'sku' => 'SKU-' . (1000 + $index),
+                'wholesale_price' => $pData['wholesale'],
+                'retail_price' => $pData['retail'],
+                'profit_margin' => ($pData['retail'] - $pData['cost']) / $pData['cost'],
                 'status' => 'active',
                 'company_id' => 1,
                 'created_by' => 1,
             ]);
 
-            // إضافة مخزون للمتغير
             Stock::create([
                 'variant_id' => $variant->id,
                 'warehouse_id' => 1,
                 'company_id' => 1,
                 'created_by' => 1,
-                'quantity' => 100,
-                'reserved' => 5,
-                'min_quantity' => 10,
-                'cost' => 50,  // سعر الشراء للوحدة
-                'batch' => 'BATCH-' . strtoupper(uniqid()),
-                'expiry' => now()->addMonths(6),
-                'loc' => 'رف-أ',
+                'quantity' => 50,
+                'reserved' => 0,
+                'min_quantity' => 5,
+                'cost' => $pData['cost'],
+                'batch' => 'BATCH-' . date('Ymd'),
                 'status' => 'available',
-                'updated_by' => null,  // تمت إضافته كاختياري
             ]);
         }
     }

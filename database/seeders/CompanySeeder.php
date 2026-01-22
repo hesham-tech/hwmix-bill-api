@@ -10,17 +10,12 @@ class CompanySeeder extends Seeder
     public function run(): void
     {
         Company::create([
-            'name' => 'شركة نور الاسلام',
-            'email' => 'info@alnoor.com',
-            'phone' => '01006444992',
-            'address' => '456 شارع نور الاسلام، القاهرة',
-            'created_by' => 1,
-        ]);
-        Company::create([
-            'name' => 'شركة هونكس',
+            'name' => 'هونكس المبدعة للتجارة',
             'email' => 'info@hwunex.com',
             'phone' => '01006444991',
-            'address' => '123 شارع هونكس، القاهرة',
+            'address' => '123 شارع التكنولوجيا - التجمع الخامس - القاهرة',
+            'field' => 'تجارة الأجهزة الإلكترونية',
+            'owner_name' => 'هشام محمد',
             'created_by' => 1,
         ]);
     }
