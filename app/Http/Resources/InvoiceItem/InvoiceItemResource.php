@@ -22,6 +22,7 @@ class InvoiceItemResource extends JsonResource
             'total' => $this->total,
             'primary_image_url' => $this->variant?->image ? asset($this->variant->image->url) : ($this->product && $this->product->image ? asset($this->product->image->url) : null),
             'variant' => new ProductVariantResource($this->whenLoaded('variant')),
+            'digital_deliveries' => $this->whenLoaded('digitalDeliveries'),
 
             'product' => $this->whenLoaded('product'),
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,

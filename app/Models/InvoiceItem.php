@@ -65,4 +65,10 @@ class InvoiceItem extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    // 🔗 علاقة تسليم المنتجات الرقمية
+    public function digitalDeliveries()
+    {
+        return $this->hasMany(DigitalProductDelivery::class, 'invoice_item_id');
+    }
 }

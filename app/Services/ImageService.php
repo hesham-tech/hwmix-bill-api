@@ -37,11 +37,12 @@ class ImageService
                 continue;
             }
 
-            // استخراج المسار النسبي من URL المخزن (مثلاً من /storage/uploads/1/temp/x.jpg إلى uploads/1/temp/x.jpg)
-            $oldRelativePath = str_replace(Storage::url(''), '', $image->url);
-            $oldRelativePath = ltrim($oldRelativePath, '/');
+            // استخراج المسار النسبي من القيمة الخام المخزنة في قاعدة البيانات
+            // نتجنب استخدام Storage::url() هنا لأنها قد تعود بـ host مختلف حسب الـ APP_URL
+            $oldUrlRaw = $image->getRawOriginal('url');
+            $oldRelativePath = ltrim(str_replace('/storage/', '', $oldUrlRaw), '/');
 
-            $ext = pathinfo($image->url, PATHINFO_EXTENSION);
+            $ext = pathinfo($oldUrlRaw, PATHINFO_EXTENSION);
             $fileName = "{$modelName}_{$model->id}_" . uniqid() . '.' . $ext;
             $newRelativePath = "{$storageBase}/{$fileName}";
 
@@ -49,16 +50,26 @@ class ImageService
             if (Storage::disk('public')->exists($oldRelativePath)) {
                 // التأكد من وجود المجلد الوجهة
                 Storage::disk('public')->makeDirectory($storageBase);
-                Storage::disk('public')->move($oldRelativePath, $newRelativePath);
-            }
 
-            $image->update([
-                'url' => Storage::url($newRelativePath),
-                'imageable_id' => $model->id,
-                'imageable_type' => get_class($model),
-                'is_temp' => 0,
-                'type' => $type,
-            ]);
+                if (Storage::disk('public')->move($oldRelativePath, $newRelativePath)) {
+                    $image->update([
+                        'url' => '/storage/' . $newRelativePath, // تخزين مسار نسبي يبدأ بـ /storage/
+                        'imageable_id' => $model->id,
+                        'imageable_type' => get_class($model),
+                        'is_temp' => 0,
+                        'type' => $type,
+                    ]);
+                }
+            } elseif (!$image->is_temp && str_contains($oldUrlRaw, $storageBase)) {
+                // إذا كان الملف غير موجود في المسار القديم ولكنه ليس مؤقتاً ومساره يحتوي على المجلد الوجهة
+                // فربما تم نقله بالفعل في محاولة سابقة، نقوم فقط بتحديث البيانات إذا لزم الأمر
+                $image->update([
+                    'imageable_id' => $model->id,
+                    'imageable_type' => get_class($model),
+                    'is_temp' => 0,
+                    'type' => $type,
+                ]);
+            }
         }
     }
 
@@ -70,9 +81,9 @@ class ImageService
         $images = Image::whereIn('id', $imageIds)->get();
 
         foreach ($images as $image) {
-            // استخراج المسار النسبي للحذف
-            $relativePathToDelete = str_replace(Storage::url(''), '', $image->url);
-            $relativePathToDelete = ltrim($relativePathToDelete, '/');
+            // استخراج المسار النسبي للحذف من القيمة الخام
+            $urlRaw = $image->getRawOriginal('url');
+            $relativePathToDelete = ltrim(str_replace('/storage/', '', $urlRaw), '/');
 
             if (Storage::disk('public')->exists($relativePathToDelete)) {
                 Storage::disk('public')->delete($relativePathToDelete);

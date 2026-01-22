@@ -142,6 +142,7 @@ class InvoiceController extends Controller
             'company',
             'invoiceType',
             'items.variant',
+            'items.digitalDeliveries',
             'installmentPlan',
             'creator',
         ];
@@ -306,8 +307,8 @@ class InvoiceController extends Controller
 
                 $responseDTO = $service->create($validated);
 
-                if (!$responseDTO || !$responseDTO instanceof \App\Models\Invoice) {
-                    \Log::error('لم يتم إنشاء الفاتورة بنجاح من الـ Service', [
+                if (!$responseDTO || !$responseDTO instanceof Invoice) {
+                    Log::error('لم يتم إنشاء الفاتورة بنجاح من الـ Service', [
                         'returned_value' => $responseDTO,
                         'invoice_type_code' => $invoiceTypeCode,
                         'validated_data' => $validated,
