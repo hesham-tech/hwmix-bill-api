@@ -25,6 +25,7 @@ class StockReportController extends BaseReportController
 
         $query = DB::table('stocks')
             ->join('product_variants', 'stocks.variant_id', '=', 'product_variants.id')
+            ->join('products', 'product_variants.product_id', '=', 'products.id')
             ->leftJoin('invoice_items', 'product_variants.id', '=', 'invoice_items.variant_id')
             ->leftJoin('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
             ->leftJoin('invoice_types', 'invoices.invoice_type_id', '=', 'invoice_types.id')
@@ -37,6 +38,7 @@ class StockReportController extends BaseReportController
                 DB::raw("ANY_VALUE(stocks.quantity) as current_stock"), // Or use a separate subquery for precision if status matches
             ])
             ->where('stocks.company_id', auth()->user()->company_id)
+            ->where('products.product_type', 'physical')
             ->groupBy('product_variants.product_id', 'stocks.variant_id', 'stocks.warehouse_id');
 
         // Apply filters
@@ -163,7 +165,8 @@ class StockReportController extends BaseReportController
         $itemQuery = DB::table('stocks')
             ->join('product_variants', 'stocks.variant_id', '=', 'product_variants.id')
             ->join('products', 'product_variants.product_id', '=', 'products.id')
-            ->where('stocks.status', 'available');
+            ->where('stocks.status', 'available')
+            ->where('products.product_type', 'physical');
 
         if ($user = auth()->user()) {
             $itemQuery->where('stocks.company_id', $user->company_id);

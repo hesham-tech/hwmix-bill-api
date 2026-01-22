@@ -33,6 +33,7 @@ class InvoiceItem extends Model
         'cost_price' => 'float',
         'total_cost' => 'float',
         'total' => 'float',
+        'profit_margin' => 'float',
     ];
     // 🔗 العلاقة مع الفاتورة
     public function invoice()

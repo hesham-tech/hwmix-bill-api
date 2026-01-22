@@ -61,6 +61,8 @@ class ProductControllerTest extends TestCase
 
         $payload = [
             'name' => 'Test Product',
+            'product_type' => 'physical',
+            'require_stock' => true,
             'category_id' => $this->category->id,
             'brand_id' => $this->brand->id,
             'variants' => [
@@ -110,6 +112,8 @@ class ProductControllerTest extends TestCase
 
         $payload = [
             'name' => 'Updated Product',
+            'product_type' => 'physical',
+            'require_stock' => true,
             'category_id' => $this->category->id,
             'brand_id' => $this->brand->id,
             'variants' => [
@@ -181,6 +185,8 @@ class ProductControllerTest extends TestCase
 
         $payload = [
             'name' => 'Dupe Product',
+            'product_type' => 'physical',
+            'require_stock' => true,
             'category_id' => $this->category->id,
             'variants' => [
                 ['sku' => 'DUPE-SKU', 'retail_price' => 100]

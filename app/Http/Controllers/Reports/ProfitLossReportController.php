@@ -29,6 +29,7 @@ class ProfitLossReportController extends BaseReportController
         // Fetch existing summaries
         $summaries = DailySalesSummary::where('company_id', $companyId)
             ->whereBetween('date', [$dateFrom, $dateTo])
+            ->orderBy('date', 'asc')
             ->get()
             ->keyBy(fn($item) => $item->date->toDateString());
 

@@ -23,6 +23,11 @@ class ProductService
             $productData['created_by'] = $user->id;
             $productData['slug'] = Product::generateSlug($data->name);
 
+            // Handle digital keys count
+            if ($data->product_type === Product::TYPE_DIGITAL && !empty($data->license_keys)) {
+                $productData['available_keys_count'] = count($data->license_keys);
+            }
+
             $product = Product::create($productData);
 
             // Sync Product Images
@@ -43,7 +48,14 @@ class ProductService
     {
         return DB::transaction(function () use ($product, $data, $user) {
             $companyId = $product->company_id;
-            $product->update($data->toArray());
+            $updateData = $data->toArray();
+
+            // Handle digital keys count
+            if ($data->product_type === Product::TYPE_DIGITAL && isset($data->license_keys)) {
+                $updateData['available_keys_count'] = count($data->license_keys);
+            }
+
+            $product->update($updateData);
 
             // Sync Product Images
             if (isset($data->image_ids)) {

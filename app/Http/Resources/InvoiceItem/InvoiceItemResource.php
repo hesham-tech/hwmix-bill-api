@@ -18,6 +18,7 @@ class InvoiceItemResource extends JsonResource
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
             'discount' => $this->discount,
+            'profit_margin' => $this->profit_margin,
             'total' => $this->total,
             'primary_image_url' => $this->variant?->image ? asset($this->variant->image->url) : ($this->product && $this->product->image ? asset($this->product->image->url) : null),
             'variant' => new ProductVariantResource($this->whenLoaded('variant')),

@@ -76,6 +76,7 @@ class SaleInvoiceService implements DocumentServiceInterface
             }
 
             // ✅ Auto-deliver digital products
+            $invoice->load('items.product');
             foreach ($invoice->items as $item) {
                 if ($item->product && $item->product->isDigital()) {
                     try {

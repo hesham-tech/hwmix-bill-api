@@ -123,6 +123,7 @@ trait InvoiceHelperTrait
                     'tax_amount' => $item['tax_amount'] ?? 0,
                     'subtotal' => $item['subtotal'] ?? 0,
                     'total' => $item['total'],
+                    'profit_margin' => $item['profit_margin'] ?? ($item['variant_id'] ? ProductVariant::find($item['variant_id'])->profit_margin : 0),
                     'company_id' => $companyId,
                     'created_by' => $createdBy,
                 ]);
@@ -172,6 +173,7 @@ trait InvoiceHelperTrait
                         'tax_amount' => $itemData['tax_amount'] ?? 0,
                         'subtotal' => $itemData['subtotal'] ?? 0,
                         'total' => $itemData['total'],
+                        'profit_margin' => $itemData['profit_margin'] ?? ($itemData['variant_id'] ? ProductVariant::find($itemData['variant_id'])->profit_margin : 0),
                         'company_id' => $companyId,
                         'updated_by' => $updatedBy,
                     ]);
@@ -193,6 +195,7 @@ trait InvoiceHelperTrait
                         'tax_amount' => $itemData['tax_amount'] ?? 0,
                         'subtotal' => $itemData['subtotal'] ?? 0,
                         'total' => $itemData['total'],
+                        'profit_margin' => $itemData['profit_margin'] ?? ($itemData['variant_id'] ? ProductVariant::find($itemData['variant_id'])->profit_margin : 0),
                         'company_id' => $companyId,
                         'created_by' => $updatedBy,
                     ]);
@@ -289,6 +292,11 @@ trait InvoiceHelperTrait
                 if (!$variant)
                     continue;
 
+                // ✅ تخطي خصم المخزون للمنتجات التي لا تتطلب مخزون
+                if (!$variant->product?->requiresStock()) {
+                    continue;
+                }
+
                 $remaining = $item['quantity'];
                 $stocks = $variant->stocks()
                     ->where('status', 'available')
@@ -328,6 +336,11 @@ trait InvoiceHelperTrait
                 $variant = ProductVariant::find($item->variant_id ?? null);
                 if (!$variant)
                     continue;
+
+                // ✅ تخطي إعادة المخزون للمنتجات التي لا تتطلب مخزون
+                if (!$variant->product?->requiresStock()) {
+                    continue;
+                }
 
                 $remaining = $item->quantity;
                 $itemWarehouseId = $item->warehouse_id ?? $invoice->warehouse_id;
@@ -380,6 +393,11 @@ trait InvoiceHelperTrait
                     continue;
                 }
 
+                // ✅ تخطي زيادة المخزون للمنتجات التي لا تتطلب مخزون
+                if (!$variant->product?->requiresStock()) {
+                    continue;
+                }
+
                 // نبحث عن أحدث مخزون متاح لإضافة الكمية إليه في نفس المخزن
                 $stock = $variant->stocks()
                     ->where('status', 'available')
@@ -422,6 +440,11 @@ trait InvoiceHelperTrait
                 $variant = ProductVariant::find($item->variant_id ?? null);
                 if (!$variant)
                     continue;
+
+                // ✅ تخطي خصم المخزون للمنتجات التي لا تتطلب مخزون
+                if (!$variant->product?->requiresStock()) {
+                    continue;
+                }
 
                 $remainingToDeduct = $item->quantity;
                 $itemWarehouseId = $item->warehouse_id ?? $invoice->warehouse_id;

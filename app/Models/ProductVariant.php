@@ -30,6 +30,7 @@ class ProductVariant extends Model
         'retail_price',
         'wholesale_price',
         'purchase_price',
+        'profit_margin',
         'image',
         'weight',
         'dimensions',
@@ -38,6 +39,8 @@ class ProductVariant extends Model
         'min_quantity',
         'status',
         'product_id',
+        'company_id',
+        'created_by',
         'sales_count'
     ];
 
@@ -45,8 +48,9 @@ class ProductVariant extends Model
         'retail_price' => 'decimal:2',
         'wholesale_price' => 'decimal:2',
         'purchase_price' => 'decimal:2',
+        'profit_margin' => 'decimal:2',
         'weight' => 'decimal:2',
-        'dimensions' => 'array',  // Assuming dimensions is stored as an array
+        'dimensions' => 'array',
         'tax' => 'decimal:2',
         'discount' => 'decimal:2',
         'sales_count' => 'integer',

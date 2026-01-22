@@ -27,6 +27,7 @@ class ProductVariantResource extends JsonResource
             'retail_price' => $this->retail_price,
             'wholesale_price' => $this->when(auth()->user()?->hasAnyPermission(['products.view_wholesale_price', 'admin.super', 'admin.company']), $this->wholesale_price),
             'purchase_price' => $this->when(auth()->user()?->hasAnyPermission(['products.view_purchase_price', 'admin.super', 'admin.company']), $this->purchase_price),
+            'profit_margin' => $this->profit_margin,
             'image' => $this->image ? asset($this->image->url) : null,
             'primary_image_url' => $this->image ? asset($this->image->url) : ($this->product && $this->product->image ? asset($this->product->image->url) : null),
             'weight' => $this->weight,
@@ -54,6 +55,8 @@ class ProductVariantResource extends JsonResource
                 'category_id' => $this->product->category_id,
                 'brand_id' => $this->product->brand_id,
                 'company_id' => $this->product->company_id,
+                'product_type' => $this->product->product_type,
+                'requires_stock' => (bool) $this->product->requiresStock(),
             ]),
 
             // ✅ الخصائص (attributes) + القيم المرتبطة
