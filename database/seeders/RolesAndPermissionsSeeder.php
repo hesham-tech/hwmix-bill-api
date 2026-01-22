@@ -17,58 +17,40 @@ class RolesAndPermissionsSeeder extends Seeder
     {
         $permissions = Permission::all();
 
-        $existingCompany = Company::where('email', 'company@admin.com')->first();
-        if (!$existingCompany) {
-            $this->createSystemCompany();
-        }
+        // نستخدم الشركة الأولى الموجودة بالفعل (التي أنشأها CompanySeeder)
+        $company = Company::first();
 
         $admin = User::where('email', 'admin@admin.com')->first();
         if (!$admin) {
-            $this->createSystemOwner($permissions);
+            $this->createSystemOwner($permissions, $company);
         } else {
             // تحديث بيانات الدخول للتأكد من مطابقتها للسيدر
             $admin->update([
-                'phone' => '1234567890',
+                'nickname' => 'مدير النظام',
+                'full_name' => 'هشام محمد',
+                'phone' => '01006444991',
                 'password' => bcrypt('12345678'),
             ]);
 
             // إخبار النظام برقم الشركة قبل مزامنة الصلاحيات (Spatie Teams)
-            if (config('permission.teams')) {
-                $company = Company::first();
-                if ($company) {
-                    setPermissionsTeamId($company->id);
-                }
+            if (config('permission.teams') && $company) {
+                setPermissionsTeamId($company->id);
             }
             $admin->syncPermissions($permissions);
         }
     }
 
 
-    private function createSystemCompany()
-    {
-        Company::firstOrCreate(
-            ['email' => 'company@admin.com'],
-            [
-                'name' => 'System Company',
-                'description' => 'A description for the system company.',
-                'field' => 'Technology',
-                'owner_name' => 'System Owner',
-                'address' => '123 System Street',
-                'phone' => '010123456789',
-            ]
-        );
-    }
 
-    private function createSystemOwner($permissions)
+    private function createSystemOwner($permissions, $company)
     {
-        $company = Company::first();
         $user = User::create([
-            'nickname' => 'System Owner',
+            'nickname' => 'مدير النظام',
             'email' => 'admin@admin.com',
-            'full_name' => 'Admin',
+            'full_name' => 'هشام محمد',
             'username' => 'system_owner',
             'password' => bcrypt('12345678'),
-            'phone' => '1234567890',
+            'phone' => '01006444991',
             'company_id' => $company ? $company->id : null,
         ]);
         // إخبار النظام برقم الشركة قبل منح الصلاحيات (Spatie Teams)

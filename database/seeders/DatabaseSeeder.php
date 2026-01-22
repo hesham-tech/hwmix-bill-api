@@ -14,21 +14,21 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-                // 1. الأساسيات (System Types)
+                // 1. الأساسيات والشركات (The Foundation)
+            CompanySeeder::class,
+
+                // 2. الهوية والصلاحيات (Identity & Access)
+            PermissionsSeeder::class,
+            UserSeeder::class,
+
+                // 3. الإعدادات والأنواع (Configuration)
             InvoiceTypeSeeder::class,
             PaymentMethodSeeder::class,
             CashBoxTypeSeeder::class,
-
-                // 2. الشركة والبيانات المرتبطة
-            CompanySeeder::class,
             WarehouseSeeder::class,
             ExpenseCategorySeeder::class,
 
-                // 3. الصلاحيات والمستخدمين
-            PermissionsSeeder::class, // ينشئ الصلاحيات والأدوار والـ Super Admin
-            UserSeeder::class,        // ينشئ عملاء للتجربة (جملة وقطاعي)
-
-                // 4. المخزون والمنتجات
+                // 4. البيانات التشغيلية (Operational Data)
             CategorySeeder::class,
             BrandSeeder::class,
             ProductSeeder::class,
