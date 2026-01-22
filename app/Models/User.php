@@ -184,6 +184,7 @@ class User extends Authenticatable
     {
         return $this
             ->belongsToMany(Company::class, 'company_user', 'user_id', 'company_id')
+            ->using(CompanyUser::class)
             ->withTimestamps()
             ->withPivot([
                 'nickname_in_company',

@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\FilterableByCompany;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\Pivot; // تم التغيير من Model إلى Pivot
+use App\Observers\CompanyUserObserver;
 
 // تم إزالة Traits مثل HasRoles, HasPermissions, HasImages, LogsActivity 
 
+#[ObservedBy([CompanyUserObserver::class])]
 class CompanyUser extends Pivot
 {
     // تم الإبقاء على HasFactory فقط من الـ Traits الأساسية للنماذج
