@@ -47,6 +47,8 @@ class ProductResource extends JsonResource
             'brand_id' => $this->whenNotNull($this->brand_id),
             'company_id' => $this->company_id,
             'total_available_quantity' => $totalAvailableQuantity,
+            'min_price' => $this->whenLoaded('variants', fn() => $this->variants->min('retail_price') ?? 0, 0),
+            'max_price' => $this->whenLoaded('variants', fn() => $this->variants->max('retail_price') ?? 0, 0),
             'company' => new CompanyResource($this->whenLoaded('company')),
             'installment_plan' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
