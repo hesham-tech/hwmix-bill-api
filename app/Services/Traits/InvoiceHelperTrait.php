@@ -41,6 +41,7 @@ trait InvoiceHelperTrait
                 'warehouse_id' => $data['warehouse_id'] ?? null,
                 'reference_number' => $data['reference_number'] ?? null,
                 'issue_date' => $data['issue_date'] ?? null,
+                'previous_balance' => $data['previous_balance'] ?? 0,
                 'notes' => $data['notes'] ?? null,
                 'company_id' => $data['company_id'] ?? null,
                 'created_by' => $data['created_by'] ?? null,

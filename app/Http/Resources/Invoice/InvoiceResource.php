@@ -22,9 +22,10 @@ class InvoiceResource extends JsonResource
             'invoice_number' => $this->invoice_number,
             // الحقول المالية
             'gross_amount' => number_format($this->gross_amount, 2, '.', ''),
-            'total_amount' => number_format($this->total_amount, 2, '.', ''),
             'paid_amount' => number_format($this->paid_amount, 2, '.', ''),
             'remaining_amount' => number_format($this->remaining_amount, 2, '.', ''),
+            'previous_balance' => number_format($this->previous_balance, 2, '.', ''),
+            'total_required' => number_format($this->net_amount - $this->previous_balance, 2, '.', ''),
             'round_step' => $this->round_step,
             'net_amount' => number_format($this->net_amount, 2, '.', ''),
             'total_discount' => number_format($this->total_discount, 2, '.', ''),

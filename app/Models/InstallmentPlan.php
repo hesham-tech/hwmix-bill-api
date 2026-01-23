@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes; // ← ✅ استيراد السوفت دليت
 
 /**
- * @mixin IdeHelperInstallmentPlan
+ * InstallmentPlan Model
  */
 class InstallmentPlan extends Model
 {
@@ -20,7 +20,7 @@ class InstallmentPlan extends Model
      */
     public function logLabel()
     {
-        return "خطة تقسيط ({$this->user?->name}) - إجمالي: {$this->total_amount}";
+        return "خطة تقسيط ({$this->user?->name}) - إجمالي الصافي: {$this->net_amount}";
     }
 
     protected $fillable = [
@@ -28,7 +28,7 @@ class InstallmentPlan extends Model
         'name',
         'description',
         'user_id',
-        'total_amount',
+        'net_amount',
         'down_payment',
         'remaining_amount',
         'company_id',

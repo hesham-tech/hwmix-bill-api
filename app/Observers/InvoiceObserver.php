@@ -94,10 +94,12 @@ class InvoiceObserver
     {
         $date = $invoice->issue_date ?? $invoice->created_at;
         if ($date && $invoice->company_id) {
-            \App\Jobs\UpdateDailySalesSummary::dispatchSync(
-                $date->toDateString(),
-                $invoice->company_id
-            );
+            \Illuminate\Support\Facades\DB::afterCommit(function () use ($date, $invoice) {
+                \App\Jobs\UpdateDailySalesSummary::dispatchSync(
+                    $date->toDateString(),
+                    $invoice->company_id
+                );
+            });
         }
     }
 }

@@ -32,11 +32,11 @@ class InstallmentService
             $startDate = Carbon::parse($planData['start_date']);
             $roundStep = isset($planData['round_step']) && $planData['round_step'] > 0 ? (int) $planData['round_step'] : 5;
 
-            $totalAmount = $planData['total_amount'];
+            $netAmount = $planData['net_amount'];
             $downPayment = $planData['down_payment'];
             $installmentsN = (int) $planData['number_of_installments'];
 
-            $remaining = bcsub($totalAmount, $downPayment, 2);
+            $remaining = bcsub($netAmount, $downPayment, 2);
             if (bccomp($remaining, '0.00', 2) <= 0) {
                 Log::info('InstallmentService: تخطي إنشاء خطة التقسيط لأن المبلغ المتبقي صفر أو أقل.', ['remaining' => $remaining]);
                 return;
@@ -48,7 +48,7 @@ class InstallmentService
             $planModel = InstallmentPlan::create([
                 'invoice_id' => $invoiceId,
                 'user_id' => $userId,
-                'total_amount' => $totalAmount,
+                'net_amount' => $netAmount,
                 'down_payment' => $downPayment,
                 'remaining_amount' => $remaining,
                 'number_of_installments' => $installmentsN,

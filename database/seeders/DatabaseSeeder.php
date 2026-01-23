@@ -23,8 +23,11 @@ class DatabaseSeeder extends Seeder
 
                 // 3. الإعدادات والأنواع (Configuration)
             InvoiceTypeSeeder::class,
+            CompanyInvoiceTypeSeeder::class,
             PaymentMethodSeeder::class,
+            CompanyPaymentMethodSeeder::class,
             CashBoxTypeSeeder::class,
+            CompanyCashBoxTypeSeeder::class,
             WarehouseSeeder::class,
             ExpenseCategorySeeder::class,
 

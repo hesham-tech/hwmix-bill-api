@@ -31,6 +31,7 @@ class StoreInvoiceRequest extends FormRequest
             'net_amount' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
             'remaining_amount' => 'nullable|numeric',
+            'previous_balance' => 'nullable|numeric',
 
             'round_step' => 'nullable|integer',
 

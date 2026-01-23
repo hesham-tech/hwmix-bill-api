@@ -22,6 +22,7 @@ class Invoice extends Model
         'tax_inclusive' => 'boolean',
         'issue_date' => 'date',
         'due_date' => 'date',
+        'previous_balance' => 'decimal:2',
     ];
 
     // Status Constants

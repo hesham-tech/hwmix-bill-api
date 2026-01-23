@@ -1,0 +1,44 @@
+{
+    "invoices": [
+        {
+            "id": 2,
+            "invoice_number": "SALE-260123-1-000001",
+            "type_code": "sale",
+            "net_amount": "12000.00",
+            "issue_date": "2026-01-23T00:00:00.000000Z",
+            "created_at": "2026-01-23 00:19:04"
+        },
+        {
+            "id": 3,
+            "invoice_number": "SALE-260123-1-000002",
+            "type_code": "sale",
+            "net_amount": "12000.00",
+            "issue_date": "2026-01-23T00:00:00.000000Z",
+            "created_at": "2026-01-23 00:37:33"
+        }
+    ],
+    "items": [
+        {
+            "id": 1,
+            "invoice_id": 2,
+            "cost_price": 10000,
+            "total_cost": 10000,
+            "created_at": "2026-01-23 00:19:04"
+        },
+        {
+            "id": 2,
+            "invoice_id": 3,
+            "cost_price": 10000,
+            "total_cost": 10000,
+            "created_at": "2026-01-23 00:37:33"
+        }
+    ],
+    "summaries": [
+        {
+            "date": "2026-01-23",
+            "revenue": 24000,
+            "cogs": 10000,
+            "net_profit": 14000
+        }
+    ]
+}

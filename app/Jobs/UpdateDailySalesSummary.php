@@ -46,8 +46,15 @@ class UpdateDailySalesSummary implements ShouldQueue
                     ->orWhere(fn($q2) => $q2->whereNull('issue_date')->whereDate('created_at', $date));
             })
             ->whereIn('status', ['confirmed', 'paid', 'partially_paid'])
-            ->whereHas('invoiceType', fn($q) => $q->whereIn('code', ['sale', 'service']))
-            ->selectRaw('SUM(net_amount) as revenue, COUNT(*) as count')
+            ->whereHas('invoiceType', fn($q) => $q->whereIn('code', ['sale', 'service', 'installment_sale', 'sale_return']))
+            ->selectRaw('
+                SUM(CASE 
+                    WHEN EXISTS (SELECT 1 FROM invoice_types WHERE id = invoices.invoice_type_id AND code = "sale_return") 
+                    THEN -net_amount 
+                    ELSE net_amount 
+                END) as revenue,
+                COUNT(*) as count
+            ')
             ->first();
 
         // 2. Calculate COGS from InvoiceItems
@@ -60,8 +67,14 @@ class UpdateDailySalesSummary implements ShouldQueue
                     ->orWhere(fn($q2) => $q2->whereNull('invoices.issue_date')->whereDate('invoices.created_at', $date));
             })
             ->whereIn('invoices.status', ['confirmed', 'paid', 'partially_paid'])
-            ->where('invoice_types.code', 'sale')
-            ->sum('invoice_items.total_cost');
+            ->whereIn('invoice_types.code', ['sale', 'installment_sale', 'sale_return'])
+            ->sum(DB::raw('
+                CASE 
+                    WHEN invoice_types.code = "sale_return" 
+                    THEN -invoice_items.total_cost 
+                    ELSE invoice_items.total_cost 
+                END
+            '));
 
         // 3. Calculate Expenses
         $expenses = Expense::query()

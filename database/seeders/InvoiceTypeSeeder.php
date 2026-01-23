@@ -28,6 +28,14 @@ class InvoiceTypeSeeder extends Seeder
                 'created_by' => $user->id,
             ],
             [
+                'name' => 'فاتورة بيع بالتقسيط',
+                'description' => 'فاتورة بيع للعميل بنظام الأقساط.',
+                'code' => 'installment_sale',
+                'context' => 'sales',
+                'company_id' => $company->id,
+                'created_by' => $user->id,
+            ],
+            [
                 'name' => 'فاتورة شراء',
                 'description' => 'فاتورة شراء من المورد، مع تحديث المخزون تلقائياً.',
                 'code' => 'purchase',
@@ -48,6 +56,23 @@ class InvoiceTypeSeeder extends Seeder
                 'description' => 'سند صرف مبالغ نقدية.',
                 'code' => 'payment',
                 'context' => 'finance',
+                'company_id' => $company->id,
+                'created_by' => $user->id,
+            ],
+
+            [
+                'name' => 'مرتجع مبيعات',
+                'description' => 'فاتورة إرجاع بضاعة من العميل.',
+                'code' => 'sale_return',
+                'context' => 'sales',
+                'company_id' => $company->id,
+                'created_by' => $user->id,
+            ],
+            [
+                'name' => 'مرتجع مشتريات',
+                'description' => 'فاتورة إرجاع بضاعة إلى المورد.',
+                'code' => 'purchase_return',
+                'context' => 'purchases',
                 'company_id' => $company->id,
                 'created_by' => $user->id,
             ],

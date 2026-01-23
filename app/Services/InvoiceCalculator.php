@@ -35,6 +35,10 @@ class InvoiceCalculator
         // (الضريبة محسوبة بالفعل في كل عنصر)
         $netAmount = $grossAmount - $invoiceDiscount;
 
+        $previousBalance = $invoiceData['previous_balance'] ?? 0;
+        $totalRequired = $netAmount - $previousBalance;
+        $remainingAmount = $totalRequired - ($invoiceData['paid_amount'] ?? 0);
+
         return [
             'items' => $calculatedItems,
             'gross_amount' => round($grossAmount, 2),
@@ -42,7 +46,7 @@ class InvoiceCalculator
             'total_tax' => round($totalTax, 2),
             'net_amount' => round($netAmount, 2),
             'paid_amount' => $invoiceData['paid_amount'] ?? 0,
-            'remaining_amount' => round($netAmount - ($invoiceData['paid_amount'] ?? 0), 2),
+            'remaining_amount' => round($remainingAmount, 2),
         ];
     }
 
@@ -51,11 +55,13 @@ class InvoiceCalculator
      *
      * @param float $netAmount
      * @param float $paidAmount
+     * @param float $previousBalance
      * @return float
      */
-    public function calculateRemaining(float $netAmount, float $paidAmount): float
+    public function calculateRemaining(float $netAmount, float $paidAmount, float $previousBalance = 0): float
     {
-        return round($netAmount - $paidAmount, 2);
+        $totalRequired = $netAmount - $previousBalance;
+        return round($totalRequired - $paidAmount, 2);
     }
 
     /**
@@ -81,7 +87,8 @@ class InvoiceCalculator
         }
 
         // التحقق من remaining_amount
-        $expectedRemaining = $data['net_amount'] - $data['paid_amount'];
+        $previousBalance = $data['previous_balance'] ?? 0;
+        $expectedRemaining = ($data['net_amount'] - $previousBalance) - $data['paid_amount'];
         if (isset($data['remaining_amount']) && abs($expectedRemaining - $data['remaining_amount']) > 0.01) {
             $errors[] = "remaining_amount غير صحيح. المتوقع: {$expectedRemaining}, المستلم: {$data['remaining_amount']}";
         }

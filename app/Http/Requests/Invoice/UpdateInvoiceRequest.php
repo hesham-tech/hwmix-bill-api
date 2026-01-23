@@ -38,6 +38,7 @@ class UpdateInvoiceRequest extends FormRequest
 
             'paid_amount' => 'nullable|numeric|min:0',
             'remaining_amount' => 'nullable|numeric',
+            'previous_balance' => 'nullable|numeric',
             'round_step' => 'nullable|integer',
 
             'due_date' => 'nullable|date|after_or_equal:today',
