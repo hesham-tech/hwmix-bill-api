@@ -38,17 +38,27 @@ class Image extends Model
             return null;
         }
 
-        // If it's already a full URL (external), return as is
+        // Determine the relative path
+        $path = $value;
+
+        // If it's a full URL, check if it's pointing to our storage
         if (str_starts_with($value, 'http')) {
-            return $value;
+            // Check if it contains '/storage/' which is our default public storage path
+            if (str_contains($value, '/storage/')) {
+                $path = explode('/storage/', $value)[1];
+            } else {
+                // If it's an external URL (like S3 or external site), return it as is
+                return $value;
+            }
         }
 
-        // Return full URL using the dedicated CORS-safe media serve route
-        $path = ltrim($value, '/');
+        // Clean up the path (remove leading slashes and 'storage/' prefix if present)
+        $path = ltrim($path, '/');
         if (str_starts_with($path, 'storage/')) {
             $path = substr($path, 8);
         }
 
+        // Return full URL using our CORS-safe media serve route
         return route('media.serve', ['path' => $path]);
     }
 

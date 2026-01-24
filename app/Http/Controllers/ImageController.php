@@ -80,11 +80,11 @@ class ImageController extends Controller
                 $url = Storage::url($path);
 
                 $image = Image::create([
-                    'url' => $url,
+                    'url' => $path,
                     'type' => $type,
                     'company_id' => $companyId,
                     'created_by' => $user->id,
-                    'is_temp' => 1, // تأكيد أنها صورة مؤقتة
+                    'is_temp' => 1,
                 ]);
 
                 $uploadedImages[] = $image;
