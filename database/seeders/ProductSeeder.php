@@ -16,17 +16,17 @@ class ProductSeeder extends Seeder
                 'name' => 'iPhone 15 Pro Max - 256GB',
                 'brand_id' => 1, // Apple
                 'category_id' => 1, // موبايلات
-                'cost' => 55000,
-                'wholesale' => 58000,
-                'retail' => 62000,
+                'cost' => 10000,
+                'wholesale' => 12000,
+                'retail' => 14000,
             ],
             [
                 'name' => 'Samsung Galaxy S24 Ultra - 512GB',
                 'brand_id' => 2, // Samsung
                 'category_id' => 1, // موبايلات
-                'cost' => 45000,
-                'wholesale' => 48000,
-                'retail' => 52000,
+                'cost' => 12000,
+                'wholesale' => 14000,
+                'retail' => 16000,
             ],
         ];
 
