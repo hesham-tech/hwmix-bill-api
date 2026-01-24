@@ -38,13 +38,18 @@ class Image extends Model
             return null;
         }
 
-        // If it's a full URL, strip the host to make it relative (for proxy support)
+        // If it's already a full URL (external), return as is
         if (str_starts_with($value, 'http')) {
-            return parse_url($value, PHP_URL_PATH);
+            return $value;
         }
 
-        // Ensure it starts with a leading slash
-        return '/' . ltrim($value, '/');
+        // Return full URL using the dedicated CORS-safe media serve route
+        $path = ltrim($value, '/');
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, 8);
+        }
+
+        return route('media.serve', ['path' => $path]);
     }
 
     public function imageable()

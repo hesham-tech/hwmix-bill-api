@@ -183,4 +183,22 @@ class ImageController extends Controller
             return api_exception($e, 500, 'خطأ أثناء حذف الصور');
         }
     }
+
+    /**
+     * Serve image with CORS headers
+     */
+    public function serve($path)
+    {
+        if (!Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        $fullPath = Storage::disk('public')->path($path);
+
+        return response()->file($fullPath, [
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => 'GET',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    }
 }

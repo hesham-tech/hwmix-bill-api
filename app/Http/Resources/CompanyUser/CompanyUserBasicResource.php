@@ -16,10 +16,9 @@ class CompanyUserBasicResource extends JsonResource
     public function toArray(Request $request): array
     {
         // الحصول على صورة الأفاتار للمستخدم من علاقة المستخدم
-        $avatarImage = $this->whenLoaded('user', function () {
-            return $this->user->images->where('type', 'avatar')->first();
+        $avatarUrl = $this->whenLoaded('user', function () {
+            return $this->user->images->where('type', 'avatar')->first()?->url;
         });
-        $avatarUrl = $avatarImage ? parse_url($avatarImage->url, PHP_URL_PATH) : null;
 
         // الحصول على الخزنة الافتراضية للشركة الحالية
         $defaultCashBox = $this->whenLoaded('user', function () {
@@ -52,7 +51,7 @@ class CompanyUserBasicResource extends JsonResource
             'status' => $this->status,
 
             // بيانات الخزنة الافتراضية
-            'cash_box_id' => $defaultCashBox?->id,
+            'cash_box_id' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? null : $defaultCashBox?->id,
             'avatar_url' => $avatarUrl,
 
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,

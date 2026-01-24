@@ -44,6 +44,7 @@ Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceC
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('error-reports', [ErrorReportController::class, 'store']);
+Route::get('media/view/{path}', [ImageController::class, 'serve'])->where('path', '.*')->name('media.serve');
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);

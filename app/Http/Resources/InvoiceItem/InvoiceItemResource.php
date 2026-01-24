@@ -22,7 +22,7 @@ class InvoiceItemResource extends JsonResource
             'total' => $this->total,
             'retail_price' => $this->variant?->retail_price ?? $this->variant?->price ?? 0,
             'wholesale_price' => $this->variant?->wholesale_price ?? 0,
-            'primary_image_url' => $this->variant?->image ? parse_url($this->variant->image->url, PHP_URL_PATH) : ($this->product && $this->product->image ? parse_url($this->product->image->url, PHP_URL_PATH) : null),
+            'primary_image_url' => $this->variant?->image?->url ?? $this->product?->image?->url,
             'variant' => new ProductVariantResource($this->whenLoaded('variant')),
             'digital_deliveries' => $this->whenLoaded('digitalDeliveries'),
 

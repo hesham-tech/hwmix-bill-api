@@ -26,7 +26,7 @@ class CompanyResource extends JsonResource
             'tax_number' => $this->tax_number,
             'website' => $this->website,
             'created_by' => $this->created_by,
-            'logo' => $this->logo ? parse_url($this->logo->url, PHP_URL_PATH) : null,
+            'logo' => $this->logo?->url,
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
         ];

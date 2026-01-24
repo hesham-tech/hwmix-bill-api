@@ -21,7 +21,7 @@ class BrandResource extends JsonResource
             'created_by' => $this->created_by,
             'description' => $this->description,
             'active' => (bool) $this->active,
-            'image_url' => $this->image?->url ? parse_url($this->image->url, PHP_URL_PATH) : null,
+            'image_url' => $this->image?->url,
             'image_id' => $this->image?->id,
             'products_count' => $this->products_count ?? $this->products()->count(),
             'creator_name' => $this->creator?->name,

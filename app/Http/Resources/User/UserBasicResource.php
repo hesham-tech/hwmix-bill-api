@@ -26,7 +26,7 @@ class UserBasicResource extends JsonResource
             'phone' => $this->phone,
             'customer_type' => $this->activeCompanyUser?->customer_type ?? $this->customer_type ?? 'retail',
             'cash_box_id' => optional($this->cashBoxDefault)->id,
-            'avatar_url' => $avatarImage ? parse_url($avatarImage->url, PHP_URL_PATH) : null,
+            'avatar_url' => $this->images->where('type', 'avatar')->first()?->url,
             'status' => $this->status,
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,

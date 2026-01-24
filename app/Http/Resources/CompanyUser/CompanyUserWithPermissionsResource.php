@@ -21,19 +21,16 @@ class CompanyUserWithPermissionsResource extends JsonResource
          * شعار الشركة
          */
         $companyLogoUrl = $this->whenLoaded('company', function () {
-            $logo = $this->company->logo;
-            return $logo && $logo->url ? parse_url($logo->url, PHP_URL_PATH) : null;
+            return $this->company->logo?->url;
         });
 
         /**
          * صورة الأفاتار
          */
         $avatarUrl = $this->whenLoaded('user', function () {
-            $avatar = $this->user->images
+            return $this->user->images
                 ->where('type', 'avatar')
-                ->first();
-
-            return $avatar && $avatar->url ? parse_url($avatar->url, PHP_URL_PATH) : null;
+                ->first()?->url;
         });
 
         /**
@@ -81,8 +78,8 @@ class CompanyUserWithPermissionsResource extends JsonResource
             'customer_type' => $this->customer_type_in_company,
 
             // الخزنة الافتراضية
-            'cash_box_id' => $defaultCashBox?->id,
-            'cashBoxDefault' => $defaultCashBox ? new CashBoxResource($defaultCashBox) : null,
+            'cash_box_id' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? null : $defaultCashBox?->id,
+            'cashBoxDefault' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? $defaultCashBox : ($defaultCashBox ? new CashBoxResource($defaultCashBox) : null),
 
             // الشركة الحالية
             'company_id' => $this->company_id,
