@@ -17,10 +17,12 @@ class InstallmentSaleInvoiceService implements DocumentServiceInterface
     use InvoiceHelperTrait;
 
     protected UserSelfDebtService $userSelfDebtService;
+    protected \App\Services\InvoicePaymentHandler $paymentHandler;
 
-    public function __construct(UserSelfDebtService $userSelfDebtService)
+    public function __construct(UserSelfDebtService $userSelfDebtService, \App\Services\InvoicePaymentHandler $paymentHandler)
     {
         $this->userSelfDebtService = $userSelfDebtService;
+        $this->paymentHandler = $paymentHandler;
     }
 
     /**
@@ -54,45 +56,22 @@ class InstallmentSaleInvoiceService implements DocumentServiceInterface
             $buyer = User::find($data['user_id']);
 
             $downPayment = $data['installment_plan']['down_payment'] ?? 0;
-
-            // معالجة الدفعة الأولى (تودع في خزنة البائع)
-            if ($downPayment > 0) {
-                if (!$authUser) {
-                    throw new \Exception('لا يمكن معالجة الدفعة الأولى. لم يتم تحديد الموظف البائع.');
-                }
-                $depositResult = $authUser->deposit($downPayment, $cashBoxId);
-                if ($depositResult !== true) {
-                    throw new \Exception('فشل إيداع الدفعة الأولى في خزنة الموظف: ' . json_encode($depositResult));
-                }
-            }
-
-            // حساب دين التقسيط الفعلي المتبقي على العميل
             $totalInstallmentAmount = $data['installment_plan']['total_amount'] ?? 0;
             $installmentDebt = $totalInstallmentAmount - $downPayment;
 
-            // معالجة رصيد العميل بناءً على دين التقسيط
+            // استخدام PaymentHandler الموحد لمعالجة الدفعات لضمان تطبيق نفس المنطق
             if ($buyer) {
-                if ($buyer->id == $authUser->id) {
-                    // العميل هو نفس الموظف (البيع للنفس)
-                    $this->userSelfDebtService->handleSelfSaleDebt($authUser, $invoice, $downPayment, $totalInstallmentAmount, $cashBoxId, $userCashBoxId);
-                } else {
-                    // العميل هو مستخدم آخر
-                    if ($installmentDebt > 0) {
-                        // العميل مدين للشركة (رصيد العميل يصبح سالباً = دين عليه)
-                        $withdrawResult = $buyer->withdraw($installmentDebt, $userCashBoxId);
-                        if ($withdrawResult !== true) {
-                            throw new \Exception('فشل تسجيل دين التقسيط على العميل: ' . json_encode($withdrawResult));
-                        }
-                    } elseif ($installmentDebt < 0) {
-                        // العميل دفع أكثر من المستحق (رصيد العميل يصبح موجباً)
-                        $depositResult = $buyer->deposit(abs($installmentDebt), $userCashBoxId);
-                        if ($depositResult !== true) {
-                            throw new \Exception('فشل إيداع المبلغ الزائد في رصيد العميل: ' . json_encode($depositResult));
-                        }
-                    }
-                }
+                $this->paymentHandler->handleSalePayment(
+                    $invoice,
+                    $authUser,
+                    $buyer,
+                    $downPayment,
+                    $installmentDebt,
+                    $cashBoxId,
+                    $userCashBoxId
+                );
             } else {
-                Log::warning('InstallmentSaleInvoiceService: لم يتم العثور على العميل لتسجيل دين التقسيط.', ['user_id' => $data['user_id']]);
+                Log::warning('InstallmentSaleInvoiceService: لم يتم العثور على العميل لتسجيل مدفوعات التقسيط.', ['user_id' => $data['user_id']]);
             }
 
             // إنشاء خطة الأقساط

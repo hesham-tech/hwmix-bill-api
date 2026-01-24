@@ -65,20 +65,9 @@ class CashBoxController extends Controller
             $cashBoxQuery = CashBox::query()->with($this->relations);
             $companyId = $authUser->company_id ?? null;
 
-            // تطبيق منطق الصلاحيات العامة
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                // المسؤول العام يرى جميع الصناديق (لا قيود إضافية)
-            } elseif ($authUser->hasAnyPermission([perm_key('cash_boxes.view_all'), perm_key('admin.company')])) {
-                // يرى جميع الصناديق (تلقائياً للشركة الحالية عبر السكوب)
-            } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_children'))) {
-                // يرى الصناديق التي أنشأها المستخدم أو المستخدمون التابعون له
-                $cashBoxQuery->whereCreatedByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_self'))) {
-                // يرى الصناديق التي أنشأها المستخدم فقط
-                $cashBoxQuery->whereCreatedByUser();
-            } else {
-                return api_forbidden('ليس لديك إذن لعرض الخزن.');
-            }
+            // تطبيق منطق الصلاحيات: كل مستخدم يرى صناديقه فقط بناءً على طلب العميل
+            $cashBoxQuery->where('user_id', $authUser->id);
+
 
             // التصفية باستخدام الحقول المقدمة
             if (!empty($request->get('name'))) {

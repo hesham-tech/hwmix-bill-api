@@ -90,6 +90,15 @@ class User extends Authenticatable
      */
     protected static function booted(): void
     {
+        static::created(function ($user) {
+            $user->ensureCashBoxesForAllCompanies();
+        });
+
+        static::saved(function ($user) {
+            if ($user->isDirty('company_id')) {
+                $user->ensureCashBoxesForAllCompanies();
+            }
+        });
     }
 
     /**
@@ -807,5 +816,26 @@ class User extends Authenticatable
     public function getCustomerTypeAttribute()
     {
         return $this->activeCompanyUser?->customer_type ?? 'retail';
+    }
+
+    /**
+     * ضمان وجود خزنة للمستخدم في كل شركة ينتمي إليها.
+     *
+     * @return void
+     */
+    public function ensureCashBoxesForAllCompanies(): void
+    {
+        // جلب جميع الشركات المرتبطة بالمستخدم
+        $companies = $this->companies()->get();
+
+        foreach ($companies as $company) {
+            // getDefaultCashBoxForCompany يقوم بالتحقق والإنشاء التلقائي إذا لم تكن موجودة
+            $this->getDefaultCashBoxForCompany($company->id);
+        }
+
+        // أيضاً التأكد من الشركة الأساسية إذا كانت غير موجودة في القائمة أعلاه
+        if ($this->company_id) {
+            $this->getDefaultCashBoxForCompany($this->company_id);
+        }
     }
 }

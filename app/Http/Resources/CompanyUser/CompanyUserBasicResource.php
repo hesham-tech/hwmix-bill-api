@@ -19,7 +19,7 @@ class CompanyUserBasicResource extends JsonResource
         $avatarImage = $this->whenLoaded('user', function () {
             return $this->user->images->where('type', 'avatar')->first();
         });
-        $avatarUrl = $avatarImage ? asset($avatarImage->url) : null;
+        $avatarUrl = $avatarImage ? parse_url($avatarImage->url, PHP_URL_PATH) : null;
 
         // الحصول على الخزنة الافتراضية للشركة الحالية
         $defaultCashBox = $this->whenLoaded('user', function () {

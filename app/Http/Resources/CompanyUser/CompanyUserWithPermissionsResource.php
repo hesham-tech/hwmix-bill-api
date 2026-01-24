@@ -22,7 +22,7 @@ class CompanyUserWithPermissionsResource extends JsonResource
          */
         $companyLogoUrl = $this->whenLoaded('company', function () {
             $logo = $this->company->logo;
-            return $logo && $logo->url ? asset($logo->url) : null;
+            return $logo && $logo->url ? parse_url($logo->url, PHP_URL_PATH) : null;
         });
 
         /**
@@ -33,7 +33,7 @@ class CompanyUserWithPermissionsResource extends JsonResource
                 ->where('type', 'avatar')
                 ->first();
 
-            return $avatar && $avatar->url ? asset($avatar->url) : null;
+            return $avatar && $avatar->url ? parse_url($avatar->url, PHP_URL_PATH) : null;
         });
 
         /**

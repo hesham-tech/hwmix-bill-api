@@ -30,8 +30,9 @@ class InvoicePaymentHandler
         ?int $sellerCashBoxId = null,
         ?int $buyerCashBoxId = null
     ): void {
-        // المبلغ المدفوع → يذهب لخزنة البائع
+        // المبلغ المدفوع → يذهب لخزنة البائع (الموظف)
         if ($paidAmount > 0) {
+            // ملاحظة: يتم تمرير معرف الخزنة؛ إذا لم يكن مملوكاً للبائع، سيفشل الطلب أو يستخدم الافتراضية بناءً على منطق النموذج
             $result = $seller->deposit($paidAmount, $sellerCashBoxId);
             if ($result !== true) {
                 throw new \Exception('فشل إيداع المبلغ في خزنة البائع: ' . json_encode($result));

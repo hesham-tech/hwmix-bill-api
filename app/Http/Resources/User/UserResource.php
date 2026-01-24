@@ -21,7 +21,7 @@ class UserResource extends JsonResource
 
         $company = Company::with('logo')->find($this->company_id);
 
-        $logoUrl = $company?->logo?->url ? asset($company->logo->url) : null;
+        $logoUrl = $company?->logo?->url ? parse_url($company->logo->url, PHP_URL_PATH) : null;
         $avatarImage = $this->images->where('type', 'avatar')->first();
 
         return [
@@ -38,7 +38,7 @@ class UserResource extends JsonResource
             'company_logo' => $logoUrl,
             'last_login_at' => $this->last_login_at,
             'email_verified_at' => $this->email_verified_at,
-            'avatar_url' => $avatarImage ? asset($avatarImage->url) : null,
+            'avatar_url' => $avatarImage ? parse_url($avatarImage->url, PHP_URL_PATH) : null,
             'status' => $this->status,
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,

@@ -15,7 +15,7 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'active' => (bool) $this->active,
-            'image_url' => $this->image?->url ? asset($this->image->url) : null,
+            'image_url' => $this->image?->url ? parse_url($this->image->url, PHP_URL_PATH) : null,
             'image_id' => $this->image?->id,
             'parent_id' => $this->parent_id,
             'parent' => new CategoryResource($this->whenLoaded('parent')),

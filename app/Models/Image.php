@@ -38,19 +38,13 @@ class Image extends Model
             return null;
         }
 
-        // If it's already a full URL, return it
+        // If it's a full URL, strip the host to make it relative (for proxy support)
         if (str_starts_with($value, 'http')) {
-            return $value;
+            return parse_url($value, PHP_URL_PATH);
         }
 
-        // Use request root if possible, otherwise fallback to asset()
-        $baseUrl = request()?->getSchemeAndHttpHost() ?: config('app.url', '');
-
-        $path = ltrim($value, '/');
-
-        // If baseUrl is empty or still localhost but we are not on local, this might still be an issue.
-        // But request() should handle it dynamically.
-        return $baseUrl . '/' . $path;
+        // Ensure it starts with a leading slash
+        return '/' . ltrim($value, '/');
     }
 
     public function imageable()

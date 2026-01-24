@@ -331,21 +331,9 @@ class UserController extends Controller
                 }
             }
 
-            // التأكد من وجود الخزنة
-            $user->load('cashBoxes');
-            if (!$user->cashBoxes()->where('company_id', $activeCompanyId)->exists()) {
-                // البحث عن نوع الخزنة الافتراضي (نقدي)
-                $defaultType = CashBoxType::where('is_system', true)->first();
+            // التأكد من وجود الخزنة لجميع الشركات المرتبطة بالمستخدم
+            $user->ensureCashBoxesForAllCompanies();
 
-                // إنشاء خزنة افتراضية للشركة الجديدة
-                $user->cashBoxes()->create([
-                    'company_id' => $activeCompanyId,
-                    'name' => 'خزنة ' . ($companyUser->nickname_in_company),
-                    'is_default' => true,
-                    'balance' => $validatedData['balance'] ?? 0,
-                    'cash_box_type_id' => $defaultType ? $defaultType->id : 1, // استخدام 1 كقيمة احتياطية نهائية
-                ]);
-            }
 
             if ($request->has('images_ids')) {
                 $user->syncImages($request->input('images_ids'), 'avatar');

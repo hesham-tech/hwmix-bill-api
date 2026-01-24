@@ -17,7 +17,7 @@ class CompanyBasicResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'logo' => $this->logo ? asset($this->logo->url) : null,
+            'logo' => $this->logo ? parse_url($this->logo->url, PHP_URL_PATH) : null,
         ];
     }
 }
