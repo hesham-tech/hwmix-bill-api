@@ -32,11 +32,18 @@ class ErrorReportController extends Controller
     public function store(Request $request)
     {
         try {
-            // Handle payload if it's arriving as a JSON string from FormData
-            if (is_string($request->input('payload'))) {
-                $request->merge([
-                    'payload' => json_decode($request->input('payload'), true)
-                ]);
+            Log::info('Incoming Error Report:', $request->all());
+
+            // Robust payload handling
+            $payload = $request->input('payload');
+            if (is_string($payload)) {
+                $decoded = json_decode($payload, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $payload = $decoded;
+                } else {
+                    Log::warning('Failed to decode error report payload JSON:', ['raw' => $payload]);
+                    $payload = ['raw_text' => $payload];
+                }
             }
 
             $validated = $request->validate([
@@ -47,17 +54,22 @@ class ErrorReportController extends Controller
                 'browser' => 'nullable|string',
                 'os' => 'nullable|string',
                 'user_notes' => 'nullable|string',
-                'payload' => 'nullable|array',
                 'severity' => 'nullable|string',
-                'screenshot' => 'nullable|image|max:5120', // Max 5MB
+                'screenshot' => 'nullable|image|max:10240', // Increased to 10MB just in case
             ]);
 
             $screenshotUrl = null;
             if ($request->hasFile('screenshot')) {
-                $file = $request->file('screenshot');
-                $filename = 'report_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs('error_reports', $filename, 'public');
-                $screenshotUrl = '/storage/' . $path;
+                try {
+                    $file = $request->file('screenshot');
+                    $filename = 'report_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('error_reports', $filename, 'public');
+                    $screenshotUrl = '/storage/' . $path;
+                    Log::info('Screenshot saved at: ' . $screenshotUrl);
+                } catch (\Exception $e) {
+                    Log::error('Failed to save report screenshot: ' . $e->getMessage());
+                    // Don't fail the whole report if only screenshot fails
+                }
             }
 
             $report = ErrorReport::create([
@@ -70,7 +82,7 @@ class ErrorReportController extends Controller
                 'browser' => $validated['browser'] ?? null,
                 'os' => $validated['os'] ?? null,
                 'user_notes' => $validated['user_notes'] ?? null,
-                'payload' => $validated['payload'] ?? null,
+                'payload' => $payload,
                 'severity' => $validated['severity'] ?? 'medium',
                 'screenshot_url' => $screenshotUrl,
                 'status' => 'pending',
