@@ -32,6 +32,13 @@ class ErrorReportController extends Controller
     public function store(Request $request)
     {
         try {
+            // Handle payload if it's arriving as a JSON string from FormData
+            if (is_string($request->input('payload'))) {
+                $request->merge([
+                    'payload' => json_decode($request->input('payload'), true)
+                ]);
+            }
+
             $validated = $request->validate([
                 'message' => 'required|string',
                 'type' => 'nullable|string',
@@ -42,7 +49,16 @@ class ErrorReportController extends Controller
                 'user_notes' => 'nullable|string',
                 'payload' => 'nullable|array',
                 'severity' => 'nullable|string',
+                'screenshot' => 'nullable|image|max:5120', // Max 5MB
             ]);
+
+            $screenshotUrl = null;
+            if ($request->hasFile('screenshot')) {
+                $file = $request->file('screenshot');
+                $filename = 'report_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('error_reports', $filename, 'public');
+                $screenshotUrl = '/storage/' . $path;
+            }
 
             $report = ErrorReport::create([
                 'user_id' => Auth::id(),
@@ -56,6 +72,7 @@ class ErrorReportController extends Controller
                 'user_notes' => $validated['user_notes'] ?? null,
                 'payload' => $validated['payload'] ?? null,
                 'severity' => $validated['severity'] ?? 'medium',
+                'screenshot_url' => $screenshotUrl,
                 'status' => 'pending',
             ]);
 
@@ -72,7 +89,7 @@ class ErrorReportController extends Controller
 
             return response()->json([
                 'message' => 'حدث خطأ أثناء حفظ تقرير الخطأ.',
-                'error' => $e->getMessage(), // Temporarily return error to help user debug hosting
+                'error' => $e->getMessage(),
                 'trace' => config('app.debug') ? $e->getTraceAsString() : null,
             ], 500);
         }

@@ -20,6 +20,7 @@ class ErrorReport extends Model
         'os',
         'user_notes',
         'payload',
+        'screenshot_url',
         'status',
         'severity',
     ];
