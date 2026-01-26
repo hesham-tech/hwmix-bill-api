@@ -145,6 +145,8 @@ class InvoiceController extends Controller
             'items.digitalDeliveries',
             'installmentPlan',
             'creator',
+            'payments.paymentMethod',
+            'payments.cashBox',
         ];
     }
 
@@ -177,6 +179,25 @@ class InvoiceController extends Controller
 
             $query = Invoice::query()->with($this->relations);
 
+            // فلترة الفواتير المستحقة فقط (غير مدفوعة أو مدفوعة جزئياً)
+            if ($request->boolean('due_only')) {
+                $query->whereIn('payment_status', [Invoice::PAYMENT_UNPAID, Invoice::PAYMENT_PARTIALLY_PAID])
+                    ->where('status', '!=', Invoice::STATUS_CANCELED)
+                    ->where('remaining_amount', '>', 0);
+            }
+
+            // البحث (رقم الفاتورة أو اسم العميل)
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('invoice_number', 'like', "%{$search}%")
+                        ->orWhereHas('user', function ($qu) use ($search) {
+                            $qu->where('full_name', 'like', "%{$search}%")
+                                ->orWhere('nickname', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%");
+                        });
+                });
+            }
             // إضافة صلاحيات العرض
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 // لا قيود
@@ -326,39 +347,6 @@ class InvoiceController extends Controller
                 DB::rollBack();
                 return api_exception($e);
             }
-        } catch (Throwable $e) {
-            return api_exception($e);
-        }
-    }
-
-    /**
-     * @group 02. إدارة الفواتير
-     * 
-     * عرض تفاصيل فاتورة
-     * 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
-            }
-
-            $invoice = Invoice::with($this->relations)->findOrFail($id);
-
-            $canView = false;
-            // إضافة صلاحيات العرض
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $canView = true;
-            } elseif ($authUser->hasAnyPermission([perm_key('invoices.view_all'), perm_key('admin.company')])) {
-                $canView = $invoice->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('invoices.view_children'))) {
-                $canView = $invoice->belongsToCurrentCompany() && $invoice->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('invoices.view_self'))) {
-                $canView = $invoice->belongsToCurrentCompany() && $invoice->createdByCurrentUser();
-            }
-
-            if ($canView) {
-                return api_success(new InvoiceResource($invoice), 'تم جلب بيانات الفاتورة بنجاح');
-            }
-
-            return api_forbidden('ليس لديك صلاحية لعرض هذه الفاتورة.');
         } catch (Throwable $e) {
             return api_exception($e);
         }

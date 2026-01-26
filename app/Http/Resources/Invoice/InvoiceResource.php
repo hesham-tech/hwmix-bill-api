@@ -29,6 +29,8 @@ class InvoiceResource extends JsonResource
             'round_step' => $this->round_step,
             'net_amount' => number_format($this->net_amount, 2, '.', ''),
             'total_discount' => number_format($this->total_discount, 2, '.', ''),
+            'initial_paid_amount' => number_format($this->initial_paid_amount, 2, '.', ''),
+            'initial_remaining_amount' => number_format($this->initial_remaining_amount, 2, '.', ''),
 
             'status' => $this->status,
             'status_label' => $this->getStatusLabel(),
@@ -48,6 +50,9 @@ class InvoiceResource extends JsonResource
             'user' => new UserBasicResource($this->whenLoaded('user')),
             'invoice_type' => new InvoiceTypeResource($this->whenLoaded('invoiceType')),
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
+            'payments' => $this->whenLoaded('payments', function () {
+                return \App\Http\Resources\Invoice\InvoicePaymentResource::collection($this->payments);
+            }),
             'company' => new CompanyResource($this->whenLoaded('company')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'installment_plan' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
@@ -56,6 +61,7 @@ class InvoiceResource extends JsonResource
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,
             'installment_plan_id' => $this->installment_plan_id,
+            'user_balance' => $this->user ? $this->user->balance : 0,
         ];
     }
 

@@ -148,16 +148,136 @@ class PaymentController extends Controller
                 $validatedData = $request->validated();
                 $validatedData['created_by'] = $authUser->id;
                 $validatedData['company_id'] = $companyId;
+                $validatedData['method'] = $validatedData['method'] ?? 'cash';
+                $validatedData['is_split'] = $validatedData['is_split'] ?? false;
 
                 // التحقق من أن صندوق النقد وطريقة الدفع ينتميان لنفس الشركة
                 $cashBox = \App\Models\CashBox::where('id', $validatedData['cash_box_id'])
                     ->where('company_id', $companyId)
                     ->firstOrFail();
-                $paymentMethod = \App\Models\PaymentMethod::where('id', $validatedData['payment_method_id'])
-                    ->where('company_id', $companyId)
-                    ->firstOrFail();
+
+                if (!empty($validatedData['payment_method_id'])) {
+                    $paymentMethod = \App\Models\PaymentMethod::where('id', $validatedData['payment_method_id'])
+                        ->where(function ($query) use ($companyId) {
+                            $query->where('company_id', $companyId)
+                                ->orWhereNull('company_id');
+                        })
+                        ->firstOrFail();
+                }
 
                 $payment = Payment::create($validatedData);
+
+                // --- منطق التحصيل المحاسبي المتطور (التوزيع المتسلسل + تأمين) ---
+                $cashAmount = (float) $validatedData['cash_amount'];
+                $creditRequestAmount = (float) $validatedData['credit_amount'];
+                $invoiceId = $validatedData['invoice_id'] ?? null;
+                $customer = \App\Models\User::findOrFail($validatedData['user_id']);
+                $paymentDate = $validatedData['payment_date'];
+                $notes = $validatedData['notes'] ?? '';
+
+                // 1. التحقق الصارم من الرصيد المتاح (Server-side Validation)
+                $currentCustomerBalance = $customer->balanceBox();
+                if ($creditRequestAmount > $currentCustomerBalance) {
+                    $creditRequestAmount = max(0, $currentCustomerBalance); // تصحيح القيمة للرصيد الفعلي المتاح
+                }
+
+                // 2. جلب وقفل الفواتير المستحقة (Row Locking لمنع Race Conditions)
+                $dueInvoicesQuery = \App\Models\Invoice::where('user_id', $customer->id)
+                    ->whereIn('payment_status', [\App\Models\Invoice::PAYMENT_UNPAID, \App\Models\Invoice::PAYMENT_PARTIALLY_PAID])
+                    ->where('status', '!=', \App\Models\Invoice::STATUS_CANCELED)
+                    ->orderBy('id', 'asc')
+                    ->lockForUpdate(); // 🔒 قفل السجلات حتى انتهاء الترانزاكشن
+
+                $dueInvoices = $dueInvoicesQuery->get();
+
+                // إذا تم اختيار فاتورة محددة، نجعلها في مقدمة قائمة السداد
+                if ($invoiceId) {
+                    $selected = $dueInvoices->where('id', $invoiceId)->first();
+                    if ($selected) {
+                        $dueInvoices = $dueInvoices->reject(fn($inv) => $inv->id == $invoiceId)->prepend($selected);
+                    }
+                }
+
+                // 1. معالجة مبالغ الرصيد (Credit) - لا تؤثر على عهدة الموظف
+                $remainingCreditToDistribute = $creditRequestAmount;
+                if ($remainingCreditToDistribute >= 1) {
+                    foreach ($dueInvoices as $invoice) {
+                        if ($remainingCreditToDistribute <= 0)
+                            break;
+
+                        $invoiceRemaining = (float) $invoice->remaining_amount;
+                        if ($invoiceRemaining <= 0)
+                            continue;
+
+                        $paymentForThisInvoice = min($remainingCreditToDistribute, $invoiceRemaining);
+
+                        // خصم من رصيد العميل (رقمي)
+                        $customer->withdraw($paymentForThisInvoice, null, "خصم رصيد لسداد فاتورة رقم {$invoice->invoice_number}");
+
+                        // تسجيل سجل الدفع للفاتورة
+                        \App\Models\InvoicePayment::create([
+                            'invoice_id' => $invoice->id,
+                            'payment_method_id' => $validatedData['payment_method_id'] ?? null,
+                            'cash_box_id' => $validatedData['cash_box_id'],
+                            'amount' => $paymentForThisInvoice,
+                            'payment_date' => $paymentDate,
+                            'notes' => $notes . " (تسوية من الرصيد)",
+                            'company_id' => $companyId,
+                            'created_by' => $authUser->id,
+                        ]);
+
+                        $remainingCreditToDistribute -= $paymentForThisInvoice;
+                        $invoice->refresh();
+                    }
+                }
+
+                // 2. معالجة المبالغ النقدية (Cash) - تزيد عهدة الموظف
+                $remainingCashToDistribute = $cashAmount;
+                if ($remainingCashToDistribute > 0) {
+                    // إيداع كامل الكاش في خزينة الموظف (مسؤوليته)
+                    $authUser->deposit($remainingCashToDistribute, $validatedData['cash_box_id'], "تحصيل نقدي - " . $notes);
+
+                    foreach ($dueInvoices as $invoice) {
+                        if ($remainingCashToDistribute <= 0)
+                            break;
+
+                        $invoiceRemaining = (float) $invoice->remaining_amount;
+                        if ($invoiceRemaining <= 0)
+                            continue;
+
+                        $paymentForThisInvoice = min($remainingCashToDistribute, $invoiceRemaining);
+
+                        // تسجيل سجل الدفع للفاتورة
+                        \App\Models\InvoicePayment::create([
+                            'invoice_id' => $invoice->id,
+                            'payment_method_id' => $validatedData['payment_method_id'] ?? null,
+                            'cash_box_id' => $validatedData['cash_box_id'],
+                            'amount' => $paymentForThisInvoice,
+                            'payment_date' => $paymentDate,
+                            'notes' => $notes,
+                            'company_id' => $companyId,
+                            'created_by' => $authUser->id,
+                        ]);
+
+                        $remainingCashToDistribute -= $paymentForThisInvoice;
+                        $invoice->refresh();
+                    }
+
+                    // في حالة فائض الكاش بعد سداد كل الفواتير المستحقة
+                    if ($remainingCashToDistribute > 0) {
+                        // يسحب من عهدة الموظف ويودع في رصيد العميل
+                        $authUser->withdraw($remainingCashToDistribute, $validatedData['cash_box_id'], "تحويل فائض تحصيل لرصيد العميل", false);
+                        $customer->deposit($remainingCashToDistribute, null, "رصيد ناتج عن فائض تحصيل");
+                    }
+                }
+
+                // حالة خاصة: إذا لم توجد فواتير وكان هناك كاش (تحصيل عهدة عام)
+                if ($dueInvoices->isEmpty() && $cashAmount > 0) {
+                    $authUser->deposit($cashAmount, $validatedData['cash_box_id'], "تحصيل عهدة - " . $notes);
+                    $customer->deposit($cashAmount, null, "دفعة مقدمة - " . $notes);
+                }
+                // --- نهاية المنطق المحاسبي المتطور ---
+
                 $payment->load($this->relations);
                 DB::commit();
                 return api_success(new PaymentResource($payment), 'تم إنشاء الدفعة بنجاح.', 201);
@@ -166,7 +286,7 @@ class PaymentController extends Controller
                 return api_error('فشل التحقق من صحة البيانات أثناء تخزين الدفعة.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء حفظ الدفعة.', [], 500);
+                return api_exception($e);
             }
         } catch (Throwable $e) {
             return api_exception($e);

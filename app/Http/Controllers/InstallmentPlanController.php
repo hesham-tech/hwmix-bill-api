@@ -60,7 +60,8 @@ class InstallmentPlanController extends Controller
             } elseif ($authUser->hasPermissionTo(perm_key('installment_plans.view_self'))) {
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض خطط التقسيط.');
+                // العميل: يرى الخطط الخاصة به
+                $query->where('user_id', $authUser->id);
             }
 
             // ✅ التصفية بناءً على حالة القسط

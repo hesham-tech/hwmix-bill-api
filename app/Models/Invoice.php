@@ -23,6 +23,8 @@ class Invoice extends Model
         'issue_date' => 'date',
         'due_date' => 'date',
         'previous_balance' => 'decimal:2',
+        'initial_paid_amount' => 'decimal:2',
+        'initial_remaining_amount' => 'decimal:2',
     ];
 
     // Status Constants
@@ -69,6 +71,10 @@ class Invoice extends Model
 
             $invoice->company_id = $invoice->company_id ?? Auth::user()->company_id;
             $invoice->created_by = $invoice->created_by ?? Auth::id();
+
+            // تعيين المبالغ الابتدائية كـ Snapshot لا يتغير
+            $invoice->initial_paid_amount = $invoice->paid_amount ?? 0;
+            $invoice->initial_remaining_amount = $invoice->remaining_amount ?? 0;
         });
 
         static::updating(function ($invoice) {

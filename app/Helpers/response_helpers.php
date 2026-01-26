@@ -89,9 +89,11 @@ if (!function_exists('api_exception')) {
                 'errors' => $e->errors(),
             ], 422);
         } elseif ($e instanceof ModelNotFoundException) {
+            $model = class_basename($e->getModel());
             return response()->json([
                 'status' => false,
-                'message' => 'السجل غير موجود',
+                'message' => "السجل غير موجود ($model)",
+                'error' => config('app.debug') ? $e->getMessage() : null,
             ], 404);
         }
 
@@ -103,7 +105,7 @@ if (!function_exists('api_exception')) {
             'exception' => get_class($e),
             'file' => $e->getFile(),
             'line' => $e->getLine(),
-            'trace' => config('app.debug') ? $e->getTraceAsString() : [],
+            'trace' => config('app.debug') ? explode("\n", $e->getTraceAsString()) : [],
         ];
 
         // تسجيل الخطأ

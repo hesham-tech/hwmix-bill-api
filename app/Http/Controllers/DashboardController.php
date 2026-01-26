@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
+use App\Models\Installment;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\CompanyUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -21,11 +23,59 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        $companyId = $request->user()->company_id;
+        $user = $request->user();
+        $companyId = $user->company_id;
         $now = Carbon::now();
         $startOfMonth = $now->copy()->startOfMonth();
 
-        // 1. مؤشرات الأداء الرئيسية (KPIs)
+        // فحص ما إذا كان المستخدم عميلاً (ليس لديه صلاحيات إدارية كافية ليكون موظفاً)
+        $isCustomer = !$user->hasAnyRole(['admin.super', 'admin.company', 'manager', 'accountant', 'sales', 'stock']) && !$user->hasPermissionTo('admin.page');
+
+        if ($isCustomer) {
+            // --- لوحة تحكم العميل ---
+            $stats = [
+                'total_invoices' => Invoice::where('user_id', $user->id)->count(),
+                'total_paid' => InvoicePayment::whereHas('invoice', fn($q) => $q->where('user_id', $user->id))->sum('amount'),
+                'remaining_balance' => Invoice::where('user_id', $user->id)->count() > 0 ? Invoice::where('user_id', $user->id)->sum('remaining_amount') : 0,
+                'upcoming_installments_count' => Installment::where('user_id', $user->id)
+                    ->where('status', 'pending')
+                    ->where('due_date', '>=', $now)
+                    ->count(),
+            ];
+
+            $recentInvoices = Invoice::with(['invoiceType', 'items.product', 'payments.paymentMethod'])
+                ->where('user_id', $user->id)
+                ->latest()
+                ->limit(5)
+                ->get();
+
+            $recentPayments = InvoicePayment::with(['invoice', 'paymentMethod'])
+                ->whereHas('invoice', fn($q) => $q->where('user_id', $user->id))
+                ->latest()
+                ->limit(5)
+                ->get();
+
+            $upcomingInstallments = Installment::with(['installmentPlan.invoice'])
+                ->where('user_id', $user->id)
+                ->where('status', 'pending')
+                ->where('due_date', '>=', $now)
+                ->orderBy('due_date', 'asc')
+                ->limit(5)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'role' => 'customer',
+                    'kpis' => $stats,
+                    'recent_invoices' => $recentInvoices,
+                    'recent_payments' => $recentPayments,
+                    'upcoming_installments' => $upcomingInstallments,
+                ]
+            ]);
+        }
+
+        // --- لوحة تحكم الإدارة (الأصلية مع تحسينات طفيفة) ---
         $stats = [
             'total_sales' => Invoice::where('company_id', $companyId)
                 ->whereHas('invoiceType', fn($q) => $q->where('code', 'sale'))
@@ -40,7 +90,7 @@ class DashboardController extends Controller
                 ->where('remaining_amount', '>', 0)
                 ->sum('remaining_amount'),
 
-            'total_customers' => \App\Models\CompanyUser::where('company_id', $companyId)
+            'total_customers' => CompanyUser::where('company_id', $companyId)
                 ->where('role', 'customer')
                 ->count(),
 
@@ -79,6 +129,7 @@ class DashboardController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
+                'role' => 'admin',
                 'kpis' => $stats,
                 'sales_trend' => $salesTrend,
                 'recent_invoices' => $recentInvoices,

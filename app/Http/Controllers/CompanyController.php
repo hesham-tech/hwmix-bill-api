@@ -111,12 +111,6 @@ class CompanyController extends Controller
                 // اضافة صوره افتراضية
                 // new \Illuminate\Http\UploadedFile(public_path('images/default-logo.png'), 'default-logo.png');
             }
-            Warehouse::create([
-                'name' => 'المخزن الرئيسي',
-                'company_id' => $company->id,
-                'created_by' => $authUser->id,
-                'status' => 'active',
-            ]);
 
             $authUser->company_id = $company->id;
             $authUser->save();

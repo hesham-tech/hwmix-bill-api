@@ -360,7 +360,8 @@ class TransactionController extends Controller
                 // يرى المعاملات التي أنشأها المستخدم فقط، ومرتبطة بالشركة
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض المعاملات.');
+                // العميل: يرى معاملاته الشخصية
+                $query->where('user_id', $authUser->id);
             }
 
             // فلاتر البحث

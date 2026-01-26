@@ -11,18 +11,17 @@ class CompanyObserver
      */
     public function created(Company $company): void
     {
-        // ربط كل أنواع الفواتير الموجودة بالشركة الجديدة تلقائياً
-        $invoiceTypes = \App\Models\InvoiceType::all();
+        $creatorId = $company->created_by ?? \Auth::id();
 
+        // 1️⃣ ربط كل أنواع الفواتير الموجودة بالشركة الجديدة تلقائياً
+        $invoiceTypes = \App\Models\InvoiceType::all();
         $syncData = [];
         foreach ($invoiceTypes as $type) {
             $syncData[$type->id] = ['is_active' => true];
         }
-
-        // استخدام syncWithoutDetaching للأمان (لكن في created لن يكون هناك سجلات موجودة)
         $company->invoiceTypes()->syncWithoutDetaching($syncData);
 
-        // 💳 نسخ طرق الدفع الافتراضية للشركة الجديدة
+        // 2️⃣ 💳 نسخ طرق الدفع الافتراضية للشركة الجديدة
         $systemMethods = \App\Models\PaymentMethod::where('is_system', true)
             ->whereNull('company_id')
             ->get();
@@ -41,7 +40,28 @@ class CompanyObserver
             }
         }
 
-        \Log::info("CompanyObserver: Auto-attached {$invoiceTypes->count()} invoice types and copied {$systemMethods->count()} payment methods to company '{$company->name}' (ID: {$company->id})");
+        // 3️⃣ 📦 إنشاء المخزن الرئيسي
+        \App\Models\Warehouse::create([
+            'name' => 'المخزن الرئيسي',
+            'company_id' => $company->id,
+            'created_by' => $creatorId,
+            'status' => 'active',
+        ]);
+
+        // 4️⃣ 💰 إنشاء الخزنة الافتراضية لمنشئ الشركة (Creator)
+        if ($creatorId) {
+            try {
+                app(\App\Services\CashBoxService::class)->createDefaultCashBoxForUserCompany(
+                    $creatorId,
+                    $company->id,
+                    $creatorId
+                );
+            } catch (\Exception $e) {
+                \Log::error("CompanyObserver: فشل إنشاء الخزنة الافتراضية للمنشئ: " . $e->getMessage());
+            }
+        }
+
+        \Log::info("CompanyObserver: تم تهيئة الشركة '{$company->name}' (ID: {$company->id}) بالكامل بمستودع وطرق دفع وخزنة افتراضية.");
     }
 
     /**
