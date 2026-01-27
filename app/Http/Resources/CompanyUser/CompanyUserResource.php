@@ -100,12 +100,14 @@ class CompanyUserResource extends JsonResource
                 ? CashBoxResource::collection($companyCashBoxes)
                 : [],
 
-            // أوقات الإنشاء والتحديث
-            'created_at' => $this->created_at?->format('Y-m-d'),
-            'updated_at' => $this->updated_at?->format('Y-m-d'),
-
             // الإعدادات
             'settings' => $this->whenLoaded('user', fn() => $this->user->settings ?? null),
+
+            'roles' => $this->whenLoaded('user', fn() => $this->user->roles->pluck('name')),
+            'direct_permissions' => $this->whenLoaded('user', fn() => $this->user->getDirectPermissions()->pluck('name')),
+
+            'created_at' => $this->created_at?->format('Y-m-d'),
+            'updated_at' => $this->updated_at?->format('Y-m-d'),
         ];
     }
 }

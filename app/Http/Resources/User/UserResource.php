@@ -47,6 +47,8 @@ class UserResource extends JsonResource
             // الشركات التي يمكن للمستخدم الوصول إليها
             'companies' => CompanyResource::collection($this->getVisibleCompaniesForUser()),
             'cashBoxes' => CashBoxResource::collection($this->cashBoxes),
+            'roles' => $this->roles->pluck('name'),
+            'direct_permissions' => $this->getDirectPermissions()->pluck('name'),
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
         ];
@@ -62,7 +64,7 @@ class UserResource extends JsonResource
         }
 
         if ($this->hasPermissionTo(perm_key('admin.super'))) {
-            return \App\Models\Company::all();
+            return Company::all();
         }
         return $this->companies;
     }

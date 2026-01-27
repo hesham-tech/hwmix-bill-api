@@ -69,7 +69,7 @@ class UserController extends Controller
 
             if ($isGlobalView) {
                 // العرض العالمي: جلب سجلات فريدة من جدول users
-                $query = User::query()->with(['companies', 'creator']);
+                $query = User::query()->with(['companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes']);
             } else {
                 // العرض السياقي: جلب سجلات من company_user
                 if (!$activeCompanyId && !$isSuperAdmin) {
@@ -77,7 +77,7 @@ class UserController extends Controller
                 }
 
                 $query = CompanyUser::with([
-                    'user' => fn($q) => $q->with(['creator', 'companies.logo']),
+                    'user' => fn($q) => $q->with(['creator', 'companies.logo', 'roles', 'permissions', 'images', 'cashBoxes']),
                     'company',
                 ]);
 
@@ -373,7 +373,7 @@ class UserController extends Controller
 
             return api_success(new CompanyUserResource($companyUser->load('user', 'company')), 'تمت إضافة المستخدم بنجاح.');
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
             Log::error('USER CREATION FAILED', [
                 'error_message' => $e->getMessage(),

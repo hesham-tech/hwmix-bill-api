@@ -439,6 +439,7 @@ return [
         'delete_all' => ['key' => 'invoices.delete_all', 'label' => 'حذف أي فاتورة'],
         'delete_children' => ['key' => 'invoices.delete_children', 'label' => 'حذف الفواتير التي أنشأها التابعون'],
         'delete_self' => ['key' => 'invoices.delete_self', 'label' => 'حذف الفواتير الخاصة بالمستخدم'],
+        'print' => ['key' => 'invoices.print', 'label' => 'طباعة الفواتير'],
     ],
     // => INSTALLMENT PLANS
     'installment_plans' => [

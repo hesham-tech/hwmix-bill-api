@@ -157,7 +157,7 @@ class CompanyUser extends Pivot
      */
     public function getCashBoxesAttribute()
     {
-        if (!$this->relationLoaded('user')) {
+        if (!$this->relationLoaded('user') || !$this->user) {
             return collect();
         }
 
@@ -171,7 +171,7 @@ class CompanyUser extends Pivot
      */
     public function getDefaultCashBoxAttribute()
     {
-        if (!$this->relationLoaded('user')) {
+        if (!$this->relationLoaded('user') || !$this->user) {
             return null;
         }
 
