@@ -49,6 +49,11 @@ Route::get('media/view/{path}', [ImageController::class, 'serve'])->where('path'
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('/auth/check', [AuthController::class, 'checkLogin']);
+
+    // Session Management
+    Route::get('/auth/sessions', [AuthController::class, 'listTokens']);
+    Route::delete('/auth/sessions-others', [AuthController::class, 'revokeAllOtherTokens']);
+    Route::delete('/auth/sessions/{id}', [AuthController::class, 'revokeToken']);
     // Health check
     Route::get('/artisan/health', [ArtisanController::class, 'health']);
 

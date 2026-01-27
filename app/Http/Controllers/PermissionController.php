@@ -25,25 +25,26 @@ class PermissionController extends Controller
             // جلب جميع تعريفات الصلاحيات من ملف config/permissions_keys.php
             $permissionsConfig = config('permissions_keys');
 
-            $isAdmin = $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')]);
+            $isAdmin = $authUser->hasPermissionTo(perm_key('admin.super')) || $authUser->hasPermissionTo(perm_key('admin.company'));
 
             if (!$isAdmin) {
-                $permissionsConfig = collect($permissionsConfig)->map(function ($group) use ($authUser) {
-                    $filteredGroup = collect($group)->filter(function ($p, $pKey) use ($authUser) {
-                        if ($pKey === 'name')
-                            return true;
-                        return $authUser->hasPermissionTo($p['key']);
+                // If not admin, only show permissions they actually have
+                $userPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
+
+                $permissionsConfig = collect($permissionsConfig)->map(function ($group) use ($userPermissions) {
+                    if (!is_array($group))
+                        return null;
+
+                    $filteredGroup = collect($group)->filter(function ($p, $pKey) use ($userPermissions) {
+                        return $pKey === 'name' || (is_array($p) && isset($p['key']) && in_array($p['key'], $userPermissions));
                     });
 
-                    return $filteredGroup->count() > 1 ? $filteredGroup->toArray() : null;
-                })->filter()->toArray();
+                    return $filteredGroup->count() > 1 ? $filteredGroup->all() : null;
+                })->filter()->all();
             }
 
-            if (empty($permissionsConfig)) {
-                return api_success($permissionsConfig, 'لم يتم العثور على تعريفات صلاحيات متاحة لك.');
-            } else {
-                return api_success($permissionsConfig, 'تم جلب تعريفات الصلاحيات بنجاح.');
-            }
+            $response = empty($permissionsConfig) ? (object) [] : $permissionsConfig;
+            return api_success($response, 'تم جلب تعريفات الصلاحيات بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e);
         }

@@ -41,6 +41,7 @@ class UserWithPermissionsResource extends JsonResource
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,
             'customer_type' => $this->activeCompanyUser?->customer_type ?? 'retail',
+            'has_installments' => $this->installments()->exists(),
             'cashBoxDefault' => new CashBoxResource($this->whenLoaded('cashBoxDefault')),
             // الشركات التي يمكن للمستخدم الوصول إليها
             'companies' => CompanyResource::collection($this->getVisibleCompaniesForUser()),
@@ -63,7 +64,7 @@ class UserWithPermissionsResource extends JsonResource
     protected function getVisibleCompaniesForUser()
     {
         if ($this->hasPermissionTo(perm_key('admin.super'))) {
-            return \App\Models\Company::all();
+            return Company::all();
         }
         return $this->companies;
     }

@@ -273,6 +273,12 @@ class InvoiceController extends Controller
             $authUser = Auth::user();
             if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
                 if ($invoice->company_id !== $authUser->company_id && $invoice->user_id !== $authUser->id) {
+                    Log::warning('Unauthorized access attempt to invoice details', [
+                        'user_id' => $authUser->id,
+                        'invoice_id' => $id,
+                        'company_id' => $invoice->company_id,
+                        'user_company_id' => $authUser->company_id
+                    ]);
                     return api_forbidden('ليس لديك صلاحية للوصول لهذه الفاتورة.');
                 }
             }
@@ -311,6 +317,10 @@ class InvoiceController extends Controller
 
             // إضافة صلاحية الإنشاء
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('invoices.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+                Log::warning('Unauthorized attempt to create invoice', [
+                    'user_id' => $authUser->id,
+                    'company_id' => $companyId
+                ]);
                 return api_forbidden('ليس لديك صلاحية لإنشاء الفواتير.');
             }
 
@@ -383,6 +393,11 @@ class InvoiceController extends Controller
             }
 
             if (!$canUpdate) {
+                Log::warning('Unauthorized attempt to update invoice', [
+                    'user_id' => $authUser->id,
+                    'invoice_id' => $invoice->id,
+                    'company_id' => $companyId
+                ]);
                 return api_forbidden('ليس لديك صلاحية لتعديل هذه الفاتورة.');
             }
 
@@ -447,6 +462,11 @@ class InvoiceController extends Controller
             }
 
             if (!$canDelete) {
+                Log::warning('Unauthorized attempt to delete invoice', [
+                    'user_id' => $authUser->id,
+                    'invoice_id' => $id,
+                    'company_id' => $companyId
+                ]);
                 return api_forbidden('ليس لديك صلاحية لحذف هذه الفاتورة.');
             }
 

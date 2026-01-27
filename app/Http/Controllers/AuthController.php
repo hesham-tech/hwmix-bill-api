@@ -130,6 +130,7 @@ class AuthController extends Controller
             $validated = $request->validate([
                 'login' => 'required',
                 'password' => 'required',
+                'remember' => 'nullable|boolean',
             ]);
 
             $loginField = filter_var($validated['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
@@ -155,7 +156,12 @@ class AuthController extends Controller
 
             /** @var \App\Models\User $user */
             $user = Auth::user();
-            $token = $user->createToken('auth_token')->plainTextToken;
+
+            $remember = $request->boolean('remember');
+            $expiresAt = $remember ? null : now()->addHours(24);
+            $deviceName = $request->header('User-Agent') ?: 'Unknown Device';
+
+            $token = $user->createToken($deviceName, ['*'], $expiresAt)->plainTextToken;
 
             return api_success([
                 'user' => new UserWithPermissionsResource($user),
@@ -235,6 +241,81 @@ class AuthController extends Controller
             }
 
             return api_unauthorized('المستخدم غير مصادق عليه.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 01. إدارة المصادقة
+     * 
+     * قائمة الجلسات النشطة
+     * 
+     * استرجاع جميع الأجهزة المسجل الدخول منها حالياً.
+     */
+    public function listTokens(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $tokens = $user->tokens()->orderBy('last_used_at', 'desc')->get()->map(function ($token) use ($user) {
+                /** @var \Laravel\Sanctum\PersonalAccessToken $currentToken */
+                $currentToken = $user->currentAccessToken();
+                return [
+                    'id' => $token->id,
+                    'device' => $token->name,
+                    'last_used_at' => $token->last_used_at,
+                    'created_at' => $token->created_at,
+                    'is_current' => $token->id === $currentToken->id,
+                ];
+            });
+
+            return api_success($tokens, 'تم استرداد قائمة الجلسات بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 01. إدارة المصادقة
+     * 
+     * حذف جلسة محددة
+     * 
+     * تسجيل الخروج من جهاز معين.
+     */
+    public function revokeToken(Request $request, $id): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $token = $user->tokens()->where('id', $id)->first();
+
+            if (!$token) {
+                return api_error('الجلسة غير موجودة.', [], 404);
+            }
+
+            $token->delete();
+
+            return api_success([], 'تم حذف الجلسة وتسجيل الخروج بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 01. إدارة المصادقة
+     * 
+     * تسجيل الخروج من جميع الأجهزة الأخرى
+     */
+    public function revokeAllOtherTokens(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            /** @var \Laravel\Sanctum\PersonalAccessToken $currentToken */
+            $currentToken = $user->currentAccessToken();
+            $currentTokenId = $currentToken->id;
+
+            $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+
+            return api_success([], 'تم تسجيل الخروج من جميع الأجهزة الأخرى بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
