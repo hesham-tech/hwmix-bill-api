@@ -88,6 +88,22 @@ class ErrorReportController extends Controller
                 'status' => 'pending',
             ]);
 
+            // Append to physical error.log file in the backend root directory
+            try {
+                $logPath = base_path('error.log');
+                $logMessage = "[" . date('Y-m-d H:i:s') . "] " . strtoupper($report->type) . ": " . $report->message . PHP_EOL;
+                if ($report->stack_trace) {
+                    $logMessage .= "Stack Trace: " . $report->stack_trace . PHP_EOL;
+                }
+                $logMessage .= "URL: " . $report->url . PHP_EOL;
+                $logMessage .= "User ID: " . ($report->user_id ?? 'Guest') . PHP_EOL;
+                $logMessage .= str_repeat('-', 50) . PHP_EOL;
+
+                file_put_contents($logPath, $logMessage, FILE_APPEND);
+            } catch (\Exception $e) {
+                Log::warning('Failed to append to browser error.log: ' . $e->getMessage());
+            }
+
             return response()->json([
                 'message' => 'تم استلام تقرير الخطأ بنجاح، شكراً لمساعدتنا في تحسين النظام.',
                 'report_id' => $report->id,

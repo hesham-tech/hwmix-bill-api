@@ -37,6 +37,7 @@ AAAEBclRKUG/1G65MQ0XImU2COe0ZPBRsZaFhBvYsDc2sHlDqDftKHI+JmB8doV9WeaJwI
 
 - **الدومين:** `api-teste.hwnix.com`
 - **المسار:** `/home/u715355537/domains/hwnix.com/public_html/api-teste`
+- **سجل الأخطاء (Frontend Errors):** `error.log` (موجود في الجذر) - يسجل أخطاء المتصفح والـ UI تلقائياً.
 
 ---
 
