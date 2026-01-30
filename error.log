@@ -1,0 +1,5 @@
+[2026-01-30 10:59:09] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/invoices/pages/InvoiceCreate.vue?t=1769770745132
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/invoices/pages/InvoiceCreate.vue?t=1769770745132
+URL: http://localhost:5173/app/invoices/create
+User ID: Guest
+--------------------------------------------------

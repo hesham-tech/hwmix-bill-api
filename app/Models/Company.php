@@ -41,12 +41,14 @@ class Company extends Model
         'tax_number',
         'website',
         'social_links',
+        'settings',
         'created_by',
         'company_id',
     ];
 
     protected $casts = [
         'social_links' => 'array',
+        'settings' => 'array',
     ];
 
     // Define the many-to-many relationship

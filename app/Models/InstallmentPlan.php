@@ -30,16 +30,20 @@ class InstallmentPlan extends Model
         'user_id',
         'net_amount',
         'down_payment',
+        'interest_rate',
+        'interest_amount',
+        'total_amount',
         'remaining_amount',
         'company_id',
         'created_by',
         'number_of_installments',
+        'frequency',
         'installment_amount',
         'start_date',
         'end_date',
         'status',
         'notes',
-        'round_step', // ← ضفناها هنا كمان
+        'round_step',
     ];
 
     protected $casts = [
