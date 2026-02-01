@@ -21,7 +21,8 @@ class InstallmentController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'installmentPlan',
+            'installmentPlan.invoice.items',
+            'installmentPlan.invoice.customer',
             'user',      // المستخدم الذي يخصه القسط
             'creator',   // المستخدم الذي أنشأ القسط
             'payments',

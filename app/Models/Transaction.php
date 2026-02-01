@@ -31,14 +31,24 @@ class Transaction extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function user(): BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function targetUser(): BelongsTo
+    public function user(): BelongsTo // Keep as alias if needed, but the standard is customer
+    {
+        return $this->customer();
+    }
+
+    public function targetCustomer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'target_user_id');
+    }
+
+    public function targetUser(): BelongsTo
+    {
+        return $this->targetCustomer();
     }
 
     public function cashbox(): BelongsTo

@@ -94,20 +94,27 @@ class CashBoxController extends Controller
             }
 
             // تحديد عدد العناصر في الصفحة والفرز
-            $perPage = max(1, (int) $request->get('per_page', 10));
+            $perPageParam = $request->get('per_page', 10);
             $sortField = $request->get('sort_by', 'id');
-            $sortOrder = $request->get('sort_order', 'desc'); // عادة ما يكون الأحدث أولاً
+            $sortOrder = $request->get('sort_order', 'desc');
 
             $cashBoxQuery->orderBy($sortField, $sortOrder);
 
             // جلب البيانات مع التصفية والصفحات
-            $cashBoxes = $cashBoxQuery->paginate($perPage);
+            if ($perPageParam == -1) {
+                $cashBoxes = $cashBoxQuery->get();
+                $data = CashBoxResource::collection($cashBoxes);
+            } else {
+                $perPage = max(1, (int) $perPageParam);
+                $paginated = $cashBoxQuery->paginate($perPage);
+                $data = CashBoxResource::collection($paginated);
+            }
 
             // التحقق من حالة المصفوفة وتحديد الرسالة
-            if ($cashBoxes->isEmpty()) {
-                return api_success($cashBoxes, 'لم يتم العثور على خزن.');
+            if ($data->isEmpty()) {
+                return api_success($data, 'لم يتم العثور على خزن.');
             } else {
-                return api_success($cashBoxes, 'تم استرداد الخزن بنجاح.');
+                return api_success($data, 'تم استرداد الخزن بنجاح.');
             }
         } catch (Throwable $e) {
             return api_exception($e, 500);

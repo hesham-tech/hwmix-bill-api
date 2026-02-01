@@ -6,8 +6,11 @@ use App\Traits\Blameable;
 use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Observers\PaymentObserver;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([PaymentObserver::class])]
 class InvoicePayment extends Model
 {
     use HasFactory, SoftDeletes, Blameable, Scopes;

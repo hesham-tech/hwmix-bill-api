@@ -329,18 +329,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // InstallmentPlan Controller
     Route::controller(InstallmentPlanController::class)->group(function () {
         Route::get('installment-plans', 'index');
-        Route::post('installment-plan', 'store');
-        Route::get('installment-plan/{installmentPlan}', 'show');
-        Route::put('installment-plan/{installmentPlan}', 'update');
-        Route::delete('installment-plan/{installmentPlan}', 'destroy');
+        Route::post('installment-plans', 'store');
+        Route::get('installment-plans/{installmentPlan}', 'show');
+        Route::put('installment-plans/{installmentPlan}', 'update');
+        Route::delete('installment-plans/{installmentPlan}', 'destroy');
     });
+
     // Installment Controller
     Route::controller(InstallmentController::class)->group(function () {
         Route::get('installments', 'index');
-        Route::post('installment', 'store');
-        Route::get('installment/{installment}', 'show');
-        Route::put('installment/{installment}', 'update');
-        Route::delete('installment/{installment}', 'destroy');
+        Route::post('installments', 'store');
+        Route::get('installments/{installment}', 'show');
+        Route::put('installments/{installment}', 'update');
+        Route::delete('installments/{installment}', 'destroy');
     });
     // Payment Controller
     Route::controller(PaymentController::class)->group(function () {
@@ -369,15 +370,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('installment-payments/{installmentPayment}', 'show');
             Route::put('installment-payments/{installmentPayment}', 'update');
             Route::delete('installment-payments/{installmentPayment}', 'destroy');
-        });
-    // InstallmentPlan Controller
-    Route::controller(InstallmentPlanController::class)
-        ->group(function () {
-            Route::get('installment-plans', 'index');
-            Route::post('installment-plans', 'store');
-            Route::get('installment-plans/{id}', 'show');
-            Route::put('installment-plans/{id}', 'update');
-            Route::delete('installment-plans/{id}', 'destroy');
         });
     // Revenue Controller
     Route::controller(RevenueController::class)

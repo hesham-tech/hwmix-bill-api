@@ -33,30 +33,25 @@ class CompanyUserBasicResource extends JsonResource
         });
 
         return [
-            // البيانات الأساسية للمستخدم (من جدول users)
+            // بيانات ملف العضو (سياق الشركة)
             'id' => $this->user_id,
-            'id_company_user' => $this->id,
-            'username' => $this->user_username,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'company_id' => $this->company_id,
-            'company_name' => $this->whenLoaded('company', fn() => $this->company->name),
-
-            // البيانات الخاصة بالشركة (من جدول company_user)
+            'name' => $this->name,
             'nickname' => $this->nickname,
-            'balance' => $this->balance,
             'full_name' => $this->full_name,
-            'customer_type' => $this->customer_type,
-            'position' => $this->position_in_company,
+            'phone' => $this->phone,
+            'balance' => $this->balance,
+            'position' => $this->position,
             'status' => $this->status,
-
-            // بيانات الخزنة الافتراضية
-            'cash_box_id' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? null : $defaultCashBox?->id,
+            'customer_type' => $this->customer_type,
             'avatar_url' => $avatarUrl,
 
+            // معلومات إضافية
+            'id_company_user' => $this->id,
+            'company_id' => $this->company_id,
+            'company_name' => $this->whenLoaded('company', fn() => $this->company->name),
+            'cash_box_id' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? null : $defaultCashBox?->id,
             'roles' => $this->whenLoaded('user', fn() => $this->user->roles->pluck('name')),
             'direct_permissions' => $this->whenLoaded('user', fn() => $this->user->getDirectPermissions()->pluck('name')),
-
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
         ];

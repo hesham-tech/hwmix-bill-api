@@ -194,6 +194,8 @@ class AuthController extends Controller
                 return api_unauthorized('المستخدم غير مصادق عليه.');
             }
 
+            $user->load(['company.logo', 'companies.logo', 'roles.permissions', 'permissions']);
+
             return api_success(new UserWithPermissionsResource($user), 'تم استرداد بيانات المستخدم بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);

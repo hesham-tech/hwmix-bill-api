@@ -19,13 +19,13 @@ class PDFService
     public function generateInvoicePDF(Invoice $invoice)
     {
         // Load relationships
-        $invoice->load(['items.product', 'items.variant', 'user', 'company', 'invoiceType', 'payments']);
+        $invoice->load(['items.product', 'items.variant', 'customer', 'company', 'invoiceType', 'payments']);
 
         // Generate PDF
         $pdf = Pdf::loadView('pdf.invoice', [
             'invoice' => $invoice,
             'company' => $invoice->company,
-            'customer' => $invoice->user,
+            'customer' => $invoice->customer,
             'items' => $invoice->items,
         ]);
 
@@ -44,12 +44,12 @@ class PDFService
      */
     public function generateInvoicePDFString(Invoice $invoice): string
     {
-        $invoice->load(['items.product', 'items.variant', 'user', 'company', 'invoiceType', 'payments']);
+        $invoice->load(['items.product', 'items.variant', 'customer', 'company', 'invoiceType', 'payments']);
 
         $pdf = Pdf::loadView('pdf.invoice', [
             'invoice' => $invoice,
             'company' => $invoice->company,
-            'customer' => $invoice->user,
+            'customer' => $invoice->customer,
             'items' => $invoice->items,
         ]);
 
@@ -64,13 +64,13 @@ class PDFService
      */
     public function generateReceiptPDF(InvoicePayment $payment)
     {
-        $payment->load(['invoice.user', 'invoice.company', 'paymentMethod', 'cashBox']);
+        $payment->load(['invoice.customer', 'invoice.company', 'paymentMethod', 'cashBox']);
 
         $pdf = Pdf::loadView('pdf.receipt', [
             'payment' => $payment,
             'invoice' => $payment->invoice,
             'company' => $payment->invoice->company,
-            'customer' => $payment->invoice->user,
+            'customer' => $payment->invoice->customer,
         ]);
 
         $pdf->setPaper('a4', 'portrait');
@@ -154,7 +154,7 @@ class PDFService
      */
     public function generateBatchInvoicesPDF($invoices)
     {
-        $invoices->load(['items.product', 'user', 'company']);
+        $invoices->load(['items.product', 'customer', 'company']);
 
         $pdf = Pdf::loadView('pdf.batch_invoices', [
             'invoices' => $invoices,

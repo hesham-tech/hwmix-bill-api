@@ -29,7 +29,7 @@ class SalesReportController extends BaseReportController
             ->whereHas('invoiceType', function ($q) {
                 $q->where('code', 'sale');
             })
-            ->with(['items.product', 'user', 'invoiceType']);
+            ->with(['items.product', 'customer', 'invoiceType']);
 
         // Apply filters
         $query = $this->applyFilters($query, $filters);

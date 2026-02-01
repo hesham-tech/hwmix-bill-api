@@ -207,6 +207,7 @@ class UserController extends Controller
                 'username' => $user->username,
                 'email' => $user->email,
                 'phone' => $user->phone,
+                'name' => $user->name,
                 'nickname' => $user->nickname,
                 'full_name' => $user->full_name,
                 'avatar_url' => $user->avatar_url,
@@ -331,8 +332,7 @@ class UserController extends Controller
                 }
             }
 
-            // التأكد من وجود الخزنة لجميع الشركات المرتبطة بالمستخدم
-            $user->ensureCashBoxesForAllCompanies();
+            // [تمت الإزالة]: ضمان وجود الخزنة يتم الآن عبر CompanyUserObserver و lazy-loading في الموديل
 
 
             if ($request->has('images_ids')) {
@@ -403,106 +403,51 @@ class UserController extends Controller
     public function show(User $user, Request $request)
     {
         $authUser = Auth::user();
-
         if (!$authUser) {
             return api_unauthorized('يجب تسجيل الدخول.');
         }
 
         $activeCompanyId = $authUser->company_id;
         $isSuperAdmin = $authUser->can(perm_key('admin.super'));
-        $canViewAll = $authUser->hasPermissionTo(perm_key('users.view_all'));
-        $canViewChildren = $authUser->hasPermissionTo(perm_key('users.view_children'));
-        $canViewSelf = $authUser->hasPermissionTo(perm_key('users.view_self'));
-
         $useBasicResource = filter_var($request->input('basic', true), FILTER_VALIDATE_BOOLEAN);
 
-        if ($isSuperAdmin) {
+        // 1. [قاعدة الرفاق]: إذا كان المستخدم يطلب بياناته الشخصية (Self)
+        if ($authUser->id === $user->id || $isSuperAdmin && !$activeCompanyId) {
             $user->load($this->relations);
-            return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح.');
+            return api_success(new UserResource($user), 'تم جلب بيانات ملفك الشخصي بنجاح.');
         }
 
-        if ($authUser->id === $user->id && $canViewSelf) {
-            $companyUser = $user->activeCompanyUser()
+        // 2. [قاعدة الأعضاء]: إذا كان يطلب بيانات مستخدم آخر داخل سياق شركة
+        if ($activeCompanyId) {
+            $companyUser = CompanyUser::where('user_id', $user->id)
+                ->where('company_id', $activeCompanyId)
                 ->with([
                     'user.cashBoxes' => function ($q) use ($activeCompanyId) {
                         $q->where('company_id', $activeCompanyId);
-                    }
+                    },
+                    'user.creator',
+                    'company'
                 ])
                 ->first();
 
-            if ($companyUser) {
-                if ($useBasicResource) {
-                    return api_success(CompanyUserBasicResource::make($companyUser), 'تم جلب بيانات المستخدم بنجاح.');
-                } else {
-                    $companyUser->load([
-                        'user.cashBoxes' => function ($q) use ($activeCompanyId) {
-                            $q->where('company_id', $activeCompanyId);
-                        },
-                        'user.creator',
-                        'company'
-                    ]);
-                    return api_success(new CompanyUserResource($companyUser), 'تم جلب بيانات المستخدم بنجاح.');
+            if (!$companyUser) {
+                // إذا كان سوبر أدمن، نسمح له بالرؤية العالمية كحالة احتياطية
+                if ($isSuperAdmin || $authUser->can(perm_key('users.view_all'))) {
+                    $user->load($this->relations);
+                    return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح (عرض عالمي).');
                 }
-            }
-            $user->load($this->relations);
-            return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح.');
-        }
-
-        if (($authUser->hasPermissionTo(perm_key('admin.company')) || $canViewAll) && $activeCompanyId) {
-            $companyUser = CompanyUser::where('user_id', $user->id)
-                ->where('company_id', $activeCompanyId)
-                ->with([
-                    'user.cashBoxes' => function ($q) use ($activeCompanyId) {
-                        $q->where('company_id', $activeCompanyId);
-                    },
-                    'user.creator',
-                    'company'
-                ])
-                ->first();
-
-            if (!$companyUser) {
-                return api_not_found('المستخدم غير موجود أو ليس لديه علاقة بالشركة النشطة.');
+                return api_not_found('المستخدم غير مرتبط بالشركة النشطة.');
             }
 
-            if ($useBasicResource) {
-                return api_success(CompanyUserBasicResource::make($companyUser), 'تم جلب بيانات المستخدم بنجاح في سياق الشركة.');
-            } else {
-                return api_success(new CompanyUserResource($companyUser), 'تم جلب بيانات المستخدم بنجاح في سياق الشركة.');
+            // التحقق من الصلاحيات داخل الشركة
+            $canViewAll = $authUser->hasPermissionTo(perm_key('users.view_all'));
+            $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
+            $canViewChildren = $authUser->hasPermissionTo(perm_key('users.view_children'));
+
+            if ($isCompanyAdmin || $canViewAll || ($canViewChildren && in_array($user->id, $authUser->getDescendantUserIds()))) {
+                $resourceClass = $useBasicResource ? CompanyUserBasicResource::class : CompanyUserResource::class;
+                return api_success(new $resourceClass($companyUser), 'تم جلب بيانات العضو بنجاح.');
             }
-        }
-
-        if ($canViewChildren && $activeCompanyId) {
-            $descendantUserIds = $authUser->getDescendantUserIds();
-
-            $companyUser = CompanyUser::where('user_id', $user->id)
-                ->where('company_id', $activeCompanyId)
-                ->whereIn('user_id', $descendantUserIds)
-                ->with([
-                    'user.cashBoxes' => function ($q) use ($activeCompanyId) {
-                        $q->where('company_id', $activeCompanyId);
-                    },
-                    'user.creator',
-                    'company'
-                ])
-                ->first();
-
-            if (!$companyUser) {
-                return api_forbidden('ليس لديك صلاحية لعرض هذا المستخدم أو المستخدم غير مرتبط بالشركة النشطة.');
-            }
-
-            if ($useBasicResource) {
-                return api_success(CompanyUserBasicResource::make($companyUser), 'تم جلب بيانات المستخدم بنجاح في سياق الشركة.');
-            } else {
-                return api_success(new CompanyUserResource($companyUser), 'تم جلب بيانات المستخدم بنجاح في سياق الشركة.');
-            }
-        }
-
-        // Fallback for Admins: If they can't find it in the current company context, try to see if it's the User itself
-        // but it should have been caught by the self-view or admin.super check.
-        // We return UserResource if they have view_all but the user is not in the active company.
-        if ($canViewAll) {
-            $user->load($this->relations);
-            return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح (عرض عام).');
         }
 
         return api_forbidden('ليس لديك صلاحية لعرض هذا المستخدم.');
@@ -527,8 +472,8 @@ class UserController extends Controller
         try {
             $validated = $request->validated();
 
-            // 1. تحديث البيانات العالمية (جدول users)
-            // يُسمح للسوبر أدمن أو للمستخدم نفسه (تحديث بروفايله)
+            // 1. [تعديل الهوية]: جدول users
+            // السوبر أدمن أو صاحب الحساب فقط يمكنه تعديل البيانات العالمية
             $isUpdatingSelf = ($authUser->id === $user->id);
             if ($isSuperAdmin || $isUpdatingSelf) {
                 $userData = array_intersect_key($validated, array_flip([
@@ -546,44 +491,20 @@ class UserController extends Controller
                 }
             }
 
-            // [NEW] Sync Companies (Super Admin or Company Admin with scoping)
-            if ($request->has('company_ids')) {
-                $companyIds = (array) $request->input('company_ids');
-                if ($activeCompanyId && !in_array($activeCompanyId, $companyIds)) {
-                    $companyIds[] = $activeCompanyId;
-                }
-                $companyIds = array_unique(array_filter($companyIds));
-
-                $isCompanyAdmin = $authUser->can(perm_key('admin.company'));
-
-                if ($isSuperAdmin) {
-                    $user->companies()->sync($companyIds);
-                } elseif ($isCompanyAdmin) {
-                    // Company Admin can only sync companies they themselves belong to
-                    $myCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
-                    $allowedCompanyIds = array_intersect($companyIds, $myCompanyIds);
-
-                    // We use syncWithoutDetaching or a manual sync to ensure we don't accidentally
-                    // remove links to companies the admin DOESN'T manage.
-                    $user->companies()->syncWithPivotValues($allowedCompanyIds, [
-                        'created_by' => $authUser->id,
-                        'status' => 'active'
-                    ], false); // false = don't detach others (very important for company admins)
-                }
-            }
-
-            // 2. تحديث البيانات السياقية (جدول company_user)
+            // 2. [تعديل العضوية]: جدول company_user
+            // يتم التعديل في سياق الشركة النشطة للأدمن، أو المستخدم نفسه لبياناته في تلك الشركة
             if ($activeCompanyId) {
                 $companyUser = $user->companyUsers()->where('company_id', $activeCompanyId)->first();
                 if ($companyUser) {
                     $contextData = [];
+                    // ملاحظة: إذا كان المستخدم يعدل بياناته، نأخذ اللقب من المدخلات أو نستخدم المنطق التلقائي
                     if (isset($validated['nickname']))
                         $contextData['nickname_in_company'] = $validated['nickname'];
                     if (isset($validated['full_name']))
                         $contextData['full_name_in_company'] = $validated['full_name'];
-                    if (isset($validated['status']))
+                    if (isset($validated['status']) && !$isUpdatingSelf)
                         $contextData['status'] = $validated['status'];
-                    if (isset($validated['balance']))
+                    if (isset($validated['balance']) && $isSuperAdmin)
                         $contextData['balance_in_company'] = $validated['balance'];
                     if (isset($validated['customer_type']))
                         $contextData['customer_type_in_company'] = $validated['customer_type'];

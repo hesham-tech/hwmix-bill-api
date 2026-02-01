@@ -56,15 +56,11 @@ class InstallmentPlan extends Model
     {
         return $this->belongsTo(Invoice::class);
     }
-    public function customer()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
     public function installments()
     {
         return $this->hasMany(Installment::class);
     }
-    public function user()
+    public function customer()
     {
         return $this->belongsTo(User::class, 'user_id');
     }

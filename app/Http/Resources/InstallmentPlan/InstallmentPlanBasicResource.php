@@ -30,6 +30,7 @@ class InstallmentPlanBasicResource extends JsonResource
             'status_label' => $this->getStatusLabel(),
             // ممكن تضيفه لو بتعرض المستخدم في القائمة
             'user_id' => $this->user_id ?? null,
+            'invoice' => new \App\Http\Resources\Invoice\InvoiceResource($this->whenLoaded('invoice')),
         ];
     }
 

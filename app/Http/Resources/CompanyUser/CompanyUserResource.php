@@ -60,52 +60,26 @@ class CompanyUserResource extends JsonResource
         });
 
         return [
-            // بيانات المستخدم الأساسية
+            // بيانات ملف العضو (سياق الشركة)
             'id' => $this->user_id,
-            'username' => $this->whenLoaded('user', fn() => $this->user->username),
-            'email' => $this->whenLoaded('user', fn() => $this->user->email),
-            'phone' => $this->whenLoaded('user', fn() => $this->user->phone),
-            'last_login_at' => $this->whenLoaded('user', fn() => $this->user->last_login_at),
-            'email_verified_at' => $this->whenLoaded('user', fn() => $this->user->email_verified_at),
-            'created_by' => $this->whenLoaded('user', fn() => $this->user->created_by),
-
-            // بيانات من جدول company_user
-            'nickname' => $this->nickname_in_company,
-            'full_name' => $this->full_name_in_company,
-            'balance' => $this->balance_in_company,
-            'position' => $this->position_in_company,
+            'name' => $this->name,
+            'nickname' => $this->nickname,
+            'full_name' => $this->full_name,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'balance' => $this->balance,
+            'position' => $this->position,
             'status' => $this->status,
-            'customer_type' => $this->customer_type_in_company,
-
-            // الخزنة الافتراضية
-            'cash_box_id' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? null : $defaultCashBox?->id,
-            'cashBoxDefault' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? $defaultCashBox : ($defaultCashBox ? new CashBoxResource($defaultCashBox) : null),
-
-            // الشركة الحالية
-            'company_id' => $this->company_id,
-            'company_logo' => $companyLogoUrl,
-
-            // صورة الأفاتار
+            'customer_type' => $this->customer_type,
             'avatar_url' => $avatarUrl,
 
-            // الشركات المرتبطة بالمستخدم
-            'companies' => $this->whenLoaded(
-                'user',
-                fn() =>
-                CompanyResource::collection($this->user->getVisibleCompaniesForUser())
-            ),
-
-            // الخزن التابعة للشركة
-            'cashBoxes' => $companyCashBoxes
-                ? CashBoxResource::collection($companyCashBoxes)
-                : [],
-
-            // الإعدادات
-            'settings' => $this->whenLoaded('user', fn() => $this->user->settings ?? null),
-
+            // معلومات إضافية
+            'cash_box_id' => $this->getDefaultCashBoxAttribute()?->id,
+            'company_id' => $this->company_id,
+            'company_logo' => $companyLogoUrl,
+            'last_login_at' => $this->last_login_at,
             'roles' => $this->whenLoaded('user', fn() => $this->user->roles->pluck('name')),
             'direct_permissions' => $this->whenLoaded('user', fn() => $this->user->getDirectPermissions()->pluck('name')),
-
             'created_at' => $this->created_at?->format('Y-m-d'),
             'updated_at' => $this->updated_at?->format('Y-m-d'),
         ];

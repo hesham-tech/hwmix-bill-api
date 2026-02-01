@@ -47,7 +47,7 @@ class InvoiceResource extends JsonResource
             'updated_at' => optional($this->updated_at)->format('Y-m-d H:i:s'),
 
             // العلاقات لما تكون محملة فقط
-            'user' => new UserBasicResource($this->whenLoaded('user')),
+            'customer' => new UserBasicResource($this->whenLoaded('customer')),
             'invoice_type' => new InvoiceTypeResource($this->whenLoaded('invoiceType')),
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
             'payments' => $this->whenLoaded('payments', function () {

@@ -22,8 +22,8 @@ class RevenueController extends Controller
     {
         $this->relations = [
             'company',   // للتحقق من belongsToCurrentCompany
+            'customer',  // العميل المرتبط بالإيراد
             'creator',   // للتحقق من createdByCurrentUser/OrChildren
-            // أضف أي علاقات أخرى ذات صلة هنا، مثل 'invoice' أو 'user' إذا كانت الإيرادات مرتبطة بها مباشرةً
         ];
     }
 

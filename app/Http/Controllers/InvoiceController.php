@@ -32,7 +32,7 @@ class InvoiceController extends Controller
     public function downloadPDF($id)
     {
         try {
-            $invoice = Invoice::with(['items.product', 'items.variant', 'user', 'company', 'invoiceType', 'payments'])
+            $invoice = Invoice::with(['items.product', 'items.variant', 'customer', 'company', 'invoiceType', 'payments'])
                 ->findOrFail($id);
 
             return app(PDFService::class)->generateInvoicePDF($invoice);
@@ -52,7 +52,7 @@ class InvoiceController extends Controller
     public function getInvoiceForPDF($id)
     {
         try {
-            $invoice = Invoice::with(['items.product', 'items.variant', 'user', 'company', 'invoiceType', 'payments'])
+            $invoice = Invoice::with(['items.product', 'items.variant', 'customer', 'company', 'invoiceType', 'payments'])
                 ->findOrFail($id);
 
             return response()->json([
@@ -80,7 +80,7 @@ class InvoiceController extends Controller
     public function emailPDF($id, Request $request)
     {
         try {
-            $invoice = Invoice::with(['items.product', 'user', 'company'])->findOrFail($id);
+            $invoice = Invoice::with(['items.product', 'customer', 'company'])->findOrFail($id);
 
             $recipients = $request->input('recipients', [$invoice->user->email]);
             $subject = $request->input('subject');
@@ -113,7 +113,7 @@ class InvoiceController extends Controller
                 'ids.*' => 'exists:invoices,id',
             ]);
 
-            $query = Invoice::with(['items', 'user', 'invoiceType', 'company']);
+            $query = Invoice::with(['items', 'customer', 'invoiceType', 'company']);
 
             if ($request->filled('ids')) {
                 $query->whereIn('id', $request->ids);
@@ -138,7 +138,7 @@ class InvoiceController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'user.cashBoxDefault',
+            'customer.cashBoxDefault',
             'company',
             'invoiceType',
             'items.variant',
@@ -191,7 +191,7 @@ class InvoiceController extends Controller
                 $search = $request->input('search');
                 $query->where(function ($q) use ($search) {
                     $q->where('invoice_number', 'like', "%{$search}%")
-                        ->orWhereHas('user', function ($qu) use ($search) {
+                        ->orWhereHas('customer', function ($qu) use ($search) {
                             $qu->where('full_name', 'like', "%{$search}%")
                                 ->orWhere('nickname', 'like', "%{$search}%")
                                 ->orWhere('phone', 'like', "%{$search}%");

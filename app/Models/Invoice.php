@@ -9,7 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Observers\InvoiceObserver;
 
+#[ObservedBy([InvoiceObserver::class])]
 class Invoice extends Model
 {
     use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes;
@@ -102,9 +105,9 @@ class Invoice extends Model
             : implode('_', array_map(fn($p) => substr($p, 0, 3), $parts));
     }
 
-    public function user()
+    public function customer()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
     public function invoiceType()
     {

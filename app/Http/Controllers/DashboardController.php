@@ -110,7 +110,7 @@ class DashboardController extends Controller
             ->get();
 
         // 3. أحدث العمليات
-        $recentInvoices = Invoice::with(['user', 'invoiceType'])
+        $recentInvoices = Invoice::with(['customer', 'invoiceType'])
             ->where('company_id', $companyId)
             ->latest()
             ->limit(5)

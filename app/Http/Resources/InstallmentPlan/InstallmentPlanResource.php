@@ -58,7 +58,8 @@ class InstallmentPlanResource extends JsonResource
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
 
-            'user' => new UserBasicResource($this->whenLoaded('user')),
+            'customer' => new UserBasicResource($this->whenLoaded('customer')),
+            'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'invoice' => new InvoiceResource($this->whenLoaded('invoice')),
             'invoice_items' => InvoiceItemResource::collection(
                 $this->whenLoaded('invoice', function () {

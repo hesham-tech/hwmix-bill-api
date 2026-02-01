@@ -12,7 +12,7 @@ trait FilterableByCompany
      */
     public static function bootFilterableByCompany()
     {
-        static::addGlobalScope('company', function (Builder $builder) {
+        static::addGlobalScope('company_filter', function (Builder $builder) {
             $user = Auth::user();
 
             // Only apply if user is authenticated and not a super admin

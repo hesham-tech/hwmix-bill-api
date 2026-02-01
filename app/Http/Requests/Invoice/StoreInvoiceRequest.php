@@ -84,6 +84,10 @@ class StoreInvoiceRequest extends FormRequest
             'installment_plan.start_date' => 'nullable|date',
             'installment_plan.due_date' => 'nullable|date',
             'installment_plan.round_step' => 'nullable|integer',
+            'installment_plan.net_amount' => 'nullable|numeric',
+            'installment_plan.interest_rate' => 'nullable|numeric',
+            'installment_plan.interest_amount' => 'nullable|numeric',
+            'installment_plan.frequency' => 'nullable|string|in:monthly,weekly,biweekly,quarterly',
         ];
     }
 }

@@ -135,6 +135,22 @@ class Company extends Model
     }
 
     /**
+     * الحصول على إعدادات الطباعة من حقل settings مع قيم افتراضية
+     */
+    public function getPrintSettingsAttribute(): array
+    {
+        $defaults = [
+            'print_format' => 'thermal', // thermal, a4, a5
+            'show_logo' => true,
+            'header_text' => '',
+            'footer_text' => 'شكراً لتعاملكم معنا',
+            'thermal_width' => '80mm',
+        ];
+
+        return array_merge($defaults, $this->settings['print_settings'] ?? []);
+    }
+
+    /**
      * Label for activity logs.
      */
     public function logLabel()

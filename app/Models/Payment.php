@@ -25,9 +25,9 @@ class Payment extends Model
         'payment_method_id',
         'cash_box_id'
     ];
-    public function user()
+    public function customer()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
     public function installments()
     {

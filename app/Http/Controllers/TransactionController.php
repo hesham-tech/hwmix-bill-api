@@ -28,8 +28,8 @@ class TransactionController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'user',
-            'targetUser',
+            'customer',
+            'targetCustomer',
             'cashbox',
             'targetCashbox',
             'company',
@@ -427,7 +427,7 @@ class TransactionController extends Controller
 
             try {
                 // استرجاع المعاملة المطلوبة وتحميل العلاقات للتحقق من الصلاحيات
-                $transaction = Transaction::with(['user', 'targetUser', 'cashbox', 'targetCashbox', 'company', 'creator'])->findOrFail($transactionId);
+                $transaction = Transaction::with(['customer', 'targetCustomer', 'cashbox', 'targetCashbox', 'company', 'creator'])->findOrFail($transactionId);
 
                 // التحقق من الصلاحيات بناءً على الأذونات
                 $canReverse = false;

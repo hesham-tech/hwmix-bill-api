@@ -1,5 +1,190 @@
-[2026-01-30 10:59:09] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/invoices/pages/InvoiceCreate.vue?t=1769770745132
-Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/invoices/pages/InvoiceCreate.vue?t=1769770745132
-URL: http://localhost:5173/app/invoices/create
+[2026-01-31 09:45:53] VUE_ERROR: Cannot read properties of undefined (reading 'id')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'id')
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:281:35
+    at renderList (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:4988:16)
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:279:77
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at renderSlot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:5063:53)
+    at http://localhost:5173/src/components/common/AppDialog.vue?t=1769848024286:178:17
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9733:34)
+    at createBaseVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9538:5)
+    at _createVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9615:10)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 09:46:08] VUE_ERROR: Cannot read properties of undefined (reading 'id')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'id')
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:281:35
+    at renderList (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:4988:16)
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:279:77
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at renderSlot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:5063:53)
+    at http://localhost:5173/src/components/common/AppDialog.vue?t=1769848024286:178:17
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9733:34)
+    at createBaseVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9538:5)
+    at _createVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9615:10)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 09:46:45] VUE_ERROR: Cannot read properties of undefined (reading 'id')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'id')
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:281:35
+    at renderList (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:4988:16)
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:279:77
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at renderSlot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:5063:53)
+    at http://localhost:5173/src/components/common/AppDialog.vue?t=1769848024286:178:17
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9733:34)
+    at createBaseVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9538:5)
+    at _createVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9615:10)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 09:47:49] VUE_ERROR: Cannot read properties of undefined (reading 'id')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'id')
+    at http://localhost:5173/src/modules/installments/components/AppReceipt.vue?t=1769852528151:130:27
+    at renderList (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:4988:16)
+    at Proxy._sfc_render (http://localhost:5173/src/modules/installments/components/AppReceipt.vue?t=1769852528151:128:69)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:7403:46)
+    at ReactiveEffect.run (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:481:19)
+    at setupRenderEffect (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:7538:5)
+    at mountComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:7313:7)
+    at processComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:7266:9)
+    at patch (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:6782:11)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 09:49:45] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentList.vue?t=1769852978546
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentList.vue?t=1769852978546
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 14:50:44] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769870670483:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769870670483:61:36)
+URL: http://localhost:5173/app/company
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:05:17] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769871124954:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769871124954:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:11:25] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769871920918:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769871920918:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:16:39] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769871920918:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769871920918:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:20:38] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769871920918:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769871920918:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:29:14] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769873098267:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769873098267:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:34:52] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769873098267:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769873098267:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 20:07:57] VUE_ERROR: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+    at http://localhost:5174/src/modules/invoices/pages/InvoiceView.vue?t=1769889736137:662:98
+    at renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at renderSlot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:5063:53)
+    at http://localhost:5174/src/components/common/AppCard.vue:120:15
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VCard/VCardActions.mjs?v=6718ac3b:22:24)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7403:46)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:481:19)
+    at setupRenderEffect (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7538:5)
+URL: http://localhost:5174/app/invoices/6
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 20:42:07] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5174/src/modules/users/pages/UserList.vue?t=1769892118962
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5174/src/modules/users/pages/UserList.vue?t=1769892118962
+URL: http://localhost:5174/app/users?page=1&per_page=10&sort_by=created_at&sort_order=desc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 20:57:44] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5174/src/modules/users/pages/UserList.vue?t=1769892123367
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5174/src/modules/users/pages/UserList.vue?t=1769892123367
+URL: http://localhost:5174/app/users?page=1&per_page=10&sort_by=created_at&sort_order=desc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 21:58:25] VUE_ERROR: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+    at http://localhost:5174/src/modules/invoices/pages/InvoiceView.vue?t=1769893483643:662:98
+    at renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at renderSlot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:5063:53)
+    at http://localhost:5174/src/components/common/AppCard.vue:120:15
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VCard/VCardActions.mjs?v=6718ac3b:22:24)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7403:46)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:481:19)
+    at setupRenderEffect (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7538:5)
+URL: http://localhost:5174/app/invoices/6
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 21:58:27] VUE_ERROR: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+    at http://localhost:5174/src/modules/invoices/pages/InvoiceView.vue?t=1769893483643:662:98
+    at renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at renderSlot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:5063:53)
+    at http://localhost:5174/src/components/common/AppCard.vue:120:15
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VCard/VCardActions.mjs?v=6718ac3b:22:24)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7481:26)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:481:19)
+    at updateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7342:18)
+URL: http://localhost:5174/app/invoices/6
 User ID: Guest
 --------------------------------------------------

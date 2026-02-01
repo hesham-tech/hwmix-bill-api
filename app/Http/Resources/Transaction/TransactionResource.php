@@ -9,19 +9,19 @@ class TransactionResource extends JsonResource
 
     private function getCashboxName()
     {
-        return $this->user && $this->cashbox_id
-            ? optional($this->user->cashBoxes->firstWhere('id', $this->cashbox_id))->name
+        return $this->customer && $this->cashbox_id
+            ? optional($this->customer->cashBoxes->firstWhere('id', $this->cashbox_id))->name
             : 'خزنة غير معروفة';
     }
 
     private function getTargetCashboxName()
     {
-        if (!$this->targetUser || !$this->target_cashbox_id) {
+        if (!$this->targetCustomer || !$this->target_cashbox_id) {
             return "لا يوجد مستخدم هدف او معرف خزنه حدف";
         }
 
         // تخزين cashBoxes في متغير
-        $cashBoxes = $this->targetUser->cashBoxes;
+        $cashBoxes = $this->targetCustomer->cashBoxes;
 
         // التأكد من أن cashBoxes ليست فارغة
         if ($cashBoxes->isEmpty()) {
@@ -30,20 +30,20 @@ class TransactionResource extends JsonResource
 
         $cashbox = $cashBoxes->firstWhere('id', (int) $this->target_cashbox_id);
 
-        return $cashbox->name ;
+        return $cashbox->name;
     }
 
 
     // private function getTargetCashboxName()
     // {
-    //     return $this->targetUser && $this->target_cashbox_id
-    //         ? optional($this->targetUser->cashBoxes->firstWhere('id', (int) $this->target_cashbox_id))->name
+    //     return $this->targetCustomer && $this->target_cashbox_id
+    //         ? optional($this->targetCustomer->cashBoxes->firstWhere('id', (int) $this->target_cashbox_id))->name
     //         : 'محفظة غير معروفة';
     // }
     private function generateHumanReadableDescription()
     {
-        $user = $this->user ? $this->user->nickname : 'مستخدم غير معروف';
-        $targetUser = $this->targetUser ? $this->targetUser->nickname : 'مستخدم غير معروف';
+        $user = $this->customer ? $this->customer->nickname : 'مستخدم غير معروف';
+        $targetUser = $this->targetCustomer ? $this->targetCustomer->nickname : 'مستخدم غير معروف';
         $cashboxName = $this->getCashboxName();
         $targetCashboxName = $this->getTargetCashboxName();
 
@@ -78,8 +78,8 @@ class TransactionResource extends JsonResource
             'company_id' => $this->company_id,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
-            'user' => $this->user ? $this->user->only(['id', 'nickname', 'name']) : null,
-            'target_user' => $this->targetUser ? $this->targetUser->only(['id', 'nickname', 'name']) : null,
+            'customer' => $this->customer ? $this->customer->only(['id', 'nickname', 'name']) : null,
+            'target_customer' => $this->targetCustomer ? $this->targetCustomer->only(['id', 'nickname', 'name']) : null,
             // 'user' => $this->user->cashBoxes,
             // 'targetUser' => $this->targetUser->cashBoxes,
             'cashbox_name' => $this->getCashboxName(),

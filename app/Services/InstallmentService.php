@@ -33,12 +33,12 @@ class InstallmentService
             $roundStep = isset($planData['round_step']) && $planData['round_step'] > 0 ? (int) $planData['round_step'] : 5;
             $frequency = $planData['frequency'] ?? 'monthly';
 
-            $netAmount = $planData['net_amount'];
+            $netAmount = $planData['net_amount'] ?? ($data['total_balance'] ?? 0);
             $interestRate = $planData['interest_rate'] ?? 0;
             $interestAmount = $planData['interest_amount'] ?? 0;
             $totalAmount = $planData['total_amount'] ?? $netAmount;
             $downPayment = $planData['down_payment'] ?? 0;
-            $installmentsN = (int) $planData['number_of_installments'];
+            $installmentsN = (int) ($planData['number_of_installments'] ?? 1);
 
             $remaining = bcsub((string) $totalAmount, (string) $downPayment, 2);
             if (bccomp($remaining, '0.00', 2) <= 0) {

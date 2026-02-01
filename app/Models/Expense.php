@@ -7,8 +7,11 @@ use App\Traits\LogsActivity;
 use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Observers\ExpenseObserver;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([ExpenseObserver::class])]
 class Expense extends Model
 {
     use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes;

@@ -55,13 +55,12 @@ class CompanyUser extends Pivot
 
     /**
      * العلاقات التي يجب تحميلها تلقائيا عند جلب الموديل.
-     *
-     * @var array
+     * تم إزالتها لمنع التكرار اللا نهائي (Infinite Recursion) عند تسلسل بيانات المستخدم.
      */
-    protected $with = [
-        'user',
-        'company'
-    ];
+    // protected $with = [
+    //     'user',
+    //     'company'
+    // ];
 
 
     /**
@@ -133,6 +132,14 @@ class CompanyUser extends Pivot
     public function getCustomerTypeAttribute()
     {
         return $this->customer_type_in_company ?? 'retail';
+    }
+
+    /**
+     * الحصول على الاسم المفضل (لقب ثم اسم كامل)
+     */
+    public function getNameAttribute()
+    {
+        return $this->nickname_in_company ?: ($this->full_name_in_company ?: ($this->user?->nickname ?: $this->user?->full_name));
     }
 
     /**

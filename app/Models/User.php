@@ -23,6 +23,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Observers\UserObserver;
 // يجب استيراد النماذج (Models) المستخدمة داخل الكود:
 use App\Models\CashBox;
 use App\Models\Company;
@@ -38,6 +40,7 @@ use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 /**
  * @method void deposit(float|int $amount)
  */
+#[ObservedBy([UserObserver::class])]
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -70,7 +73,7 @@ class User extends Authenticatable
      *
      * @var array
      */
-    protected $appends = ['avatar_url'];
+    protected $appends = ['avatar_url', 'name'];
 
     /**
      * تعريف أنواع البيانات للمحولات (Casts).
@@ -90,14 +93,13 @@ class User extends Authenticatable
      */
     protected static function booted(): void
     {
-        static::created(function ($user) {
-            $user->ensureCashBoxesForAllCompanies();
-        });
+        /**
+         * @see \App\Observers\UserObserver
+         * يتم معالجة مزامنة البيانات (Sync) وتسجيل النشاطات (ActivityLog) عبر المراقب (Observer)
+         */
 
-        static::saved(function ($user) {
-            if ($user->isDirty('company_id')) {
-                $user->ensureCashBoxesForAllCompanies();
-            }
+        static::created(function ($user) {
+            // [تمت الإزالة]: يعتمد النظام الآن على CompanyUserObserver لإنشاء الخزنة عند الربط
         });
     }
 
@@ -152,12 +154,12 @@ class User extends Authenticatable
         // إذا لم يوجد، نقوم بإنشاء واحدة تلقائياً للمستخدم في هذه الشركة لضمان استمرارية العمليات المالية
         if (!$cashBox && $companyId) {
             try {
-                $cashBox = app(\App\Services\CashBoxService::class)->createDefaultCashBoxForUserCompany(
+                $cashBox = app(CashBoxService::class)->createDefaultCashBoxForUserCompany(
                     $this->id,
                     $companyId,
                     Auth::id() ?? $this->id
                 );
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 \Log::error("فشل إنشاء خزنة تلقائية للمستخدم {$this->id} في الشركة {$companyId}: " . $e->getMessage());
             }
         }
@@ -184,6 +186,14 @@ class User extends Authenticatable
                 }
             }
         ]);
+    }
+
+    /**
+     * الشركة النشطة حالياً للمستخدم.
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
     }
 
     /**
@@ -811,31 +821,81 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على نوع العميل في الشركة النشطة
+     * الحصول على الاسم الكامل بشكل مرن (Accessor)
      */
-    public function getCustomerTypeAttribute()
+    public function getNameAttribute()
     {
-        return $this->activeCompanyUser?->customer_type ?? 'retail';
+        // استخدام العلاقة فقط إذا كانت محملة لتجنب التكرار اللانهائي أثناء التسلسل
+        $activeCompanyUser = $this->relationLoaded('activeCompanyUser') ? $this->activeCompanyUser : null;
+
+        // 1. الأولوية للقب في الشركة المحددة
+        if ($activeCompanyUser && !empty($activeCompanyUser->nickname_in_company)) {
+            return $activeCompanyUser->nickname_in_company;
+        }
+
+        // 2. الاسم الكامل في الشركة المحددة
+        if ($activeCompanyUser && !empty($activeCompanyUser->full_name_in_company)) {
+            return $activeCompanyUser->full_name_in_company;
+        }
+
+        // 3. اللقب العالمي
+        if (!empty($this->nickname))
+            return $this->nickname;
+
+        // 4. الاسم الكامل العالمي
+        if (!empty($this->full_name))
+            return $this->full_name;
+
+        // 5. المحاولة باسم المستخدم
+        if (!empty($this->username))
+            return $this->username;
+
+        return 'عميل غير معروف';
     }
 
     /**
-     * ضمان وجود خزنة للمستخدم في كل شركة ينتمي إليها.
-     *
-     * @return void
+     * الحصول على اللقب (Context-Aware)
      */
-    public function ensureCashBoxesForAllCompanies(): void
+    public function getNicknameAttribute($value)
     {
-        // جلب جميع الشركات المرتبطة بالمستخدم
-        $companies = $this->companies()->get();
-
-        foreach ($companies as $company) {
-            // getDefaultCashBoxForCompany يقوم بالتحقق والإنشاء التلقائي إذا لم تكن موجودة
-            $this->getDefaultCashBoxForCompany($company->id);
-        }
-
-        // أيضاً التأكد من الشركة الأساسية إذا كانت غير موجودة في القائمة أعلاه
-        if ($this->company_id) {
-            $this->getDefaultCashBoxForCompany($this->company_id);
-        }
+        $activeCompanyUser = $this->relationLoaded('activeCompanyUser') ? $this->activeCompanyUser : null;
+        return $activeCompanyUser?->nickname_in_company ?? $value;
     }
+
+    /**
+     * الحصول على الاسم الكامل (Context-Aware)
+     */
+    public function getFullNameAttribute($value)
+    {
+        $activeCompanyUser = $this->relationLoaded('activeCompanyUser') ? $this->activeCompanyUser : null;
+        return $activeCompanyUser?->full_name_in_company ?? $value;
+    }
+
+    /**
+     * الحصول على الرصيد (Context-Aware)
+     */
+    public function getBalanceAttribute()
+    {
+        $activeCompanyUser = $this->relationLoaded('activeCompanyUser') ? $this->activeCompanyUser : null;
+        return (float) ($activeCompanyUser?->balance_in_company ?? 0);
+    }
+
+    /**
+     * الحصول على المسمى الوظيفي (Context-Aware)
+     */
+    public function getPositionAttribute($value)
+    {
+        $activeCompanyUser = $this->relationLoaded('activeCompanyUser') ? $this->activeCompanyUser : null;
+        return $activeCompanyUser?->position_in_company ?? $value;
+    }
+
+    /**
+     * الحصول على نوع العميل (Context-Aware)
+     */
+    public function getCustomerTypeAttribute($value)
+    {
+        $activeCompanyUser = $this->relationLoaded('activeCompanyUser') ? $this->activeCompanyUser : null;
+        return $activeCompanyUser?->customer_type_in_company ?? $value;
+    }
+
 }

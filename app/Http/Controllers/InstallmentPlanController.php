@@ -21,7 +21,7 @@ class InstallmentPlanController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'user',       // المستخدم الذي يخصه خطة التقسيط
+            'customer',       // المستخدم الذي يخصه خطة التقسيط
             'creator',    // المستخدم الذي أنشأ خطة التقسيط
             'invoice.items.variant',
             'installments',
@@ -83,7 +83,7 @@ class InstallmentPlanController extends Controller
             if ($request->filled('search')) {
                 $search = trim($request->input('search'));
 
-                $query->whereHas('user', function ($q) use ($search) {
+                $query->whereHas('customer', function ($q) use ($search) {
                     $q->where(function ($qq) use ($search) {
                         $qq->where('nickname', 'LIKE', "%{$search}%")
                             ->orWhere('phone', 'LIKE', "%{$search}%");

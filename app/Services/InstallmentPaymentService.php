@@ -70,6 +70,7 @@ class InstallmentPaymentService
                 'payment_method' => $paymentMethodName,
                 'notes' => $options['notes'] ?? '',
                 'cash_box_id' => $cashBoxId,
+                'reference_number' => $options['reference_number'] ?? null,
             ]);
 
             // **التعديل هنا: جلب الأقساط بطريقة تسمح بالتدفق التلقائي**
@@ -80,22 +81,18 @@ class InstallmentPaymentService
 
             if (!empty($installmentIds)) {
                 // قم بترتيب الأقساط المحددة أولاً، ثم باقي الأقساط حسب تاريخ الاستحقاق
-                // هذا يضمن أن الأقساط التي تم تمريرها في $installmentIds ستُعالج أولاً.
-                // إذا كان لديك عدد قليل من الأقساط المحددة، يمكن جلبها ثم جلب البقية.
                 $selectedInstallments = (clone $query)->whereIn('id', $installmentIds)->orderBy('due_date')->get();
                 $otherDueInstallments = (clone $query)->whereNotIn('id', $installmentIds)->orderBy('due_date')->get();
                 $installmentsToProcess = $selectedInstallments->merge($otherDueInstallments);
             } else {
-                // إذا لم يتم تحديد أقساط، جلب جميع الأقساط المستحقة حسب تاريخ الاستحقاق
                 $installmentsToProcess = $query->orderBy('due_date')->get();
             }
-            // نهاية التعديل
 
             $affectedInstallments = collect();
 
             foreach ($installmentsToProcess as $installment) {
                 if (bccomp($remainingAmountToDistribute, '0.00', 2) <= 0) {
-                    break; // لا يوجد المزيد من المبلغ لتوزيعه
+                    break;
                 }
 
                 $amountToApplyToCurrentInstallment = min($remainingAmountToDistribute, $installment->remaining);
@@ -103,9 +100,9 @@ class InstallmentPaymentService
                 $newStatus = $installment->status;
 
                 if (bccomp($newRemaining, '0.00', 2) <= 0) {
-                    $newStatus = 'paid'; // تم الدفع بالكامل
+                    $newStatus = 'paid';
                 } elseif (bccomp((string) $amountToApplyToCurrentInstallment, '0.00', 2) > 0 && bccomp($newRemaining, '0.00', 2) > 0) {
-                    $newStatus = 'partially_paid'; // مدفوع جزئيًا
+                    $newStatus = 'partially_paid';
                 }
 
                 $installment->update([
@@ -122,44 +119,50 @@ class InstallmentPaymentService
 
                 $remainingAmountToDistribute = bcsub($remainingAmountToDistribute, $amountToApplyToCurrentInstallment, 2);
                 $totalAmountSuccessfullyPaid = bcadd($totalAmountSuccessfullyPaid, $amountToApplyToCurrentInstallment, 2);
-                // يفضل إعادة تحميل القسط بعد التحديث للتأكد من أنه يمثل حالته الأخيرة قبل إضافته للمجموعة
                 $affectedInstallments->push($installment->fresh());
             }
+
             $installmentPayment->update(['amount_paid' => $totalAmountSuccessfullyPaid]);
             $this->updateInstallmentPlanStatus($installmentPlan);
-            $depositResultStaff = $authUser->deposit($totalAmountSuccessfullyPaid, $cashBoxId);
+
+            // إيداع المبلغ في خزنة الموظف
+            $depositResultStaff = $authUser->deposit($totalAmountSuccessfullyPaid, $cashBoxId, "تحصيل أقساط - دفعة #{$installmentPayment->id}");
             if ($depositResultStaff !== true) {
                 throw new Exception('InstallmentPaymentService: فشل إيداع المبلغ في خزنة الموظف: ' . json_encode($depositResultStaff));
             }
 
-            $depositResultClient = $clientUser->deposit($totalAmountSuccessfullyPaid, $clientCashBoxId);
+            // تحديث مديونية العميل (إيداع وهمي لتقليل الدين)
+            $depositResultClient = $clientUser->deposit($totalAmountSuccessfullyPaid, $clientCashBoxId, "سداد أقساط - دفعة #{$installmentPayment->id}");
             if ($depositResultClient !== true) {
                 throw new Exception('InstallmentPaymentService: فشل تحديث رصيد العميل (تقليل الدين): ' . json_encode($depositResultClient));
             }
 
             DB::commit();
 
-            // تحديث الفاتورة الأم بالمبالغ المدفوعة فور نجاح المعاملة
+            // تحديث الفاتورة الأم
             try {
                 $parentInvoice = $installmentPlan->invoice;
                 if ($parentInvoice) {
                     $parentInvoice->paid_amount += $totalAmountSuccessfullyPaid;
                     $parentInvoice->remaining_amount = max(0, $parentInvoice->net_amount - $parentInvoice->paid_amount);
-                    $parentInvoice->updatePaymentStatus(); // سيقوم بالحفظ
-                    Log::info('InstallmentPaymentService: تم تحديث الفاتورة الأم بنجاح.', ['invoice_id' => $parentInvoice->id, 'new_paid_amount' => $parentInvoice->paid_amount]);
+                    $parentInvoice->updatePaymentStatus();
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error('InstallmentPaymentService: فشل تحديث الفاتورة الأم.', ['error' => $e->getMessage()]);
-                // لا نلقي استثناء هنا لأن المعاملة الرئيسية تمت بنجاح (DB::commit)
             }
 
-            if (bccomp($remainingAmountToDistribute, '0.00', 2) > 0) {
-                $installmentPayment->excess_amount = $remainingAmountToDistribute;
-            }
+            // جلب القسط القادم لإظهاره للمستخدم
+            $nextInstallment = $installmentPlan->installments()
+                ->where('status', 'pending')
+                ->where('remaining', '>', 0)
+                ->orderBy('due_date')
+                ->first();
 
             return [
                 'installmentPayment' => $installmentPayment,
                 'installments' => $affectedInstallments,
+                'excess_amount' => (float) $remainingAmountToDistribute,
+                'next_installment' => $nextInstallment,
             ];
         } catch (\Throwable $e) {
             DB::rollBack();

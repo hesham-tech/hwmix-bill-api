@@ -25,13 +25,7 @@ class AppServiceProvider extends ServiceProvider
         // Enforce Arabic locale for all requests
         app()->setLocale(config('app.locale', 'ar'));
 
-        // Register Observers
-        \App\Models\User::observe(\App\Observers\UserObserver::class);
-        \App\Models\Invoice::observe(\App\Observers\InvoiceObserver::class);
-        \App\Models\InvoiceItem::observe(\App\Observers\InvoiceItemObserver::class);
-        \App\Models\InvoicePayment::observe(\App\Observers\PaymentObserver::class);
-        \App\Models\Expense::observe(\App\Observers\ExpenseObserver::class);
-        // Company Observer registered via #[ObservedBy] attribute in Company model
+        // Register Observers (Most are registered via #[ObservedBy] attribute in Models)
         Role::observe(RoleObserver::class);
 
         // Super Admin bypass (Global access if user has 'admin.super' permission)

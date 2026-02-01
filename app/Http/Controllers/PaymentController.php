@@ -21,7 +21,7 @@ class PaymentController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'user',
+            'customer',
             'installments',
             'cashBox',
             'paymentMethod',
