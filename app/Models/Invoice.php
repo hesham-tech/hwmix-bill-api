@@ -28,6 +28,7 @@ class Invoice extends Model
         'previous_balance' => 'decimal:2',
         'initial_paid_amount' => 'decimal:2',
         'initial_remaining_amount' => 'decimal:2',
+        'user_balance_after' => 'decimal:2',
     ];
 
     // Status Constants

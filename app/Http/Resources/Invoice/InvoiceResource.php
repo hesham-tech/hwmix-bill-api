@@ -31,6 +31,7 @@ class InvoiceResource extends JsonResource
             'total_discount' => number_format($this->total_discount, 2, '.', ''),
             'initial_paid_amount' => number_format($this->initial_paid_amount, 2, '.', ''),
             'initial_remaining_amount' => number_format($this->initial_remaining_amount, 2, '.', ''),
+            'user_balance_after' => number_format($this->user_balance_after, 2, '.', ''),
 
             'status' => $this->status,
             'status_label' => $this->getStatusLabel(),

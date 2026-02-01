@@ -26,6 +26,9 @@ class InvoiceObserver
         if (in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])) {
             $this->recordLedgerEntry($invoice);
             $this->dispatchSummaryUpdate($invoice);
+
+            // حفظ رصيد العميل بعد الفاتورة (توثيق)
+            $this->updateUserBalanceAfter($invoice);
         }
     }
 
@@ -41,8 +44,10 @@ class InvoiceObserver
         ) {
             $this->recordLedgerEntry($invoice);
             $this->dispatchSummaryUpdate($invoice);
+            $this->updateUserBalanceAfter($invoice);
         } elseif ($invoice->wasChanged('net_amount') && in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])) {
             $this->dispatchSummaryUpdate($invoice);
+            $this->updateUserBalanceAfter($invoice);
         }
     }
 
@@ -100,6 +105,18 @@ class InvoiceObserver
                     $invoice->company_id
                 );
             });
+        }
+    }
+    /**
+     * تحديث رصيد العميل الموثق في الفاتورة (الرصيد بعد العمليات)
+     */
+    protected function updateUserBalanceAfter(Invoice $invoice): void
+    {
+        $user = $invoice->customer;
+        if ($user) {
+            $invoice->updateQuietly([
+                'user_balance_after' => $user->balance
+            ]);
         }
     }
 }

@@ -188,3 +188,102 @@ Stack Trace: TypeError: Cannot read properties of undefined (reading 'PAYMENTS_C
 URL: http://localhost:5174/app/invoices/6
 User ID: Guest
 --------------------------------------------------
+[2026-02-01 13:12:18] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue:67:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:12:30] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue:67:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:14:39] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue?t=1769951677395:69:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:17:14] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue?t=1769951695593:69:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:17:32] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue?t=1769951695593:69:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:19:21] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue?t=1769951695593:69:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:19:42] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue?t=1769951695593:69:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:47:55] VUE_ERROR: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+    at http://localhost:5174/src/modules/invoices/pages/InvoiceView.vue:662:98
+    at renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at renderSlot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:5063:53)
+    at http://localhost:5174/src/components/common/AppCard.vue:120:15
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VCard/VCardActions.mjs?v=9b5327f9:22:24)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7403:46)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:481:19)
+    at setupRenderEffect (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7538:5)
+URL: http://localhost:5174/app/invoices/6
+User ID: Guest
+--------------------------------------------------
