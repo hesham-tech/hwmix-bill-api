@@ -125,6 +125,8 @@ trait InvoiceHelperTrait
                     'subtotal' => $item['subtotal'] ?? 0,
                     'total' => $item['total'],
                     'profit_margin' => $item['profit_margin'] ?? ($item['variant_id'] ? ProductVariant::find($item['variant_id'])->profit_margin : 0),
+                    'service_id' => $item['service_id'] ?? null,
+                    'subscription_id' => $item['subscription_id'] ?? null,
                     'company_id' => $companyId,
                     'created_by' => $createdBy,
                 ]);
@@ -175,6 +177,8 @@ trait InvoiceHelperTrait
                         'subtotal' => $itemData['subtotal'] ?? 0,
                         'total' => $itemData['total'],
                         'profit_margin' => $itemData['profit_margin'] ?? ($itemData['variant_id'] ? ProductVariant::find($itemData['variant_id'])->profit_margin : 0),
+                        'service_id' => $itemData['service_id'] ?? null,
+                        'subscription_id' => $itemData['subscription_id'] ?? null,
                         'company_id' => $companyId,
                         'updated_by' => $updatedBy,
                     ]);
@@ -197,6 +201,8 @@ trait InvoiceHelperTrait
                         'subtotal' => $itemData['subtotal'] ?? 0,
                         'total' => $itemData['total'],
                         'profit_margin' => $itemData['profit_margin'] ?? ($itemData['variant_id'] ? ProductVariant::find($itemData['variant_id'])->profit_margin : 0),
+                        'service_id' => $itemData['service_id'] ?? null,
+                        'subscription_id' => $itemData['subscription_id'] ?? null,
                         'company_id' => $companyId,
                         'created_by' => $updatedBy,
                     ]);

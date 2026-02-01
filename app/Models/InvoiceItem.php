@@ -69,6 +69,16 @@ class InvoiceItem extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    // 🔗 العلاقة مع الخدمة
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+    // 🔗 العلاقة مع الاشتراك
+    public function subscription()
+    {
+        return $this->belongsTo(Subscription::class);
+    }
     // 🔗 علاقة تسليم المنتجات الرقمية
     public function digitalDeliveries()
     {

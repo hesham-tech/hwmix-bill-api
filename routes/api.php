@@ -37,6 +37,8 @@ use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TaskGroupController;
 use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\ErrorReportController;
+use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\SubscriptionController;
 
 Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceController::class, 'fixMissingCashBoxes'])->name('emergency.fix.cashboxes');
 
@@ -317,6 +319,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('invoice-types/{invoiceType}', 'update');
         Route::delete('invoice-types/{invoiceType}', 'destroy');
     });
+
+    // Service Controller
+    Route::apiResource('services', ServiceController::class);
+
+    // Subscription Controller
+    Route::apiResource('subscriptions', SubscriptionController::class);
 
     // InvoiceItem Controller
     Route::controller(InvoiceItemController::class)->group(function () {

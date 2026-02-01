@@ -23,6 +23,23 @@ class InvoiceItemObserver
             if ($invoiceItem->product_id) {
                 $invoiceItem->product()->increment('sales_count');
             }
+
+            // 🔄 إنشاء اشتراك تلقائي إذا كان البند خدمة
+            if ($invoiceItem->service_id && $invoiceItem->invoice?->customer_id) {
+                \App\Models\Subscription::create([
+                    'user_id' => $invoiceItem->invoice->customer_id,
+                    'service_id' => $invoiceItem->service_id,
+                    'company_id' => $invoiceItem->company_id,
+                    'created_by' => $invoiceItem->created_by,
+                    'starts_at' => now(),
+                    'next_billing_date' => now()->addMonth(), // الافتراضي شهر واحد
+                    'billing_cycle' => 'monthly',
+                    'price' => $invoiceItem->unit_price,
+                    'status' => 'active',
+                    'auto_renew' => true,
+                    'notes' => 'تم إنشاؤه تلقائياً من فاتورة رقم #' . $invoiceItem->invoice->invoice_number,
+                ]);
+            }
         }
     }
 

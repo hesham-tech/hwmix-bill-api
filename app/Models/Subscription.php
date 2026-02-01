@@ -26,6 +26,7 @@ class Subscription extends Model
         'billing_cycle',
         'price',
         'status',
+        'auto_renew',
         'notes'
     ];
     public function user()

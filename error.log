@@ -287,3 +287,144 @@ Stack Trace: TypeError: Cannot read properties of undefined (reading 'PAYMENTS_C
 URL: http://localhost:5174/app/invoices/6
 User ID: Guest
 --------------------------------------------------
+[2026-02-01 18:03:43] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1769969012286
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1769969012286
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:18] VUE_ERROR: _ctx.getPrintFormatIcon is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatIcon is not a function
+    at http://localhost:5174/src/layouts/MainLayout.vue?t=1769976676037:224:66
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VIcon/VIcon.mjs?v=9b5327f9:50:40)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7403:46)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:481:19)
+    at setupRenderEffect (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7538:5)
+    at mountComponent (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7313:7)
+    at processComponent (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7266:9)
+    at patch (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6782:11)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:18] VUE_ERROR: _ctx.getPrintFormatLabel is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatLabel is not a function
+    at http://localhost:5174/src/layouts/MainLayout.vue?t=1769976676037:233:81
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5174/node_modules/vuetify/lib/components/VTooltip/VTooltip.mjs?v=9b5327f9:85:33)
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5174/node_modules/vuetify/lib/components/VOverlay/VOverlay.mjs?v=9b5327f9:284:70)
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:3233:79)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:19] VUE_ERROR: _ctx.getPrintFormatIcon is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatIcon is not a function
+    at http://localhost:5174/src/layouts/MainLayout.vue?t=1769976676037:224:66
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VIcon/VIcon.mjs?v=9b5327f9:50:40)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7481:26)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:481:19)
+    at updateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7342:18)
+    at processComponent (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7277:7)
+    at patch (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6782:11)
+    at patchKeyedChildren (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7681:9)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:19] VUE_ERROR: _ctx.getPrintFormatLabel is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatLabel is not a function
+    at http://localhost:5174/src/layouts/MainLayout.vue?t=1769976676037:233:81
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5174/node_modules/vuetify/lib/components/VTooltip/VTooltip.mjs?v=9b5327f9:85:33)
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5174/node_modules/vuetify/lib/components/VOverlay/VOverlay.mjs?v=9b5327f9:284:70)
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:3233:79)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:19] VUE_ERROR: _ctx.getPrintFormatIcon is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatIcon is not a function
+    at http://localhost:5173/src/layouts/MainLayout.vue?t=1769976676038:224:66
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5173/node_modules/vuetify/lib/components/VIcon/VIcon.mjs?v=9b5327f9:50:40)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7403:46)
+    at ReactiveEffect.run (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:481:19)
+    at setupRenderEffect (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7538:5)
+    at mountComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7313:7)
+    at processComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7266:9)
+    at patch (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6782:11)
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:20] VUE_ERROR: _ctx.getPrintFormatLabel is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatLabel is not a function
+    at http://localhost:5173/src/layouts/MainLayout.vue?t=1769976676038:233:81
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5173/node_modules/vuetify/lib/components/VTooltip/VTooltip.mjs?v=9b5327f9:85:33)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5173/node_modules/vuetify/lib/components/VOverlay/VOverlay.mjs?v=9b5327f9:284:70)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:3233:79)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:20] VUE_ERROR: _ctx.getPrintFormatIcon is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatIcon is not a function
+    at http://localhost:5173/src/layouts/MainLayout.vue?t=1769976676038:224:66
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5173/node_modules/vuetify/lib/components/VIcon/VIcon.mjs?v=9b5327f9:50:40)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7481:26)
+    at ReactiveEffect.run (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:481:19)
+    at updateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7342:18)
+    at processComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7277:7)
+    at patch (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6782:11)
+    at patchKeyedChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7681:9)
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:20] VUE_ERROR: _ctx.getPrintFormatLabel is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatLabel is not a function
+    at http://localhost:5173/src/layouts/MainLayout.vue?t=1769976676038:233:81
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5173/node_modules/vuetify/lib/components/VTooltip/VTooltip.mjs?v=9b5327f9:85:33)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5173/node_modules/vuetify/lib/components/VOverlay/VOverlay.mjs?v=9b5327f9:284:70)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:3233:79)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:21:10] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:21:42] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:24:11] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:25:45] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------

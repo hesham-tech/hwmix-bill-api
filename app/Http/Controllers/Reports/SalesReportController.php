@@ -52,6 +52,9 @@ class SalesReportController extends BaseReportController
         $summary['total_items_sold'] = $this->getTotalItemsSold($query);
         $summary['unique_customers'] = $query->distinct('user_id')->count('user_id');
 
+        // 📊 إحصائيات الخدمات والاشتراكات
+        $summary['services_summary'] = $this->getServicesSummary(clone $query);
+
         $result = [
             'report' => $report,
             'summary' => $summary,
@@ -183,5 +186,38 @@ class SalesReportController extends BaseReportController
             'trend' => $trend,
             'period_type' => $period,
         ]);
+    }
+
+    /**
+     * Get summary of services and subscriptions sold
+     */
+    private function getServicesSummary($query): array
+    {
+        $invoiceIds = $query->pluck('id');
+
+        $serviceItems = \DB::table('invoice_items')
+            ->whereIn('invoice_id', $invoiceIds)
+            ->whereNotNull('service_id')
+            ->select([
+                \DB::raw('COUNT(*) as count'),
+                \DB::raw('SUM(total) as total_revenue'),
+            ])
+            ->first();
+
+        $activeSubscriptions = \DB::table('subscriptions')
+            ->whereIn('invoice_id', $invoiceIds) // Only if linked to this set of invoices
+            ->orWhere(function ($q) use ($query) {
+                // Or linked to the same customers in the same period
+                $customerIds = $query->pluck('user_id');
+                $q->whereIn('user_id', $customerIds);
+            })
+            ->where('status', 'active')
+            ->count();
+
+        return [
+            'total_services_count' => $serviceItems->count ?? 0,
+            'total_services_revenue' => round($serviceItems->total_revenue ?? 0, 2),
+            'active_subscriptions_count' => $activeSubscriptions,
+        ];
     }
 }
