@@ -101,6 +101,7 @@ class PermissionsSeeder extends Seeder
                     'cash_flow',
                     'tax',
                     'export',
+                    'print_labels',
                 ],
             ],
             [

@@ -428,3 +428,36 @@ User ID: Guest
 URL: http://localhost:5174/app/subscriptions
 User ID: Guest
 --------------------------------------------------
+[2026-02-02 01:01:36] VUE_ERROR: fetchedItems.value is not iterable
+Stack Trace: TypeError: fetchedItems.value is not iterable
+    at ComputedRefImpl.fn (http://localhost:5174/src/components/common/AppAutocomplete.vue?t=1769993896674:127:48)
+    at refreshComputed (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:636:29)
+    at isDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:606:68)
+    at ReactiveEffect.runIfDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:518:9)
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2263:33)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2471:9)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-02 01:15:11] VUE_ERROR: fetchedItems.value is not iterable
+Stack Trace: TypeError: fetchedItems.value is not iterable
+    at ComputedRefImpl.fn (http://localhost:5174/src/components/common/AppAutocomplete.vue?t=1769994776905:127:48)
+    at refreshComputed (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:636:29)
+    at isDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:606:68)
+    at ReactiveEffect.runIfDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:518:9)
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2263:33)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2471:9)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-02 01:15:52] VUE_ERROR: fetchedItems.value is not iterable
+Stack Trace: TypeError: fetchedItems.value is not iterable
+    at ComputedRefImpl.fn (http://localhost:5174/src/components/common/AppAutocomplete.vue?t=1769994776905:127:48)
+    at refreshComputed (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:636:29)
+    at isDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:606:68)
+    at ReactiveEffect.runIfDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:518:9)
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2263:33)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2471:9)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------

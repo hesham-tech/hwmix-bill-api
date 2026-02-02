@@ -325,6 +325,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Subscription Controller
     Route::apiResource('subscriptions', SubscriptionController::class);
+    Route::post('subscriptions/{id}/renew', [\App\Http\Controllers\Api\SubscriptionRenewalController::class, 'renew']);
+    Route::get('subscriptions/{id}/history', [\App\Http\Controllers\Api\SubscriptionRenewalController::class, 'history']);
 
     // InvoiceItem Controller
     Route::controller(InvoiceItemController::class)->group(function () {

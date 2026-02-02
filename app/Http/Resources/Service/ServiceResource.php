@@ -13,6 +13,8 @@ class ServiceResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'default_price' => $this->default_price,
+            'period_unit' => $this->period_unit,
+            'period_value' => $this->period_value,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'company_id' => $this->company_id,

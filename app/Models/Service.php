@@ -17,6 +17,8 @@ class Service extends Model
         'name',
         'description',
         'default_price',
+        'period_unit',
+        'period_value',
         'company_id',
         'created_by',
     ];

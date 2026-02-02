@@ -17,6 +17,7 @@ class Subscription extends Model
         'user_id',
         'service_id',
         'plan_id',
+        'unique_identifier',
         'company_id',
         'created_by',
         'start_date',
@@ -25,8 +26,10 @@ class Subscription extends Model
         'ends_at',
         'billing_cycle',
         'price',
+        'partial_payment',
         'status',
         'auto_renew',
+        'renewal_type',
         'notes'
     ];
     public function user()
@@ -48,6 +51,10 @@ class Subscription extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+    public function payments()
+    {
+        return $this->hasMany(SubscriptionPayment::class);
     }
 
     /**

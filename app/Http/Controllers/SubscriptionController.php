@@ -25,6 +25,7 @@ class SubscriptionController extends Controller
             'company',
             'user', // المستخدم المشترك
             'plan', // خطة الاشتراك
+            'service', // الخدمة المرتبطة
         ];
     }
 
@@ -147,20 +148,40 @@ class SubscriptionController extends Controller
                 $validatedData['created_by'] = $authUser->id;
                 $validatedData['company_id'] = $companyId;
 
-                // تحقق من أن المستخدم والخطة ينتميان لنفس الشركة
+                // حساب تاريخ التجديد القادم إذا لم يكن موجوداً
+                if (empty($validatedData['next_billing_date']) && !empty($validatedData['starts_at'])) {
+                    $startDate = \Carbon\Carbon::parse($validatedData['starts_at']);
+                    $cycle = $validatedData['billing_cycle'] ?? 'monthly';
+
+                    $validatedData['next_billing_date'] = match ($cycle) {
+                        'daily' => $startDate->addDay(),
+                        'weekly' => $startDate->addWeek(),
+                        'yearly' => $startDate->addYear(),
+                        default => $startDate->addMonth(), // monthly is default
+                    };
+                }
+
+                // تحقق من أن المستخدم ينتمي للشركة (عبر جدول الربط أو الحقل المباشر)
                 $user = \App\Models\User::where('id', $validatedData['user_id'])
-                    ->where('company_id', $companyId)
+                    ->where(function ($q) use ($companyId) {
+                        $q->where('company_id', $companyId)
+                            ->orWhereHas('companies', function ($cq) use ($companyId) {
+                                $cq->where('companies.id', $companyId);
+                            });
+                    })
                     ->first();
 
                 if (!$user) {
                     return api_error('المستخدم غير موجود .', [], 404);
                 }
-                $plan = \App\Models\Plan::where('id', $validatedData['plan_id'])
-                    ->where('company_id', $companyId)
-                    ->first();
+                if ($request->filled('plan_id')) {
+                    $plan = \App\Models\Plan::where('id', $validatedData['plan_id'])
+                        ->where('company_id', $companyId)
+                        ->first();
 
-                if (!$plan) {
-                    return api_error('خطة التقسيط المحددة غير موجودة .', [], 404);
+                    if (!$plan) {
+                        return api_error('خطة التقسيط المحددة غير موجودة .', [], 404);
+                    }
                 }
 
                 $subscription = Subscription::create($validatedData);
@@ -253,13 +274,30 @@ class SubscriptionController extends Controller
                 $validatedData = $request->validated();
                 $validatedData['updated_by'] = $authUser->id;
 
-                // التحقق من أن المستخدم والخطة ينتميان لنفس الشركة إذا تم تغييرها
+                // إعادة حساب تاريخ التجديد إذا تغير تاريخ البدء أو الدورة ولم يتم إرسال تاريخ تجديد محدد
+                if (empty($validatedData['next_billing_date']) && (isset($validatedData['starts_at']) || isset($validatedData['billing_cycle']))) {
+                    $startDate = \Carbon\Carbon::parse($validatedData['starts_at'] ?? $subscription->starts_at);
+                    $cycle = $validatedData['billing_cycle'] ?? $subscription->billing_cycle;
+
+                    $validatedData['next_billing_date'] = match ($cycle) {
+                        'daily' => $startDate->copy()->addDay(),
+                        'weekly' => $startDate->copy()->addWeek(),
+                        'yearly' => $startDate->copy()->addYear(),
+                        default => $startDate->copy()->addMonth(),
+                    };
+                }
+
                 if (isset($validatedData['user_id']) && $validatedData['user_id'] != $subscription->user_id) {
                     \App\Models\User::where('id', $validatedData['user_id'])
-                        ->where('company_id', $companyId)
+                        ->where(function ($q) use ($companyId) {
+                            $q->where('company_id', $companyId)
+                                ->orWhereHas('companies', function ($cq) use ($companyId) {
+                                    $cq->where('companies.id', $companyId);
+                                });
+                        })
                         ->firstOrFail();
                 }
-                if (isset($validatedData['plan_id']) && $validatedData['plan_id'] != $subscription->plan_id) {
+                if (isset($validatedData['plan_id']) && $validatedData['plan_id'] != $subscription->plan_id && !empty($validatedData['plan_id'])) {
                     \App\Models\Plan::where('id', $validatedData['plan_id'])
                         ->where('company_id', $companyId)
                         ->firstOrFail();

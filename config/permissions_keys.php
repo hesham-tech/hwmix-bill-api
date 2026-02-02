@@ -362,6 +362,7 @@ return [
         'delete_self' => ['key' => 'products.delete_self', 'label' => 'حذف المنتجات الخاصة بالمستخدم'],
         'view_wholesale_price' => ['key' => 'products.view_wholesale_price', 'label' => 'عرض سعر الجملة'],
         'view_purchase_price' => ['key' => 'products.view_purchase_price', 'label' => 'عرض سعر الشراء'],
+        'print_labels' => ['key' => 'products.print_labels', 'label' => 'طباعة الملصقات والباركود'],
     ],
     // => PRODUCT VARIANTS
     'product_variants' => [
