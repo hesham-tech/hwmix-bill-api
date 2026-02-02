@@ -461,3 +461,24 @@ Stack Trace: TypeError: fetchedItems.value is not iterable
 URL: http://localhost:5174/app/subscriptions
 User ID: Guest
 --------------------------------------------------
+[2026-02-02 11:27:01] VUE_ERROR: Request failed with status code 401
+Stack Trace: AxiosError: Request failed with status code 401
+    at settle (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f8a190a:1235:12)
+    at XMLHttpRequest.onloadend (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f8a190a:1566:7)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f8a190a:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1770031602446:30:24)
+    at async Promise.all (index 0)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1770031602446:61:36)
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-02 16:33:48] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/users/pages/UserList.vue
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/users/pages/UserList.vue
+URL: http://localhost:5173/app/users?page=1&per_page=10&sort_by=created_at&sort_order=desc
+User ID: Guest
+--------------------------------------------------
+[2026-02-02 16:37:50] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/users/pages/UserList.vue
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/users/pages/UserList.vue
+URL: http://localhost:5173/app/users?page=1&per_page=10&sort_by=created_at&sort_order=desc
+User ID: Guest
+--------------------------------------------------
