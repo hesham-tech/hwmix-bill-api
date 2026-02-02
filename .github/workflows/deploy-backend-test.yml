@@ -45,7 +45,8 @@ jobs:
           --exclude='.github/' \
           --exclude='node_modules/' \
           --exclude='tests/' \
-          --exclude='storage/logs/' \
+          --exclude='storage/' \
+          --exclude='public/storage' \
           --exclude='.env' \
           --exclude='phpunit.xml' \
           --exclude='README.md' \
