@@ -10,47 +10,51 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('activity_logs', function (Blueprint $table) {
-            $table->id();
+        if (!Schema::hasTable('activity_logs')) {
+            Schema::create('activity_logs', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+                $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
+                $table->string('subject_type')->nullable();
+                $table->unsignedBigInteger('subject_id')->nullable();
+                $table->string('action', 50);
+                $table->text('description');
+                $table->json('old_values')->nullable();
+                $table->json('new_values')->nullable();
+                $table->string('ip_address', 45)->nullable();
+                $table->text('user_agent')->nullable();
+                $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+                $table->string('url')->nullable();
+                $table->json('metadata')->nullable();
+                $table->timestamps();
 
-            // User who performed the action
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-
-            // Company context
-            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
-
-            // Subject (what was affected) - Polymorphic
-            $table->string('subject_type')->nullable(); // Invoice, Product, User, etc.
-            $table->unsignedBigInteger('subject_id')->nullable();
-            $table->index(['subject_type', 'subject_id']);
-
-            // Action type
-            $table->string('action', 50); // created, updated, deleted, viewed, exported, etc.
-
-            // Description in Arabic
-            $table->text('description');
-
-            // Data changes (JSON)
-            $table->json('old_values')->nullable();
-            $table->json('new_values')->nullable();
-
-            // Request metadata
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-
-            // Additional context
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('url')->nullable();
-            $table->json('metadata')->nullable(); // Any extra data
-
-            $table->timestamps();
-
-            // Indexes for performance
-            $table->index('user_id');
-            $table->index('company_id');
-            $table->index('action');
-            $table->index('created_at');
-        });
+                $table->index(['subject_type', 'subject_id']);
+                $table->index('user_id');
+                $table->index('company_id');
+                $table->index('action');
+                $table->index('created_at');
+            });
+        } else {
+            // في حال وجود الجدول، نتأكد من إضافة الحقول الناقصة (تحقيقاً لطلب المستخدم)
+            Schema::table('activity_logs', function (Blueprint $table) {
+                if (!Schema::hasColumn('activity_logs', 'old_values')) {
+                    $table->json('old_values')->nullable()->after('description');
+                }
+                if (!Schema::hasColumn('activity_logs', 'new_values')) {
+                    $table->json('new_values')->nullable()->after('old_values');
+                }
+                if (!Schema::hasColumn('activity_logs', 'ip_address')) {
+                    $table->string('ip_address', 45)->nullable()->after('new_values');
+                }
+                if (!Schema::hasColumn('activity_logs', 'user_agent')) {
+                    $table->text('user_agent')->nullable()->after('ip_address');
+                }
+                if (!Schema::hasColumn('activity_logs', 'metadata')) {
+                    $table->json('metadata')->nullable()->after('url');
+                }
+                // يمكن إضافة باقي الحقول بنفس الطريقة إذا استدعى الأمر
+            });
+        }
     }
 
     /**

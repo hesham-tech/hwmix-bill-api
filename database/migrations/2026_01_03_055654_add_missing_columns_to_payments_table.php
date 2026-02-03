@@ -10,9 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
-            $table->foreignId('cash_box_id')->nullable()->after('company_id')->constrained('cash_boxes')->onDelete('set null');
-        });
+        if (!Schema::hasColumn('payments', 'cash_box_id')) {
+            Schema::table('payments', function (Blueprint $table) {
+                $table->foreignId('cash_box_id')->nullable()->after('company_id')->constrained('cash_boxes')->onDelete('set null');
+            });
+        }
     }
 
     /**

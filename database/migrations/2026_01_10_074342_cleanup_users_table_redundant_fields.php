@@ -10,9 +10,25 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        // 1. ترحيل البيانات: نقل نوع العميل من جدول users إلى جدول company_user
+        // نستخدم chunk لضمان عدم استهلاك الذاكرة إذا كان عدد المستخدمين كبيراً
+        \Illuminate\Support\Facades\DB::table('users')
+            ->whereNotNull('customer_type')
+            ->orderBy('id')
+            ->chunk(100, function ($users) {
+                foreach ($users as $user) {
+                    \Illuminate\Support\Facades\DB::table('company_user')
+                        ->where('user_id', $user->id)
+                        ->update(['customer_type_in_company' => $user->customer_type]);
+                }
+            });
+
+        // 2. حذف الحقول بعد التأكد من نقل البيانات
         Schema::table('users', function (Blueprint $table) {
             // Removing redundant fields from global users table
-            $table->dropColumn(['balance', 'customer_type']);
+            if (Schema::hasColumn('users', 'balance') || Schema::hasColumn('users', 'customer_type')) {
+                $table->dropColumn(array_filter(['balance', 'customer_type'], fn($col) => Schema::hasColumn('users', $col)));
+            }
         });
     }
 

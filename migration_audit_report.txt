@@ -1,0 +1,31 @@
+Destructive operations in UP() method (Dangerous for Production):
+
+File: 2026_01_10_074342_cleanup_users_table_redundant_fields.php
+  - DANGER: dropColumn(['balance', 'customer_type'])
+
+File: 2026_01_17_223126_simplify_user_name_fields.php
+  - DANGER: dropColumn(['first_name', 'last_name'])
+  - DANGER: dropColumn(['first_name_in_company', 'last_name_in_company'])
+
+File: 2026_01_17_223417_remove_mirrored_fields_from_company_user.php
+  - DANGER: dropColumn([
+                'user_phone',
+                'phone_in_company',
+                'user_email',
+                'email_in_company',
+                'user_username'
+            ])
+
+File: 2026_01_23_014750_rename_total_amount_to_net_amount_in_installment_plans_table.php
+  - DANGER: renameColumn('total_amount', 'net_amount')
+
+File: 2026_02_02_014107_rename_balance_to_subscription_balance_in_subscriptions_table.php
+  - DANGER: renameColumn('balance', 'subscription_balance')
+
+File: 2026_02_02_014608_rename_subscription_balance_to_partial_payment_in_subscriptions_table.php
+  - DANGER: renameColumn('subscription_balance', 'partial_payment')
+
+File: 2026_02_02_014830_rename_balance_fields_in_subscription_payments_table.php
+  - DANGER: renameColumn('balance_before', 'partial_payment_before')
+  - DANGER: renameColumn('balance_after', 'partial_payment_after')
+

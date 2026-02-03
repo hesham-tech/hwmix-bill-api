@@ -11,13 +11,21 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('first_name')->nullable()->after('password');
-            $table->string('last_name')->nullable()->after('first_name');
+            if (!Schema::hasColumn('users', 'first_name')) {
+                $table->string('first_name')->nullable()->after('password');
+            }
+            if (!Schema::hasColumn('users', 'last_name')) {
+                $table->string('last_name')->nullable()->after('first_name');
+            }
         });
 
         Schema::table('company_user', function (Blueprint $table) {
-            $table->string('first_name_in_company')->nullable()->after('created_by');
-            $table->string('last_name_in_company')->nullable()->after('first_name_in_company');
+            if (!Schema::hasColumn('company_user', 'first_name_in_company')) {
+                $table->string('first_name_in_company')->nullable()->after('created_by');
+            }
+            if (!Schema::hasColumn('company_user', 'last_name_in_company')) {
+                $table->string('last_name_in_company')->nullable()->after('first_name_in_company');
+            }
         });
 
         // Data migration: Split full_name into first and last parts

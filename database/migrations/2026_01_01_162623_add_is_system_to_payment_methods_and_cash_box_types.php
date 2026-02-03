@@ -10,15 +10,19 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        // إضافة حقل is_system لجدول payment_methods
-        Schema::table('payment_methods', function (Blueprint $table) {
-            $table->boolean('is_system')->default(false)->after('active');
-        });
+        // إضافة حقل is_system لجدول payment_methods إذا لم يكن موجوداً
+        if (!Schema::hasColumn('payment_methods', 'is_system')) {
+            Schema::table('payment_methods', function (Blueprint $table) {
+                $table->boolean('is_system')->default(false)->after('active');
+            });
+        }
 
-        // إضافة حقل is_system لجدول cash_box_types
-        Schema::table('cash_box_types', function (Blueprint $table) {
-            $table->boolean('is_system')->default(false)->after('description');
-        });
+        // إضافة حقل is_system لجدول cash_box_types إذا لم يكن موجوداً
+        if (!Schema::hasColumn('cash_box_types', 'is_system')) {
+            Schema::table('cash_box_types', function (Blueprint $table) {
+                $table->boolean('is_system')->default(false)->after('description');
+            });
+        }
     }
 
     /**
