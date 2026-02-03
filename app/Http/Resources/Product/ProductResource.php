@@ -19,11 +19,6 @@ class ProductResource extends JsonResource
 {
     public function toArray(Request $request)
     {
-        $totalAvailableQuantity = $this->whenLoaded('variants', function () {
-            return $this->variants->sum(function ($variant) {
-                return $variant->stocks->where('status', 'available')->sum('quantity');
-            });
-        }, 0);
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -46,9 +41,9 @@ class ProductResource extends JsonResource
             'category_id' => $this->category_id,
             'brand_id' => $this->whenNotNull($this->brand_id),
             'company_id' => $this->company_id,
-            'total_available_quantity' => $totalAvailableQuantity,
-            'min_price' => $this->whenLoaded('variants', fn() => $this->variants->min('retail_price') ?? 0, 0),
-            'max_price' => $this->whenLoaded('variants', fn() => $this->variants->max('retail_price') ?? 0, 0),
+            'total_available_quantity' => (float) ($this->total_available_quantity ?? 0),
+            'min_price' => (float) ($this->variants_min_retail_price ?? 0),
+            'max_price' => (float) ($this->variants_max_retail_price ?? 0),
             'company' => new CompanyResource($this->whenLoaded('company')),
             'installment_plan' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
@@ -56,7 +51,9 @@ class ProductResource extends JsonResource
             'category' => new CategoryResource($this->whenLoaded('category')),
             'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
             'images' => ImageResource::collection($this->whenLoaded('images')), // Polymorphic images
-            'primary_image_url' => $this->images->firstWhere('is_primary', true)?->url ?? $this->images->first()?->url,
+            'primary_image_url' => $this->whenLoaded('images', function () {
+                return $this->images->firstWhere('is_primary', true)?->url ?? $this->images->first()?->url;
+            }),
             'tags' => $this->tags ?? [],
             'published_at' => $this->whenNotNull($this->published_at ? $this->published_at->format('Y-m-d H:i:s') : null),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),

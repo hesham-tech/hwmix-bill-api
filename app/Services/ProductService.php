@@ -8,10 +8,23 @@ use App\Models\ProductVariant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Actions\Product\SyncProductImages;
+use App\Actions\Product\HandleProductVariants;
 use Throwable;
 
 class ProductService
 {
+    protected SyncProductImages $syncProductImages;
+    protected HandleProductVariants $handleProductVariants;
+
+    public function __construct(
+        SyncProductImages $syncProductImages,
+        HandleProductVariants $handleProductVariants
+    ) {
+        $this->syncProductImages = $syncProductImages;
+        $this->handleProductVariants = $handleProductVariants;
+    }
+
     /**
      * Create a new product with its variants and stocks.
      */
@@ -30,12 +43,13 @@ class ProductService
 
             $product = Product::create($productData);
 
-            // Sync Product Images
+            // Action: Sync Product Images
             if (!empty($data->image_ids)) {
-                $product->syncImages($data->image_ids);
+                $this->syncProductImages->execute($product, $data->image_ids);
             }
 
-            $this->handleVariants($product, $data->variants, $user, $companyId);
+            // Action: Handle Variants
+            $this->handleProductVariants->execute($product, $data->variants, $user, $companyId);
 
             return $product;
         });
@@ -57,72 +71,15 @@ class ProductService
 
             $product->update($updateData);
 
-            // Sync Product Images
+            // Action: Sync Product Images
             if (isset($data->image_ids)) {
-                $product->syncImages($data->image_ids);
+                $this->syncProductImages->execute($product, $data->image_ids);
             }
 
-            $this->handleVariants($product, $data->variants, $user, $companyId);
+            // Action: Handle Variants
+            $this->handleProductVariants->execute($product, $data->variants, $user, $companyId);
 
-            return $product->load(['variants.stocks', 'variants.attributes']);
+            return $product;
         });
-    }
-
-    /**
-     * Handle creation and update of product variants.
-     */
-    protected function handleVariants(Product $product, array $variantsData, User $user, int $companyId): void
-    {
-        // If updating, handle deletions
-        if ($product->wasRecentlyCreated === false) {
-            $requestedIds = collect($variantsData)->pluck('id')->filter()->all();
-            $product->variants()->whereNotIn('id', $requestedIds)->each(function ($variant) {
-                $variant->attributes()->delete();
-                $variant->stocks()->delete();
-                $variant->delete();
-            });
-        }
-
-        foreach ($variantsData as $variantData) {
-            $variant = $product->variants()->updateOrCreate(
-                ['id' => $variantData->id],
-                array_merge($variantData->toArray(), [
-                    'company_id' => $companyId,
-                    'created_by' => $user->id,
-                ])
-            );
-
-            // Sync Variant Images
-            if (isset($variantData->image_ids)) {
-                $variant->syncImages($variantData->image_ids, 'gallery', $variantData->primary_image_id);
-            }
-
-            // Sync Attributes
-            $variant->attributes()->delete();
-            foreach ($variantData->attributes as $attr) {
-                $variant->attributes()->create([
-                    'attribute_id' => $attr['attribute_id'] ?? $attr['id'],
-                    'attribute_value_id' => $attr['attribute_value_id'] ?? ($attr['value_id'] ?? null),
-                    'company_id' => $companyId,
-                    'created_by' => $user->id,
-                ]);
-            }
-
-            // Sync Stocks
-            if ($variant->wasRecentlyCreated === false) {
-                $requestedStockIds = collect($variantData->stocks)->pluck('id')->filter()->all();
-                $variant->stocks()->whereNotIn('id', $requestedStockIds)->delete();
-            }
-
-            foreach ($variantData->stocks as $stockData) {
-                $variant->stocks()->updateOrCreate(
-                    ['id' => $stockData->id],
-                    array_merge($stockData->toArray(), [
-                        'company_id' => $companyId,
-                        'created_by' => $user->id,
-                    ])
-                );
-            }
-        }
     }
 }

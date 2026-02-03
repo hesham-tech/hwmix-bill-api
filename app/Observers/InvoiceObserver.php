@@ -30,11 +30,9 @@ class InvoiceObserver
             // حفظ رصيد العميل بعد الفاتورة (توثيق)
             $this->updateUserBalanceAfter($invoice);
         }
-    }
 
-    /**
-     * Handle the Invoice "updated" event.
-     */
+        $this->clearDashboardCache($invoice);
+    }
     public function updated(Invoice $invoice): void
     {
         // إذا تغيرت الحالة لتصبح مؤكدة/مدفوعة ولم تكن كذلك من قبل
@@ -49,6 +47,8 @@ class InvoiceObserver
             $this->dispatchSummaryUpdate($invoice);
             $this->updateUserBalanceAfter($invoice);
         }
+
+        $this->clearDashboardCache($invoice);
     }
 
     /**
@@ -90,6 +90,8 @@ class InvoiceObserver
         if (in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])) {
             $this->dispatchSummaryUpdate($invoice);
         }
+
+        $this->clearDashboardCache($invoice);
     }
 
     /**
@@ -117,6 +119,16 @@ class InvoiceObserver
             $invoice->updateQuietly([
                 'user_balance_after' => $user->balance
             ]);
+        }
+    }
+
+    /**
+     * تنظيف كاش لوحة التحكم للشركة
+     */
+    protected function clearDashboardCache(Invoice $invoice): void
+    {
+        if ($invoice->company_id) {
+            \Illuminate\Support\Facades\Cache::increment("dashboard_version_{$invoice->company_id}");
         }
     }
 }

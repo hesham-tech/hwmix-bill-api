@@ -28,7 +28,7 @@ class UserWithPermissionsResource extends JsonResource
             'phone' => $this->phone,
             'position' => $this->position,
             'settings' => $this->settings,
-            'cash_box_id' => $this->getDefaultCashBoxForCompany()?->id,
+            'cash_box_id' => $this->whenLoaded('cashBoxDefault', fn() => $this->cashBoxDefault?->id),
             'company_logo' => $this->whenLoaded('company', fn() => $this->company->logo?->url),
             'last_login_at' => $this->last_login_at,
             'email_verified_at' => $this->email_verified_at,

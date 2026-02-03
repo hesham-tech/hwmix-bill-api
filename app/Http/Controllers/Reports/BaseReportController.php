@@ -90,10 +90,12 @@ abstract class BaseReportController extends Controller
      */
     protected function groupByProduct($query): Collection
     {
+        $subQuery = (clone $query)->select('id');
+
         return \DB::table('invoice_items')
             ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
             ->join('products', 'invoice_items.product_id', '=', 'products.id')
-            ->whereIn('invoices.id', $query->pluck('id'))
+            ->whereIn('invoices.id', $subQuery)
             ->select([
                 'products.id as product_id',
                 'products.name as product_name',
@@ -132,19 +134,25 @@ abstract class BaseReportController extends Controller
      */
     protected function calculateSummary($query): array
     {
-        $invoices = $query->get();
+        $stats = $query->selectRaw('
+            COUNT(*) as total_invoices,
+            SUM(net_amount) as total_amount,
+            SUM(paid_amount) as total_paid,
+            SUM(remaining_amount) as total_remaining,
+            SUM(total_tax) as total_tax,
+            SUM(total_discount) as total_discount,
+            AVG(net_amount) as average_invoice
+        ')->first();
 
         return [
-            'total_invoices' => $invoices->count(),
-            'total_amount' => round($invoices->sum('net_amount'), 2),
-            'total_sales' => round($invoices->sum('net_amount'), 2),
-            'total_paid' => round($invoices->sum('paid_amount'), 2),
-            'total_remaining' => round($invoices->sum('remaining_amount'), 2),
-            'average_invoice' => $invoices->count() > 0
-                ? round($invoices->avg('net_amount'), 2)
-                : 0,
-            'total_tax' => round($invoices->sum('total_tax'), 2),
-            'total_discount' => round($invoices->sum('total_discount'), 2),
+            'total_invoices' => (int) $stats->total_invoices,
+            'total_amount' => round((float) $stats->total_amount, 2),
+            'total_sales' => round((float) $stats->total_amount, 2),
+            'total_paid' => round((float) $stats->total_paid, 2),
+            'total_remaining' => round((float) $stats->total_remaining, 2),
+            'average_invoice' => round((float) $stats->average_invoice, 2),
+            'total_tax' => round((float) $stats->total_tax, 2),
+            'total_discount' => round((float) $stats->total_discount, 2),
         ];
     }
 

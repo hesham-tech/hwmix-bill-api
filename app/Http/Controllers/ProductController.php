@@ -27,27 +27,35 @@ use App\Services\ProductService;
  */
 class ProductController extends Controller
 {
-    /**
-     * العلاقات الافتراضية المستخدمة مع المنتجات
-     * @var array
-     */
-    protected array $relations = [
-        'company',
-        'creator',
-        'category',
-        'brand',
-        'images',
-        'variants.images',
-        'variants.stocks.warehouse',
-        'variants.attributes.attribute',
-        'variants.attributes.attributeValue',
-    ];
+    protected array $indexRelations;
+    protected array $showRelations;
 
     protected ProductService $productService;
 
     public function __construct(ProductService $productService)
     {
         $this->productService = $productService;
+
+        $this->indexRelations = [
+            'category',
+            'brand',
+            'images',
+            'variants' => function ($q) {
+                $q->select('id', 'product_id', 'retail_price', 'wholesale_price', 'product_type');
+            }
+        ];
+
+        $this->showRelations = [
+            'company',
+            'creator',
+            'category',
+            'brand',
+            'images',
+            'variants.images',
+            'variants.stocks.warehouse',
+            'variants.attributes.attribute',
+            'variants.attributes.attributeValue',
+        ];
     }
 
     /**
@@ -74,97 +82,30 @@ class ProductController extends Controller
                 return api_unauthorized('يتطلب المصادقة.');
             }
 
-            $companyId = $authUser->company_id;
+            $query = Product::query();
 
-            // الصلاحيات
-            $permKeys = [
-                'super' => perm_key('admin.super'),
-                'view_all' => perm_key('products.view_all'),
-                'admin_company' => perm_key('admin.company'),
-                'view_children' => perm_key('products.view_children'),
-                'view_self' => perm_key('products.view_self'),
-            ];
+            // 1. إضافة الحسابات التجميعية (SQL Aggregates)
+            $this->applyAggregates($query);
 
-            $baseQuery = Product::with($this->relations);
+            // 2. تصفية الصلاحيات
+            $this->applyPermissionFilters($query, $authUser);
 
-            if ($authUser->hasPermissionTo($permKeys['super'])) {
-                // يرى الجميع
-            } elseif ($authUser->hasAnyPermission([$permKeys['view_all'], $permKeys['admin_company']])) {
-                $baseQuery->whereCompanyIsCurrent();
-            } elseif ($authUser->hasPermissionTo($permKeys['view_children'])) {
-                $baseQuery->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo($permKeys['view_self'])) {
-                $baseQuery->whereCompanyIsCurrent()->whereCreatedByUser();
-            } else {
-                // الوضع الافتراضي للعملاء: رؤية المنتجات النشطة فقط في شركتهم
-                $baseQuery->whereCompanyIsCurrent()->where('active', true);
-            }
+            // 3. التصفية والبحث
+            $this->applyFilters($query, $request);
 
-            // إعدادات عامة
+            // 4. الترتيب
+            $this->applySorting($query, $request);
+
+            // حفظ نسخة للاستخدام في البحث الذكي إذا لزم الأمر
+            $queryWithoutSearch = clone $query;
+
+            // 5. التنفيذ وجلب النتائج
             $perPage = max(1, $request->input('per_page', 20));
-            $page = max(1, $request->input('page', 1));
-            $sortField = $request->input('sort_by', 'sales_count');
-            $sortOrder = $request->input('sort_order', 'desc');
+            $products = $query->with($this->indexRelations)->paginate($perPage);
 
-            $search = $request->input('search');
-            $baseQueryWithoutSearch = clone $baseQuery;
-
-            // فلترة البحث النصي العادي
-            if ($request->filled('search')) {
-                $baseQuery->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%")
-                        ->orWhere('desc', 'like', "%$search%")
-                        ->orWhere('slug', 'like', "%$search%")
-                        ->orWhereHas(
-                            'category',
-                            fn($q) =>
-                            $q->where('name', 'like', "%$search%")
-                                ->orWhere('desc', 'like', "%$search%")
-                        )
-                        ->orWhereHas(
-                            'brand',
-                            fn($q) =>
-                            $q->where('name', 'like', "%$search%")
-                                ->orWhere('desc', 'like', "%$search%")
-                        );
-                });
-            }
-
-            // فلاتر إضافية
-            $baseQuery
-                ->when($request->filled('category_id'), fn($q) =>
-                    $q->where('category_id', $request->input('category_id')))
-                ->when($request->filled('brand_id'), fn($q) =>
-                    $q->where('brand_id', $request->input('brand_id')))
-                ->when($request->filled('active'), fn($q) =>
-                    $q->where('active', (bool) $request->input('active')))
-                ->when($request->filled('featured'), fn($q) =>
-                    $q->where('featured', (bool) $request->input('featured')));
-
-            // الترتيب
-            $baseQuery->orderBy($sortField, $sortOrder);
-            if ($sortField !== 'created_at') {
-                $baseQuery->orderBy('created_at', 'desc');
-            }
-
-            // النتائج الأساسية
-            $products = $baseQuery->paginate($perPage);
-
-            // البحث الذكي لو مفيش نتائج
+            // 6. البحث الذكي (Fallback)
             if ($products->isEmpty() && $request->filled('search')) {
-                $allProducts = (clone $baseQueryWithoutSearch)->limit(300)->get();
-
-                $paginated = smart_search_paginated(
-                    $allProducts,
-                    $search,
-                    ['name', 'desc'],
-                    $request->query(),
-                    null,
-                    $perPage,
-                    $page
-                );
-
-                return api_success(ProductResource::collection($paginated), 'تم إرجاع نتائج مقترحة بناءً على البحث.');
+                return $this->handleSmartSearch($queryWithoutSearch, $request, $perPage);
             }
 
             if ($products->isEmpty()) {
@@ -175,12 +116,103 @@ class ProductController extends Controller
         } catch (Throwable $e) {
             Log::error("فشل جلب المنتجات: " . $e->getMessage(), [
                 'exception' => $e,
-                'user_id' => $authUser->id ?? null,
+                'user_id' => Auth::id(),
                 'request_data' => $request->all()
             ]);
-
             return api_exception($e);
         }
+    }
+
+    /**
+     * تطبيق الحسابات التجميعية (SQL Aggregates)
+     */
+    private function applyAggregates($query): void
+    {
+        $query->withMin('variants', 'retail_price')
+            ->withMax('variants', 'retail_price')
+            ->addSelect([
+                'total_available_quantity' => Stock::selectRaw('SUM(quantity)')
+                    ->join('product_variants', 'stocks.product_variant_id', '=', 'product_variants.id')
+                    ->whereColumn('product_variants.product_id', 'products.id')
+                    ->where('stocks.status', 'available')
+            ]);
+    }
+
+    /**
+     * تطبيق فلاتر الصلاحيات
+     */
+    private function applyPermissionFilters($query, $user): void
+    {
+        if ($user->hasPermissionTo(perm_key('admin.super'))) {
+            return;
+        }
+
+        if ($user->hasAnyPermission([perm_key('products.view_all'), perm_key('admin.company')])) {
+            $query->whereCompanyIsCurrent();
+        } elseif ($user->hasPermissionTo(perm_key('products.view_children'))) {
+            $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
+        } elseif ($user->hasPermissionTo(perm_key('products.view_self'))) {
+            $query->whereCompanyIsCurrent()->whereCreatedByUser();
+        } else {
+            $query->whereCompanyIsCurrent()->where('active', true);
+        }
+    }
+
+    /**
+     * تطبيق فلاتر البحث والفلترة
+     */
+    private function applyFilters($query, $request): void
+    {
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                    ->orWhere('desc', 'like', "%$search%")
+                    ->orWhere('slug', 'like', "%$search%")
+                    ->orWhereHas('category', fn($cq) => $cq->where('name', 'like', "%$search%"))
+                    ->orWhereHas('brand', fn($bq) => $bq->where('name', 'like', "%$search%"));
+            });
+        }
+
+        $query->when($request->filled('category_id'), fn($q) => $q->where('category_id', $request->input('category_id')))
+            ->when($request->filled('brand_id'), fn($q) => $q->where('brand_id', $request->input('brand_id')))
+            ->when($request->filled('active'), fn($q) => $q->where('active', (bool) $request->input('active')))
+            ->when($request->filled('featured'), fn($q) => $q->where('featured', (bool) $request->input('featured')));
+    }
+
+    /**
+     * تطبيق الترتيب
+     */
+    private function applySorting($query, $request): void
+    {
+        $sortField = $request->input('sort_by', 'sales_count');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        $query->orderBy($sortField, $sortOrder);
+        if ($sortField !== 'created_at') {
+            $query->orderBy('created_at', 'desc');
+        }
+    }
+
+    /**
+     * معالجة البحث الذكي عند عدم وجود نتائج
+     */
+    private function handleSmartSearch($query, $request, $perPage): JsonResponse
+    {
+        $search = $request->input('search');
+        $allProducts = $query->select('id', 'name', 'desc')->limit(300)->get();
+
+        $paginated = smart_search_paginated(
+            $allProducts,
+            $search,
+            ['name', 'desc'],
+            $request->query(),
+            null,
+            $perPage,
+            $request->input('page', 1)
+        );
+
+        return api_success(ProductResource::collection($paginated), 'تم إرجاع نتائج مقترحة بناءً على البحث.');
     }
 
 
@@ -218,7 +250,7 @@ class ProductController extends Controller
             $productData = $request->toSimpleProductData();
             $product = $this->productService->createProduct($productData, $authUser, $companyId);
 
-            return api_success(new ProductResource($product->load($this->relations)), 'تم إنشاء المنتج بنجاح', 201);
+            return api_success(new ProductResource($product->load($this->showRelations)), 'تم إنشاء المنتج بنجاح', 201);
         } catch (Throwable $e) {
             return api_exception($e);
         }
@@ -264,7 +296,7 @@ class ProductController extends Controller
             }
 
             if ($canView) {
-                $product->load($this->relations); // تحميل العلاقات فقط إذا كان مصرحًا له
+                $product->load($this->showRelations); // تحميل العلاقات فقط إذا كان مصرحًا له
                 return api_success(ProductResource::make($product), 'تم جلب بيانات المنتج بنجاح');
             }
 
@@ -298,7 +330,7 @@ class ProductController extends Controller
             $productData = $request->toSimpleProductData();
             $product = $this->productService->updateProduct($product, $productData, $authUser);
 
-            return api_success(new ProductResource($product->load($this->relations)), 'تم تحديث المنتج بنجاح');
+            return api_success(new ProductResource($product->load($this->showRelations)), 'تم تحديث المنتج بنجاح');
         } catch (Throwable $e) {
             return api_exception($e);
         }

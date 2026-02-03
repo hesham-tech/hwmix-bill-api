@@ -29,6 +29,9 @@ class PaymentObserver
 
         // 3. Record Ledger Entry
         $this->recordLedgerEntry($payment);
+
+        // 4. Clear Cache
+        $this->clearDashboardCache($payment);
     }
 
     /**
@@ -57,6 +60,16 @@ class PaymentObserver
         } elseif ($typeCode === 'return_purchase') {
             // في مرتجع المشتريات: تحصيل نقدية من المورد (Asset - Debit)
             $ledgerService->recordEntry($payment, 'asset', (float) $payment->amount, 'debit', "تحصيل نقدية من المورد (مرتجع مشتريات): " . $description);
+        }
+    }
+
+    /**
+     * تنظيف كاش لوحة التحكم للشركة
+     */
+    protected function clearDashboardCache(InvoicePayment $payment): void
+    {
+        if ($payment->company_id) {
+            \Illuminate\Support\Facades\Cache::increment("dashboard_version_{$payment->company_id}");
         }
     }
 }

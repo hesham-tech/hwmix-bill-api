@@ -88,7 +88,7 @@ class SalesReportController extends BaseReportController
     private function getTotalItemsSold($query): float
     {
         return DB::table('invoice_items')
-            ->whereIn('invoice_id', $query->pluck('id'))
+            ->whereIn('invoice_id', (clone $query)->select('id'))
             ->sum('quantity');
     }
 
@@ -193,10 +193,10 @@ class SalesReportController extends BaseReportController
      */
     private function getServicesSummary($query): array
     {
-        $invoiceIds = $query->pluck('id');
+        $invoiceSubQuery = (clone $query)->select('id');
 
         $serviceItems = \DB::table('invoice_items')
-            ->whereIn('invoice_id', $invoiceIds)
+            ->whereIn('invoice_id', $invoiceSubQuery)
             ->whereNotNull('service_id')
             ->select([
                 \DB::raw('COUNT(*) as count'),
@@ -205,10 +205,10 @@ class SalesReportController extends BaseReportController
             ->first();
 
         $activeSubscriptions = \DB::table('subscriptions')
-            ->whereIn('invoice_id', $invoiceIds) // Only if linked to this set of invoices
+            ->whereIn('invoice_id', $invoiceSubQuery) // Only if linked to this set of invoices
             ->orWhere(function ($q) use ($query) {
                 // Or linked to the same customers in the same period
-                $customerIds = $query->pluck('user_id');
+                $customerIds = (clone $query)->select('user_id');
                 $q->whereIn('user_id', $customerIds);
             })
             ->where('status', 'active')

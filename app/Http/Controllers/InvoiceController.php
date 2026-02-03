@@ -133,11 +133,19 @@ class InvoiceController extends Controller
             return response()->json(['error' => 'فشل في تصدير الفواتير'], 500);
         }
     }
-    private array $relations;
+    private array $indexRelations;
+    private array $showRelations;
 
     public function __construct()
     {
-        $this->relations = [
+        $this->indexRelations = [
+            'customer.cashBoxDefault',
+            'invoiceType',
+            'company',
+            'creator',
+        ];
+
+        $this->showRelations = [
             'customer.cashBoxDefault',
             'company',
             'invoiceType',
@@ -177,7 +185,7 @@ class InvoiceController extends Controller
                 return api_unauthorized('يتطلب المصادقة.');
             }
 
-            $query = Invoice::query()->with($this->relations);
+            $query = Invoice::query()->with($this->indexRelations);
 
             // فلترة الفواتير المستحقة فقط (غير مدفوعة أو مدفوعة جزئياً)
             if ($request->boolean('due_only')) {
@@ -266,7 +274,7 @@ class InvoiceController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $invoice = Invoice::with($this->relations)->findOrFail($id);
+            $invoice = Invoice::with($this->showRelations)->findOrFail($id);
 
             // التحقق من صلاحية الوصول
             /** @var \App\Models\User $authUser */
@@ -347,7 +355,7 @@ class InvoiceController extends Controller
                     throw new \Exception('فشل إنشاء الفاتورة من الخدمة.');
                 }
 
-                $responseDTO->load($this->relations);
+                $responseDTO->load($this->showRelations);
                 DB::commit();
                 return api_success(new InvoiceResource($responseDTO), 'تم إنشاء المستند بنجاح', 201);
             } catch (ValidationException $e) {
@@ -411,7 +419,7 @@ class InvoiceController extends Controller
                 $service = ServiceResolver::resolve($invoiceTypeCode);
 
                 $updatedInvoice = $service->update($validated, $invoice);
-                $updatedInvoice->load($this->relations);
+                $updatedInvoice->load($this->showRelations);
 
                 DB::commit();
                 return api_success(new InvoiceResource($updatedInvoice), 'تم تعديل الفاتورة بنجاح');

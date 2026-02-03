@@ -92,7 +92,7 @@ trait LogsActivity
             return array_diff_key($data, array_flip($sensitiveFields));
         };
 
-        ActivityLog::create([
+        \App\Jobs\LogActivityJob::dispatch([
             'action' => $action,
             'subject_type' => get_class($this),
             'subject_id' => $this->id,

@@ -62,7 +62,7 @@ class InvoiceResource extends JsonResource
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,
             'installment_plan_id' => $this->installment_plan_id,
-            'user_balance' => $this->user ? $this->user->balance : 0,
+            'user_balance' => $this->customer ? $this->customer->balance : 0,
         ];
     }
 

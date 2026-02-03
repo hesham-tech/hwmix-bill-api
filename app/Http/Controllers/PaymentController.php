@@ -16,17 +16,25 @@ use Throwable;
 
 class PaymentController extends Controller
 {
-    private array $relations;
+    private array $indexRelations;
+    private array $showRelations;
 
     public function __construct()
     {
-        $this->relations = [
+        $this->indexRelations = [
+            'customer',
+            'cashBox',
+            'paymentMethod',
+            'creator',
+        ];
+
+        $this->showRelations = [
             'customer',
             'installments',
             'cashBox',
             'paymentMethod',
-            'creator', // للمصادقة على createdByUser/OrChildren
-            'company', // للتحقق من belongsToCurrentCompany
+            'creator',
+            'company',
         ];
     }
 
@@ -56,7 +64,7 @@ class PaymentController extends Controller
                 return api_unauthorized('يتطلب المصادقة.');
             }
 
-            $query = Payment::query()->with($this->relations);
+            $query = Payment::query()->with($this->indexRelations);
             $companyId = $authUser->company_id ?? null;
 
             // تطبيق فلترة الصلاحيات بناءً على صلاحيات العرض
@@ -278,7 +286,7 @@ class PaymentController extends Controller
                 }
                 // --- نهاية المنطق المحاسبي المتطور ---
 
-                $payment->load($this->relations);
+                $payment->load($this->showRelations);
                 DB::commit();
                 return api_success(new PaymentResource($payment), 'تم إنشاء الدفعة بنجاح.', 201);
             } catch (ValidationException $e) {
@@ -311,7 +319,7 @@ class PaymentController extends Controller
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
 
-            $payment = Payment::with($this->relations)->findOrFail($id);
+            $payment = Payment::with($this->showRelations)->findOrFail($id);
 
             $canView = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -388,7 +396,7 @@ class PaymentController extends Controller
                 }
 
                 $payment->update($validatedData);
-                $payment->load($this->relations);
+                $payment->load($this->showRelations);
                 DB::commit();
                 return api_success(new PaymentResource($payment), 'تم تحديث الدفعة بنجاح.');
             } catch (ValidationException $e) {
