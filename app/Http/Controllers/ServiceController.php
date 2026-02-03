@@ -27,7 +27,16 @@ class ServiceController extends Controller
     }
 
     /**
-     * عرض قائمة الخدمات.
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * عرض قائمة الخدمات الإضافية
+     * 
+     * استرجاع الخدمات غير المادية التي تقدمها الشركة (مثل: خدمات الشحن، الصيانة، التركيب).
+     * 
+     * @queryParam name string البحث باسم الخدمة.
+     * 
+     * @apiResourceCollection App\Http\Resources\Service\ServiceResource
+     * @apiResourceModel App\Models\Service
      */
     public function index(Request $request): JsonResponse
     {

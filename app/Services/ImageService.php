@@ -11,43 +11,65 @@ use Illuminate\Support\Facades\Storage;
 class ImageService
 {
     /**
-     * ربط مجموعة صور بكيان محدد (منتج، متغير، مستخدم...)
+     * ربط مجموعة صور بكيان محدد (منتج، متغير، براند...)
+     * تقوم بنقل الملف فيزيائياً من مجلد temp إلى مجلد الكيان
      */
     public static function attachImagesToModel(array $imageIds, Model $model, string $type = 'gallery'): void
     {
         $user = Auth::user();
-        if (!$user) return;
+        if (!$user)
+            return;
 
         $companyId = $user->company_id;
         $modelName = Str::snake(class_basename($model));
-        $storageBase = "uploads/{$companyId}/{$modelName}/{$type}"; // مسار التخزين داخل القرص العام
+        $storageBase = "uploads/{$companyId}/{$modelName}/{$type}";
 
         foreach ($imageIds as $imageId) {
             $image = Image::where('id', $imageId)
                 ->where('created_by', $user->id)
                 ->first();
 
-            if (!$image) continue;
+            if (!$image)
+                continue;
 
-            // استخراج المسار النسبي من URL المخزن
-            $oldRelativePath = str_replace('storage/', '', $image->url);
-            $ext = pathinfo($image->url, PATHINFO_EXTENSION);
-
-            $fileName = "{$modelName}_{$model->id}_" . uniqid() . '.' . $ext;
-            $newRelativePath = "{$storageBase}/{$fileName}"; // المسار النسبي الجديد
-
-            // نقل الملف باستخدام قرص public
-            if (Storage::disk('public')->exists($oldRelativePath)) {
-                Storage::disk('public')->move($oldRelativePath, $newRelativePath);
+            // إذا كانت الصورة مربوطة بالفعل وتتبع نفس المسار، لا داعي للنقل
+            if (!$image->is_temp && $image->imageable_id == $model->id && $image->imageable_type == get_class($model)) {
+                continue;
             }
 
-            $image->update([
-                'url' => Storage::url($newRelativePath), // تحديث URL العام الجديد
-                'imageable_id' => $model->id,
-                'imageable_type' => get_class($model),
-                'is_temp' => 0,
-                'type' => $type,
-            ]);
+            // استخراج المسار النسبي من القيمة الخام المخزنة في قاعدة البيانات
+            // نتجنب استخدام Storage::url() هنا لأنها قد تعود بـ host مختلف حسب الـ APP_URL
+            $oldUrlRaw = $image->getRawOriginal('url');
+            $oldRelativePath = ltrim(str_replace('/storage/', '', $oldUrlRaw), '/');
+
+            $ext = pathinfo($oldUrlRaw, PATHINFO_EXTENSION);
+            $fileName = "{$modelName}_{$model->id}_" . uniqid() . '.' . $ext;
+            $newRelativePath = "{$storageBase}/{$fileName}";
+
+            // نقل الملف فيزيائياً باستخدام قرص public
+            if (Storage::disk('public')->exists($oldRelativePath)) {
+                // التأكد من وجود المجلد الوجهة
+                Storage::disk('public')->makeDirectory($storageBase);
+
+                if (Storage::disk('public')->move($oldRelativePath, $newRelativePath)) {
+                    $image->update([
+                        'url' => '/storage/' . $newRelativePath, // تخزين مسار نسبي يبدأ بـ /storage/
+                        'imageable_id' => $model->id,
+                        'imageable_type' => get_class($model),
+                        'is_temp' => 0,
+                        'type' => $type,
+                    ]);
+                }
+            } elseif (!$image->is_temp && str_contains($oldUrlRaw, $storageBase)) {
+                // إذا كان الملف غير موجود في المسار القديم ولكنه ليس مؤقتاً ومساره يحتوي على المجلد الوجهة
+                // فربما تم نقله بالفعل في محاولة سابقة، نقوم فقط بتحديث البيانات إذا لزم الأمر
+                $image->update([
+                    'imageable_id' => $model->id,
+                    'imageable_type' => get_class($model),
+                    'is_temp' => 0,
+                    'type' => $type,
+                ]);
+            }
         }
     }
 
@@ -59,8 +81,9 @@ class ImageService
         $images = Image::whereIn('id', $imageIds)->get();
 
         foreach ($images as $image) {
-            // استخراج المسار النسبي من URL المخزن للحذف
-            $relativePathToDelete = str_replace('storage/', '', $image->url);
+            // استخراج المسار النسبي للحذف من القيمة الخام
+            $urlRaw = $image->getRawOriginal('url');
+            $relativePathToDelete = ltrim(str_replace('/storage/', '', $urlRaw), '/');
 
             if (Storage::disk('public')->exists($relativePathToDelete)) {
                 Storage::disk('public')->delete($relativePathToDelete);
@@ -71,7 +94,7 @@ class ImageService
     }
 
     /**
-     * فك الربط بين الصور وكيان معين بدون حذفها
+     * فك الربط بين الصور وكيان معين (تصبح الصور يتيمة/مؤقتة مرة أخرى)
      */
     public static function detachImagesFromModel(Model $model): void
     {
@@ -89,58 +112,65 @@ class ImageService
     }
 
     /**
-     * مزامنة الصور: حذف الصور القديمة، ربط الصور الجديدة فقط
+     * مزامنة الصور: حذف الصور غير الموجودة في القائمة الجديدة، وربط الجديدة
      */
-    public static function syncImagesWithModel(array $newImageIds, Model $model, string $type = 'gallery'): void
+    public static function syncImagesWithModel(array $newImageIds, Model $model, string $type = 'gallery', ?int $primaryImageId = null): void
     {
-        $user = Auth::user();
-        if (!$user) return;
-
-        $companyId = $user->company_id;
         $modelClass = get_class($model);
-        $modelName = Str::snake(class_basename($model));
-        $storageBase = "uploads/{$companyId}/{$modelName}/{$type}";
 
-        // الصور المرتبطة حاليًا
-        $currentImages = Image::where('imageable_type', $modelClass)
+        // جلب الصور المرتبطة حالياً بهذا الموديل
+        $currentImageIds = Image::where('imageable_type', $modelClass)
             ->where('imageable_id', $model->id)
-            ->get();
+            ->pluck('id')
+            ->toArray();
 
-        $currentImageIds = $currentImages->pluck('id')->toArray();
-
-        // حذف الصور اللي مش موجودة في القائمة الجديدة
+        // 1. تحديد الصور التي يجب حذفها (الموجودة حالياً وليست في القائمة الجديدة)
         $toDelete = array_diff($currentImageIds, $newImageIds);
-        self::deleteImages($toDelete);
+        if (!empty($toDelete)) {
+            self::deleteImages($toDelete);
+        }
 
-        // إضافة الصور الجديدة فقط
+        // 2. ربط ونقل الصور الجديدة
         $toAttach = array_diff($newImageIds, $currentImageIds);
+        if (!empty($toAttach)) {
+            self::attachImagesToModel($toAttach, $model, $type);
+        }
 
-        foreach ($toAttach as $imageId) {
-            $image = Image::where('id', $imageId)
-                ->where('created_by', $user->id)
-                ->first();
+        // 3. التعامل مع الصورة الأساسية (Primary)
+        self::handlePrimaryImage($model, $newImageIds, $primaryImageId);
+    }
 
-            if (!$image) continue;
+    /**
+     * تحديد الصورة الأساسية للموديل
+     */
+    public static function handlePrimaryImage(Model $model, array $imageIds, ?int $primaryImageId = null): void
+    {
+        if (empty($imageIds)) {
+            return;
+        }
 
-            // استخراج المسار النسبي من URL المخزن
-            $oldRelativePath = str_replace('storage/', '', $image->url);
-            $ext = pathinfo($image->url, PATHINFO_EXTENSION);
+        $modelClass = get_class($model);
 
-            $fileName = "{$modelName}_{$model->id}_" . uniqid() . '.' . $ext;
-            $newRelativePath = "{$storageBase}/{$fileName}"; // المسار النسبي الجديد
+        // إذا تم تحديد ID معين كصورة أساسية
+        if ($primaryImageId && in_array($primaryImageId, $imageIds)) {
+            // تصفير كل الصور الأخرى لهذا الموديل
+            Image::where('imageable_type', $modelClass)
+                ->where('imageable_id', $model->id)
+                ->update(['is_primary' => false]);
 
-            // نقل الملف باستخدام قرص public
-            if (Storage::disk('public')->exists($oldRelativePath)) {
-                Storage::disk('public')->move($oldRelativePath, $newRelativePath);
-            }
+            // تعيين الصورة المختارة كصورة أساسية
+            Image::where('id', $primaryImageId)->update(['is_primary' => true]);
+            return;
+        }
 
-            $image->update([
-                'url' => Storage::url($newRelativePath), // تحديث URL العام الجديد
-                'imageable_id' => $model->id,
-                'imageable_type' => $modelClass,
-                'is_temp' => 0,
-                'type' => $type,
-            ]);
+        // لو مفيش صورة أساسية محددة حالياً لهذا الموديل، نختار أول واحدة في القائمة
+        $hasPrimary = Image::where('imageable_type', $modelClass)
+            ->where('imageable_id', $model->id)
+            ->where('is_primary', true)
+            ->exists();
+
+        if (!$hasPrimary) {
+            Image::where('id', $imageIds[0])->update(['is_primary' => true]);
         }
     }
 }

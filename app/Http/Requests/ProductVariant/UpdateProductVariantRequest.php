@@ -36,6 +36,16 @@ class UpdateProductVariantRequest extends FormRequest
             'tax' => 'sometimes|nullable|numeric|min:0|max:100',
             'discount' => 'sometimes|nullable|numeric|min:0',
             'status' => 'sometimes|nullable|in:active,inactive,discontinued',
+            'attributes' => 'sometimes|nullable|array',
+            'attributes.*.id' => 'sometimes|integer|exists:product_variant_attributes,id',
+            'attributes.*.attribute_id' => 'required_with:attributes|exists:attributes,id',
+            'attributes.*.attribute_value_id' => 'required_with:attributes|exists:attribute_values,id',
+            'stocks' => 'sometimes|nullable|array',
+            'stocks.*.id' => 'sometimes|integer|exists:stocks,id',
+            'stocks.*.warehouse_id' => 'required_with:stocks|exists:warehouses,id',
+            'stocks.*.quantity' => 'nullable|integer|min:0',
+            'stocks.*.min_quantity' => 'nullable|integer|min:0',
+            'stocks.*.cost' => 'nullable|numeric|min:0',
         ];
     }
 }

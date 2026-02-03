@@ -23,6 +23,7 @@ class PayInstallmentsRequest extends FormRequest
             'user_id' => 'nullable|exists:users,id',
             'notes' => 'nullable|string',
             'paid_at' => 'nullable|date',
+            'reference_number' => 'nullable|string',
         ];
     }
 }

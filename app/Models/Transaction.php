@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
-    use Blameable, Scopes;
+    use Blameable, Scopes, \App\Traits\LogsActivity;
     protected $fillable = [
         'user_id',
         'cashbox_id',
@@ -31,24 +31,34 @@ class Transaction extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function user(): BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function targetUser(): BelongsTo
+    public function user(): BelongsTo // Keep as alias if needed, but the standard is customer
+    {
+        return $this->customer();
+    }
+
+    public function targetCustomer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'target_user_id');
     }
 
+    public function targetUser(): BelongsTo
+    {
+        return $this->targetCustomer();
+    }
+
     public function cashbox(): BelongsTo
     {
-        return $this->belongsTo(Cashbox::class, 'cashbox_id');
+        return $this->belongsTo(CashBox::class, 'cashbox_id');
     }
 
     public function targetCashbox(): BelongsTo
     {
-        return $this->belongsTo(Cashbox::class, 'target_cashbox_id');
+        return $this->belongsTo(CashBox::class, 'target_cashbox_id');
     }
 
     public function company(): BelongsTo
@@ -88,46 +98,53 @@ class Transaction extends Model
     // الدوال لعكس المعاملات
     public function reverseTransfer()
     {
-        $sender = $this->user;
-        $receiver = $this->targetUser;
+        $senderBox = $this->cashbox;
+        $receiverBox = $this->targetCashbox;
 
-        if (!$sender || !$receiver) {
-            throw new Exception("المستخدمون المرتبطون بالمعاملة غير موجودين.");
+        if (!$senderBox || !$receiverBox) {
+            throw new Exception("الصناديق المرتبطة بالمعاملة غير موجودة.");
         }
 
-        $sender->balance += $this->amount;
-        $receiver->balance -= $this->amount;
+        $senderBox->balance += $this->amount;
+        $senderBox->save();
 
-        $sender->save();
-        $receiver->save();
+        $receiverBox->balance -= $this->amount;
+        $receiverBox->save();
     }
 
     public function reverseWithdraw()
     {
-        $user = $this->user;
+        $box = $this->cashbox;
 
-        if (!$user) {
-            throw new Exception("المستخدم المرتبط بالمعاملة غير موجود.");
+        if (!$box) {
+            throw new Exception("الصندوق المرتبط بالمعاملة غير موجود.");
         }
 
-        $user->balance += $this->amount;
-        $user->save();
+        $box->balance += $this->amount;
+        $box->save();
     }
 
     public function reverseDeposit()
     {
-        $user = $this->user;
+        $box = $this->cashbox;
 
-        if (!$user) {
-            throw new Exception("المستخدم المرتبط بالمعاملة غير موجود.");
+        if (!$box) {
+            throw new Exception("الصندوق المرتبط بالمعاملة غير موجود.");
         }
 
-        $user->balance -= $this->amount;
-
-        if ($user->balance < 0) {
+        if ($box->balance < $this->amount) {
             throw new Exception("الرصيد غير كافٍ لعكس العملية.");
         }
 
-        $user->save();
+        $box->balance -= $this->amount;
+        $box->save();
+    }
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "المعاملة #{$this->id} ({$this->type})";
     }
 }

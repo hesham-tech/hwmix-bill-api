@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Blameable;
 use App\Traits\Scopes;
+use App\Traits\HasImages;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -13,13 +14,23 @@ use Illuminate\Support\Str;
  */
 class ProductVariant extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Blameable, Scopes, \App\Traits\LogsActivity, HasImages;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "متغير منتج ({$this->product?->name} - {$this->sku})";
+    }
 
     protected $fillable = [
         'barcode',
         'sku',
         'retail_price',
         'wholesale_price',
+        'purchase_price',
+        'profit_margin',
         'image',
         'weight',
         'dimensions',
@@ -27,16 +38,22 @@ class ProductVariant extends Model
         'discount',
         'min_quantity',
         'status',
-        'product_id'
+        'product_id',
+        'company_id',
+        'created_by',
+        'sales_count'
     ];
 
     protected $casts = [
         'retail_price' => 'decimal:2',
         'wholesale_price' => 'decimal:2',
+        'purchase_price' => 'decimal:2',
+        'profit_margin' => 'decimal:2',
         'weight' => 'decimal:2',
-        'dimensions' => 'array',  // Assuming dimensions is stored as an array
+        'dimensions' => 'array',
         'tax' => 'decimal:2',
         'discount' => 'decimal:2',
+        'sales_count' => 'integer',
     ];
 
     public function creator()
@@ -76,8 +93,12 @@ class ProductVariant extends Model
         parent::boot();
 
         static::creating(function ($variant) {
-            $variant->sku = self::generateUniqueSKU();
-            $variant->barcode = self::generateUniqueBarcode();
+            if (empty($variant->sku)) {
+                $variant->sku = self::generateUniqueSKU();
+            }
+            if (empty($variant->barcode)) {
+                $variant->barcode = self::generateUniqueBarcode();
+            }
         });
     }
 
@@ -92,11 +113,13 @@ class ProductVariant extends Model
 
     private static function generateUniqueBarcode()
     {
-        // الحصول على آخر قيمة للباركود من قاعدة البيانات
-        $lastBarcode = self::orderBy('barcode', 'desc')->first();
+        // الحصول على آخر قيمة للباركود من قاعدة البيانات (رقمية فقط)
+        $lastBarcode = self::whereRaw("barcode REGEXP '^[0-9]+$'")
+            ->orderByRaw('CAST(barcode AS UNSIGNED) DESC')
+            ->first();
 
         // إذا لم يكن هناك باركودات سابقة، ابدأ من الرقم 1000000000
-        $nextBarcode = $lastBarcode ? $lastBarcode->barcode + 1 : 1000000000;
+        $nextBarcode = $lastBarcode ? (int) $lastBarcode->barcode + 1 : 1000000000;
 
         // ملء الأصفار لتأكيد أن الباركود طويل بما يكفي (على سبيل المثال 10 خانات)
         $barcode = str_pad($nextBarcode, 10, '0', STR_PAD_LEFT);

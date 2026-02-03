@@ -18,8 +18,13 @@ class InvoiceItemResource extends JsonResource
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
             'discount' => $this->discount,
+            'profit_margin' => $this->profit_margin,
             'total' => $this->total,
+            'retail_price' => $this->variant?->retail_price ?? $this->variant?->price ?? 0,
+            'wholesale_price' => $this->variant?->wholesale_price ?? 0,
+            'primary_image_url' => $this->variant?->image?->url ?? $this->product?->image?->url,
             'variant' => new ProductVariantResource($this->whenLoaded('variant')),
+            'digital_deliveries' => $this->whenLoaded('digitalDeliveries'),
 
             'product' => $this->whenLoaded('product'),
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,

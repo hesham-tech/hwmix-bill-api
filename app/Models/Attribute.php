@@ -12,9 +12,17 @@ use App\Traits\Scopes;
  */
 class Attribute extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Blameable, Scopes, \App\Traits\LogsActivity;
 
-    protected $fillable = ['name', 'value', 'company_id', 'created_by'];
+    protected $fillable = ['name', 'value', 'active', 'company_id', 'created_by'];
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "السمة ({$this->name})";
+    }
 
     public function company()
     {

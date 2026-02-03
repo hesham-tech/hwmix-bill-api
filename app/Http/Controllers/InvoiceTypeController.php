@@ -29,61 +29,18 @@ class InvoiceTypeController extends Controller
     }
 
     /**
-     * عرض قائمة أنواع الفواتير.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * عرض أنواع المستندات
+     * 
+     * استرجاع أنواع المعاملات المالية المتاحة (فواتير مبيعات، مشتريات، مرتجعات، سندات قبص).
+     * 
+     * @queryParam context string سياق النوع (sale, purchase).
+     * 
+     * @apiResourceCollection App\Http\Resources\InvoiceType\InvoiceTypeResource
+     * @apiResourceModel App\Models\InvoiceType
      */
     public function index(Request $request): JsonResponse
-    {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
-
-            if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
-            }
-
-            $query = InvoiceType::query()->with($this->relations);
-
-            // فلاتر الطلب الإضافية
-            if ($request->filled('context')) {
-                $query->where('context', $request->input('context'));
-            }
-            if (!empty($request->get('created_at_from'))) {
-                $query->where('created_at', '>=', $request->get('created_at_from') . ' 00:00:00');
-            }
-            if (!empty($request->get('created_at_to'))) {
-                $query->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
-            }
-
-            // تحديد عدد العناصر في الصفحة والفرز
-            $perPage = (int) $request->input('per_page', 20);
-            $sortField = $request->input('sort_by', 'id');
-            $sortOrder = $request->input('sort_order', 'desc');
-
-            $types = $query->orderBy($sortField, $sortOrder);
-            $types = $perPage == -1
-                ? $types->get()
-                : $types->paginate(max(1, $perPage));
-
-            if ($types->isEmpty()) {
-                return api_success([], 'لم يتم العثور على أنواع فواتير.');
-            } else {
-                return api_success(InvoiceTypeResource::collection($types), 'تم جلب أنواع الفواتير بنجاح.');
-            }
-        } catch (Throwable $e) {
-            return api_exception($e);
-        }
-    }
-
-    /**
-     * تخزين نوع فاتورة جديد.
-     *
-     * @param StoreInvoiceTypeRequest $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(StoreInvoiceTypeRequest $request): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
@@ -94,41 +51,48 @@ class InvoiceTypeController extends Controller
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
 
-            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('invoice_types.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
-                return api_forbidden('ليس لديك صلاحية لإنشاء أنواع فواتير.');
+            // جلب الأنواع المرتبطة بالشركة الحالية من جدول الربط
+            $company = \App\Models\Company::find($companyId);
+
+            $types = $company->invoiceTypes()
+                ->when($request->filled('context'), function ($q) use ($request) {
+                    $q->where('context', $request->input('context'));
+                })
+                ->get();
+
+            // إضافة is_active من الـ pivot إلى كل نوع (تحويل لـ boolean)
+            $types = $types->map(function ($type) {
+                $type->is_active = (bool) $type->pivot->is_active;
+                unset($type->pivot); // إزالة البيانات الزائدة
+                return $type;
+            });
+
+            if ($types->isEmpty()) {
+                return api_success([], 'لم يتم العثور على أنواع فواتير.');
             }
 
-            DB::beginTransaction();
-            try {
-                $validatedData = $request->validated();
-                $validatedData['created_by'] = $authUser->id;
-
-                // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمستخدم.
-                $invoiceTypeCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
-                    ? $validatedData['company_id']
-                    : $companyId;
-
-                // التأكد من أن المستخدم مصرح له بإنشاء نوع فاتورة لهذه الشركة
-                if ($invoiceTypeCompanyId != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    DB::rollBack();
-                    return api_forbidden('يمكنك فقط إنشاء أنواع فواتير لشركتك الحالية ما لم تكن مسؤولاً عامًا.');
-                }
-                $validatedData['company_id'] = $invoiceTypeCompanyId;
-
-                $type = InvoiceType::create($validatedData);
-                $type->load($this->relations);
-                DB::commit();
-                return api_success(new InvoiceTypeResource($type), 'تم إنشاء نوع الفاتورة بنجاح.', 201);
-            } catch (ValidationException $e) {
-                DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تخزين نوع الفاتورة.', $e->errors(), 422);
-            } catch (Throwable $e) {
-                DB::rollBack();
-                return api_error('حدث خطأ أثناء حفظ نوع الفاتورة.', [], 500);
-            }
+            return api_success(InvoiceTypeResource::collection($types), 'تم جلب أنواع الفواتير بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e);
         }
+    }
+
+    /**
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * إضافة نوع مستند جديد
+     * 
+     * @bodyParam name string required الاسم بالعربية. Example: فاتورة مبيعات ضريبية
+     * @bodyParam code string required كود فريد للنوع. Example: SALE_TAX
+     * @bodyParam context string required السياق (sale/purchase). Example: sale
+     */
+    public function store(StoreInvoiceTypeRequest $request): JsonResponse
+    {
+        return api_error(
+            'لا يمكن إنشاء أنواع فواتير جديدة. أنواع الفواتير محمية ومُعرّفة مسبقاً في النظام.',
+            [],
+            403
+        );
     }
 
     /**
@@ -189,48 +153,52 @@ class InvoiceTypeController extends Controller
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
 
-            $type = InvoiceType::with(['company', 'creator'])->findOrFail($id);
+            // التحقق من وجود النوع
+            $type = InvoiceType::findOrFail($id);
+            $company = \App\Models\Company::find($companyId);
 
-            $canUpdate = false;
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $canUpdate = true;
-            } elseif ($authUser->hasAnyPermission([perm_key('invoice_types.update_all'), perm_key('admin.company')])) {
-                $canUpdate = $type->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('invoice_types.update_children'))) {
-                $canUpdate = $type->belongsToCurrentCompany() && $type->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('invoice_types.update_self'))) {
-                $canUpdate = $type->belongsToCurrentCompany() && $type->createdByCurrentUser();
-            }
-
-            if (!$canUpdate) {
-                return api_forbidden('ليس لديك إذن لتحديث نوع الفاتورة هذا.');
+            // التحقق من أن الشركة مرتبطة بهذا النوع
+            if (!$company->invoiceTypes()->where('invoice_type_id', $id)->exists()) {
+                return api_error('هذا النوع غير مرتبط بشركتك.', [], 404);
             }
 
             DB::beginTransaction();
             try {
                 $validatedData = $request->validated();
-                $validatedData['updated_by'] = $authUser->id;
 
-                // التأكد من أن المستخدم مصرح له بتغيير company_id إذا كان سوبر أدمن
-                if (isset($validatedData['company_id']) && $validatedData['company_id'] != $type->company_id && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                // السماح فقط بتغيير is_active
+                if (!isset($validatedData['is_active'])) {
                     DB::rollBack();
-                    return api_forbidden('لا يمكنك تغيير شركة نوع الفاتورة إلا إذا كنت مدير عام.');
-                }
-                // إذا لم يتم تحديد company_id في الطلب ولكن المستخدم سوبر أدمن، لا تغير company_id الخاصة بالصندوق الحالي
-                if (!$authUser->hasPermissionTo(perm_key('admin.super')) || !isset($validatedData['company_id'])) {
-                    unset($validatedData['company_id']);
+                    return api_error(
+                        'يمكن فقط تفعيل أو تعطيل أنواع الفواتير.',
+                        [],
+                        403
+                    );
                 }
 
-                $type->update($validatedData);
-                $type->load($this->relations);
+                // تحديث في جدول الربط (pivot) فقط
+                $company->invoiceTypes()->updateExistingPivot($id, [
+                    'is_active' => $validatedData['is_active'],
+                ]);
+
                 DB::commit();
-                return api_success(new InvoiceTypeResource($type), 'تم تحديث نوع الفاتورة بنجاح.');
+
+                // إعادة جلب النوع مع pivot محدث
+                $updatedType = $company->invoiceTypes()->find($id);
+                $updatedType->is_active = (bool) $updatedType->pivot->is_active;
+                unset($updatedType->pivot);
+
+                $statusMessage = $validatedData['is_active']
+                    ? 'تم تفعيل نوع الفاتورة بنجاح.'
+                    : 'تم تعطيل نوع الفاتورة بنجاح.';
+
+                return api_success(new InvoiceTypeResource($updatedType), $statusMessage);
             } catch (ValidationException $e) {
                 DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تحديث نوع الفاتورة.', $e->errors(), 422);
+                return api_error('فشل التحقق من صحة البيانات.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء تحديث نوع الفاتورة.', [], 500);
+                return api_exception($e);
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -245,52 +213,10 @@ class InvoiceTypeController extends Controller
      */
     public function destroy(string $id): JsonResponse
     {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
-
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
-            }
-
-            $type = InvoiceType::with(['company', 'creator', 'invoices'])->findOrFail($id);
-
-            $canDelete = false;
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $canDelete = true;
-            } elseif ($authUser->hasAnyPermission([perm_key('invoice_types.delete_all'), perm_key('admin.company')])) {
-                $canDelete = $type->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('invoice_types.delete_children'))) {
-                $canDelete = $type->belongsToCurrentCompany() && $type->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('invoice_types.delete_self'))) {
-                $canDelete = $type->belongsToCurrentCompany() && $type->createdByCurrentUser();
-            }
-
-            if (!$canDelete) {
-                return api_forbidden('ليس لديك إذن لحذف نوع الفاتورة هذا.');
-            }
-
-            DB::beginTransaction();
-            try {
-                // تحقق مما إذا كان نوع الفاتورة مرتبطًا بأي فواتير
-                if ($type->invoices()->exists()) {
-                    DB::rollBack();
-                    return api_error('لا يمكن حذف نوع الفاتورة. إنه مرتبط بفاتورة واحدة أو أكثر.', [], 409);
-                }
-
-                $deletedType = $type->replicate(); // نسخ الكائن قبل الحذف
-                $deletedType->setRelations($type->getRelations()); // نسخ العلاقات المحملة
-
-                $type->delete();
-                DB::commit();
-                return api_success(new InvoiceTypeResource($deletedType), 'تم حذف نوع الفاتورة بنجاح.');
-            } catch (Throwable $e) {
-                DB::rollBack();
-                return api_exception($e);
-            }
-        } catch (Throwable $e) {
-            return api_exception($e);
-        }
+        return api_error(
+            'لا يمكن حذف أنواع الفواتير. يمكنك فقط تعطيلها باستخدام خاصية التفعيل/التعطيل.',
+            [],
+            403
+        );
     }
 }

@@ -25,7 +25,7 @@ class InstallmentResource extends JsonResource
             'user_id' => $this->user_id,
             'created_at' => $this->created_at ? $this->created_at->toDateTimeString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toDateTimeString() : null,
-            'user' => new UserBasicResource($this->whenLoaded('user')),
+            'customer' => new UserBasicResource($this->whenLoaded('customer')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'installment_plan' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
         ];

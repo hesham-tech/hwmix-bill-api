@@ -33,10 +33,16 @@ class CashBoxService
 
             // 3. إذا لم توجد: إنشاء خزنة جديدة
             $company = Company::find($companyId);
-            $cashType = CashBoxType::where('name', 'نقدي')->first();
+            $cashType = CashBoxType::where('name', 'نقدي')
+                ->where(function ($q) use ($companyId) {
+                    $q->where('company_id', $companyId)
+                        ->orWhereNull('company_id');
+                })
+                ->orderBy('company_id', 'desc') // Prioritize company-specific type
+                ->first();
 
             if (!$cashType || !$company) {
-                Log::error("CashBoxService: فشل في العثور على نوع الخزنة 'نقدي' أو الشركة {$companyId}.");
+                Log::error("CashBoxService: فشل في العثور على نوع الخزنة 'نقدي' (عالمي أو خاص بالشركة {$companyId}) أو فشل العثور على الشركة.");
                 return null;
             }
 

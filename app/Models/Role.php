@@ -20,11 +20,21 @@ class Role extends SpatieRole implements RoleContract
     // افترض أن Scopes و LogsActivity و RolePermissions traits مخصصة ومطلوبة.
     use Scopes, Blameable, LogsActivity, RolePermissions;
 
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "دور ({$this->name})";
+    }
+
     protected $fillable = [
         'name',
         'guard_name',
         'created_by',
-        'company_id'
+        'company_id',
+        'label',
+        'description'
     ];
 
     /**
@@ -35,16 +45,12 @@ class Role extends SpatieRole implements RoleContract
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function companies(): BelongsToMany
+    /**
+     * العلاقة التي تحدد الشركة التي ينتمي إليها هذا الدور.
+     */
+    public function company(): BelongsTo
     {
-        // يربط نموذج Role بالشركات عبر جدول 'role_company'
-        // 'role_id' هو المفتاح الخارجي للدور في الجدول الوسيط
-        // 'company_id' هو المفتاح الخارجي للشركة في الجدول الوسيط
-        return $this
-            ->belongsToMany(Company::class, 'role_company', 'role_id', 'company_id')
-            ->using(RoleCompany::class)  // **** التعديل الرئيسي هنا: تحديد نموذج Pivot المخصص ****
-            ->withPivot('created_by')  // لإضافة عمود created_by من الجدول الوسيط
-            ->withTimestamps();  // لإضافة created_at و updated_at للجدول الوسيط
+        return $this->belongsTo(Company::class, 'company_id');
     }
 
     // يمكن إضافة دوال أو منطق إضافي هنا إذا لزم الأمر

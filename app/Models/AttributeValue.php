@@ -7,19 +7,30 @@ use App\Traits\Blameable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 /**
  * @mixin IdeHelperAttributeValue
  */
 class AttributeValue extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Blameable, Scopes, SoftDeletes, \App\Traits\LogsActivity;
 
     protected $fillable = [
         'attribute_id',
+        'company_id',
         'created_by',
         'name',
         'color',
     ];
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "قيمة السمة ({$this->name})";
+    }
 
     public function attribute()
     {

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\ImageService;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -26,21 +27,38 @@ class CategoryController extends Controller
             'company',           // للتحقق من belongsToCurrentCompany
             'creator',           // للتحقق من createdByCurrentUser/OrChildren
             'products',          // للتحقق من المنتجات المرتبطة قبل الحذف
+            'image',             // تحميل الصورة المرتبطة
         ];
     }
 
     /**
-     * عرض قائمة الموارد.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة الأقسام (الفئات)
+     * 
+     * استرجاع شجرة الأقسام بالكامل (الأقسام الرئيسية والفرعية) مع دعم البحث والفلترة.
+     * 
+     * @queryParam search string البحث باسم القسم. Example: هواتف
+     * 
+     * @apiResourceCollection App\Http\Resources\Category\CategoryResource
+     * @apiResourceModel App\Models\Category
      */
     public function index(Request $request): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $query = Category::with($this->relations)->whereNull('parent_id');
+            $query = Category::with($this->relations);
+
+            // Filter by parent_id (default to null if not searching)
+            if (!$request->filled('search')) {
+                $parentId = $request->input('parent_id');
+                if ($parentId === 'null' || $parentId === null) {
+                    $query->whereNull('parent_id');
+                } else {
+                    $query->where('parent_id', $parentId);
+                }
+            }
             $companyId = $authUser->company_id ?? null;
 
             // تطبيق منطق الصلاحيات
@@ -70,8 +88,8 @@ class CategoryController extends Controller
             $sortOrder = $request->input('sort_order', 'desc');
             $query->orderBy($sortBy, $sortOrder);
 
-            $perPage = max(1, (int) $request->get('per_page', 10));
-            $categories = $query->get(); // استخدام get بدلاً من paginate للحصول على جميع الفئات
+            $perPage = max(1, (int) $request->get('per_page', 12));
+            $categories = $query->paginate($perPage);
 
             if ($categories->isEmpty()) {
                 return api_success($categories, 'لم يتم العثور على فئات.');
@@ -84,10 +102,12 @@ class CategoryController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param StoreCategoryRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * إضافة قسم جديد
+     * 
+     * @bodyParam name string required اسم القسم. Example: إلكترونيات
+     * @bodyParam parent_id integer معرف القسم الأب (اختياري). Example: 1
      */
     public function store(StoreCategoryRequest $request): JsonResponse
     {
@@ -124,6 +144,11 @@ class CategoryController extends Controller
                 $validatedData['created_by'] = $authUser->id;
 
                 $category = Category::create($validatedData);
+
+                if (!empty($validatedData['image_id'])) {
+                    ImageService::attachImagesToModel([$validatedData['image_id']], $category, 'logo');
+                }
+
                 $category->load($this->relations); // تحميل العلاقات بعد الإنشاء
                 DB::commit();
                 return api_success(new CategoryResource($category), 'تم إنشاء الفئة بنجاح.', 201);
@@ -140,10 +165,9 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * عرض تفاصيل قسم
      */
     public function show(string $id): JsonResponse
     {
@@ -181,11 +205,9 @@ class CategoryController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param UpdateCategoryRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث بيانات قسم
      */
     public function update(UpdateCategoryRequest $request, string $id): JsonResponse
     {
@@ -236,6 +258,12 @@ class CategoryController extends Controller
                 $validatedData['updated_by'] = $updatedBy;
 
                 $category->update($validatedData);
+
+                if (isset($validatedData['image_id'])) {
+                    $newImageIds = $validatedData['image_id'] ? [$validatedData['image_id']] : [];
+                    ImageService::syncImagesWithModel($newImageIds, $category, 'logo');
+                }
+
                 $category->load($this->relations); // تحميل العلاقات بعد التحديث
                 DB::commit();
                 return api_success(new CategoryResource($category), 'تم تحديث الفئة بنجاح.');
@@ -252,14 +280,16 @@ class CategoryController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف قسم
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request): JsonResponse
     {
         try {
+            $request->validate(['id' => 'required|exists:categories,id']);
+            $id = $request->input('id');
+
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
             $companyId = $authUser->company_id ?? null;
@@ -309,6 +339,48 @@ class CategoryController extends Controller
                 DB::rollBack();
                 return api_error('حدث خطأ أثناء حذف الفئة.', [], 500);
             }
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * تغيير حالة الفئة (تفعيل/تعطيل)
+     */
+    public function toggle(string $id): JsonResponse
+    {
+        try {
+            $category = Category::findOrFail($id);
+            $category->update(['active' => !$category->active]);
+            return api_success(new CategoryResource($category), 'تم تغيير حالة الفئة بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * استرجاع مسار الفئة (Breadcrumbs)
+     */
+    public function breadcrumbs(string $id): JsonResponse
+    {
+        try {
+            $category = Category::findOrFail($id);
+            $breadcrumbs = [];
+            $current = $category;
+
+            while ($current) {
+                array_unshift($breadcrumbs, [
+                    'id' => $current->id,
+                    'name' => $current->name,
+                ]);
+                $current = $current->parent;
+            }
+
+            return api_success($breadcrumbs, 'تم استرداد مسار الفئة بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }

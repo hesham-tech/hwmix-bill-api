@@ -26,15 +26,25 @@ class ProductVariantController extends Controller
         'product.company',
         'product.category',
         'product.brand',
+        'product.image',
+        'image',
         'attributes.attributeValue',
         'stocks.warehouse',
     ];
 
     /**
-     * عرض قائمة بمتغيرات المنتجات مع الفلاتر والصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة أصناف المنتجات
+     * 
+     * استرجاع كافة التشكيلات (Variants) المتوفرة للمنتجات (مثل: آيفون 15 برو - أسود - 256 جيجا).
+     * 
+     * @queryParam search string البحث برمز SKU أو الباركود. Example: SKU123
+     * @queryParam product_id integer فلترة حسب المنتج الأم.
+     * @queryParam status string فلترة حسب الحالة (active, inactive).
+     * 
+     * @apiResourceCollection App\Http\Resources\ProductVariant\ProductVariantResource
+     * @apiResourceModel App\Models\ProductVariant
      */
     public function index(Request $request): JsonResponse
     {
@@ -77,6 +87,12 @@ class ProductVariantController extends Controller
                 $query->where('status', $request->input('status'));
             }
 
+            if ($request->boolean('has_stock')) {
+                $query->whereHas('stocks', function ($q) {
+                    $q->where('quantity', '>', 0);
+                });
+            }
+
             $perPage = max(1, (int) $request->get('per_page', 20));
             $sortField = $request->input('sort_by', 'created_at');
             $sortOrder = $request->input('sort_order', 'desc');
@@ -93,10 +109,15 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param StoreProductVariantRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * إضافة متغير لمنتج
+     * 
+     * إنشاء تشكيلة جديدة (مثلاً لون أو مقاس معين) لمنتج موجود مسبقاً.
+     * 
+     * @bodyParam product_id integer required معرف المنتج الأم. Example: 1
+     * @bodyParam sku string رمز SKU الفريد. Example: APP-IPHN15-RED
+     * @bodyParam retail_price number سعر البيع. Example: 1200
      */
     public function store(StoreProductVariantRequest $request): JsonResponse
     {
@@ -141,7 +162,8 @@ class ProductVariantController extends Controller
                 if ($request->has('attributes') && is_array($request->input('attributes'))) {
                     foreach ($request->input('attributes') as $attr) {
                         if (!empty($attr['attribute_id']) && !empty($attr['attribute_value_id'])) {
-                            $productVariant->attributes()->attach($attr['attribute_id'], [
+                            $productVariant->attributes()->create([
+                                'attribute_id' => $attr['attribute_id'],
                                 'attribute_value_id' => $attr['attribute_value_id'],
                                 'company_id' => $variantCompanyId,
                                 'created_by' => $authUser->id,
@@ -155,7 +177,7 @@ class ProductVariantController extends Controller
                     foreach ($request->input('stocks') as $stockData) {
                         if (!empty($stockData['warehouse_id'])) {
                             Stock::create([
-                                'product_variant_id' => $productVariant->id,
+                                'variant_id' => $productVariant->id,
                                 'warehouse_id' => $stockData['warehouse_id'],
                                 'quantity' => $stockData['quantity'] ?? 0,
                                 'reserved' => $stockData['reserved'] ?? 0,
@@ -187,10 +209,11 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * عرض متغير محدد
+     * 
+     * جلب تفاصيل تشكيلة معينة شاملة المخزون والخصائص الفنية.
      */
     public function show(string $id): JsonResponse
     {
@@ -228,11 +251,9 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param UpdateProductVariantRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث متغير
      */
     public function update(UpdateProductVariantRequest $request, string $id): JsonResponse
     {
@@ -332,7 +353,7 @@ class ProductVariantController extends Controller
                     foreach ($request->input('stocks') as $stockData) {
                         if (!empty($stockData['warehouse_id'])) {
                             Stock::updateOrCreate(
-                                ['id' => $stockData['id'] ?? null, 'product_variant_id' => $productVariant->id],
+                                ['id' => $stockData['id'] ?? null, 'variant_id' => $productVariant->id],
                                 [
                                     'warehouse_id' => $stockData['warehouse_id'],
                                     'quantity' => $stockData['quantity'] ?? 0,
@@ -370,10 +391,9 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف متغير
      */
     public function destroy(string $id): JsonResponse
     {
@@ -416,7 +436,7 @@ class ProductVariantController extends Controller
                 $deletedProductVariant->setRelations($productVariant->getRelations());
 
                 $productVariant->stocks()->delete(); // حذف سجلات المخزون
-                $productVariant->attributes()->detach(); // حذف العلاقات في الجدول الوسيط
+                $productVariant->attributes()->delete(); // حذف سجلات الخصائص المرتبطة
                 $productVariant->delete(); // حذف المتغير نفسه
 
                 DB::commit();
@@ -431,10 +451,11 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * حذف متغيرات منتج متعددة بناءً على مصفوفة من المعرفات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف متغيرات متعددة
+     * 
+     * @bodyParam ids array required مصفوفة المعرفات المطلوب حذفها. Example: [1, 2, 5]
      */
     public function deleteMultiple(Request $request): JsonResponse
     {
@@ -485,7 +506,7 @@ class ProductVariantController extends Controller
                                 $cannotDelete[] = $productVariant->id; // إضافة معرف المتغير الذي لا يمكن حذفه
                             } else {
                                 $productVariant->stocks()->delete();
-                                $productVariant->attributes()->detach();
+                                $productVariant->attributes()->delete();
                                 $productVariant->delete();
                                 $deletedCount++;
                             }
@@ -513,10 +534,11 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * البحث عن متغيرات منتج باستخدام براميتر بحث وتطبيق الصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * بحث متقدم في التشكيلات
+     * 
+     * @queryParam search string نص البحث.
      */
     public function searchByProduct(Request $request): JsonResponse
     {
@@ -530,62 +552,80 @@ class ProductVariantController extends Controller
             }
 
             $search = $request->get('search');
-            if (empty($search) || mb_strlen($search) <= 2) {
-                return api_success([], 'لا توجد نتائج بحث.');
-            }
 
-            $productQuery = Product::query();
+            $query = ProductVariant::with($this->relations);
 
             // صلاحيات
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                //
-            } elseif ($authUser->hasAnyPermission([perm_key('products.view_all'), perm_key('admin.company'), perm_key('product_variants.view_all')])) {
-                $productQuery->whereCompanyIsCurrent();
-            } elseif ($authUser->hasAnyPermission([perm_key('products.view_children'), perm_key('product_variants.view_children')])) {
-                $productQuery->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-            } elseif ($authUser->hasAnyPermission([perm_key('products.view_self'), perm_key('product_variants.view_self')])) {
-                $productQuery->whereCompanyIsCurrent()->whereCreatedByUser();
+                // المسؤول العام يرى كل شيء
+            } elseif ($authUser->hasAnyPermission([perm_key('product_variants.view_all'), perm_key('admin.company')])) {
+                $query->whereCompanyIsCurrent();
+            } elseif ($authUser->hasPermissionTo(perm_key('product_variants.view_children'))) {
+                $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('product_variants.view_self'))) {
+                $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك صلاحية لعرض المنتجات أو متغيراتها.');
+                return api_forbidden('ليس لديك صلاحية لعرض متغيرات المنتجات.');
             }
 
-            // فلتر بحث عادي
-            $productQuery->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%$search%")
-                    ->orWhere('desc', 'like', "%$search%");
-            });
+            // البحث المباشر في المتغيرات والأب
+            if (!empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('sku', 'like', "%$search%")
+                        ->orWhere('barcode', 'like', "%$search%")
+                        ->orWhereHas('product', function ($pq) use ($search) {
+                            $pq->where('name', 'like', "%$search%")
+                                ->orWhere('desc', 'like', "%$search%");
+                        });
+                });
+            }
 
-            $perPage = max(1, (int) $request->get('per_page', 20));
+            // الترتيب حسب الأكثر استخداماً
+            $query->orderBy('sales_count', 'desc')
+                ->orderBy('created_at', 'desc');
 
-            $productsWithVariants = $productQuery->with(['variants' => function ($query) {
-                $query->with($this->relations);
-            }])->paginate($perPage);
+            // ✅ فلترة حسب توفر المخزون (بناءً على طلب المستخدم)
+            if ($request->get('has_stock', true)) {
+                $query->whereHas('stocks', function ($q) {
+                    $q->where('quantity', '>', 0);
+                });
+            }
 
-            $variants = collect($productsWithVariants->items())->flatMap(function ($product) {
-                return $product->variants;
-            });
+            $perPage = max(1, (int) $request->get('per_page', 50));
+            $variants = $query->paginate($perPage);
 
-            // ✅ لو مفيش نتائج نستخدم similar_text
-            if ($variants->isEmpty()) {
-                $allProducts = Product::limit(100)->with(['variants' => function ($query) {
-                    $query->with($this->relations);
-                }])->get();
-                $similarProducts = [];
+            // ✅ إضافة منطق similar_text كبديل إذا لم توجد نتائج مباشرة
+            if ($variants->isEmpty() && !empty($search)) {
+                $allVariantsQuery = ProductVariant::with($this->relations)
+                    ->whereCompanyIsCurrent();
 
-                foreach ($allProducts as $product) {
-                    similar_text($product->name, $search, $percent);
-                    if ($percent >= 70) {
-                        $similarProducts[] = $product;
+                if ($request->get('has_stock', true)) {
+                    $allVariantsQuery->whereHas('stocks', function ($q) {
+                        $q->where('quantity', '>', 0);
+                    });
+                }
+
+                $allVariants = $allVariantsQuery->limit(200)->get();
+
+                $similarVariants = [];
+                foreach ($allVariants as $variant) {
+                    // البحث في اسم المنتج أو الـ SKU
+                    similar_text(mb_strtolower($variant->product->name), mb_strtolower($search), $percentProduct);
+                    similar_text(mb_strtolower($variant->sku), mb_strtolower($search), $percentSku);
+
+                    $maxPercent = max($percentProduct, $percentSku);
+                    if ($maxPercent >= 60) { // خفضنا النسبة قليلاً لزيادة المرونة
+                        $variant->similarity_score = $maxPercent;
+                        $similarVariants[] = $variant;
                     }
                 }
 
-                // استخراج المتغيرات
-                $similarVariants = collect($similarProducts)->flatMap(function ($product) {
-                    return $product->variants;
-                });
-
-                return api_success(ProductVariantResource::collection($similarVariants), 'تم العثور على نتائج مشابهة بناءً على البحث.');
+                if (!empty($similarVariants)) {
+                    $similarVariants = collect($similarVariants)->sortByDesc('similarity_score')->values();
+                    return api_success(ProductVariantResource::collection($similarVariants), 'تم العثور على نتائج مشابهة بناءً على البحث.');
+                }
             }
+
             return api_success(ProductVariantResource::collection($variants), 'تم العثور على متغيرات المنتجات بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e);

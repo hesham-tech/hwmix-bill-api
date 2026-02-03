@@ -28,7 +28,14 @@ class SaleInvoiceService implements DocumentServiceInterface
         try {
             Log::info('SaleInvoiceService: بدء إنشاء فاتورة بيع.', ['data' => $data]);
 
-            $this->checkVariantsStock($data['items']);
+            // ✅ استخدام InvoiceCalculator لحساب الإجماليات
+            $calculator = app(\App\Services\InvoiceCalculator::class);
+            $calculatedData = $calculator->calculateTotals($data['items'], $data);
+
+            // دمج البيانات المحسوبة مع البيانات المدخلة
+            $data = array_merge($data, $calculatedData);
+
+            $this->checkVariantsStock($data['items'], 'deduct', $data['warehouse_id'] ?? null);
 
             $invoice = $this->createInvoice($data);
             if (!$invoice || !$invoice->id) {
@@ -37,42 +44,28 @@ class SaleInvoiceService implements DocumentServiceInterface
 
             $this->createInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['created_by'] ?? null);
 
-            $this->deductStockForItems($data['items']);
+            $this->deductStockForItems($data['items'], $data['warehouse_id'] ?? null);
 
             $authUser = Auth::user();
             $cashBoxId = $data['cash_box_id'] ?? null;
             $userCashBoxId = $data['user_cash_box_id'] ?? null;
 
-            // معالجة رصيد الموظفين والعملاء
-            if ($invoice->user_id == $authUser->id) { // فاتورة ذاتية للموظف البائع
-                // app(UserSelfDebtService::class)->registerPurchase(
-                //     $authUser,
-                //     $invoice->paid_amount,
-                //     $invoice->remaining_amount,
-                //     $cashBoxId,
-                //     $invoice->company_id
-                // );
-            } elseif ($invoice->user_id) { // المشتري مستخدم آخر (عميل)
+            // ✅ استخدام PaymentHandler لمعالجة الدفعات
+            $paymentHandler = app(\App\Services\InvoicePaymentHandler::class);
+
+            if ($invoice->user_id != $authUser->id) {
+                // المشتري مستخدم آخر (عميل)
                 $buyer = User::find($invoice->user_id);
                 if ($buyer) {
-                    if ($invoice->paid_amount > 0) {
-                        $depositResult = $authUser->deposit($invoice->paid_amount, $cashBoxId);
-                        if ($depositResult !== true) {
-                            throw new \Exception('فشل إيداع المبلغ المدفوع في خزنة البائع: ' . json_encode($depositResult));
-                        }
-                    }
-
-                    if ($invoice->remaining_amount > 0) {
-                        $withdrawResult = $buyer->withdraw($invoice->remaining_amount, $userCashBoxId);
-                        if ($withdrawResult !== true) {
-                            throw new \Exception('فشل سحب مبلغ متبقي من رصيد العميل: ' . json_encode($withdrawResult));
-                        }
-                    } elseif ($invoice->remaining_amount < 0) {
-                        $depositResult = $buyer->deposit(abs($invoice->remaining_amount), $userCashBoxId);
-                        if ($depositResult !== true) {
-                            throw new \Exception('فشل إيداع مبلغ زائد في رصيد العميل: ' . json_encode($depositResult));
-                        }
-                    }
+                    $paymentHandler->handleSalePayment(
+                        $invoice,
+                        $authUser,
+                        $buyer,
+                        $invoice->paid_amount,
+                        $invoice->remaining_amount,
+                        $cashBoxId,
+                        $userCashBoxId
+                    );
                 } else {
                     Log::warning('SaleInvoiceService: لم يتم العثور على العميل (إنشاء).', ['buyer_user_id' => $invoice->user_id]);
                 }
@@ -82,7 +75,37 @@ class SaleInvoiceService implements DocumentServiceInterface
                 app(InstallmentService::class)->createInstallments($data, $invoice->id);
             }
 
-            $invoice->logCreated('إنشاء فاتورة بيع رقم ' . $invoice->invoice_number);
+            // ✅ Auto-deliver digital products
+            $invoice->load('items.product');
+            foreach ($invoice->items as $item) {
+                if ($item->product && $item->product->isDigital()) {
+                    try {
+                        $delivery = \App\Models\DigitalProductDelivery::create([
+                            'invoice_item_id' => $item->id,
+                            'product_id' => $item->product_id,
+                            'user_id' => $invoice->user_id,
+                            'delivery_type' => \App\Models\DigitalProductDelivery::DELIVERY_LICENSE_KEY,
+                            'company_id' => $invoice->company_id,
+                            'created_by' => $data['created_by'] ?? null,
+                        ]);
+
+                        $delivery->deliver();
+
+                        Log::info("تم تسليم منتج رقمي تلقائياً", [
+                            'invoice_id' => $invoice->id,
+                            'product_id' => $item->product_id,
+                            'delivery_id' => $delivery->id,
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error("فشل تسليم منتج رقمي", [
+                            'invoice_id' => $invoice->id,
+                            'product_id' => $item->product_id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+            }
+
 
             return $invoice;
         } catch (\Throwable $e) {
@@ -103,6 +126,13 @@ class SaleInvoiceService implements DocumentServiceInterface
     {
         try {
             Log::info('SaleInvoiceService: بدء تحديث فاتورة بيع.', ['invoice_id' => $invoice->id, 'data' => $data]);
+
+            // ✅ استخدام InvoiceCalculator لحساب الإجماليات
+            $calculator = app(\App\Services\InvoiceCalculator::class);
+            $calculatedData = $calculator->calculateTotals($data['items'], $data);
+
+            // دمج البيانات المحسوبة
+            $data = array_merge($data, $calculatedData);
 
             $freshInvoice = Invoice::find($invoice->id);
             if (!$freshInvoice) {
@@ -183,15 +213,14 @@ class SaleInvoiceService implements DocumentServiceInterface
                 }
             }
 
-            $this->checkVariantsStock($data['items']);
+            $this->checkVariantsStock($data['items'], 'deduct', $data['warehouse_id'] ?? null);
             $this->syncInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['updated_by'] ?? null);
-            $this->deductStockForItems($data['items']);
+            $this->deductStockForItems($data['items'], $data['warehouse_id'] ?? null);
 
             if (isset($data['installment_plan'])) {
                 app(InstallmentService::class)->createInstallments($data, $invoice->id);
             }
 
-            $invoice->logUpdated('تحديث فاتورة بيع رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {
@@ -271,7 +300,6 @@ class SaleInvoiceService implements DocumentServiceInterface
                 }
             }
 
-            $invoice->logCanceled('إلغاء فاتورة بيع رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {

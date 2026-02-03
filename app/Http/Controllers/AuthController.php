@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\User\UserResource;
+use App\Http\Resources\User\UserWithPermissionsResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -22,64 +23,81 @@ use Throwable; // استيراد Throwable
 class AuthController extends Controller
 {
     /**
-     * تسجيل مستخدم جديد.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 01. إدارة المصادقة
+     * 
+     * تسجيل مستخدم جديد
+     * 
+     * إنشاء حساب مستخدم جديد وربطه بالشركة الافتراضية.
+     * 
+     * @bodyParam phone string required رقم الهاتف (يجب أن يكون فريداً). Example: 01099223344
+     * @bodyParam password string required كلمة المرور (8 أحرف على الأقل). Example: password123
+     * @bodyParam full_name string الاسم الكامل للمستخدم. Example: هشام محمد
+     * @bodyParam nickname string الاسم الحركي أو اللقب. Example: أبو هيبة
+     * @bodyParam email string البريد الإلكتروني (اختياري وفريد). Example: user@example.com
+     * 
+     * @response 201 {
+     *  "success": true,
+     *  "data": { "user": { "id": 1, "full_name": "..." }, "token": "..." },
+     *  "message": "تم تسجيل المستخدم بنجاح."
+     * }
      */
-    public function register(Request $request): JsonResponse
+    public function register(\App\Http\Requests\Auth\RegisterRequest $request): JsonResponse
     {
         try {
-            $validated = $request->validate([
-                'phone' => 'required|unique:users,phone',
-                'password' => 'required|string|min:8',
-                'company_id' => 'nullable|string|min:8', // يُفضل إزالته إذا لم يكن يُستخدم لتحديد الشركة الرئيسية
-                'email' => 'nullable|email|unique:users,email',
-                'full_name' => 'nullable|string|max:255',
-                'nickname' => 'nullable|string|max:255',
-            ]);
+            $validated = $request->validated();
+
+            \Log::info('Attempting to create user', ['phone' => $validated['phone']]);
+
+            $company = \App\Models\Company::first();
+            $companyId = $company ? $company->id : 1;
 
             $user = User::create([
                 'phone' => $validated['phone'],
-                'company_id' => 1, // الشركة الرئيسية/النشطة (افتراضية)
-                'full_name' => $validated['full_name'] ?? null,
-                'nickname' => $validated['nickname'] ?? null,
+                'company_id' => $companyId,
+                'full_name' => $validated['full_name'],
+                'nickname' => $validated['nickname'],
                 'password' => Hash::make($validated['password']),
             ]);
 
-            // **[التعديل الجديد]: ربط المستخدم بالشركة الافتراضية (Company 1)**
-            // هذا السطر هو الذي ينشئ سجل في جدول company_user ويطلق المراقب.
-            $user->companies()->attach(1, [
-                // يجب توفير created_by في جدول company_user
-                // نفترض أن المستخدم الذي تم إنشاؤه حديثًا هو 'created_by' لنفسه في الوقت الحالي.
+            \Log::info('User created successfully', ['user_id' => $user->id]);
+
+            // Link user to the default company
+            $user->companies()->attach($companyId, [
                 'created_by' => $user->id,
-                'user_phone' => $user->phone, 
-                'full_name_in_company' =>  $user->full_name,
+                'user_phone' => $user->phone,
+                'full_name_in_company' => $user->full_name,
                 'nickname_in_company' => $user->nickname,
             ]);
 
             $token = $user->createToken('auth_token')->plainTextToken;
-            
-            // **[الحذف]: تم حذف السطر الذي كان يستخدم الدالة القديمة يدوياً:**
-            // app(\App\Services\CashBoxService::class)->ensure=CashBoxForUser($user);
 
-            // إنشاء صناديق المستخدم الافتراضية لكل شركة (تتم الآن تلقائياً بواسطة المراقب)
             return api_success([
-                'user' => new UserResource($user),
+                'user' => new UserWithPermissionsResource($user),
                 'token' => $token,
             ], 'تم تسجيل المستخدم بنجاح.', 201);
-        } catch (ValidationException $e) {
-            return api_error('فشل التحقق من صحة البيانات أثناء التسجيل.', $e->errors(), 422);
         } catch (Throwable $e) {
+            \Log::error('Registration Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
             return api_exception($e, 500);
         }
     }
 
     /**
-     * تسجيل الدخول للمستخدم.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 01. إدارة المصادقة
+     * 
+     * تسجيل دخول
+     * 
+     * الحصول على رمز الوصول (Access Token) باستخدام الهاتف أو البريد الإلكتروني.
+     * 
+     * @bodyParam login string required الهاتف أو البريد الإلكتروني. Example: 01099223344
+     * @bodyParam password string required كلمة المرور. Example: password123
+     * 
+     * @response 200 {
+     *  "success": true,
+     *  "data": { "token": "...", "user": {...} },
+     *  "message": "تم تسجيل دخول المستخدم بنجاح."
+     * }
      */
     public function login(Request $request): JsonResponse
     {
@@ -87,20 +105,41 @@ class AuthController extends Controller
             $validated = $request->validate([
                 'login' => 'required',
                 'password' => 'required',
+                'remember' => 'nullable|boolean',
             ]);
 
             $loginField = filter_var($validated['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+            \Log::info('Login attempt started', ['field' => $loginField, 'value' => $validated['login']]);
 
-            if (!Auth::attempt([$loginField => $validated['login'], 'password' => $validated['password']])) {
+            $user = User::where($loginField, $validated['login'])->first();
+            if (!$user) {
+                \Log::warning('Login failed: User not found in database', ['login' => $validated['login']]);
                 return api_error('بيانات الاعتماد غير صالحة.', [], 422);
             }
 
+            \Log::info('User found, checking password', ['user_id' => $user->id]);
+            if (!Hash::check($validated['password'], $user->password)) {
+                \Log::warning('Login failed: Password hashing mismatch', ['user_id' => $user->id]);
+                return api_error('بيانات الاعتماد غير صالحة.', [], 422);
+            }
+
+            if (!Auth::attempt([$loginField => $validated['login'], 'password' => $validated['password']])) {
+                \Log::error('Login failed: Auth::attempt returned false but Hash::check passed', ['user_id' => $user->id]);
+                return api_error('بيانات الاعتماد غير صالحة.', [], 422);
+            }
+            \Log::info('Login successful', ['user_id' => $user->id]);
+
             /** @var \App\Models\User $user */
             $user = Auth::user();
-            $token = $user->createToken('auth_token')->plainTextToken;
+
+            $remember = $request->boolean('remember');
+            $expiresAt = $remember ? null : now()->addHours(24);
+            $deviceName = $request->header('User-Agent') ?: 'Unknown Device';
+
+            $token = $user->createToken($deviceName, ['*'], $expiresAt)->plainTextToken;
 
             return api_success([
-                'user' => new UserResource($user),
+                'user' => new UserWithPermissionsResource($user),
                 'token' => $token,
             ], 'تم تسجيل دخول المستخدم بنجاح.');
         } catch (ValidationException $e) {
@@ -111,10 +150,11 @@ class AuthController extends Controller
     }
 
     /**
-     * تسجيل الخروج للمستخدم.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 01. إدارة المصادقة
+     * 
+     * تسجيل الخروج
+     * 
+     * إبطال رمز الوصول الحالي للمستخدم.
      */
     public function logout(Request $request): JsonResponse
     {
@@ -123,7 +163,9 @@ class AuthController extends Controller
             /** @var \Laravel\Sanctum\PersonalAccessToken|null $token */
             $user = $request->user();
             if ($user) {
-                $user->currentAccessToken()->delete();
+                /** @var \Laravel\Sanctum\PersonalAccessToken $token */
+                $token = $user->currentAccessToken();
+                $token->delete();
             } else {
                 // إذا لم يكن هناك مستخدم مصادق عليه، فلا يوجد رمز مميز لحذفه
                 return api_error('لا يوجد مستخدم مصادق عليه لتسجيل الخروج.', [], 401);
@@ -136,10 +178,11 @@ class AuthController extends Controller
     }
 
     /**
-     * استعادة بيانات المستخدم المصادق عليه.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 01. إدارة المصادقة
+     * 
+     * بياناتي (الملف الشخصي)
+     * 
+     * استعادة بيانات المستخدم المصادق عليه حالياً.
      */
     public function me(Request $request): JsonResponse
     {
@@ -151,17 +194,18 @@ class AuthController extends Controller
                 return api_unauthorized('المستخدم غير مصادق عليه.');
             }
 
-            return api_success(new UserResource($user), 'تم استرداد بيانات المستخدم بنجاح.');
+            $user->load(['company.logo', 'companies.logo', 'roles.permissions', 'permissions']);
+
+            return api_success(new UserWithPermissionsResource($user), 'تم استرداد بيانات المستخدم بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
     }
 
     /**
-     * التحقق من حالة تسجيل دخول المستخدم.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 01. إدارة المصادقة
+     * 
+     * فحص حالة تسجيل الدخول
      */
     public function checkLogin(Request $request): JsonResponse
     {
@@ -170,10 +214,85 @@ class AuthController extends Controller
             $user = Auth::user();
 
             if (Auth::check()) {
-                return api_success(new UserResource($user), 'المستخدم مسجل الدخول.');
+                return api_success(new UserWithPermissionsResource($user), 'المستخدم مسجل الدخول.');
             }
 
             return api_unauthorized('المستخدم غير مصادق عليه.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 01. إدارة المصادقة
+     * 
+     * قائمة الجلسات النشطة
+     * 
+     * استرجاع جميع الأجهزة المسجل الدخول منها حالياً.
+     */
+    public function listTokens(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $tokens = $user->tokens()->orderBy('last_used_at', 'desc')->get()->map(function ($token) use ($user) {
+                /** @var \Laravel\Sanctum\PersonalAccessToken $currentToken */
+                $currentToken = $user->currentAccessToken();
+                return [
+                    'id' => $token->id,
+                    'device' => $token->name,
+                    'last_used_at' => $token->last_used_at,
+                    'created_at' => $token->created_at,
+                    'is_current' => $token->id === $currentToken->id,
+                ];
+            });
+
+            return api_success($tokens, 'تم استرداد قائمة الجلسات بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 01. إدارة المصادقة
+     * 
+     * حذف جلسة محددة
+     * 
+     * تسجيل الخروج من جهاز معين.
+     */
+    public function revokeToken(Request $request, $id): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $token = $user->tokens()->where('id', $id)->first();
+
+            if (!$token) {
+                return api_error('الجلسة غير موجودة.', [], 404);
+            }
+
+            $token->delete();
+
+            return api_success([], 'تم حذف الجلسة وتسجيل الخروج بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 01. إدارة المصادقة
+     * 
+     * تسجيل الخروج من جميع الأجهزة الأخرى
+     */
+    public function revokeAllOtherTokens(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            /** @var \Laravel\Sanctum\PersonalAccessToken $currentToken */
+            $currentToken = $user->currentAccessToken();
+            $currentTokenId = $currentToken->id;
+
+            $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+
+            return api_success([], 'تم تسجيل الخروج من جميع الأجهزة الأخرى بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }

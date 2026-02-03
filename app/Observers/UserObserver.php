@@ -5,129 +5,41 @@ namespace App\Observers;
 use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Log as LogFacade;
+use Illuminate\Support\Facades\Auth;
 use Jenssegers\Agent\Agent;
 
 class UserObserver
 {
-    private $agent;
-
-    public function __construct()
-    {
-        $this->agent = new Agent();
-    }
-
-    public function created(User $user): void
-    {
-        ActivityLog::create([
-            'action' => 'created',
-            'model' => get_class($user),
-            'data_old' => null,
-            'data_new' => json_encode($user),
-            'user_id' => auth()->id(),
-            'created_by' => auth()->id(),
-            'ip_address' => request()->ip(),
-            'user_agent' => $this->agent->browser() . ' '
-                . $this->agent->version($this->agent->browser())
-                . ' (' . $this->agent->platform()
-                . ' ' . $this->agent->version($this->agent->platform()) . ')',
-            'url' => request()->getRequestUri(),
-            'description' => 'قام المستخدم ' . Auth::user()->nickname
-                . ' بإنشاء حساب جديد باسم ' . $user->nickname,
-        ]);
-    }
-
     public function updated(User $user): void
     {
-        LogFacade::info('User Updated: ' . $user->nickname);
-        ActivityLog::create([
-            'action' => 'updated',
-            'model' => get_class($user),
-            'data_old' => json_encode($user->getOriginal()),
-            'data_new' => json_encode($user),
-            'user_id' => auth()->id(),
-            'created_by' => auth()->id(),
-            'ip_address' => request()->ip(),
-            'user_agent' => $this->agent->browser() . ' '
-                . $this->agent->version($this->agent->browser())
-                . ' (' . $this->agent->platform()
-                . ' ' . $this->agent->version($this->agent->platform()) . ')',
-            'url' => request()->getRequestUri(),
-            'description' => 'قام المستخدم ' . Auth::user()->nickname
-                . ' بتحديث بيانات المستخدم ' . $user->nickname
-                . ' (البريد الإلكتروني: ' . $user->email . ') '
-                . 'في تاريخ ' . now()->format('Y-m-d H:i:s')
-                . '. تم تعديل البيانات بنجاح.',
-        ]);
-    }
+        // [تزامن البيانات]: إذا تغير الاسم العالمي، نقوم بتحديث الحقول المقابلة في سجلات الشركات إذا كانت فارغة
+        if ($user->isDirty(['full_name', 'nickname'])) {
+            $user->companyUsers()->each(function ($companyUser) use ($user) {
+                $updateData = [];
+                if ($user->isDirty('full_name') && empty($companyUser->full_name_in_company)) {
+                    $updateData['full_name_in_company'] = $user->full_name;
+                }
+                if ($user->isDirty('nickname') && empty($companyUser->nickname_in_company)) {
+                    $updateData['nickname_in_company'] = $user->nickname;
+                }
 
-    public function deleted(User $user): void
-    {
-        LogFacade::info('User Deleted: ' . $user->nickname);
-        ActivityLog::create([
-            'action' => 'deleted',
-            'model' => get_class($user),
-            'data_old' => json_encode($user),
-            'data_new' => null,
-            'user_id' => auth()->id(),
-            'created_by' => auth()->id(),
-            'ip_address' => request()->ip(),
-            'user_agent' => $this->agent->browser() . ' '
-                . $this->agent->version($this->agent->browser())
-                . ' (' . $this->agent->platform()
-                . ' ' . $this->agent->version($this->agent->platform()) . ')',
-            'url' => request()->getRequestUri(),
-            'description' => 'قام المستخدم ' . Auth::user()->nickname
-                . ' بحذف الحساب الخاص بالمستخدم ' . $user->nickname
-                . ' بالبريد الإلكتروني ' . $user->email
-                . ' في تاريخ ' . now()->format('Y-m-d H:i:s')
-                . ' من العنوان IP ' . request()->ip() . '.',
-        ]);
-    }
+                if (!empty($updateData)) {
+                    $companyUser->update($updateData);
+                }
+            });
+        }
 
-    public function restored(User $user): void
-    {
-        LogFacade::info('User Restored: ' . $user->nickname);
-        ActivityLog::create([
-            'action' => 'restored',
-            'model' => get_class($user),
-            'data_old' => null,
-            'data_new' => json_encode($user),
-            'user_id' => auth()->id(),
-            'created_by' => auth()->id(),
-            'ip_address' => request()->ip(),
-            'user_agent' => $this->agent->browser() . ' '
-                . $this->agent->version($this->agent->browser())
-                . ' (' . $this->agent->platform()
-                . ' ' . $this->agent->version($this->agent->platform()) . ')',
-            'url' => request()->getRequestUri(),
-            'description' => 'قام المستخدم ' . Auth::user()->nickname
-                . ' باستعادة حساب المستخدم ' . $user->nickname
-                . ' (البريد الإلكتروني: ' . $user->email . ') '
-                . 'في تاريخ ' . now()->format('Y-m-d H:i:s') . '.',
-        ]);
-    }
+        // [تزامن بيانات الهوية]: تحديث حقول الكاش (phone, email, username) في جميع الشركات
+        $identityData = [];
+        if ($user->isDirty('phone'))
+            $identityData['user_phone'] = $user->phone;
+        if ($user->isDirty('email'))
+            $identityData['user_email'] = $user->email;
+        if ($user->isDirty('username'))
+            $identityData['user_username'] = $user->username;
 
-    public function forceDeleted(User $user): void
-    {
-        LogFacade::info('User Force Deleted: ' . $user->nickname);
-        ActivityLog::create([
-            'action' => 'force_deleted',
-            'model' => get_class($user),
-            'data_old' => json_encode($user),
-            'data_new' => null,
-            'user_id' => auth()->id(),
-            'created_by' => auth()->id(),
-            'ip_address' => request()->ip(),
-            'user_agent' => $this->agent->browser() . ' '
-                . $this->agent->version($this->agent->browser())
-                . ' (' . $this->agent->platform()
-                . ' ' . $this->agent->version($this->agent->platform()) . ')',
-            'url' => request()->getRequestUri(),
-            'description' => 'قام المستخدم ' . Auth::user()->nickname
-                . ' بحذف حساب المستخدم ' . $user->nickname
-                . ' (البريد الإلكتروني: ' . $user->email . ') '
-                . 'بشكل نهائي في تاريخ ' . now()->format('Y-m-d H:i:s')
-                . '. هذه العملية تمت من العنوان IP ' . request()->ip() . '.',
-        ]);
+        if (!empty($identityData)) {
+            $user->companyUsers()->update($identityData);
+        }
     }
 }

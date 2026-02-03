@@ -30,6 +30,11 @@ return new class extends Migration {
                 ->constrained('companies') // ✅ تم تصحيحه من Company إلى companies
                 ->onDelete('cascade');     // الشركة
 
+            $table->foreignId('invoice_id')
+                ->nullable()
+                ->constrained('invoices')
+                ->onDelete('cascade');
+
             $table->string('installment_number')->nullable();
 
             $table->date('due_date');

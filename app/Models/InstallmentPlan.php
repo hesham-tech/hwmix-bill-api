@@ -9,27 +9,41 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes; // ← ✅ استيراد السوفت دليت
 
 /**
- * @mixin IdeHelperInstallmentPlan
+ * InstallmentPlan Model
  */
 class InstallmentPlan extends Model
 {
-    use HasFactory, Blameable, Scopes, SoftDeletes; // ← ✅ استخدم السوفت دليت
+    use HasFactory, Blameable, Scopes, SoftDeletes, \App\Traits\LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "خطة تقسيط ({$this->user?->name}) - إجمالي الصافي: {$this->net_amount}";
+    }
 
     protected $fillable = [
         'invoice_id',
+        'name',
+        'description',
         'user_id',
-        'total_amount',
+        'net_amount',
         'down_payment',
+        'interest_rate',
+        'interest_amount',
+        'total_amount',
         'remaining_amount',
         'company_id',
         'created_by',
         'number_of_installments',
+        'frequency',
         'installment_amount',
         'start_date',
         'end_date',
         'status',
         'notes',
-        'round_step', // ← ضفناها هنا كمان
+        'round_step',
     ];
 
     protected $casts = [
@@ -42,15 +56,11 @@ class InstallmentPlan extends Model
     {
         return $this->belongsTo(Invoice::class);
     }
-    public function customer()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
     public function installments()
     {
         return $this->hasMany(Installment::class);
     }
-    public function user()
+    public function customer()
     {
         return $this->belongsTo(User::class, 'user_id');
     }

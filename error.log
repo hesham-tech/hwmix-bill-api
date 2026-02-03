@@ -1,0 +1,484 @@
+[2026-01-31 09:45:53] VUE_ERROR: Cannot read properties of undefined (reading 'id')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'id')
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:281:35
+    at renderList (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:4988:16)
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:279:77
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at renderSlot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:5063:53)
+    at http://localhost:5173/src/components/common/AppDialog.vue?t=1769848024286:178:17
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9733:34)
+    at createBaseVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9538:5)
+    at _createVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9615:10)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 09:46:08] VUE_ERROR: Cannot read properties of undefined (reading 'id')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'id')
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:281:35
+    at renderList (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:4988:16)
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:279:77
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at renderSlot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:5063:53)
+    at http://localhost:5173/src/components/common/AppDialog.vue?t=1769848024286:178:17
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9733:34)
+    at createBaseVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9538:5)
+    at _createVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9615:10)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 09:46:45] VUE_ERROR: Cannot read properties of undefined (reading 'id')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'id')
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:281:35
+    at renderList (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:4988:16)
+    at http://localhost:5173/src/modules/installments/components/PaymentSuccessDialog.vue?t=1769852705441:279:77
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at renderSlot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:5063:53)
+    at http://localhost:5173/src/components/common/AppDialog.vue?t=1769848024286:178:17
+    at renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:2763:13)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9733:34)
+    at createBaseVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9538:5)
+    at _createVNode (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:9615:10)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 09:47:49] VUE_ERROR: Cannot read properties of undefined (reading 'id')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'id')
+    at http://localhost:5173/src/modules/installments/components/AppReceipt.vue?t=1769852528151:130:27
+    at renderList (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:4988:16)
+    at Proxy._sfc_render (http://localhost:5173/src/modules/installments/components/AppReceipt.vue?t=1769852528151:128:69)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:7403:46)
+    at ReactiveEffect.run (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:481:19)
+    at setupRenderEffect (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:7538:5)
+    at mountComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:7313:7)
+    at processComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:7266:9)
+    at patch (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9cd3e80f:6782:11)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 09:49:45] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentList.vue?t=1769852978546
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentList.vue?t=1769852978546
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 14:50:44] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769870670483:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769870670483:61:36)
+URL: http://localhost:5173/app/company
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:05:17] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769871124954:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769871124954:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:11:25] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769871920918:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769871920918:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:16:39] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769871920918:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769871920918:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:20:38] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769871920918:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769871920918:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:29:14] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769873098267:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769873098267:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 15:34:52] VUE_ERROR: Network Error
+Stack Trace: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:1596:14)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9cd3e80f:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1769873098267:30:24)
+    at async Promise.all (index 1)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1769873098267:61:36)
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 20:07:57] VUE_ERROR: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+    at http://localhost:5174/src/modules/invoices/pages/InvoiceView.vue?t=1769889736137:662:98
+    at renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at renderSlot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:5063:53)
+    at http://localhost:5174/src/components/common/AppCard.vue:120:15
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VCard/VCardActions.mjs?v=6718ac3b:22:24)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7403:46)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:481:19)
+    at setupRenderEffect (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7538:5)
+URL: http://localhost:5174/app/invoices/6
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 20:42:07] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5174/src/modules/users/pages/UserList.vue?t=1769892118962
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5174/src/modules/users/pages/UserList.vue?t=1769892118962
+URL: http://localhost:5174/app/users?page=1&per_page=10&sort_by=created_at&sort_order=desc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 20:57:44] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5174/src/modules/users/pages/UserList.vue?t=1769892123367
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5174/src/modules/users/pages/UserList.vue?t=1769892123367
+URL: http://localhost:5174/app/users?page=1&per_page=10&sort_by=created_at&sort_order=desc
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 21:58:25] VUE_ERROR: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+    at http://localhost:5174/src/modules/invoices/pages/InvoiceView.vue?t=1769893483643:662:98
+    at renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at renderSlot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:5063:53)
+    at http://localhost:5174/src/components/common/AppCard.vue:120:15
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VCard/VCardActions.mjs?v=6718ac3b:22:24)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7403:46)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:481:19)
+    at setupRenderEffect (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7538:5)
+URL: http://localhost:5174/app/invoices/6
+User ID: Guest
+--------------------------------------------------
+[2026-01-31 21:58:27] VUE_ERROR: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+    at http://localhost:5174/src/modules/invoices/pages/InvoiceView.vue?t=1769893483643:662:98
+    at renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at renderSlot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:5063:53)
+    at http://localhost:5174/src/components/common/AppCard.vue:120:15
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VCard/VCardActions.mjs?v=6718ac3b:22:24)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7481:26)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:481:19)
+    at updateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6718ac3b:7342:18)
+URL: http://localhost:5174/app/invoices/6
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:12:18] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue:67:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:12:30] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue:67:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:14:39] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue?t=1769951677395:69:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:17:14] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue?t=1769951695593:69:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:17:32] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue?t=1769951695593:69:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:19:21] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue?t=1769951695593:69:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:19:42] VUE_ERROR: userStore is not defined
+Stack Trace: ReferenceError: userStore is not defined
+    at http://localhost:5174/src/modules/installments/pages/InstallmentList.vue?t=1769951695593:69:3
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4901:40
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2270:17)
+    at hook.__weh.hook.__weh (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:4881:19)
+    at flushPostFlushCbs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2448:28)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2490:5)
+URL: http://localhost:5174/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 13:47:55] VUE_ERROR: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+Stack Trace: TypeError: Cannot read properties of undefined (reading 'PAYMENTS_CREATE')
+    at http://localhost:5174/src/modules/invoices/pages/InvoiceView.vue:662:98
+    at renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at renderSlot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:5063:53)
+    at http://localhost:5174/src/components/common/AppCard.vue:120:15
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VCard/VCardActions.mjs?v=9b5327f9:22:24)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7403:46)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:481:19)
+    at setupRenderEffect (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7538:5)
+URL: http://localhost:5174/app/invoices/6
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 18:03:43] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1769969012286
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1769969012286
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:18] VUE_ERROR: _ctx.getPrintFormatIcon is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatIcon is not a function
+    at http://localhost:5174/src/layouts/MainLayout.vue?t=1769976676037:224:66
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VIcon/VIcon.mjs?v=9b5327f9:50:40)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7403:46)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:481:19)
+    at setupRenderEffect (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7538:5)
+    at mountComponent (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7313:7)
+    at processComponent (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7266:9)
+    at patch (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6782:11)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:18] VUE_ERROR: _ctx.getPrintFormatLabel is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatLabel is not a function
+    at http://localhost:5174/src/layouts/MainLayout.vue?t=1769976676037:233:81
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5174/node_modules/vuetify/lib/components/VTooltip/VTooltip.mjs?v=9b5327f9:85:33)
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5174/node_modules/vuetify/lib/components/VOverlay/VOverlay.mjs?v=9b5327f9:284:70)
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:3233:79)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:19] VUE_ERROR: _ctx.getPrintFormatIcon is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatIcon is not a function
+    at http://localhost:5174/src/layouts/MainLayout.vue?t=1769976676037:224:66
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/vuetify/lib/components/VIcon/VIcon.mjs?v=9b5327f9:50:40)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7481:26)
+    at ReactiveEffect.run (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:481:19)
+    at updateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7342:18)
+    at processComponent (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7277:7)
+    at patch (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6782:11)
+    at patchKeyedChildren (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7681:9)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:19] VUE_ERROR: _ctx.getPrintFormatLabel is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatLabel is not a function
+    at http://localhost:5174/src/layouts/MainLayout.vue?t=1769976676037:233:81
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5174/node_modules/vuetify/lib/components/VTooltip/VTooltip.mjs?v=9b5327f9:85:33)
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5174/node_modules/vuetify/lib/components/VOverlay/VOverlay.mjs?v=9b5327f9:284:70)
+    at http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:3233:79)
+    at renderComponentRoot (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:19] VUE_ERROR: _ctx.getPrintFormatIcon is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatIcon is not a function
+    at http://localhost:5173/src/layouts/MainLayout.vue?t=1769976676038:224:66
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5173/node_modules/vuetify/lib/components/VIcon/VIcon.mjs?v=9b5327f9:50:40)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7403:46)
+    at ReactiveEffect.run (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:481:19)
+    at setupRenderEffect (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7538:5)
+    at mountComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7313:7)
+    at processComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7266:9)
+    at patch (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6782:11)
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:20] VUE_ERROR: _ctx.getPrintFormatLabel is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatLabel is not a function
+    at http://localhost:5173/src/layouts/MainLayout.vue?t=1769976676038:233:81
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5173/node_modules/vuetify/lib/components/VTooltip/VTooltip.mjs?v=9b5327f9:85:33)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5173/node_modules/vuetify/lib/components/VOverlay/VOverlay.mjs?v=9b5327f9:284:70)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:3233:79)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:20] VUE_ERROR: _ctx.getPrintFormatIcon is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatIcon is not a function
+    at http://localhost:5173/src/layouts/MainLayout.vue?t=1769976676038:224:66
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5173/node_modules/vuetify/lib/components/VIcon/VIcon.mjs?v=9b5327f9:50:40)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7481:26)
+    at ReactiveEffect.run (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:481:19)
+    at updateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7342:18)
+    at processComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7277:7)
+    at patch (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6782:11)
+    at patchKeyedChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:7681:9)
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:11:20] VUE_ERROR: _ctx.getPrintFormatLabel is not a function
+Stack Trace: TypeError: _ctx.getPrintFormatLabel is not a function
+    at http://localhost:5173/src/layouts/MainLayout.vue?t=1769976676038:233:81
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5173/node_modules/vuetify/lib/components/VTooltip/VTooltip.mjs?v=9b5327f9:85:33)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at default (http://localhost:5173/node_modules/vuetify/lib/components/VOverlay/VOverlay.mjs?v=9b5327f9:284:70)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:2763:13)
+    at Proxy.<anonymous> (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:3233:79)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=9b5327f9:8581:17)
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:21:10] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:21:42] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:24:11] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-01 20:25:45] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-02 01:01:36] VUE_ERROR: fetchedItems.value is not iterable
+Stack Trace: TypeError: fetchedItems.value is not iterable
+    at ComputedRefImpl.fn (http://localhost:5174/src/components/common/AppAutocomplete.vue?t=1769993896674:127:48)
+    at refreshComputed (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:636:29)
+    at isDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:606:68)
+    at ReactiveEffect.runIfDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:518:9)
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2263:33)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2471:9)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-02 01:15:11] VUE_ERROR: fetchedItems.value is not iterable
+Stack Trace: TypeError: fetchedItems.value is not iterable
+    at ComputedRefImpl.fn (http://localhost:5174/src/components/common/AppAutocomplete.vue?t=1769994776905:127:48)
+    at refreshComputed (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:636:29)
+    at isDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:606:68)
+    at ReactiveEffect.runIfDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:518:9)
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2263:33)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2471:9)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-02 01:15:52] VUE_ERROR: fetchedItems.value is not iterable
+Stack Trace: TypeError: fetchedItems.value is not iterable
+    at ComputedRefImpl.fn (http://localhost:5174/src/components/common/AppAutocomplete.vue?t=1769994776905:127:48)
+    at refreshComputed (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:636:29)
+    at isDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:606:68)
+    at ReactiveEffect.runIfDirty (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:518:9)
+    at callWithErrorHandling (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2263:33)
+    at flushJobs (http://localhost:5174/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=6f8a190a:2471:9)
+URL: http://localhost:5174/app/subscriptions
+User ID: Guest
+--------------------------------------------------
+[2026-02-02 11:27:01] VUE_ERROR: Request failed with status code 401
+Stack Trace: AxiosError: Request failed with status code 401
+    at settle (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f8a190a:1235:12)
+    at XMLHttpRequest.onloadend (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f8a190a:1566:7)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f8a190a:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1770031602446:30:24)
+    at async Promise.all (index 0)
+    at async loadData (http://localhost:5173/src/modules/installments/components/InstallmentPaymentDialog.vue?t=1770031602446:61:36)
+URL: http://localhost:5173/app/installment-plans/2
+User ID: Guest
+--------------------------------------------------
+[2026-02-02 16:33:48] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/users/pages/UserList.vue
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/users/pages/UserList.vue
+URL: http://localhost:5173/app/users?page=1&per_page=10&sort_by=created_at&sort_order=desc
+User ID: Guest
+--------------------------------------------------
+[2026-02-02 16:37:50] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/users/pages/UserList.vue
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/users/pages/UserList.vue
+URL: http://localhost:5173/app/users?page=1&per_page=10&sort_by=created_at&sort_order=desc
+User ID: Guest
+--------------------------------------------------

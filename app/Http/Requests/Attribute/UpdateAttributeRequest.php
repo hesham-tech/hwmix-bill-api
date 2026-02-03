@@ -18,6 +18,10 @@ class UpdateAttributeRequest extends FormRequest
             'value' => 'sometimes|nullable|string|max:255',
             'company_id' => 'sometimes|required|exists:companies,id',
             'created_by' => 'sometimes|required|exists:users,id',
+            'values' => 'nullable|array',
+            'values.*.id' => 'nullable|exists:attribute_values,id',
+            'values.*.name' => 'required_with:values|string|max:255',
+            'values.*.color' => 'nullable|string|max:255',
         ];
     }
 }

@@ -10,7 +10,7 @@ use App\Models\CashBox;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse; // للتأكد من استيراد JsonResponse
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -38,10 +38,19 @@ class CashBoxController extends Controller
     }
 
     /**
-     * عرض جميع الخزن مع الفلاتر والصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض قائمة الخزن
+     * 
+     * @queryParam current_user boolean عرض الخزن المرتبطة بالمستخدم الحالي فقط. Example: 1
+     * @queryParam name string البحث باسم الخزنة. Example: الخزنة الرئيسية
+     * @queryParam account_number string رقم الحساب. Example: 123456
+     * @queryParam created_at_from date تاريخ الإنشاء من. Example: 2023-01-01
+     * @queryParam user_id integer فلترة لصالح مستخدم معين. Example: 2
+     * @queryParam per_page integer عدد النتائج. Default: 10
+     * 
+     * @apiResourceCollection App\Http\Resources\CashBox\CashBoxResource
+     * @apiResourceModel App\Models\CashBox
      */
     public function index(Request $request): JsonResponse
     {
@@ -56,31 +65,9 @@ class CashBoxController extends Controller
             $cashBoxQuery = CashBox::query()->with($this->relations);
             $companyId = $authUser->company_id ?? null;
 
-            // منطق خاص لعرض صناديق المستخدم الحالي فقط
-            if ($request->query('current_user') == 1) {
-                $cashBoxQuery->where('user_id', $authUser->id)->whereCompanyIsCurrent();
-            } else {
-                // فلترة الصناديق الافتراضية للنظام (إذا لم تكن لـ current_user)
-                $cashBoxQuery->whereDoesntHave('typeBox', function ($query) {
-                    $query->where('description', 'النوع الافتراضي للسيستم');
-                });
+            // تطبيق منطق الصلاحيات: كل مستخدم يرى صناديقه فقط بناءً على طلب العميل
+            $cashBoxQuery->where('user_id', $authUser->id);
 
-                // تطبيق منطق الصلاحيات العامة
-                if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    // المسؤول العام يرى جميع الصناديق (لا قيود إضافية)
-                } elseif ($authUser->hasAnyPermission([perm_key('cash_boxes.view_all'), perm_key('admin.company')])) {
-                    // يرى جميع الصناديق الخاصة بالشركة النشطة (بما في ذلك مديرو الشركة)
-                    $cashBoxQuery->whereCompanyIsCurrent();
-                } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_children'))) {
-                    // يرى الصناديق التي أنشأها المستخدم أو المستخدمون التابعون له، ضمن الشركة النشطة
-                    $cashBoxQuery->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-                } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_self'))) {
-                    // يرى الصناديق التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
-                    $cashBoxQuery->whereCompanyIsCurrent()->whereCreatedByUser();
-                } else {
-                    return api_forbidden('ليس لديك إذن لعرض الخزن.');
-                }
-            }
 
             // التصفية باستخدام الحقول المقدمة
             if (!empty($request->get('name'))) {
@@ -98,25 +85,36 @@ class CashBoxController extends Controller
             if (!empty($request->get('created_at_to'))) {
                 $cashBoxQuery->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
             }
+            if ($request->boolean('current_user')) {
+                $cashBoxQuery->where('user_id', $authUser->id);
+            }
+
             if (!empty($request->get('user_id'))) { // فلتر جديد لتحديد الصناديق الخاصة بمستخدم معين
                 $cashBoxQuery->where('user_id', $request->get('user_id'));
             }
 
             // تحديد عدد العناصر في الصفحة والفرز
-            $perPage = max(1, (int) $request->get('per_page', 10));
+            $perPageParam = $request->get('per_page', 10);
             $sortField = $request->get('sort_by', 'id');
-            $sortOrder = $request->get('sort_order', 'desc'); // عادة ما يكون الأحدث أولاً
+            $sortOrder = $request->get('sort_order', 'desc');
 
             $cashBoxQuery->orderBy($sortField, $sortOrder);
 
             // جلب البيانات مع التصفية والصفحات
-            $cashBoxes = $cashBoxQuery->paginate($perPage);
+            if ($perPageParam == -1) {
+                $cashBoxes = $cashBoxQuery->get();
+                $data = CashBoxResource::collection($cashBoxes);
+            } else {
+                $perPage = max(1, (int) $perPageParam);
+                $paginated = $cashBoxQuery->paginate($perPage);
+                $data = CashBoxResource::collection($paginated);
+            }
 
             // التحقق من حالة المصفوفة وتحديد الرسالة
-            if ($cashBoxes->isEmpty()) {
-                return api_success($cashBoxes, 'لم يتم العثور على خزن.');
+            if ($data->isEmpty()) {
+                return api_success($data, 'لم يتم العثور على خزن.');
             } else {
-                return api_success($cashBoxes, 'تم استرداد الخزن بنجاح.');
+                return api_success($data, 'تم استرداد الخزن بنجاح.');
             }
         } catch (Throwable $e) {
             return api_exception($e, 500);
@@ -124,10 +122,15 @@ class CashBoxController extends Controller
     }
 
     /**
-     * تخزين خزنة جديدة.
-     *
-     * @param StoreCashBoxRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * إنشاء خزنة جديدة
+     * 
+     * @bodyParam name string required اسم الخزنة. Example: مكتب القاهرة
+     * @bodyParam cash_box_type_id integer required معرف نوع الصندوق. Example: 1
+     * @bodyParam account_number string رقم الحساب المرتبط. Example: ACC-001
+     * @bodyParam user_id integer معرف المستخدم المسؤول عن الخزنة. Example: 1
+     * @bodyParam company_id integer معرف الشركة (للمسؤول فقط). Example: 1
      */
     public function store(StoreCashBoxRequest $request): JsonResponse
     {
@@ -179,10 +182,14 @@ class CashBoxController extends Controller
     }
 
     /**
-     * عرض تفاصيل خزنة معينة.
-     *
-     * @param CashBox $cashBox
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض تفاصيل خزنة
+     * 
+     * @urlParam cashBox required معرف الخزنة. Example: 1
+     * 
+     * @apiResource App\Http\Resources\CashBox\CashBoxResource
+     * @apiResourceModel App\Models\CashBox
      */
     public function show(CashBox $cashBox): JsonResponse
     {
@@ -200,14 +207,11 @@ class CashBoxController extends Controller
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canView = true; // المسؤول العام يرى أي صندوق
             } elseif ($authUser->hasAnyPermission([perm_key('cash_boxes.view_all'), perm_key('admin.company')])) {
-                // يرى إذا كان الصندوق ينتمي للشركة النشطة (بما في ذلك مديرو الشركة)
-                $canView = $cashBox->belongsToCurrentCompany();
+                $canView = true; // يرى صناديق شركته (تلقائياً عبر السكوب)
             } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_children'))) {
-                // يرى إذا كان الصندوق أنشأه هو أو أحد التابعين له وتابع للشركة النشطة
-                $canView = $cashBox->belongsToCurrentCompany() && $cashBox->createdByUserOrChildren();
+                $canView = $cashBox->createdByUserOrChildren();
             } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.view_self'))) {
-                // يرى إذا كان الصندوق أنشأه هو وتابع للشركة النشطة
-                $canView = $cashBox->belongsToCurrentCompany() && $cashBox->createdByCurrentUser();
+                $canView = $cashBox->createdByCurrentUser();
             }
 
             if ($canView) {
@@ -222,11 +226,12 @@ class CashBoxController extends Controller
     }
 
     /**
-     * تحديث بيانات خزنة موجودة.
-     *
-     * @param UpdateCashBoxRequest $request
-     * @param CashBox $cashBox
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحديث بيانات خزنة
+     * 
+     * @urlParam cashBox required معرف الخزنة. Example: 1
+     * @bodyParam name string اسم الخزنة المحدث. Example: الخزنة الفرعية
      */
     public function update(UpdateCashBoxRequest $request, CashBox $cashBox): JsonResponse
     {
@@ -244,14 +249,11 @@ class CashBoxController extends Controller
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canUpdate = true; // المسؤول العام يمكنه تعديل أي صندوق
             } elseif ($authUser->hasAnyPermission([perm_key('cash_boxes.update_all'), perm_key('admin.company')])) {
-                // يمكنه تعديل أي صندوق داخل الشركة النشطة (بما في ذلك مديرو الشركة)
-                $canUpdate = $cashBox->belongsToCurrentCompany();
+                $canUpdate = true; // يمكنه تعديل صناديق شركته (تلقائياً عبر السكوب)
             } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.update_children'))) {
-                // يمكنه تعديل الصناديق التي أنشأها هو أو أحد التابعين له وتابعة للشركة النشطة
-                $canUpdate = $cashBox->belongsToCurrentCompany() && $cashBox->createdByUserOrChildren();
+                $canUpdate = $cashBox->createdByUserOrChildren();
             } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.update_self'))) {
-                // يمكنه تعديل صندوقه الخاص الذي أنشأه وتابع للشركة النشطة
-                $canUpdate = $cashBox->belongsToCurrentCompany() && $cashBox->createdByCurrentUser();
+                $canUpdate = $cashBox->createdByCurrentUser();
             }
 
             if (!$canUpdate) {
@@ -292,10 +294,11 @@ class CashBoxController extends Controller
     }
 
     /**
-     * حذف خزنة.
-     *
-     * @param CashBox $cashBox
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * حذف خزنة
+     * 
+     * @urlParam cashBox required معرف الخزنة. Example: 1
      */
     public function destroy(CashBox $cashBox): JsonResponse
     {
@@ -312,15 +315,12 @@ class CashBoxController extends Controller
             $canDelete = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canDelete = true;
-            } elseif ($authUser->hasAnyPermission([perm_key('cash_boxes.delete_all'), perm_key('admin.company')])) {
-                // يمكنه حذف أي صندوق داخل الشركة النشطة (بما في ذلك مديرو الشركة)
-                $canDelete = $cashBox->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.delete_children'))) {
-                // يمكنه حذف الصناديق التي أنشأها هو أو أحد التابعين له وتابعة للشركة النشطة
-                $canDelete = $cashBox->belongsToCurrentCompany() && $cashBox->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('cash_boxes.delete_self'))) {
-                // يمكنه حذف صندوقه الخاص الذي أنشأه وتابع للشركة النشطة
-                $canDelete = $cashBox->belongsToCurrentCompany() && $cashBox->createdByCurrentUser();
+            } elseif ($authUser->hasAnyPermission([perm_key('cash_box_types.delete_all'), perm_key('admin.company')])) {
+                $canDelete = true; // يمكنه حذف صناديق شركته (تلقائياً عبر السكوب)
+            } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.delete_children'))) {
+                $canDelete = $cashBox->createdByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.delete_self'))) {
+                $canDelete = $cashBox->createdByCurrentUser();
             }
 
             if (!$canDelete) {
@@ -352,10 +352,15 @@ class CashBoxController extends Controller
     }
 
     /**
-     * تحويل أموال بين الخزن.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحويل أرصدة بين الخزن
+     * 
+     * @bodyParam amount number required المبلغ المراد تحويله. Example: 500.50
+     * @bodyParam cash_box_id integer required معرف الخزنة المصدر. Example: 1
+     * @bodyParam to_cash_box_id integer required معرف الخزنة الهدف. Example: 2
+     * @bodyParam to_user_id integer required معرف المستخدم المستلم (يمكن أن يكون نفس المحول). Example: 1
+     * @bodyParam description string وصف التحويل. Example: تحويل عهدة شهرية
      */
     public function transferFunds(Request $request): JsonResponse
     {
@@ -472,8 +477,8 @@ class CashBoxController extends Controller
                 // تحديث أرصدة الخزن (إذا كانت `withdraw` و `deposit` تحدث الرصيد في قاعدة البيانات)
                 // تأكد أن هذه الدوال تقوم بتحديث الرصيد الفعلي للصناديق
                 // وإلا فسيتم تتبعها فقط في سجلات المعاملات وليس في حقل رصيد مباشر على صندوق
-                $authUser->withdraw($amount, $fromCashBoxId); // سحب من الصندوق المصدر
-                $toUser->deposit($amount, $toCashBoxId); // إيداع في الصندوق الهدف
+                $authUser->withdraw($amount, $fromCashBoxId, null, false); // سحب من الصندوق المصدر
+                $toUser->deposit($amount, $toCashBoxId, null, false); // إيداع في الصندوق الهدف
 
                 DB::commit();
                 // يمكن إرجاع تفاصيل التحويل أو المعاملات الجديدة إذا لزم الأمر

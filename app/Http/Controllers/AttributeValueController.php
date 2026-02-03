@@ -35,9 +35,17 @@ class AttributeValueController extends Controller
     }
 
     /**
-     * عرض جميع قيم السمات.
-     * @param Request $request
-     * @return JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قيم السمات
+     * 
+     * استرجاع كافة القيم المسجلة للسمات المختلفة (مثل: أحمر، XL، قطن).
+     * 
+     * @queryParam attribute_id integer فلترة حسب السمة الأم.
+     * @queryParam search string البحث في الاسم أو القيمة.
+     * 
+     * @apiResourceCollection App\Http\Resources\AttributeValue\AttributeValueResource
+     * @apiResourceModel App\Models\AttributeValue
      */
     public function index(Request $request): JsonResponse
     {
@@ -49,7 +57,6 @@ class AttributeValueController extends Controller
                 $search = $request->input('search');
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%$search%")
-                        ->orWhere('value', 'like', "%$search%")
                         ->orWhereHas('attribute', function ($aq) use ($search) {
                             $aq->where('name', 'like', "%$search%");
                         });
@@ -80,9 +87,13 @@ class AttributeValueController extends Controller
     }
 
     /**
-     * إضافة قيمة سمة جديدة.
-     * @param StoreAttributeValueRequest $request
-     * @return JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * إضافة قيمة لسمة
+     * 
+     * @bodyParam attribute_id integer required معرف السمة الأم. Example: 1
+     * @bodyParam name string required اسم القيمة (للمطور). Example: Red
+     * @bodyParam value string required القيمة المعروضة (للمستخدم). Example: أحمر
      */
     public function store(StoreAttributeValueRequest $request): JsonResponse
     {
@@ -99,7 +110,7 @@ class AttributeValueController extends Controller
 
                 // التأكد أن المستخدم صاحب الـ ID=1 موجود في جدول users
                 // هذا هو السبب الأكثر ترجيحاً للخطأ الحالي
-                $validatedData['created_by'] = 1;
+                $validatedData['created_by'] = auth()->id();
 
                 $attributeValue = AttributeValue::create($validatedData);
                 $attributeValue->load($this->relations);
@@ -160,7 +171,7 @@ class AttributeValueController extends Controller
 
                 // التأكد أن المستخدم صاحب الـ ID=1 موجود في جدول users
                 // هذا هو السبب الأكثر ترجيحاً للخطأ الحالي
-                $validatedData['updated_by'] = 1;
+                $validatedData['updated_by'] = auth()->id();
 
                 $attributeValue->update($validatedData);
                 $attributeValue->load($this->relations);

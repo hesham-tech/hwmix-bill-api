@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Throwable;
-use App\Models\Installment;
+use App\Models\InstallmentPayment;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -11,11 +10,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Services\InstallmentPaymentService;
 use Illuminate\Validation\ValidationException;
-use App\Http\Resources\Installment\InstallmentResource;
-use App\Http\Requests\Installment\StoreInstallmentRequest;
-use App\Http\Requests\Installment\UpdateInstallmentRequest;
 use App\Http\Requests\InstallmentPayment\PayInstallmentsRequest;
+use App\Http\Resources\Installment\InstallmentResource;
 use App\Http\Resources\InstallmentPayment\InstallmentPaymentResource;
+use Throwable;
 
 class InstallmentPaymentController extends Controller
 {
@@ -24,27 +22,24 @@ class InstallmentPaymentController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'installmentPlan',
-            'user',      // المستخدم الذي يخصه القسط
-            'creator',   // المستخدم الذي أنشأ القسط
-            'payments',
-            'company',   // يجب تحميل الشركة للتحقق من belongsToCurrentCompany
+            'plan.customer',
+            'plan.invoice.customer',
+            'plan.invoice.company',
+            'cashBox',
+            'creator',
+            'details.installment',
         ];
     }
 
     /**
-     * عرض قائمة بالأقساط.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * عرض قائمة بدفعات الأقساط.
      */
     public function index(Request $request): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $query = Installment::with($this->relations);
-            $companyId = $authUser->company_id ?? null;
+            $query = InstallmentPayment::with($this->relations);
 
             if (!$authUser) {
                 return api_unauthorized('يتطلب المصادقة.');
@@ -52,252 +47,100 @@ class InstallmentPaymentController extends Controller
 
             // تطبيق فلترة الصلاحيات بناءً على صلاحيات العرض
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                // المسؤول العام يرى جميع الأقساط
-            } elseif ($authUser->hasAnyPermission([perm_key('installments.view_all'), perm_key('admin.company')])) {
-                // يرى جميع الأقساط الخاصة بالشركة النشطة
+                // المسؤول العام يرى جميع الدفعات
+            } elseif ($authUser->hasAnyPermission([perm_key('payments.view_all'), perm_key('admin.company')])) {
+                // يرى جميع الدفعات الخاصة بالشركة النشطة
                 $query->whereCompanyIsCurrent();
-            } elseif ($authUser->hasPermissionTo(perm_key('installments.view_children'))) {
-                // يرى الأقساط التي أنشأها المستخدم أو المستخدمون التابعون له، ضمن الشركة النشطة
+            } elseif ($authUser->hasPermissionTo(perm_key('payments.view_children'))) {
+                // يرى الدفعات التي أنشأها المستخدم أو المستخدمون التابعون له
                 $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('installments.view_self'))) {
-                // يرى الأقساط التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
+            } elseif ($authUser->hasPermissionTo(perm_key('payments.view_self'))) {
+                // يرى الدفعات التي أنشأها المستخدم فقط
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض الأقساط.');
+                return api_forbidden('ليس لديك إذن لعرض سجلات الدفع.');
             }
 
-            // التصفية بناءً على طلب المستخدم (يمكن إضافة المزيد هنا)
-            if ($request->filled('status')) {
-                $query->where('status', $request->input('status'));
+            // التصفية
+            if ($request->filled('installment_plan_id')) {
+                $query->where('installment_plan_id', $request->input('installment_plan_id'));
             }
-            if ($request->filled('due_date_from')) {
-                $query->where('due_date', '>=', $request->input('due_date_from'));
+            if ($request->filled('date_from')) {
+                $query->where('payment_date', '>=', $request->input('date_from'));
             }
-            if ($request->filled('due_date_to')) {
-                $query->where('due_date', '<=', $request->input('due_date_to'));
-            }
-            if ($request->filled('user_id')) {
-                $query->where('user_id', $request->input('user_id'));
-            }
-            if ($request->filled('invoice_id')) {
-                $query->where('invoice_id', $request->input('invoice_id'));
+            if ($request->filled('date_to')) {
+                $query->where('payment_date', '<=', $request->input('date_to'));
             }
 
             $perPage = max(1, (int) $request->get('limit', 20));
-            $sortBy = $request->get('sort_by', 'due_date');
-            $sortOrder = $request->get('sort_order', 'asc');
-            $installments = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
+            $sortBy = $request->get('sort_by', 'payment_date');
+            $sortOrder = $request->get('sort_order', 'desc');
+            $payments = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
 
-            if ($installments->isEmpty()) {
-                return api_success([], 'لم يتم العثور على أقساط.');
-            } else {
-                return api_success(InstallmentResource::collection($installments), 'تم جلب الأقساط بنجاح.');
-            }
+            return api_success(InstallmentPaymentResource::collection($payments), 'تم جلب سجلات الدفع بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param StoreInstallmentRequest $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(StoreInstallmentRequest $request): JsonResponse
-    {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
-
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
-            }
-
-            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('installments.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
-                return api_forbidden('ليس لديك إذن لإنشاء أقساط.');
-            }
-
-            DB::beginTransaction();
-            try {
-                $validatedData = $request->validated();
-                $validatedData['created_by'] = $authUser->id;
-
-                if (isset($validatedData['company_id']) && $validatedData['company_id'] != $companyId) {
-                    DB::rollBack();
-                    return api_forbidden('يمكنك فقط إنشاء أقساط لشركتك الحالية.');
-                }
-                $validatedData['company_id'] = $companyId;
-
-                $installment = Installment::create($validatedData);
-                $installment->load($this->relations);
-                DB::commit();
-                return api_success(new InstallmentResource($installment), 'تم إنشاء القسط بنجاح.', 201);
-            } catch (ValidationException $e) {
-                DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تخزين القسط.', $e->errors(), 422);
-            } catch (Throwable $e) {
-                DB::rollBack();
-                return api_error('حدث خطأ أثناء حفظ القسط.', [], 500);
-            }
-        } catch (Throwable $e) {
-            return api_exception($e, 500);
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * Display the specified payment.
      */
     public function show(string $id): JsonResponse
     {
         try {
-            /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
-
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
-            }
-
-            $installment = Installment::with($this->relations)->findOrFail($id);
+            $payment = InstallmentPayment::with($this->relations)->findOrFail($id);
 
             $canView = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $canView = true;
-            } elseif ($authUser->hasAnyPermission([perm_key('installments.view_all'), perm_key('admin.company')])) {
-                $canView = $installment->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('installments.view_children'))) {
-                $canView = $installment->belongsToCurrentCompany() && $installment->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('installments.view_self'))) {
-                $canView = $installment->belongsToCurrentCompany() && $installment->createdByCurrentUser();
+            } elseif ($authUser->hasAnyPermission([perm_key('payments.view_all'), perm_key('admin.company')])) {
+                $canView = $payment->belongsToCurrentCompany();
+            } elseif ($authUser->hasPermissionTo(perm_key('payments.view_children'))) {
+                $canView = $payment->belongsToCurrentCompany() && $payment->createdByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('payments.view_self'))) {
+                $canView = $payment->belongsToCurrentCompany() && $payment->createdByCurrentUser();
             }
 
             if ($canView) {
-                return api_success(new InstallmentResource($installment), 'تم استرداد القسط بنجاح.');
+                return api_success(new InstallmentPaymentResource($payment), 'تم استرداد بيانات الدفعة بنجاح.');
             }
 
-            return api_forbidden('ليس لديك إذن لعرض هذا القسط.');
+            return api_forbidden('ليس لديك إذن لعرض هذه الدفعة.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param UpdateInstallmentRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * Update the specified payment (Note: Payments are usually read-only for history).
      */
-    public function update(UpdateInstallmentRequest $request, string $id): JsonResponse
+    public function update(Request $request, string $id): JsonResponse
     {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
-
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
-            }
-
-            $installment = Installment::with(['company', 'creator'])->findOrFail($id);
-
-            $canUpdate = false;
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $canUpdate = true;
-            } elseif ($authUser->hasAnyPermission([perm_key('installments.update_all'), perm_key('admin.company')])) {
-                $canUpdate = $installment->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('installments.update_children'))) {
-                $canUpdate = $installment->belongsToCurrentCompany() && $installment->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('installments.update_self'))) {
-                $canUpdate = $installment->belongsToCurrentCompany() && $installment->createdByCurrentUser();
-            }
-
-            if (!$canUpdate) {
-                return api_forbidden('ليس لديك إذن لتحديث هذا القسط.');
-            }
-
-            DB::beginTransaction();
-            try {
-                $validatedData = $request->validated();
-                $validatedData['updated_by'] = $authUser->id;
-
-                $installment->update($validatedData);
-                $installment->load($this->relations);
-                DB::commit();
-                return api_success(new InstallmentResource($installment), 'تم تحديث القسط بنجاح.');
-            } catch (ValidationException $e) {
-                DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تحديث القسط.', $e->errors(), 422);
-            } catch (Throwable $e) {
-                DB::rollBack();
-                return api_error('حدث خطأ أثناء تحديث القسط.', [], 500);
-            }
-        } catch (Throwable $e) {
-            return api_exception($e, 500);
-        }
+        return api_forbidden('لا يمكن تعديل سجلات الدفع بعد تأكيدها.');
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * Remove the specified payment (Note: Payments are usually read-only for history).
      */
     public function destroy(string $id): JsonResponse
     {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
-
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
-            }
-
-            $installment = Installment::with(['company', 'creator'])->findOrFail($id);
-
-            $canDelete = false;
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $canDelete = true;
-            } elseif ($authUser->hasAnyPermission([perm_key('installments.delete_all'), perm_key('admin.company')])) {
-                $canDelete = $installment->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('installments.delete_children'))) {
-                $canDelete = $installment->belongsToCurrentCompany() && $installment->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('installments.delete_self'))) {
-                $canDelete = $installment->belongsToCurrentCompany() && $installment->createdByCurrentUser();
-            }
-
-            if (!$canDelete) {
-                return api_forbidden('ليس لديك إذن لحذف هذا القسط.');
-            }
-
-            DB::beginTransaction();
-            try {
-                $deletedInstallment = $installment->replicate();
-                $deletedInstallment->setRelations($installment->getRelations());
-
-                $installment->delete();
-                DB::commit();
-                return api_success(new InstallmentResource($deletedInstallment), 'تم حذف القسط بنجاح.');
-            } catch (Throwable $e) {
-                DB::rollBack();
-                return api_error('حدث خطأ أثناء حذف القسط.', [], 500);
-            }
-        } catch (Throwable $e) {
-            return api_exception($e, 500);
-        }
+        return api_forbidden('لا يمكن حذف سجلات الدفع لضمان نزاهة البيانات المالية.');
     }
 
     /**
-     * دفع الأقساط.
-     *
-     * @param PayInstallmentsRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * تحصيل أقساط (دفع)
+     * 
+     * عملية سداد مبلغ للأقساط المحددة، يتم توزيع المبلغ تلقائياً على الأقساط المختارة.
+     * 
+     * @bodyParam installment_ids array required معرفات الأقساط المراد دفعها. Example: [1, 2]
+     * @bodyParam amount number required المبلغ المدفوع إجمالاً. Example: 1000
+     * @bodyParam payment_method_id integer required معرف طريقة الدفع. Example: 1
+     * @bodyParam cash_box_id integer معرف الخزنة (اختياري، يستخدم الافتراضي إذا لم يحدد). Example: 1
+     * @bodyParam paid_at datetime تاريخ الدفع. Example: 2023-10-25 14:00:00
      */
     public function payInstallments(PayInstallmentsRequest $request): JsonResponse
     {
@@ -324,17 +167,17 @@ class InstallmentPaymentController extends Controller
             DB::beginTransaction();
             try {
                 $service = new InstallmentPaymentService();
-                // استلام الكائن المرتجع الذي يحتوي على البيانات
                 $result = $service->payInstallments(
                     $validatedData['installment_ids'],
                     $validatedData['amount'],
                     [
-                        'user_id' => $validatedData['user_id'],
+                        'user_id' => $validatedData['user_id'] ?? null,
                         'installment_plan_id' => $validatedData['installment_plan_id'],
                         'payment_method_id' => $validatedData['payment_method_id'],
                         'cash_box_id' => $cashBoxId,
                         'notes' => $validatedData['notes'] ?? '',
-                        'paid_at' => $validatedData['paid_at'] ?? now(),
+                        'paid_at' => $validatedData['paid_at'] ?? $validatedData['payment_date'] ?? now(),
+                        'reference_number' => $validatedData['reference_number'] ?? null,
                         'amount' => $validatedData['amount'],
                     ]
                 );
@@ -347,9 +190,13 @@ class InstallmentPaymentController extends Controller
 
                 // يمكنك اختيار ما تريد إرجاعه في الرد JSON.
                 // على سبيل المثال، يمكنك إرجاع سجل الدفعة الرئيسي والأقساط المتأثرة:
+                $installmentPayment->load($this->relations);
+
                 return api_success([
-                    'payment_record' => new InstallmentPaymentResource($installmentPayment), // إذا كان لديك InstallmentPaymentResource
+                    'payment_record' => new InstallmentPaymentResource($installmentPayment),
                     'paid_installments' => InstallmentResource::collection($affectedInstallments),
+                    'excess_amount' => (float) $result['excess_amount'],
+                    'next_installment' => $result['next_installment'] ? new InstallmentResource($result['next_installment']) : null,
                 ], 'تم دفع الأقساط بنجاح.');
             } catch (ValidationException $e) {
                 DB::rollBack();
@@ -369,6 +216,39 @@ class InstallmentPaymentController extends Controller
             }
         } catch (Throwable $e) {
             return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 04. نظام الأقساط
+     * 
+     * إيداع المبلغ الزائد في رصيد العميل
+     */
+    public function depositExcess(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'installment_plan_id' => 'required|exists:installment_plans,id',
+            'amount' => 'required|numeric|min:0.01',
+            'notes' => 'nullable|string',
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $plan = \App\Models\InstallmentPlan::findOrFail($validated['installment_plan_id']);
+            $customer = $plan->user; // العميل المرتبط بالخطة
+
+            if (!$customer) {
+                return api_error('لم يتم العثور على العميل المرتبط بهذه الخطة.');
+            }
+
+            // إيداع في رصيد العميل (تقليل مديونية أو رصيد دائن)
+            $customer->deposit($validated['amount'], null, $validated['notes'] ?? 'إيداع فائض تحصيل أقساط');
+
+            DB::commit();
+            return api_success([], 'تم إضافة المبلغ إلى رصيد العميل بنجاح.');
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return api_exception($e);
         }
     }
 }

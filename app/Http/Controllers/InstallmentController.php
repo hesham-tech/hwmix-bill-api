@@ -21,7 +21,8 @@ class InstallmentController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'installmentPlan',
+            'installmentPlan.invoice.items',
+            'installmentPlan.invoice.customer',
             'user',      // المستخدم الذي يخصه القسط
             'creator',   // المستخدم الذي أنشأ القسط
             'payments',
@@ -30,10 +31,16 @@ class InstallmentController extends Controller
     }
 
     /**
-     * عرض قائمة بالأقساط.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * عرض قائمة الأقساط
+     * 
+     * @queryParam status string الحالة (pending, paid, late). Example: pending
+     * @queryParam due_date_from date تاريخ الاستحقاق من. Example: 2023-01-01
+     * @queryParam user_id integer فلترة حسب المستخدم.
+     * 
+     * @apiResourceCollection App\Http\Resources\Installment\InstallmentResource
+     * @apiResourceModel App\Models\Installment
      */
     public function index(Request $request): JsonResponse
     {
@@ -56,7 +63,8 @@ class InstallmentController extends Controller
                 // يرى الأقساط التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض الأقساط.');
+                // الوضع الافتراضي للعملاء: رؤية الأقساط الخاصة بهم فقط
+                $query->where('user_id', $authUser->id);
             }
 
             // التصفية بناءً على طلب المستخدم
@@ -103,10 +111,14 @@ class InstallmentController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param StoreInstallmentRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * إنشاء قسط يدوي
+     * 
+     * @bodyParam user_id integer required معرف العميل. Example: 1
+     * @bodyParam amount number required مبلغ القسط. Example: 500
+     * @bodyParam due_date date required تاريخ الاستحقاق. Example: 2023-06-01
+     * @bodyParam description string وصف إضافي. Example: قسط شهر يونيو
      */
     public function store(StoreInstallmentRequest $request): JsonResponse
     {
@@ -155,10 +167,11 @@ class InstallmentController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * @group 04. نظام الأقساط
+     * 
+     * عرض تفاصيل قسط
      *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @urlParam id required معرف القسط. Example: 1
      */
     public function show(string $id): JsonResponse
     {
@@ -199,11 +212,12 @@ class InstallmentController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param UpdateInstallmentRequest $request
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * تحديث بيانات قسط
+     * 
+     * @urlParam id required معرف القسط. Example: 1
+     * @bodyParam amount number المبلغ الجديد. Example: 550
      */
     public function update(UpdateInstallmentRequest $request, string $id): JsonResponse
     {
@@ -260,10 +274,11 @@ class InstallmentController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * حذف قسط
+     * 
+     * @urlParam id required معرف القسط. Example: 1
      */
     public function destroy(string $id): JsonResponse
     {

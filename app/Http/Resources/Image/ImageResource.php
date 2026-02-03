@@ -11,12 +11,13 @@ class ImageResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'url' => asset($this->url),
+            'url' => $this->url,
             'file_name' => $this->file_name,
             'mime_type' => $this->mime_type,
             'size' => $this->size,
             'type' => $this->type,
             'is_temp' => (bool) $this->is_temp,
+            'is_primary' => (bool) $this->is_primary,
             'imageable_id' => $this->imageable_id,
             'imageable_type' => $this->imageable_type,
             'company_id' => $this->company_id,

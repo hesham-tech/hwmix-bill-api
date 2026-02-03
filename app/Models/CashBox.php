@@ -14,13 +14,28 @@ use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 #[ScopedBy([CompanyScope::class])]
 /**
  * @mixin IdeHelperCashBox
  */
 class CashBox extends Model
 {
-    use Scopes, LogsActivity, RolePermissions, Blameable;
+    use HasFactory, Scopes, LogsActivity, RolePermissions, Blameable;
+
+    protected static function booted()
+    {
+        static::saving(function ($cashBox) {
+            if ($cashBox->is_default) {
+                static::where('user_id', $cashBox->user_id)
+                    ->where('company_id', $cashBox->company_id)
+                    ->where('id', '!=', $cashBox->id)
+                    ->update(['is_default' => false]);
+            }
+        });
+    }
+
     protected $fillable = [
         'name',
         'balance',
@@ -51,5 +66,13 @@ class CashBox extends Model
     public function company(): belongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "الصندوق ({$this->name})";
     }
 }

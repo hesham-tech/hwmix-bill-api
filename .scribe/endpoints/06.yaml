@@ -1,0 +1,1719 @@
+name: '02. إدارة الفواتير'
+description: ''
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: api/invoices
+    metadata:
+      groupName: '02. إدارة الفواتير'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        عرض قائمة الفواتير
+
+        استرجاع قائمة بجميع الفواتير مع إمكانية التصفية المتقدمة حسب النوع، الحالة، العميل، أو التاريخ.
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      type:
+        name: type
+        description: 'نوع الفاتورة (sale, purchase, return_sale, return_purchase).'
+        required: false
+        example: sale
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      user_id:
+        name: user_id
+        description: 'فلترة حسب العميل أو المورد.'
+        required: false
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: 'حالة الفاتورة (draft, confirmed, paid, partially_paid, cancelled).'
+        required: false
+        example: confirmed
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      date_from:
+        name: date_from
+        description: 'date تاريخ البداية.'
+        required: false
+        example: nihil
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      date_to:
+        name: date_to
+        description: 'date تاريخ النهاية.'
+        required: false
+        example: molestiae
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      per_page:
+        name: per_page
+        description: 'عدد النتائج في الصفحة.'
+        required: false
+        example: 15
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      type: sale
+      user_id: 12
+      status: confirmed
+      date_from: nihil
+      date_to: molestiae
+      per_page: 15
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"data":[{"id":null,"user_id":null,"invoice_type_id":null,"invoice_number":null,"gross_amount":"0.00","total_amount":"0.00","paid_amount":"0.00","remaining_amount":"0.00","round_step":null,"net_amount":"0.00","total_discount":"0.00","status":null,"status_label":"\u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641\u0629","notes":null,"issue_date":null,"due_date":null,"created_at":null,"updated_at":null,"company_id":null,"created_by":null,"installment_plan_id":null},{"id":null,"user_id":null,"invoice_type_id":null,"invoice_number":null,"gross_amount":"0.00","total_amount":"0.00","paid_amount":"0.00","remaining_amount":"0.00","round_step":null,"net_amount":"0.00","total_discount":"0.00","status":null,"status_label":"\u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641\u0629","notes":null,"issue_date":null,"due_date":null,"created_at":null,"updated_at":null,"company_id":null,"created_by":null,"installment_plan_id":null}]}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/invoice
+    metadata:
+      groupName: '02. إدارة الفواتير'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        إنشاء فاتورة جديدة
+
+        يدعم إنشاء فواتير البيع والشراء والخدمات مع معالجة المخزون والحسابات تلقائياً.
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      id:
+        name: id
+        description: ''
+        required: false
+        example: 14
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      invoice_type_id:
+        name: invoice_type_id
+        description: 'معرف النوع.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      invoice_type_code:
+        name: invoice_type_code
+        description: ''
+        required: false
+        example: placeat
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      status:
+        name: status
+        description: ''
+        required: false
+        example: paid
+        type: string
+        enumValues:
+          - draft
+          - confirmed
+          - paid
+          - partially_paid
+          - overdue
+          - canceled
+          - refunded
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      gross_amount:
+        name: gross_amount
+        description: 'Must be at least 0.'
+        required: true
+        example: 18
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      total_discount:
+        name: total_discount
+        description: 'Must be at least 0.'
+        required: false
+        example: 73
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      total_tax:
+        name: total_tax
+        description: 'Must be at least 0.'
+        required: false
+        example: 44
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tax_rate:
+        name: tax_rate
+        description: 'Must be at least 0. Must not be greater than 100.'
+        required: false
+        example: 13
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tax_inclusive:
+        name: tax_inclusive
+        description: ''
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      net_amount:
+        name: net_amount
+        description: 'Must be at least 0.'
+        required: true
+        example: 30
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      paid_amount:
+        name: paid_amount
+        description: 'المبلغ المدفوع حالياً.'
+        required: true
+        example: 750.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      remaining_amount:
+        name: remaining_amount
+        description: ''
+        required: false
+        example: 117352.683574
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      round_step:
+        name: round_step
+        description: ''
+        required: false
+        example: 9
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      due_date:
+        name: due_date
+        description: 'Must be a valid date. Must be a date after or equal to <code>today</code>.'
+        required: false
+        example: '2096-05-15'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      cash_box_id:
+        name: cash_box_id
+        description: 'The <code>id</code> of an existing record in the cash_boxes table.'
+        required: false
+        example: 18
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      user_cash_box_id:
+        name: user_cash_box_id
+        description: 'The <code>id</code> of an existing record in the cash_boxes table.'
+        required: false
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      user_id:
+        name: user_id
+        description: 'معرف العميل/المورد.'
+        required: true
+        example: 2
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      notes:
+        name: notes
+        description: ''
+        required: false
+        example: a
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      items:
+        name: items
+        description: 'مصفوفة المنتجات.'
+        required: true
+        example:
+          - qui
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      installment_plan:
+        name: installment_plan
+        description: ''
+        required: false
+        example: null
+        type: object
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.down_payment:
+        name: installment_plan.down_payment
+        description: ''
+        required: false
+        example: 25348548.049522
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.number_of_installments:
+        name: installment_plan.number_of_installments
+        description: 'Must be at least 1.'
+        required: false
+        example: 74
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.installment_amount:
+        name: installment_plan.installment_amount
+        description: ''
+        required: false
+        example: 0.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.total_amount:
+        name: installment_plan.total_amount
+        description: ''
+        required: false
+        example: 46101.659176
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.start_date:
+        name: installment_plan.start_date
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-01-01T20:55:59'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.due_date:
+        name: installment_plan.due_date
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-01-01T20:55:59'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.round_step:
+        name: installment_plan.round_step
+        description: ''
+        required: false
+        example: 14
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].product_id':
+        name: 'items[].product_id'
+        description: 'The <code>id</code> of an existing record in the products table.'
+        required: true
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].variant_id':
+        name: 'items[].variant_id'
+        description: 'The <code>id</code> of an existing record in the product_variants table.'
+        required: true
+        example: 2
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].name':
+        name: 'items[].name'
+        description: ''
+        required: true
+        example: omnis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].quantity':
+        name: 'items[].quantity'
+        description: 'Must be at least 0.01.'
+        required: true
+        example: 57
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].unit_price':
+        name: 'items[].unit_price'
+        description: 'Must be at least 0.'
+        required: true
+        example: 5
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].discount':
+        name: 'items[].discount'
+        description: 'Must be at least 0.'
+        required: false
+        example: 3
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].tax_rate':
+        name: 'items[].tax_rate'
+        description: 'Must be at least 0. Must not be greater than 100.'
+        required: false
+        example: 21
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].tax_amount':
+        name: 'items[].tax_amount'
+        description: 'Must be at least 0.'
+        required: false
+        example: 62
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].subtotal':
+        name: 'items[].subtotal'
+        description: 'Must be at least 0.'
+        required: false
+        example: 42
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].total':
+        name: 'items[].total'
+        description: 'Must be at least 0.'
+        required: true
+        example: 3
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].attributes':
+        name: 'items[].attributes'
+        description: ''
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].attributes[].id':
+        name: 'items[].attributes[].id'
+        description: ''
+        required: false
+        example: 5
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].attributes[].attribute_id':
+        name: 'items[].attributes[].attribute_id'
+        description: ''
+        required: false
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].attributes[].attribute_value_id':
+        name: 'items[].attributes[].attribute_value_id'
+        description: ''
+        required: false
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks':
+        name: 'items[].stocks'
+        description: ''
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].id':
+        name: 'items[].stocks[].id'
+        description: ''
+        required: false
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].quantity':
+        name: 'items[].stocks[].quantity'
+        description: ''
+        required: true
+        example: 20
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].stocks[].reserved':
+        name: 'items[].stocks[].reserved'
+        description: ''
+        required: false
+        example: 9
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].min_quantity':
+        name: 'items[].stocks[].min_quantity'
+        description: ''
+        required: false
+        example: 8
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].cost':
+        name: 'items[].stocks[].cost'
+        description: ''
+        required: true
+        example: 2369.755
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].stocks[].batch':
+        name: 'items[].stocks[].batch'
+        description: ''
+        required: false
+        example: error
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].expiry':
+        name: 'items[].stocks[].expiry'
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-01-01T20:55:59'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].loc':
+        name: 'items[].stocks[].loc'
+        description: ''
+        required: false
+        example: quidem
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].status':
+        name: 'items[].stocks[].status'
+        description: ''
+        required: false
+        example: nesciunt
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items.*.product_id':
+        name: 'items.*.product_id'
+        description: 'معرف المنتج.'
+        required: true
+        example: 18
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items.*.quantity':
+        name: 'items.*.quantity'
+        description: الكمية.
+        required: true
+        example: 5.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'items.*.unit_price':
+        name: 'items.*.unit_price'
+        description: 'سعر الوحدة.'
+        required: true
+        example: 150.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      id: 14
+      invoice_type_id: 1
+      invoice_type_code: placeat
+      status: paid
+      gross_amount: 18
+      total_discount: 73
+      total_tax: 44
+      tax_rate: 13
+      tax_inclusive: false
+      net_amount: 30
+      paid_amount: 750.0
+      remaining_amount: 117352.683574
+      round_step: 9
+      due_date: '2096-05-15'
+      cash_box_id: 18
+      user_cash_box_id: 12
+      user_id: 2
+      notes: a
+      items:
+        -
+          attributes:
+            -
+              id: 5
+              attribute_id: 3
+              attribute_value_id: 17
+          stocks:
+            -
+              id: 16
+              quantity: 20
+              reserved: 9
+              min_quantity: 8
+              cost: 2369.755
+              batch: error
+              expiry: '2026-01-01T20:55:59'
+              loc: quidem
+              status: nesciunt
+      installment_plan:
+        down_payment: 25348548.049522
+        number_of_installments: 74
+        installment_amount: 0.0
+        total_amount: 46101.659176
+        start_date: '2026-01-01T20:55:59'
+        due_date: '2026-01-01T20:55:59'
+        round_step: 14
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/invoice/{invoice_id}'
+    metadata:
+      groupName: '02. إدارة الفواتير'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        عرض تفاصيل فاتورة
+
+        if (!$authUser || !$companyId) {
+        return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+        }
+
+        $invoice = Invoice::with($this->relations)->findOrFail($id);
+
+        $canView = false;
+        // إضافة صلاحيات العرض
+        if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+        $canView = true;
+        } elseif ($authUser->hasAnyPermission([perm_key('invoices.view_all'), perm_key('admin.company')])) {
+        $canView = $invoice->belongsToCurrentCompany();
+        } elseif ($authUser->hasPermissionTo(perm_key('invoices.view_children'))) {
+        $canView = $invoice->belongsToCurrentCompany() && $invoice->createdByUserOrChildren();
+        } elseif ($authUser->hasPermissionTo(perm_key('invoices.view_self'))) {
+        $canView = $invoice->belongsToCurrentCompany() && $invoice->createdByCurrentUser();
+        }
+
+        if ($canView) {
+        return api_success(new InvoiceResource($invoice), 'تم جلب بيانات الفاتورة بنجاح');
+        }
+
+        return api_forbidden('ليس لديك صلاحية لعرض هذه الفاتورة.');
+        } catch (Throwable $e) {
+        return api_exception($e);
+        }
+        }
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      invoice_id:
+        name: invoice_id
+        description: 'The ID of the invoice.'
+        required: true
+        example: 19
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      invoice:
+        name: invoice
+        description: 'معرف الفاتورة (Model Binding).'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      invoice_id: 19
+      invoice: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      invoice_type_id:
+        name: invoice_type_id
+        description: 'The <code>id</code> of an existing record in the invoice_types table.'
+        required: false
+        example: 10
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      invoice_type_code:
+        name: invoice_type_code
+        description: ''
+        required: false
+        example: aliquam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      invoice_number:
+        name: invoice_number
+        description: ''
+        required: false
+        example: reiciendis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      status:
+        name: status
+        description: ''
+        required: false
+        example: confirmed
+        type: string
+        enumValues:
+          - draft
+          - confirmed
+          - paid
+          - partially_paid
+          - overdue
+          - canceled
+          - refunded
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      gross_amount:
+        name: gross_amount
+        description: 'Must be at least 0.'
+        required: false
+        example: 26
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      total_discount:
+        name: total_discount
+        description: 'Must be at least 0.'
+        required: false
+        example: 24
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      total_tax:
+        name: total_tax
+        description: 'Must be at least 0.'
+        required: false
+        example: 71
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tax_rate:
+        name: tax_rate
+        description: 'Must be at least 0. Must not be greater than 100.'
+        required: false
+        example: 16
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tax_inclusive:
+        name: tax_inclusive
+        description: ''
+        required: false
+        example: true
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      net_amount:
+        name: net_amount
+        description: 'Must be at least 0.'
+        required: false
+        example: 70
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      paid_amount:
+        name: paid_amount
+        description: 'Must be at least 0.'
+        required: false
+        example: 73
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      remaining_amount:
+        name: remaining_amount
+        description: ''
+        required: false
+        example: 354279.2
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      round_step:
+        name: round_step
+        description: ''
+        required: false
+        example: 8
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      due_date:
+        name: due_date
+        description: 'Must be a valid date. Must be a date after or equal to <code>today</code>.'
+        required: false
+        example: '2060-05-15'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      cash_box_id:
+        name: cash_box_id
+        description: 'The <code>id</code> of an existing record in the cash_boxes table.'
+        required: false
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      user_cash_box_id:
+        name: user_cash_box_id
+        description: 'The <code>id</code> of an existing record in the cash_boxes table.'
+        required: false
+        example: 7
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      user_id:
+        name: user_id
+        description: 'معرف العميل المحدث.'
+        required: false
+        example: 5
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      notes:
+        name: notes
+        description: ''
+        required: false
+        example: assumenda
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      items:
+        name: items
+        description: 'Must have at least 1 items.'
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      installment_plan:
+        name: installment_plan
+        description: ''
+        required: false
+        example: null
+        type: object
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.down_payment:
+        name: installment_plan.down_payment
+        description: ''
+        required: false
+        example: 20466.3
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.number_of_installments:
+        name: installment_plan.number_of_installments
+        description: 'Must be at least 1.'
+        required: false
+        example: 33
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.installment_amount:
+        name: installment_plan.installment_amount
+        description: ''
+        required: false
+        example: 23.654149
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.total_amount:
+        name: installment_plan.total_amount
+        description: ''
+        required: false
+        example: 224333537.60996
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.start_date:
+        name: installment_plan.start_date
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-01-01T20:55:59'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.due_date:
+        name: installment_plan.due_date
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-01-01T20:55:59'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_plan.round_step:
+        name: installment_plan.round_step
+        description: ''
+        required: false
+        example: 18
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].product_id':
+        name: 'items[].product_id'
+        description: 'This field is required when <code>items</code> is present. The <code>id</code> of an existing record in the products table.'
+        required: false
+        example: 2
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].variant_id':
+        name: 'items[].variant_id'
+        description: 'The <code>id</code> of an existing record in the product_variants table.'
+        required: false
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].name':
+        name: 'items[].name'
+        description: 'This field is required when <code>items</code> is present.'
+        required: false
+        example: quo
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].quantity':
+        name: 'items[].quantity'
+        description: 'This field is required when <code>items</code> is present. Must be at least 0.01.'
+        required: false
+        example: 15
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].unit_price':
+        name: 'items[].unit_price'
+        description: 'This field is required when <code>items</code> is present. Must be at least 0.'
+        required: false
+        example: 14
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].discount':
+        name: 'items[].discount'
+        description: 'Must be at least 0.'
+        required: false
+        example: 10
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].tax_rate':
+        name: 'items[].tax_rate'
+        description: 'Must be at least 0. Must not be greater than 100.'
+        required: false
+        example: 25
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].tax_amount':
+        name: 'items[].tax_amount'
+        description: 'Must be at least 0.'
+        required: false
+        example: 18
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].subtotal':
+        name: 'items[].subtotal'
+        description: 'Must be at least 0.'
+        required: false
+        example: 3
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].total':
+        name: 'items[].total'
+        description: 'This field is required when <code>items</code> is present. Must be at least 0.'
+        required: false
+        example: 40
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].attributes':
+        name: 'items[].attributes'
+        description: ''
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].attributes[].id':
+        name: 'items[].attributes[].id'
+        description: ''
+        required: false
+        example: 13
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].attributes[].attribute_id':
+        name: 'items[].attributes[].attribute_id'
+        description: ''
+        required: false
+        example: 9
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].attributes[].attribute_value_id':
+        name: 'items[].attributes[].attribute_value_id'
+        description: ''
+        required: false
+        example: 13
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks':
+        name: 'items[].stocks'
+        description: ''
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].id':
+        name: 'items[].stocks[].id'
+        description: ''
+        required: false
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].quantity':
+        name: 'items[].stocks[].quantity'
+        description: 'This field is required when <code>items</code> is present.'
+        required: false
+        example: 11
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].stocks[].reserved':
+        name: 'items[].stocks[].reserved'
+        description: ''
+        required: false
+        example: 19
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].min_quantity':
+        name: 'items[].stocks[].min_quantity'
+        description: ''
+        required: false
+        example: 20
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].cost':
+        name: 'items[].stocks[].cost'
+        description: 'This field is required when <code>items</code> is present.'
+        required: false
+        example: 4688.264959633
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'items[].stocks[].batch':
+        name: 'items[].stocks[].batch'
+        description: ''
+        required: false
+        example: voluptas
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].expiry':
+        name: 'items[].stocks[].expiry'
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-01-01T20:55:59'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].loc':
+        name: 'items[].stocks[].loc'
+        description: ''
+        required: false
+        example: perspiciatis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      'items[].stocks[].status':
+        name: 'items[].stocks[].status'
+        description: ''
+        required: false
+        example: quam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      invoice_type_id: 10
+      invoice_type_code: aliquam
+      invoice_number: reiciendis
+      status: confirmed
+      gross_amount: 26
+      total_discount: 24
+      total_tax: 71
+      tax_rate: 16
+      tax_inclusive: true
+      net_amount: 70
+      paid_amount: 73
+      remaining_amount: 354279.2
+      round_step: 8
+      due_date: '2060-05-15'
+      cash_box_id: 16
+      user_cash_box_id: 7
+      user_id: 5
+      notes: assumenda
+      installment_plan:
+        down_payment: 20466.3
+        number_of_installments: 33
+        installment_amount: 23.654149
+        total_amount: 224333537.60996
+        start_date: '2026-01-01T20:55:59'
+        due_date: '2026-01-01T20:55:59'
+        round_step: 18
+      items:
+        -
+          product_id: 2
+          variant_id: 12
+          name: quo
+          quantity: 15
+          unit_price: 14
+          discount: 10
+          tax_rate: 25
+          tax_amount: 18
+          subtotal: 3
+          total: 40
+          attributes:
+            -
+              id: 13
+              attribute_id: 9
+              attribute_value_id: 13
+          stocks:
+            -
+              id: 12
+              quantity: 11
+              reserved: 19
+              min_quantity: 20
+              cost: 4688.264959633
+              batch: voluptas
+              expiry: '2026-01-01T20:55:59'
+              loc: perspiciatis
+              status: quam
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/invoice/{invoice}'
+    metadata:
+      groupName: '02. إدارة الفواتير'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'إلغاء/حذف فاتورة'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      invoice:
+        name: invoice
+        description: 'The invoice.'
+        required: true
+        example: 4
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      id:
+        name: id
+        description: 'معرف الفاتورة.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      invoice: 4
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/invoice/{id}/pdf'
+    metadata:
+      groupName: '02. إدارة الفواتير'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحميل الفاتورة كـ PDF'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'معرف الفاتورة.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/invoice/{id}/pdf-data'
+    metadata:
+      groupName: '02. إدارة الفواتير'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'بيانات الفاتورة للواجهة الأمامية (PDF)'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'معرف الفاتورة.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/invoice/{id}/email-pdf'
+    metadata:
+      groupName: '02. إدارة الفواتير'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'إرسال الفاتورة عبر البريد'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'معرف الفاتورة.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      recipients:
+        name: recipients
+        description: 'قائمة البريد الإلكتروني.'
+        required: false
+        example:
+          - client@example.com
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      subject:
+        name: subject
+        description: 'موضوع الرسالة.'
+        required: false
+        example: 'فاتورة مبيعات #123'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      recipients:
+        - client@example.com
+      subject: 'فاتورة مبيعات #123'
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/invoices/export-excel
+    metadata:
+      groupName: '02. إدارة الفواتير'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تصدير الفواتير إلى Excel'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      ids:
+        name: ids
+        description: 'قائمة المعرفات المطلوب تصديرها.'
+        required: false
+        example:
+          - 1
+          - 2
+          - 3
+        type: 'integer[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      ids:
+        - 1
+        - 2
+        - 3
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/invoice-items
+    metadata:
+      groupName: '02. إدارة الفواتير'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        عرض كافة بنود الفواتير
+
+        استرجاع تفاصيل كافة الأسطر (Items) المدرجة في الفواتير المختلفة مع إمكانية الفلترة حسب الفاتورة أو المنتج.
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      invoice_id:
+        name: invoice_id
+        description: 'فلترة حسب الفاتورة.'
+        required: false
+        example: 20
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      product_id:
+        name: product_id
+        description: 'فلترة حسب المنتج.'
+        required: false
+        example: 2
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      invoice_id: 20
+      product_id: 2
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"data":[{"id":null,"variant_id":null,"invoice_id":null,"product_id":null,"name":null,"quantity":null,"unit_price":null,"discount":null,"total":null,"created_at":null,"updated_at":null},{"id":null,"variant_id":null,"invoice_id":null,"product_id":null,"name":null,"quantity":null,"unit_price":null,"discount":null,"total":null,"created_at":null,"updated_at":null}]}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []

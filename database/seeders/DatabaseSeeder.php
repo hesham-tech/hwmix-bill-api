@@ -13,23 +13,29 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
         $this->call([
-            CashBoxTypeSeeder::class,
+                // 1. الأساسيات (The Foundation)
             PermissionsSeeder::class,
-            // UserSeeder::class,
-            // CompanySeeder::class,
+            InvoiceTypeSeeder::class,
+            PaymentMethodSeeder::class,
+            CashBoxTypeSeeder::class,
+            ExpenseCategorySeeder::class,
+
+                // 2. الشركات (الآن المراقب سيجد البيانات اللازمة)
+            CompanySeeder::class,
+
+                // 3. المستخدمين والربط
+            UserSeeder::class,
+
+                // 4. إعدادات الشركات والبيانات التشغيلية
+            CompanyInvoiceTypeSeeder::class,
+            CompanyPaymentMethodSeeder::class,
+            CompanyCashBoxTypeSeeder::class,
             WarehouseSeeder::class,
+
             CategorySeeder::class,
             BrandSeeder::class,
             ProductSeeder::class,
-            InvoiceTypeSeeder::class,
-            // InvoiceItemSeeder::class,
-            AttributeSeeder::class,
-            AttributeValueSeeder::class,
-            // RevenueSeeder::class,
-            PaymentMethodSeeder::class,
         ]);
     }
 }

@@ -12,12 +12,41 @@ class UpdateProductRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Decode JSON strings if sent via FormData
+     */
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->variants)) {
+            $this->merge([
+                'variants' => json_decode($this->variants, true)
+            ]);
+        }
+        if (is_string($this->tags)) {
+            $this->merge([
+                'tags' => json_decode($this->tags, true)
+            ]);
+        }
+    }
+
     public function rules()
     {
         $productId = $this->route('product')->id ?? null;
 
         $rules = [
-            'name' => 'required|string|max:255',
+            'name' => 'sometimes|string|max:255',
+            'product_type' => 'sometimes|in:physical,digital,service,subscription',
+            'require_stock' => 'sometimes|boolean',
+            'is_downloadable' => 'sometimes|boolean',
+            'download_url' => 'nullable|string',
+            'download_limit' => 'nullable|integer|min:0',
+            'license_keys' => 'nullable|array',
+            'validity_days' => 'nullable|integer|min:0',
+            'expires_at' => 'nullable|date',
+            'delivery_instructions' => 'nullable|string',
+            'image_ids' => 'sometimes|array',
+            'image_ids.*' => 'integer|exists:images,id',
+            'primary_image_id' => 'nullable|integer|exists:images,id',
             'slug' => [
                 'nullable',
                 'string',
@@ -27,15 +56,19 @@ class UpdateProductRequest extends FormRequest
             'published_at' => 'sometimes|nullable|date',
             'desc' => 'sometimes|nullable|string',
             'desc_long' => 'sometimes|nullable|string',
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => 'sometimes|exists:categories,id',
             'brand_id' => 'sometimes|nullable|exists:brands,id',
             'company_id' => 'sometimes|nullable|exists:companies,id',
             'created_by' => 'sometimes|nullable|exists:users,id',
-            'variants' => 'required|array|min:1',
-            'variants.*.id' => 'sometimes|nullable|exists:product_variants,id',
-            'variants.*.retail_price' => 'sometimes|nullable|numeric|min:0',
+            'active' => 'sometimes|boolean',
+            'featured' => 'sometimes|boolean',
+            'returnable' => 'sometimes|boolean',
+            'variants' => 'sometimes|array|min:1',
+            'variants.*.id' => 'sometimes|nullable|integer|exists:product_variants,id',
+            'variants.*.retail_price' => 'sometimes|numeric|min:0',
             'variants.*.wholesale_price' => 'sometimes|nullable|numeric|min:0',
-            'variants.*.profit_margin' => 'sometimes|nullable|numeric|min:0|max:100',
+            'variants.*.purchase_price' => 'sometimes|nullable|numeric|min:0',
+            'variants.*.profit_margin' => 'sometimes|nullable|numeric',
             'variants.*.image' => 'sometimes|nullable|string|max:255',
             'variants.*.weight' => 'sometimes|nullable|numeric|min:0',
             'variants.*.dimensions' => 'sometimes|nullable|string|max:255',
@@ -45,6 +78,9 @@ class UpdateProductRequest extends FormRequest
             'variants.*.status' => 'sometimes|nullable|string|in:active,inactive,discontinued',
             'variants.*.created_by' => 'sometimes|nullable|exists:users,id',
             'variants.*.company_id' => 'sometimes|nullable|exists:companies,id',
+            'variants.*.image_ids' => 'sometimes|array',
+            'variants.*.image_ids.*' => 'integer|exists:images,id',
+            'variants.*.primary_image_id' => 'nullable|integer|exists:images,id',
             // التعديل هنا: السماح بأن تكون الخصائص اختيارية تماماً أو تحتوي على قيم فارغة
             'variants.*.attributes' => 'sometimes|nullable|array',  // يمكن أن تكون موجودة كـ [] أو null
             'variants.*.attributes.*.attribute_id' => 'sometimes|nullable|exists:attributes,id',  // ليست مطلوبة إذا كانت موجودة
@@ -83,5 +119,13 @@ class UpdateProductRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    /**
+     * Map the request data to a ProductData DTO
+     */
+    public function toSimpleProductData(): \App\DTOs\ProductData
+    {
+        return \App\DTOs\ProductData::fromArray($this->validated());
     }
 }

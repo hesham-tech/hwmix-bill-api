@@ -10,18 +10,78 @@ class CashBoxTypeSeeder extends Seeder
     public function run(): void
     {
         $types = [
-            ['name' => 'نقدي', 'description' => 'خزنة مخصصة للدفع النقدي'],
-            ['name' => 'بطاقة ائتمان', 'description' => 'خزنة مخصصة لبطاقات الائتمان'],
-            ['name' => 'تحويل بنكي', 'description' => 'خزنة مخصصة للتحويلات البنكية'],
-            ['name' => 'باي بال', 'description' => 'خزنة مخصصة لباي بال'],
-            ['name' => 'فودافون كاش', 'description' => 'خزنة مخصصة لفودافون كاش'],
-            ['name' => 'اتصالات كاش', 'description' => 'خزنة مخصصة لاتصالات كاش'],
-            ['name' => 'اورنج كاش', 'description' => 'خزنة مخصصة لاورنج كاش'],
-            ['name' => 'فوري', 'description' => 'خزنة مخصصة لفوري'],
+            // الأساسية
+            [
+                'name' => 'نقدي',
+                'description' => 'صندوق نقدي - للاحتفاظ بالنقود السائلة',
+                'is_system' => true,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'حساب بنكي',
+                'description' => 'حساب بنكي - للتحويلات والمعاملات البنكية',
+                'is_system' => false,
+                'is_active' => true,
+            ],
+
+            // المحافظ الإلكترونية المصرية
+            [
+                'name' => 'فودافون كاش',
+                'description' => 'محفظة فودافون كاش الإلكترونية',
+                'is_system' => false,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'اتصالات كاش',
+                'description' => 'محفظة اتصالات كاش الإلكترونية',
+                'is_system' => false,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'أورنج كاش',
+                'description' => 'محفظة أورنج كاش الإلكترونية',
+                'is_system' => false,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'إنستاباي',
+                'description' => 'حساب إنستاباي للتحويلات الفورية',
+                'is_system' => false,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'فوري',
+                'description' => 'حساب فوري للدفع الإلكتروني',
+                'is_system' => false,
+                'is_active' => true,
+            ],
+
+            // خدمات الدفع الإلكتروني
+            [
+                'name' => 'باي بال',
+                'description' => 'حساب باي بال للمدفوعات الدولية',
+                'is_system' => false,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'بطاقة ائتمان',
+                'description' => 'حساب مخصص لمدفوعات البطاقات الائتمانية',
+                'is_system' => false,
+                'is_active' => true,
+            ],
         ];
 
         foreach ($types as $type) {
-            CashBoxType::create($type);
+            CashBoxType::updateOrCreate(
+                ['name' => $type['name'], 'company_id' => null],
+                [
+                    'name' => $type['name'],
+                    'description' => $type['description'],
+                    'is_system' => $type['name'] === 'نقدي' ? true : false,
+                    'is_active' => true,
+                    'company_id' => null,
+                ]
+            );
         }
     }
 }

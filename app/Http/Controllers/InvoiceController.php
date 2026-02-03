@@ -16,29 +16,164 @@ use App\Http\Resources\Invoice\InvoiceResource;
 use App\Http\Requests\Invoice\StoreInvoiceRequest;
 use App\Http\Requests\Invoice\UpdateInvoiceRequest;
 use App\Http\Resources\InvoiceItem\InvoiceItemResource;
+use App\Services\PDFService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 
 class InvoiceController extends Controller
 {
-    private array $relations;
+    /**
+     * @group 02. إدارة الفواتير
+     * 
+     * تحميل الفاتورة كـ PDF
+     * 
+     * @urlParam id required معرف الفاتورة. Example: 1
+     */
+    public function downloadPDF($id)
+    {
+        try {
+            $invoice = Invoice::with(['items.product', 'items.variant', 'customer', 'company', 'invoiceType', 'payments'])
+                ->findOrFail($id);
+
+            return app(PDFService::class)->generateInvoicePDF($invoice);
+        } catch (\Exception $e) {
+            Log::error('Failed to generate invoice PDF: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل في إنشاء PDF'], 500);
+        }
+    }
+
+    /**
+     * @group 02. إدارة الفواتير
+     * 
+     * بيانات الفاتورة للواجهة الأمامية (PDF)
+     * 
+     * @urlParam id required معرف الفاتورة. Example: 1
+     */
+    public function getInvoiceForPDF($id)
+    {
+        try {
+            $invoice = Invoice::with(['items.product', 'items.variant', 'customer', 'company', 'invoiceType', 'payments'])
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => new \App\Http\Resources\Invoice\InvoiceForPDFResource($invoice),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get invoice data: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل في جلب بيانات الفاتورة'
+            ], 500);
+        }
+    }
+
+    /**
+     * @group 02. إدارة الفواتير
+     * 
+     * إرسال الفاتورة عبر البريد
+     * 
+     * @urlParam id required معرف الفاتورة. Example: 1
+     * @bodyParam recipients string[] قائمة البريد الإلكتروني. Example: ["client@example.com"]
+     * @bodyParam subject string موضوع الرسالة. Example: فاتورة مبيعات #123
+     */
+    public function emailPDF($id, Request $request)
+    {
+        try {
+            $invoice = Invoice::with(['items.product', 'customer', 'company'])->findOrFail($id);
+
+            $recipients = $request->input('recipients', [$invoice->user->email]);
+            $subject = $request->input('subject');
+
+            $success = app(PDFService::class)->emailInvoicePDF($invoice, $recipients, $subject);
+
+            if ($success) {
+                return response()->json(['message' => 'تم إرسال الفاتورة بالبريد الإلكتروني']);
+            }
+
+            return response()->json(['error' => 'فشل في إرسال البريد'], 500);
+        } catch (\Exception $e) {
+            Log::error('Failed to email invoice PDF: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل في إرسال الفاتورة'], 500);
+        }
+    }
+
+    /**
+     * @group 02. إدارة الفواتير
+     * 
+     * تصدير الفواتير إلى Excel
+     * 
+     * @bodyParam ids integer[] قائمة المعرفات المطلوب تصديرها. Example: [1, 2, 3]
+     */
+    public function exportExcel(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'nullable|array',
+                'ids.*' => 'exists:invoices,id',
+            ]);
+
+            $query = Invoice::with(['items', 'customer', 'invoiceType', 'company']);
+
+            if ($request->filled('ids')) {
+                $query->whereIn('id', $request->ids);
+            } else {
+                // Export all (with limit for safety)
+                $query->limit(1000);
+            }
+
+            $invoices = $query->get();
+
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\InvoicesExport($invoices),
+                'invoices_' . now()->format('Y-m-d') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            Log::error('Failed to export invoices: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل في تصدير الفواتير'], 500);
+        }
+    }
+    private array $indexRelations;
+    private array $showRelations;
 
     public function __construct()
     {
-        $this->relations = [
-            'user.cashBoxDefault',
+        $this->indexRelations = [
+            'customer.cashBoxDefault',
+            'invoiceType',
+            'company',
+            'creator',
+        ];
+
+        $this->showRelations = [
+            'customer.cashBoxDefault',
             'company',
             'invoiceType',
             'items.variant',
+            'items.digitalDeliveries',
             'installmentPlan',
             'creator',
+            'payments.paymentMethod',
+            'payments.cashBox',
         ];
     }
 
     /**
-     * عرض قائمة بالفواتير.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 02. إدارة الفواتير
+     * 
+     * عرض قائمة الفواتير
+     * 
+     * استرجاع قائمة بجميع الفواتير مع إمكانية التصفية المتقدمة حسب النوع، الحالة، العميل، أو التاريخ.
+     * 
+     * @queryParam type string نوع الفاتورة (sale, purchase, return_sale, return_purchase). Example: sale
+     * @queryParam user_id integer فلترة حسب العميل أو المورد.
+     * @queryParam status string حالة الفاتورة (draft, confirmed, paid, partially_paid, cancelled). Example: confirmed
+     * @queryParam date_from date تاريخ البداية.
+     * @queryParam date_to date تاريخ النهاية.
+     * @queryParam per_page integer عدد النتائج في الصفحة. Example: 15
+     * 
+     * @apiResourceCollection App\Http\Resources\Invoice\InvoiceResource
+     * @apiResourceModel App\Models\Invoice
      */
     public function index(Request $request): JsonResponse
     {
@@ -50,8 +185,27 @@ class InvoiceController extends Controller
                 return api_unauthorized('يتطلب المصادقة.');
             }
 
-            $query = Invoice::query()->with($this->relations);
+            $query = Invoice::query()->with($this->indexRelations);
 
+            // فلترة الفواتير المستحقة فقط (غير مدفوعة أو مدفوعة جزئياً)
+            if ($request->boolean('due_only')) {
+                $query->whereIn('payment_status', [Invoice::PAYMENT_UNPAID, Invoice::PAYMENT_PARTIALLY_PAID])
+                    ->where('status', '!=', Invoice::STATUS_CANCELED)
+                    ->where('remaining_amount', '>', 0);
+            }
+
+            // البحث (رقم الفاتورة أو اسم العميل)
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('invoice_number', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($qu) use ($search) {
+                            $qu->where('full_name', 'like', "%{$search}%")
+                                ->orWhere('nickname', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%");
+                        });
+                });
+            }
             // إضافة صلاحيات العرض
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 // لا قيود
@@ -62,7 +216,8 @@ class InvoiceController extends Controller
             } elseif ($authUser->hasPermissionTo(perm_key('invoices.view_self'))) {
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك صلاحية لعرض الفواتير.');
+                // الوضع الافتراضي للعملاء: رؤية الفواتير الخاصة بهم فقط
+                $query->where('user_id', $authUser->id);
             }
 
             // فلاتر الطلب الإضافية
@@ -105,10 +260,57 @@ class InvoiceController extends Controller
     }
 
     /**
-     * تخزين فاتورة جديدة في قاعدة البيانات.
-     *
-     * @param StoreInvoiceRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 02. إدارة الفواتير
+     * 
+     * عرض تفاصيل فاتورة
+     * 
+     * استرجاع كافة تفاصيل الفاتورة بما في ذلك الأصناف، العميل، والشركة.
+     * 
+     * @urlParam id required معرف الفاتورة. Example: 1
+     * 
+     * @apiResource App\Http\Resources\Invoice\InvoiceResource
+     * @apiResourceModel App\Models\Invoice
+     */
+    public function show($id): JsonResponse
+    {
+        try {
+            $invoice = Invoice::with($this->showRelations)->findOrFail($id);
+
+            // التحقق من صلاحية الوصول
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                if ($invoice->company_id !== $authUser->company_id && $invoice->user_id !== $authUser->id) {
+                    Log::warning('Unauthorized access attempt to invoice details', [
+                        'user_id' => $authUser->id,
+                        'invoice_id' => $id,
+                        'company_id' => $invoice->company_id,
+                        'user_company_id' => $authUser->company_id
+                    ]);
+                    return api_forbidden('ليس لديك صلاحية للوصول لهذه الفاتورة.');
+                }
+            }
+
+            return api_success(new InvoiceResource($invoice), 'تم جلب بيانات الفاتورة بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * @group 02. إدارة الفواتير
+     * 
+     * إنشاء فاتورة جديدة
+     * 
+     * يدعم إنشاء فواتير البيع والشراء والخدمات مع معالجة المخزون والحسابات تلقائياً.
+     * 
+     * @bodyParam invoice_type_id integer required معرف النوع. Example: 1
+     * @bodyParam user_id integer required معرف العميل/المورد. Example: 2
+     * @bodyParam items array required مصفوفة المنتجات.
+     * @bodyParam items.*.product_id integer required معرف المنتج.
+     * @bodyParam items.*.quantity number required الكمية. Example: 5
+     * @bodyParam items.*.unit_price number required سعر الوحدة. Example: 150
+     * @bodyParam paid_amount number required المبلغ المدفوع حالياً. Example: 750
      */
     public function store(StoreInvoiceRequest $request): JsonResponse
     {
@@ -123,6 +325,10 @@ class InvoiceController extends Controller
 
             // إضافة صلاحية الإنشاء
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('invoices.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+                Log::warning('Unauthorized attempt to create invoice', [
+                    'user_id' => $authUser->id,
+                    'company_id' => $companyId
+                ]);
                 return api_forbidden('ليس لديك صلاحية لإنشاء الفواتير.');
             }
 
@@ -140,8 +346,8 @@ class InvoiceController extends Controller
 
                 $responseDTO = $service->create($validated);
 
-                if (!$responseDTO || !$responseDTO instanceof \App\Models\Invoice) {
-                    \Log::error('لم يتم إنشاء الفاتورة بنجاح من الـ Service', [
+                if (!$responseDTO || !$responseDTO instanceof Invoice) {
+                    Log::error('لم يتم إنشاء الفاتورة بنجاح من الـ Service', [
                         'returned_value' => $responseDTO,
                         'invoice_type_code' => $invoiceTypeCode,
                         'validated_data' => $validated,
@@ -149,7 +355,7 @@ class InvoiceController extends Controller
                     throw new \Exception('فشل إنشاء الفاتورة من الخدمة.');
                 }
 
-                $responseDTO->load($this->relations);
+                $responseDTO->load($this->showRelations);
                 DB::commit();
                 return api_success(new InvoiceResource($responseDTO), 'تم إنشاء المستند بنجاح', 201);
             } catch (ValidationException $e) {
@@ -165,52 +371,12 @@ class InvoiceController extends Controller
     }
 
     /**
-     * عرض الفاتورة المحددة.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show(string $id): JsonResponse
-    {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
-
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
-            }
-
-            $invoice = Invoice::with($this->relations)->findOrFail($id);
-
-            $canView = false;
-            // إضافة صلاحيات العرض
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $canView = true;
-            } elseif ($authUser->hasAnyPermission([perm_key('invoices.view_all'), perm_key('admin.company')])) {
-                $canView = $invoice->belongsToCurrentCompany();
-            } elseif ($authUser->hasPermissionTo(perm_key('invoices.view_children'))) {
-                $canView = $invoice->belongsToCurrentCompany() && $invoice->createdByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('invoices.view_self'))) {
-                $canView = $invoice->belongsToCurrentCompany() && $invoice->createdByCurrentUser();
-            }
-
-            if ($canView) {
-                return api_success(new InvoiceResource($invoice), 'تم جلب بيانات الفاتورة بنجاح');
-            }
-
-            return api_forbidden('ليس لديك صلاحية لعرض هذه الفاتورة.');
-        } catch (Throwable $e) {
-            return api_exception($e);
-        }
-    }
-
-    /**
-     * تحديث الفاتورة المحددة في قاعدة البيانات.
-     *
-     * @param UpdateInvoiceRequest $request
-     * @param Invoice $invoice
-     * @return \Illuminate\Http\JsonResponse
+     * @group 02. إدارة الفواتير
+     * 
+     * تحديث بيانات فاتورة
+     * 
+     * @urlParam invoice required معرف الفاتورة (Model Binding). Example: 1
+     * @bodyParam user_id integer معرف العميل المحدث.
      */
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): JsonResponse
     {
@@ -235,6 +401,11 @@ class InvoiceController extends Controller
             }
 
             if (!$canUpdate) {
+                Log::warning('Unauthorized attempt to update invoice', [
+                    'user_id' => $authUser->id,
+                    'invoice_id' => $invoice->id,
+                    'company_id' => $companyId
+                ]);
                 return api_forbidden('ليس لديك صلاحية لتعديل هذه الفاتورة.');
             }
 
@@ -248,7 +419,7 @@ class InvoiceController extends Controller
                 $service = ServiceResolver::resolve($invoiceTypeCode);
 
                 $updatedInvoice = $service->update($validated, $invoice);
-                $updatedInvoice->load($this->relations);
+                $updatedInvoice->load($this->showRelations);
 
                 DB::commit();
                 return api_success(new InvoiceResource($updatedInvoice), 'تم تعديل الفاتورة بنجاح');
@@ -266,10 +437,11 @@ class InvoiceController extends Controller
 
 
     /**
-     * حذف الفاتورة المحددة من قاعدة البيانات.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 02. إدارة الفواتير
+     * 
+     * إلغاء/حذف فاتورة
+     * 
+     * @urlParam id required معرف الفاتورة. Example: 1
      */
     public function destroy(string $id): JsonResponse
     {
@@ -298,6 +470,11 @@ class InvoiceController extends Controller
             }
 
             if (!$canDelete) {
+                Log::warning('Unauthorized attempt to delete invoice', [
+                    'user_id' => $authUser->id,
+                    'invoice_id' => $id,
+                    'company_id' => $companyId
+                ]);
                 return api_forbidden('ليس لديك صلاحية لحذف هذه الفاتورة.');
             }
 

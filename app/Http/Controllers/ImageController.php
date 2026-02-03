@@ -21,9 +21,11 @@ class ImageController extends Controller
             $query = Image::query()->where('created_by', Auth::id());
 
             if ($request->filled('linked')) {
-                $request->linked === '1'
-                    ? $query->whereNotNull('imageable_id')
-                    : $query->whereNull('imageable_id');
+                if ($request->linked === '1') {
+                    $query->whereNotNull('imageable_id')->where('is_temp', false);
+                } else {
+                    $query->whereNull('imageable_id')->where('is_temp', true);
+                }
             }
 
             if ($request->filled('is_temp') && in_array($request->is_temp, ['0', '1'], true)) {
@@ -62,6 +64,7 @@ class ImageController extends Controller
             ]);
 
             $user = Auth::user();
+            $companyId = $user->company_id;
             $type = $request->input('type', 'misc');
             $uploadedImages = [];
 
@@ -69,18 +72,19 @@ class ImageController extends Controller
                 // اسم الملف الفريد
                 $fileName = "temp_{$user->id}_" . uniqid() . '.' . $file->getClientOriginalExtension();
 
-                // تخزين الملف باستخدام قرص 'public'
-                // المسار سيكون public/uploads/temp داخل storage/app
-                $path = $file->storeAs('uploads/temp', $fileName, 'public');
+                // تخزين الملف في مجلد مؤقت خاص بالشركة
+                // المسار: uploads/{company_id}/temp
+                $path = $file->storeAs("uploads/{$companyId}/temp", $fileName, 'public');
 
                 // URL العام للملف المخزن
                 $url = Storage::url($path);
 
                 $image = Image::create([
-                    'url' => $url,
+                    'url' => $path,
                     'type' => $type,
-                    'company_id' => $user->company_id,
+                    'company_id' => $companyId,
                     'created_by' => $user->id,
+                    'is_temp' => 1,
                 ]);
 
                 $uploadedImages[] = $image;
@@ -119,6 +123,36 @@ class ImageController extends Controller
     }
 
     /**
+     * تعيين الصورة كصورة أساسية فوراً
+     */
+    public function setPrimary(Image $image)
+    {
+        try {
+            if (!$image->imageable_id || !$image->imageable_type) {
+                return api_error('هذه الصورة غير مرتبطة بمنتج أو متغير للتغيير.', [], 400);
+            }
+
+            $model = $image->imageable;
+            if (!$model) {
+                return api_error('مورد الصورة غير موجود.', [], 404);
+            }
+
+            // جلب كل IDs الصور المرتبطة بهذا الموديل
+            $imageIds = Image::where('imageable_type', $image->imageable_type)
+                ->where('imageable_id', $image->imageable_id)
+                ->pluck('id')
+                ->toArray();
+
+            ImageService::handlePrimaryImage($model, $imageIds, $image->id);
+
+            return api_success(new ImageResource($image), 'تم تعيين الصورة كصورة أساسية بنجاح');
+        } catch (Throwable $e) {
+            logger()->error("خطأ أثناء تعيين الصورة الأساسية: " . $e->getMessage());
+            return api_exception($e, 500, 'خطأ أثناء تعيين الصورة الأساسية');
+        }
+    }
+
+    /**
      * حذف مجموعة صور
      */
     public function destroy(Request $request)
@@ -148,5 +182,23 @@ class ImageController extends Controller
             logger()->error("خطأ أثناء حذف الصور: " . $e->getMessage() . " في الملف: " . $e->getFile() . " السطر: " . $e->getLine());
             return api_exception($e, 500, 'خطأ أثناء حذف الصور');
         }
+    }
+
+    /**
+     * Serve image with CORS headers
+     */
+    public function serve($path)
+    {
+        if (!Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        $fullPath = Storage::disk('public')->path($path);
+
+        return response()->file($fullPath, [
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => 'GET',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
     }
 }

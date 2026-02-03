@@ -15,14 +15,14 @@ if (!function_exists('api_success')) {
     function api_success($data = [], string $message = 'تم بنجاح', int $code = 200): JsonResponse
     {
         $response = [
-            'status'  => true,
+            'status' => true,
             'message' => $message,
-            'data'    => [],
+            'data' => [],
         ];
 
         // ✅ إذا كانت البيانات Paginator عادي (للبجينيشن)
         if ($data instanceof AbstractPaginator) {
-            $response['data']  = $data->items();
+            $response['data'] = $data->items();
             $response['total'] = $data->total(); // مهم لـ v-data-table-server
             return response()->json($response, $code);
         }
@@ -33,7 +33,7 @@ if (!function_exists('api_success')) {
 
             // لو فيها Pagination
             if ($original instanceof AbstractPaginator) {
-                $response['data']  = $data->collection;
+                $response['data'] = $data->collection;
                 $response['total'] = $original->total();
             } else {
                 $response['data'] = $data->collection;
@@ -45,14 +45,13 @@ if (!function_exists('api_success')) {
 
         // ✅ إذا كانت JsonResource (عنصر واحد)
         if ($data instanceof JsonResource) {
-            $response['data']  = $data;
-            $response['total'] = 1;
+            $response['data'] = $data;
             return response()->json($response, $code);
         }
 
         // ✅ لو Array أو Collection عادية
         if (is_array($data) || $data instanceof \Illuminate\Support\Collection) {
-            $response['data']  = $data;
+            $response['data'] = $data;
             $response['total'] = is_countable($data) ? count($data) : 0;
             return response()->json($response, $code);
         }
@@ -90,9 +89,11 @@ if (!function_exists('api_exception')) {
                 'errors' => $e->errors(),
             ], 422);
         } elseif ($e instanceof ModelNotFoundException) {
+            $model = class_basename($e->getModel());
             return response()->json([
                 'status' => false,
-                'message' => 'السجل غير موجود',
+                'message' => "السجل غير موجود ($model)",
+                'error' => config('app.debug') ? $e->getMessage() : null,
             ], 404);
         }
 
@@ -104,7 +105,7 @@ if (!function_exists('api_exception')) {
             'exception' => get_class($e),
             'file' => $e->getFile(),
             'line' => $e->getLine(),
-            'trace' => config('app.debug') ? $e->getTraceAsString() : [],
+            'trace' => config('app.debug') ? explode("\n", $e->getTraceAsString()) : [],
         ];
 
         // تسجيل الخطأ

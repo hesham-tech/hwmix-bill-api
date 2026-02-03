@@ -11,6 +11,9 @@ use App\Models\CashBox;
 use App\Models\CashBoxType;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @hideFromApiDocs
+ */
 class ArtisanController extends Controller
 {
     /**
@@ -24,6 +27,21 @@ class ArtisanController extends Controller
             $output = shell_exec('composer2 dump-autoload 2>&1');
             // $output = shell_exec('composer dump-autoload 2>&1');
             return api_success(['output' => $output], 'تم تنفيذ أمر Composer dump-autoload بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     * // تشغيل الميجريشن (تحديث الجداول دون مسح البيانات)
+     */
+    public function migrate(): JsonResponse
+    {
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+            $output = Artisan::output();
+            return api_success(['output' => $output], 'تم تنفيذ الميجريشن بنجاح لتحديث هيكل قاعدة البيانات.');
         } catch (Throwable $e) {
             return api_exception($e);
         }

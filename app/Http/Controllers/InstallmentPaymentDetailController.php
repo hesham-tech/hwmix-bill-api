@@ -21,10 +21,13 @@ class InstallmentPaymentDetailController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'installmentPayment', // العلاقة مع InstallmentPayment
-            'installment',        // العلاقة مع Installment
-            'company',            // للتحقق من belongsToCurrentCompany
-            'creator',            // للتحقق من createdByCurrentUser/OrChildren
+            'installmentPayment.plan.customer', // لضمان وجود بيانات العميل المباشرة في الخطة
+            'installmentPayment.plan.invoice.customer', // احتياطياً من الفاتورة
+            'installmentPayment.plan.invoice.company.logo',
+            'installmentPayment.cashBox',
+            'installment',
+            'company.logo',
+            'creator',
         ];
     }
 

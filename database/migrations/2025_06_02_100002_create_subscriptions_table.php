@@ -9,11 +9,11 @@ return new class extends Migration {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
+            $table->foreignId('service_id')->nullable()->constrained('services')->onDelete('cascade');
             $table->foreignId('company_id')->constrained()->onDelete('cascade');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->date('start_date');
-            $table->date('next_billing_date');
+            $table->date('start_date')->nullable();
+            $table->date('next_billing_date')->nullable();
             $table->string('billing_cycle');
             $table->decimal('price', 15, 2);
             $table->string('status');

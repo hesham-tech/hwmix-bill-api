@@ -20,9 +20,9 @@ class InstallmentPlanBasicResource extends JsonResource
             'total_amount' => $this->total_amount,
             'down_payment' => $this->down_payment ?? 0,
             'remaining_amount' => $this->remaining_amount ?? 0,
-            'installment_count' => $this->installment_count,
+            'installment_count' => $this->number_of_installments,
             'installment_amount' => $this->installment_amount ?? 0,
-            'number_of_installments' => $this->number_of_installments ?? $this->installment_count,
+            'number_of_installments' => $this->number_of_installments,
             'start_date' => $this->start_date ? $this->start_date->format('Y-m-d') : null,
             'due_date' => $this->end_date ? $this->end_date->format('Y-m-d') : null,
             'status' => $this->status ?? 'pending',
@@ -30,6 +30,7 @@ class InstallmentPlanBasicResource extends JsonResource
             'status_label' => $this->getStatusLabel(),
             // ممكن تضيفه لو بتعرض المستخدم في القائمة
             'user_id' => $this->user_id ?? null,
+            'invoice' => new \App\Http\Resources\Invoice\InvoiceResource($this->whenLoaded('invoice')),
         ];
     }
 

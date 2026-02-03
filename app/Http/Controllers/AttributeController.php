@@ -28,10 +28,16 @@ class AttributeController extends Controller
     }
 
     /**
-     * عرض قائمة الموارد.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة السمات
+     * 
+     * استرجاع قائمة بخصائص المنتجات (مثل اللون، المقاس، الخامة) التي تتيح إنشاء تنوعات للمنتجات.
+     * 
+     * @queryParam search string البحث في اسم السمة أو قيمها. Example: اللون
+     * 
+     * @apiResourceCollection App\Http\Resources\Attribute\AttributeResource
+     * @apiResourceModel App\Models\Attribute
      */
     public function index(Request $request): JsonResponse
     {
@@ -64,8 +70,7 @@ class AttributeController extends Controller
                     $q
                         ->where('name', 'like', "%$search%")
                         ->orWhereHas('values', function ($vq) use ($search) {
-                            $vq->where('name', 'like', "%$search%")
-                                ->orWhere('value', 'like', "%$search%");
+                            $vq->where('name', 'like', "%$search%");
                         });
                 });
             }
@@ -78,8 +83,8 @@ class AttributeController extends Controller
             $sortOrder = $request->input('sort_order', 'desc');
             $query->orderBy($sortBy, $sortOrder);
 
-            $perPage = max(1, (int) $request->get('per_page', 10));
-            $attributes = $query->get();
+            $perPage = max(1, (int) $request->get('per_page', 12));
+            $attributes = $query->paginate($perPage);
 
             if ($attributes->isEmpty()) {
                 return api_success($attributes, 'لم يتم العثور على سمات.');
@@ -92,10 +97,17 @@ class AttributeController extends Controller
     }
 
     /**
-     * تخزين مورد تم إنشاؤه حديثًا في التخزين.
-     *
-     * @param StoreAttributeRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * إضافة سمة جديدة
+     * 
+     * إنشاء سمة جديدة (مثل: هاتف) مع إمكانية إضافة قيم أولية لها في نفس الطلب.
+     * 
+     * @bodyParam name string required اسم السمة. Example: اللون
+     * @bodyParam attribute_id integer معرف السمة (في حال الإضافة لسمة موجودة). Example: 1
+     * @bodyParam values array required قائمة القيم.
+     * @bodyParam values[].name string required اسم القيمة (مثل: أحمر). Example: أحمر
+     * @bodyParam values[].value string القيمة التقنية (مثل كود اللون Hex). Example: #FF0000
      */
     public function store(StoreAttributeRequest $request): JsonResponse
     {
@@ -153,7 +165,7 @@ class AttributeController extends Controller
                     foreach ($validatedData['values'] as $valueData) {
                         $attribute->values()->create([
                             'name' => $valueData['name'],
-                            'value' => $valueData['value'] ?? null,
+                            'color' => $valueData['color'] ?? $valueData['value'] ?? null,
                             'company_id' => $attributeCompanyId,
                             'created_by' => $authUser->id,
                         ]);
@@ -161,7 +173,7 @@ class AttributeController extends Controller
                 } elseif (!empty($validatedData['name_value'])) {
                     $attribute->values()->create([
                         'name' => $validatedData['name_value'],
-                        'value' => $validatedData['value'] ?? null,
+                        'color' => $validatedData['color'] ?? $validatedData['value'] ?? null,
                         'company_id' => $attributeCompanyId,
                         'created_by' => $authUser->id,
                     ]);
@@ -183,10 +195,9 @@ class AttributeController extends Controller
     }
 
     /**
-     * عرض المورد المحدد.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * عرض تفاصيل سمة
      */
     public function show(string $id): JsonResponse
     {
@@ -225,11 +236,9 @@ class AttributeController extends Controller
     }
 
     /**
-     * تحديث المورد المحدد في التخزين.
-     *
-     * @param UpdateAttributeRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث بيانات وقيم سمة
      */
     public function update(UpdateAttributeRequest $request, string $id): JsonResponse
     {
@@ -286,7 +295,7 @@ class AttributeController extends Controller
 
                 // تحديث أو إنشاء قيم السمات (AttributeValues)
                 $requestedValueIds = collect($validatedData['values'] ?? [])->pluck('id')->filter()->all();
-                $attribute->values()->whereNotIn('id', $requestedValueIds)->delete(); // حذف القيم غير المرسلة
+                $attribute->values()->whereNotIn('id', $requestedValueIds)->get()->each->delete(); // حذف القيم غير المرسلة مع تشغيل أحداث Eloquent
 
                 if (!empty($validatedData['values']) && is_array($validatedData['values'])) {
                     foreach ($validatedData['values'] as $valueData) {
@@ -294,7 +303,7 @@ class AttributeController extends Controller
                             ['id' => $valueData['id'] ?? null],
                             [
                                 'name' => $valueData['name'],
-                                'value' => $valueData['value'] ?? null,
+                                'color' => $valueData['color'] ?? $valueData['value'] ?? null,
                                 'company_id' => $attributeCompanyId,
                                 'created_by' => $valueData['created_by'] ?? $authUser->id,
                                 'updated_by' => $authUser->id,
@@ -319,10 +328,9 @@ class AttributeController extends Controller
     }
 
     /**
-     * حذف المورد المحدد من التخزين.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف سمة بالكامل
      */
     public function destroy(string $id): JsonResponse
     {
@@ -366,8 +374,8 @@ class AttributeController extends Controller
                 $deletedAttribute = $attribute->replicate();
                 $deletedAttribute->setRelation('values', $attribute->values); // حفظ القيم المرتبطة أيضًا
 
-                // حذف قيم السمة المرتبطة
-                $attribute->values()->delete();
+                // حذف قيم السمة المرتبطة مع تشغيل أحداث Eloquent
+                $attribute->values->each->delete();
                 $attribute->delete();
 
                 DB::commit();
@@ -378,6 +386,22 @@ class AttributeController extends Controller
                 throw $e;
                 return api_error('حدث خطأ أثناء حذف السمة.', [], 500);
             }
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * تغيير حالة السمة (تفعيل/تعطيل)
+     */
+    public function toggle(string $id): JsonResponse
+    {
+        try {
+            $attribute = Attribute::findOrFail($id);
+            $attribute->update(['active' => !$attribute->active]);
+            return api_success(new AttributeResource($attribute), 'تم تغيير حالة السمة بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }

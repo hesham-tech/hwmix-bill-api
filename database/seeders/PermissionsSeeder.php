@@ -78,6 +78,8 @@ class PermissionsSeeder extends Seeder
                 'actions' => [
                     'change_active_company',
                     'page',
+                    'stocks',
+                    'stocks.page',
                     'view_all',
                     'view_children',
                     'view_self',
@@ -88,6 +90,18 @@ class PermissionsSeeder extends Seeder
                     'delete_all',
                     'delete_children',
                     'delete_self',
+                    'view_wholesale_price',
+                    'view_purchase_price',
+                    'manual_adjustment',
+                    // الجديد: التقارير والمالية
+                    'sales',
+                    'stock',
+                    'profit',
+                    'expenses',
+                    'cash_flow',
+                    'tax',
+                    'export',
+                    'print_labels',
                 ],
             ],
             [
@@ -111,6 +125,12 @@ class PermissionsSeeder extends Seeder
         $companyModel = app(Company::class);
         $firstCompany = $companyModel::first();
         $companyIdForRoles = $firstCompany ? $firstCompany->id : null;
+
+        // إخبار النظام برقم الشركة قبل إنشاء الأدوار ومنح الصلاحيات (Spatie Teams)
+        if (config('permission.teams') && $companyIdForRoles) {
+            setPermissionsTeamId($companyIdForRoles);
+        }
+
         foreach ($roles as $roleData) {
             $role = $roleModel::firstOrCreate([
                 'name' => $roleData['name'],
@@ -120,7 +140,8 @@ class PermissionsSeeder extends Seeder
             $permissions = [];
             foreach ($permissionsConfig as $entity => $actions) {
                 foreach ($actions as $key => $actionData) {
-                    if ($key === 'name') continue;
+                    if ($key === 'name')
+                        continue;
                     if (isset($actionData['key']) && in_array($key, $roleData['actions'])) {
                         $permissions[] = $actionData['key'];
                     }

@@ -20,19 +20,14 @@ class InstallmentPlanResource extends JsonResource
      */
     public function toArray($request)
     {
-        $installments = $this->whenLoaded('installments') ?? collect();
+        $installments = collect($this->whenLoaded('installments'));
 
         // حسابات مالية دقيقة باستخدام BCMath
-        $totalInstallmentsRemaining = $installments->reduce(fn($c, $inst) => bcadd($c, $inst->remaining, 2), '0.00');
-        $totalInstallmentsAmount = $installments->reduce(fn($c, $inst) => bcadd($c, $inst->amount, 2), '0.00');
+        $totalInstallmentsRemaining = $installments->reduce(fn($c, $inst) => bcadd($c, $inst->remaining ?? '0', 2), '0.00');
+        $totalInstallmentsAmount = $installments->reduce(fn($c, $inst) => bcadd($c, $inst->amount ?? '0', 2), '0.00');
         $totalInstallmentsPay = bcsub($totalInstallmentsAmount, $totalInstallmentsRemaining, 2);
-        // 'total_pay' يمكن أن يكون المبلغ الإجمالي المدفوع من أصل الفاتورة (total_amount)
-        // وليس فقط من الأقساط. إذا كان remaining_amount يمثل المبلغ المتبقي من إجمالي الفاتورة بعد الدفعة الأولى
-        // فإن total_pay سيكون total_amount - remaining_amount.
-        // إذا كان remaining_amount يمثل المبلغ المتبقي من الأقساط فقط، فـ total_pay هو total_installments_pay.
-        // سأفترض هنا أن 'remaining_amount' هو المبلغ المتبقي من إجمالي خطة التقسيط (بعد الدفعة الأولى)
-        // وأن 'total_pay' هو ما تم دفعه من المبلغ الإجمالي للخطة.
-        $totalPay = bcsub($this->total_amount, $this->remaining_amount ?? 0, 2);
+
+        $totalPay = bcsub($this->total_amount ?? '0', $this->remaining_amount ?? '0', 2);
 
 
         return [
@@ -63,7 +58,8 @@ class InstallmentPlanResource extends JsonResource
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
 
-            'user' => new UserBasicResource($this->whenLoaded('user')),
+            'customer' => new UserBasicResource($this->whenLoaded('customer')),
+            'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'invoice' => new InvoiceResource($this->whenLoaded('invoice')),
             'invoice_items' => InvoiceItemResource::collection(
                 $this->whenLoaded('invoice', function () {
@@ -72,7 +68,7 @@ class InstallmentPlanResource extends JsonResource
             ),
             'payments' => InstallmentPaymentResource::collection($this->whenLoaded('payments')),
             'installments' => InstallmentResource::collection(
-                $this->whenLoaded('installments')?->sortBy('due_date') ?? collect()
+                $installments->sortBy('due_date')
             ),
         ];
     }

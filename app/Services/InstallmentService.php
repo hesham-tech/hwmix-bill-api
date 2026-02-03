@@ -30,41 +30,68 @@ class InstallmentService
             $planData = $data['installment_plan'];
             $userId = $data['user_id'];
             $startDate = Carbon::parse($planData['start_date']);
-            $roundStep = isset($planData['round_step']) && $planData['round_step'] > 0 ? (int)$planData['round_step'] : 10;
+            $roundStep = isset($planData['round_step']) && $planData['round_step'] > 0 ? (int) $planData['round_step'] : 5;
+            $frequency = $planData['frequency'] ?? 'monthly';
 
-            $totalAmount = $planData['total_amount'];
-            $downPayment = $planData['down_payment'];
-            $installmentsN = (int) $planData['number_of_installments'];
+            $netAmount = $planData['net_amount'] ?? ($data['total_balance'] ?? 0);
+            $interestRate = $planData['interest_rate'] ?? 0;
+            $interestAmount = $planData['interest_amount'] ?? 0;
+            $totalAmount = $planData['total_amount'] ?? $netAmount;
+            $downPayment = $planData['down_payment'] ?? 0;
+            $installmentsN = (int) ($planData['number_of_installments'] ?? 1);
 
-            $remaining = bcsub($totalAmount, $downPayment, 2);
-            $avgInst = bcdiv($remaining, (string)$installmentsN, 2);
-            $stdInst = number_format(ceil((float)$avgInst / $roundStep) * $roundStep, 2, '.', '');
+            $remaining = bcsub((string) $totalAmount, (string) $downPayment, 2);
+            if (bccomp($remaining, '0.00', 2) <= 0) {
+                Log::info('InstallmentService: تخطي إنشاء خطة التقسيط لأن المبلغ المتبقي صفر أو أقل.', ['remaining' => $remaining]);
+                return;
+            }
+
+            $avgInst = bcdiv($remaining, (string) $installmentsN, 2);
+            $stdInst = number_format(ceil((float) $avgInst / $roundStep) * $roundStep, 2, '.', '');
 
             $planModel = InstallmentPlan::create([
                 'invoice_id' => $invoiceId,
                 'user_id' => $userId,
+                'net_amount' => $netAmount,
+                'interest_rate' => $interestRate,
+                'interest_amount' => $interestAmount,
                 'total_amount' => $totalAmount,
                 'down_payment' => $downPayment,
                 'remaining_amount' => $remaining,
                 'number_of_installments' => $installmentsN,
+                'frequency' => $frequency,
                 'installment_amount' => $stdInst,
                 'start_date' => $startDate->format('Y-m-d H:i:s'),
-                'end_date' => $startDate->copy()->addMonths($installmentsN)->format('Y-m-d'),
+                'end_date' => $startDate->format('Y-m-d'),
                 'status' => 'pending',
                 'notes' => $planData['notes'] ?? null,
+                'round_step' => $roundStep,
             ]);
             Log::info('InstallmentService: تم إنشاء خطة التقسيط بنجاح.', ['plan_id' => $planModel->id]);
 
             $paidSum = '0.00';
             $count = 0;
-            $lastDate = null;
+            $currentDate = $startDate->copy();
 
             for ($i = 1; $i <= $installmentsN; $i++) {
                 $left = bcsub($remaining, $paidSum, 2);
-                if (bccomp($left, '0.00', 2) <= 0) break;
+                if (bccomp($left, '0.00', 2) <= 0)
+                    break;
 
                 $amount = (bccomp($stdInst, $left, 2) === 1 || $i === $installmentsN) ? $left : $stdInst;
-                $due = $startDate->copy()->addMonths($i)->format('Y-m-d');
+
+                if ($i > 1) {
+                    if ($frequency === 'weekly')
+                        $currentDate->addWeek();
+                    elseif ($frequency === 'biweekly')
+                        $currentDate->addWeeks(2);
+                    elseif ($frequency === 'quarterly')
+                        $currentDate->addMonths(3);
+                    else
+                        $currentDate->addMonth();
+                }
+
+                $due = $currentDate->format('Y-m-d');
 
                 Installment::create([
                     'installment_plan_id' => $planModel->id,
@@ -74,7 +101,8 @@ class InstallmentService
                     'remaining' => $amount,
                     'status' => 'pending',
                     'user_id' => $userId,
-                    'company_id' => $planModel->company_id, // ربط القسط بالشركة التابع لها خطة الأقساط
+                    'company_id' => $planModel->company_id,
+                    'created_by' => Auth::id(),
                 ]);
                 Log::info('InstallmentService: تم إنشاء قسط فردي.', ['installment_plan_id' => $planModel->id, 'installment_number' => $i, 'amount' => $amount]);
 
@@ -127,20 +155,19 @@ class InstallmentService
             }
 
             // حذف سجل الدفع وتفاصيله
-            InstallmentPaymentDetail::where('installment_payment_id', $payment->id)->delete();
+            $payment->details->each->delete();
             Log::info('InstallmentService: تم حذف تفاصيل الدفع المرتبطة.', ['payment_id' => $payment->id]);
             $payment->delete();
             Log::info('InstallmentService: تم حذف سجل الدفع الرئيسي.', ['payment_id' => $payment->id]);
         }
 
         // تحديث حالة جميع الأقساط التابعة لخطة الأقساط إلى 'canceled'
-        // باستخدام 'remaining' بدلاً من 'remaining_amount'
-        // وتعيين 'paid_amount' إلى 0 (إذا كان هذا هو المطلوب للدلالة على عدم وجود مدفوعات)
-        $installmentPlan->installments()->update([
-            'status' => 'canceled',
-            'remaining' => \DB::raw('amount'), // إعادة 'remaining' إلى قيمة 'amount' الأصلية للقسط
-            'paid_at' => null,
-        ]);
+        $installmentPlan->installments->each(function ($inst) {
+            $inst->status = 'canceled';
+            $inst->remaining = $inst->amount; // إعادة 'remaining' إلى قيمة 'amount' الأصلية للقسط
+            $inst->paid_at = null;
+            $inst->save();
+        });
         Log::info('InstallmentService: تم تحديث حالة جميع الأقساط إلى ملغاة.', ['plan_id' => $installmentPlan->id]);
 
         // تحديث حالة خطة الأقساط إلى 'canceled'

@@ -360,6 +360,9 @@ return [
         'delete_all' => ['key' => 'products.delete_all', 'label' => 'حذف أي منتج'],
         'delete_children' => ['key' => 'products.delete_children', 'label' => 'حذف المنتجات التي أنشأها التابعون'],
         'delete_self' => ['key' => 'products.delete_self', 'label' => 'حذف المنتجات الخاصة بالمستخدم'],
+        'view_wholesale_price' => ['key' => 'products.view_wholesale_price', 'label' => 'عرض سعر الجملة'],
+        'view_purchase_price' => ['key' => 'products.view_purchase_price', 'label' => 'عرض سعر الشراء'],
+        'print_labels' => ['key' => 'products.print_labels', 'label' => 'طباعة الملصقات والباركود'],
     ],
     // => PRODUCT VARIANTS
     'product_variants' => [
@@ -417,6 +420,7 @@ return [
         'delete_all' => ['key' => 'stocks.delete_all', 'label' => 'حذف أي سجل مخزون'],
         'delete_children' => ['key' => 'stocks.delete_children', 'label' => 'حذف سجلات المخزون التي أنشأها التابعون'],
         'delete_self' => ['key' => 'stocks.delete_self', 'label' => 'حذف سجلات المخزون الخاصة بالمستخدم'],
+        'manual_adjustment' => ['key' => 'stocks.manual_adjustment', 'label' => 'التعديل اليدوي للمخزون'],
     ],
     // => INVOICES
     'invoices' => [
@@ -436,6 +440,7 @@ return [
         'delete_all' => ['key' => 'invoices.delete_all', 'label' => 'حذف أي فاتورة'],
         'delete_children' => ['key' => 'invoices.delete_children', 'label' => 'حذف الفواتير التي أنشأها التابعون'],
         'delete_self' => ['key' => 'invoices.delete_self', 'label' => 'حذف الفواتير الخاصة بالمستخدم'],
+        'print' => ['key' => 'invoices.print', 'label' => 'طباعة الفواتير'],
     ],
     // => INSTALLMENT PLANS
     'installment_plans' => [
@@ -645,5 +650,54 @@ return [
         'delete_all' => ['key' => 'roles.delete_all', 'label' => 'حذف أي دور'],
         'delete_children' => ['key' => 'roles.delete_children', 'label' => 'حذف الأدوار التي أنشأها التابعون'],
         'delete_self' => ['key' => 'roles.delete_self', 'label' => 'حذف الأدوار الخاصة بالمستخدم'],
+    ],
+    // => EXPENSES
+    'expenses' => [
+        'name' => ['key' => 'expenses', 'label' => 'صلاحيات إدارة المصاريف'],
+        'page' => ['key' => 'expenses.page', 'label' => 'الوصول إلى صفحة المصاريف'],
+        // صلاحيات العرض (View)
+        'view_all' => ['key' => 'expenses.view_all', 'label' => 'عرض جميع المصاريف'],
+        'view_children' => ['key' => 'expenses.view_children', 'label' => 'عرض مصاريف التابعين'],
+        'view_self' => ['key' => 'expenses.view_self', 'label' => 'عرض المصاريف الشخصية'],
+        // صلاحيات الإنشاء (Create)
+        'create' => ['key' => 'expenses.create', 'label' => 'تسجيل مصروف جديد'],
+        // صلاحيات التعديل (Update)
+        'update_all' => ['key' => 'expenses.update_all', 'label' => 'تعديل أي مصروف'],
+        'update_children' => ['key' => 'expenses.update_children', 'label' => 'تعديل مصاريف التابعين'],
+        'update_self' => ['key' => 'expenses.update_self', 'label' => 'تعديل المصروف الشخصي'],
+        // صلاحيات الحذف (Delete)
+        'delete_all' => ['key' => 'expenses.delete_all', 'label' => 'حذف أي مصروف'],
+        'delete_children' => ['key' => 'expenses.delete_children', 'label' => 'حذف مصاريف التابعين'],
+        'delete_self' => ['key' => 'expenses.delete_self', 'label' => 'حذف المصروف الشخصي'],
+    ],
+    // => EXPENSE CATEGORIES
+    'expense_categories' => [
+        'name' => ['key' => 'expense_categories', 'label' => 'صلاحيات إدارة تصنيفات المصاريف'],
+        'page' => ['key' => 'expense_categories.page', 'label' => 'الوصول لصفحة تصنيفات المصاريف'],
+        'view_all' => ['key' => 'expense_categories.view_all', 'label' => 'عرض جميع التصنيفات'],
+        'create' => ['key' => 'expense_categories.create', 'label' => 'إضافة تصنيف جديد'],
+        'update_all' => ['key' => 'expense_categories.update_all', 'label' => 'تعديل أي تصنيف'],
+        'delete_all' => ['key' => 'expense_categories.delete_all', 'label' => 'حذف أي تصنيف'],
+    ],
+    // => FINANCIAL LEDGER
+    'financial_ledger' => [
+        'name' => ['key' => 'financial_ledger', 'label' => 'صلاحيات دفتر الأستاذ العام'],
+        'page' => ['key' => 'financial_ledger.page', 'label' => 'الوصول لدفتر الأستاذ'],
+        'view_all' => ['key' => 'financial_ledger.view_all', 'label' => 'عرض جميع القيود المحاسبية'],
+        'view_self' => ['key' => 'financial_ledger.view_self', 'label' => 'عرض القيود الخاصة بالمستخدم'],
+        'export' => ['key' => 'financial_ledger.export', 'label' => 'تصدير سجلات الأستاذ'],
+    ],
+    // => REPORTS
+    'reports' => [
+        'name' => ['key' => 'reports', 'label' => 'صلاحيات التقارير'],
+        'page' => ['key' => 'reports.page', 'label' => 'الوصول لصفحة التقارير'],
+        'view_all' => ['key' => 'reports.view_all', 'label' => 'عرض جميع التقارير'],
+        'sales' => ['key' => 'reports.sales', 'label' => 'عرض تقرير المبيعات'],
+        'stock' => ['key' => 'reports.stock', 'label' => 'عرض تقرير المخزون'],
+        'profit' => ['key' => 'reports.profit', 'label' => 'عرض تقرير الأرباح والخسائر'],
+        'expenses' => ['key' => 'reports.expenses', 'label' => 'عرض تقرير المصروفات التفصيلي'],
+        'cash_flow' => ['key' => 'reports.cash_flow', 'label' => 'عرض تقرير التدفق النقدي'],
+        'tax' => ['key' => 'reports.tax', 'label' => 'عرض تقرير الضرائب'],
+        'export' => ['key' => 'reports.export', 'label' => 'تصدير التقارير'],
     ],
 ];

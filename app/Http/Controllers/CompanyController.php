@@ -24,6 +24,13 @@ class CompanyController extends Controller
         ];
     }
 
+    /**
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * عرض قائمة الشركات
+     * 
+     * @queryParam per_page integer عدد النتائج.
+     */
     public function index(Request $request)
     {
         try {
@@ -32,12 +39,14 @@ class CompanyController extends Controller
 
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 // وصول مطلق
-            } elseif ($authUser->hasAnyPermission([
-                perm_key('companies.view_all'),
-                perm_key('admin.company'),
-                perm_key('companies.view_children'),
-                perm_key('companies.view_self')
-            ])) {
+            } elseif (
+                $authUser->hasAnyPermission([
+                    perm_key('companies.view_all'),
+                    perm_key('admin.company'),
+                    perm_key('companies.view_children'),
+                    perm_key('companies.view_self')
+                ])
+            ) {
                 $query->whereIn('id', $authUser->companies->pluck('id')->toArray());
             } else {
                 return api_forbidden('ليس لديك صلاحية لعرض الشركات.');
@@ -65,14 +74,23 @@ class CompanyController extends Controller
         }
     }
 
+    /**
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * إضافة شركة جديدة
+     * 
+     * @bodyParam name string required اسم الشركة. Example: شركة التقدم
+     */
     public function store(CompanyRequest $request)
     {
         $authUser = Auth::user();
-        if (!$authUser->hasAnyPermission([
-            perm_key('admin.super'),
-            perm_key('companies.create'),
-            perm_key('admin.company')
-        ])) {
+        if (
+            !$authUser->hasAnyPermission([
+                perm_key('admin.super'),
+                perm_key('companies.create'),
+                perm_key('admin.company')
+            ])
+        ) {
             return api_forbidden('ليس لديك صلاحية لإنشاء شركة.');
         }
 
@@ -93,17 +111,10 @@ class CompanyController extends Controller
                 // اضافة صوره افتراضية
                 // new \Illuminate\Http\UploadedFile(public_path('images/default-logo.png'), 'default-logo.png');
             }
-            Warehouse::create([
-                'name' => 'المخزن الرئيسي',
-                'company_id' => $company->id,
-                'created_by' => $authUser->id,
-                'status' => 'active',
-            ]);
 
             $authUser->company_id = $company->id;
             $authUser->save();
 
-            $company->logCreated("بإنشاء شركة باسم {$company->name}");
             DB::commit();
             return api_success(new CompanyResource($company->load($this->relations)), 'تم إنشاء الشركة بنجاح');
         } catch (\Exception $e) {
@@ -112,6 +123,13 @@ class CompanyController extends Controller
         }
     }
 
+    /**
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * عرض تفاصيل شركة
+     * 
+     * @urlParam company required معرف الشركة. Example: 1
+     */
     public function show(Company $company)
     {
         $authUser = Auth::user();
@@ -151,7 +169,6 @@ class CompanyController extends Controller
                     $imagesIds = $request->input('images_ids');
                     $company->syncImages($imagesIds, 'logo');
                 }
-                $company->logUpdated('الشركة ' . $company->name);
                 DB::commit();
                 return api_success(new CompanyResource($company->load($this->relations)), 'تم تحديث الشركة بنجاح');
             } catch (\Exception $e) {
@@ -163,6 +180,13 @@ class CompanyController extends Controller
         return api_forbidden('ليس لديك صلاحية لتحديث هذه الشركة.');
     }
 
+    /**
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * حذف شركات (Batch)
+     * 
+     * @bodyParam item_ids integer[] required مصفوفة المعرفات.
+     */
     public function destroy(Request $request)
     {
         $authUser = Auth::user();
@@ -175,13 +199,15 @@ class CompanyController extends Controller
         $companiesToDelete = Company::whereIn('id', $companyIds)->get();
 
         foreach ($companiesToDelete as $company) {
-            if (!(
-                $authUser->hasPermissionTo(perm_key('admin.super')) ||
-                $authUser->hasPermissionTo(perm_key('companies.delete_all')) ||
-                ($authUser->hasPermissionTo(perm_key('companies.delete_children')) && $company->isOwn()) ||
-                ($authUser->hasPermissionTo(perm_key('companies.delete_self')) && $company->created_by == $authUser->id) ||
-                ($authUser->hasPermissionTo(perm_key('admin.company')) && $authUser->company_id === $company->company_id)
-            )) {
+            if (
+                !(
+                    $authUser->hasPermissionTo(perm_key('admin.super')) ||
+                    $authUser->hasPermissionTo(perm_key('companies.delete_all')) ||
+                    ($authUser->hasPermissionTo(perm_key('companies.delete_children')) && $company->isOwn()) ||
+                    ($authUser->hasPermissionTo(perm_key('companies.delete_self')) && $company->created_by == $authUser->id) ||
+                    ($authUser->hasPermissionTo(perm_key('admin.company')) && $authUser->company_id === $company->company_id)
+                )
+            ) {
                 return api_forbidden('ليس لديك صلاحية لحذف الشركة ذات المعرف: ' . $company->id);
             }
         }
@@ -193,7 +219,6 @@ class CompanyController extends Controller
                     $company->deleteImage($logo);
                 }
                 $company->delete();
-                $company->logForceDeleted('الشركة ' . $company->name);
             }
             DB::commit();
             return api_success([], 'تم حذف الشركات بنجاح');

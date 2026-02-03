@@ -10,8 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\DocumentServiceInterface;
 use App\Services\Traits\InvoiceHelperTrait;
 use Illuminate\Validation\ValidationException;
-use App\Services\UserSelfDebtService; // سيتم إزالة استخدامها
-use App\Services\InstallmentService; // قد لا تكون ضرورية لفاتورة الشراء
 
 class PurchaseInvoiceService implements DocumentServiceInterface
 {
@@ -28,6 +26,13 @@ class PurchaseInvoiceService implements DocumentServiceInterface
     {
         try {
             Log::info('PurchaseInvoiceService: بدء إنشاء فاتورة شراء.', ['data' => $data]);
+
+            // ✅ استخدام InvoiceCalculator لحساب الإجماليات
+            $calculator = app(\App\Services\InvoiceCalculator::class);
+            $calculatedData = $calculator->calculateTotals($data['items'], $data);
+
+            // دمج البيانات المحسوبة
+            $data = array_merge($data, $calculatedData);
 
             // التحقق من المنتجات والمتغيرات
             foreach ($data['items'] as $item) {
@@ -49,46 +54,38 @@ class PurchaseInvoiceService implements DocumentServiceInterface
             $this->createInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['created_by'] ?? null);
 
             // زيادة الكمية في المخزون للبنود المشتراة
-            $this->incrementStockForItems($data['items'], $data['company_id'] ?? null, $data['created_by'] ?? null);
+            $this->incrementStockForItems(
+                $data['items'],
+                $data['company_id'] ?? null,
+                $data['created_by'] ?? null,
+                $data['warehouse_id'] ?? null
+            );
 
             $authUser = Auth::user();
             $cashBoxId = $data['cash_box_id'] ?? null;
             $userCashBoxId = $data['user_cash_box_id'] ?? null; // user_cash_box_id هنا تخص المورد
 
-            // معالجة رصيد الموظف (الخزنة) والمورد
-            // المبلغ المدفوع يخصم من خزنة الموظف (الشركة تدفع)
-            if ($invoice->paid_amount > 0) {
-                $withdrawResult = $authUser->withdraw($invoice->paid_amount, $cashBoxId);
-                if ($withdrawResult !== true) {
-                    throw new \Exception('فشل سحب المبلغ المدفوع من خزنة الموظف: ' . json_encode($withdrawResult));
-                }
-            }
+            // ✅ استخدام PaymentHandler لمعالجة الدفعات
+            $paymentHandler = app(\App\Services\InvoicePaymentHandler::class);
 
-            // معالجة رصيد المورد بناءً على المبلغ المتبقي
-            // (المبلغ المتبقي يضاف كدين على الشركة للمورد)
-            if ($invoice->user_id) { // user_id في فاتورة الشراء هو معرف المورد
+            if ($invoice->user_id) {
                 $supplier = User::find($invoice->user_id);
                 if ($supplier) {
-                    if ($invoice->remaining_amount > 0) {
-                        // الشركة مدينة للمورد (رصيد المورد يزيد)
-                        $depositResult = $supplier->deposit($invoice->remaining_amount, $userCashBoxId);
-                        if ($depositResult !== true) {
-                            throw new \Exception('فشل إيداع مبلغ متبقي في رصيد المورد: ' . json_encode($depositResult));
-                        }
-                    } elseif ($invoice->remaining_amount < 0) {
-                        // المورد مدين للشركة (رصيد المورد يقل)
-                        $withdrawResult = $supplier->withdraw(abs($invoice->remaining_amount), $userCashBoxId);
-                        if ($withdrawResult !== true) {
-                            throw new \Exception('فشل سحب مبلغ زائد من رصيد المورد: ' . json_encode($withdrawResult));
-                        }
-                    }
+                    $paymentHandler->handlePurchasePayment(
+                        $invoice,
+                        $authUser,
+                        $supplier,
+                        $invoice->paid_amount,
+                        $invoice->remaining_amount,
+                        $cashBoxId,
+                        $userCashBoxId
+                    );
                 } else {
                     Log::warning('PurchaseInvoiceService: لم يتم العثور على المورد (إنشاء).', ['supplier_user_id' => $invoice->user_id]);
                 }
             }
 
             // تسجيل عملية الإنشاء
-            $invoice->logCreated('إنشاء فاتورة شراء رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {
@@ -109,6 +106,13 @@ class PurchaseInvoiceService implements DocumentServiceInterface
     {
         try {
             Log::info('PurchaseInvoiceService: بدء تحديث فاتورة شراء.', ['invoice_id' => $invoice->id, 'data' => $data]);
+
+            // ✅ استخدام InvoiceCalculator لحساب الإجماليات
+            $calculator = app(\App\Services\InvoiceCalculator::class);
+            $calculatedData = $calculator->calculateTotals($data['items'], $data);
+
+            // دمج البيانات المحسوبة
+            $data = array_merge($data, $calculatedData);
 
             // جلب القيم الأصلية للفاتورة من DB قبل أي تعديل
             $freshInvoice = Invoice::find($invoice->id);
@@ -188,10 +192,14 @@ class PurchaseInvoiceService implements DocumentServiceInterface
             $this->syncInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['updated_by'] ?? null);
 
             // زيادة المخزون للبنود الجديدة/المحدثة
-            $this->incrementStockForItems($data['items'], $data['company_id'] ?? null, $data['updated_by'] ?? null);
+            $this->incrementStockForItems(
+                $data['items'],
+                $data['company_id'] ?? null,
+                $data['updated_by'] ?? null,
+                $data['warehouse_id'] ?? null
+            );
 
             // تسجيل عملية التحديث
-            $invoice->logUpdated('تحديث فاتورة شراء رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {
@@ -260,7 +268,6 @@ class PurchaseInvoiceService implements DocumentServiceInterface
                 }
             }
 
-            $invoice->logCanceled('إلغاء فاتورة شراء رقم ' . $invoice->invoice_number);
 
             return $invoice;
         } catch (\Throwable $e) {

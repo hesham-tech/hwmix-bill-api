@@ -11,7 +11,15 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Revenue extends Model
 {
-    use Scopes, Blameable;
+    use \Illuminate\Database\Eloquent\Factories\HasFactory, Scopes, Blameable, \App\Traits\LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "سجل إيراد ({$this->amount}) - {$this->source_type}";
+    }
     protected $fillable = [
         'source_type',
         'source_id',

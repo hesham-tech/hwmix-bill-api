@@ -21,7 +21,7 @@ class InstallmentPlanController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'user',       // المستخدم الذي يخصه خطة التقسيط
+            'customer',       // المستخدم الذي يخصه خطة التقسيط
             'creator',    // المستخدم الذي أنشأ خطة التقسيط
             'invoice.items.variant',
             'installments',
@@ -30,10 +30,13 @@ class InstallmentPlanController extends Controller
     }
 
     /**
-     * عرض قائمة خطط التقسيط.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * عرض قائمة خطط التقسيط
+     * 
+     * @queryParam status string الحالة (active, completed, canceled). Example: active
+     * @queryParam search string البحث بالاسم أو الهاتف. Example: محمد
+     * @queryParam per_page integer عدد النتائج. Default: 20
      */
     public function index(Request $request): JsonResponse
     {
@@ -57,7 +60,8 @@ class InstallmentPlanController extends Controller
             } elseif ($authUser->hasPermissionTo(perm_key('installment_plans.view_self'))) {
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض خطط التقسيط.');
+                // العميل: يرى الخطط الخاصة به
+                $query->where('user_id', $authUser->id);
             }
 
             // ✅ التصفية بناءً على حالة القسط
@@ -79,7 +83,7 @@ class InstallmentPlanController extends Controller
             if ($request->filled('search')) {
                 $search = trim($request->input('search'));
 
-                $query->whereHas('user', function ($q) use ($search) {
+                $query->whereHas('customer', function ($q) use ($search) {
                     $q->where(function ($qq) use ($search) {
                         $qq->where('nickname', 'LIKE', "%{$search}%")
                             ->orWhere('phone', 'LIKE', "%{$search}%");
@@ -118,10 +122,13 @@ class InstallmentPlanController extends Controller
 
 
     /**
-     * تخزين خطة تقسيط جديدة.
-     *
-     * @param StoreInstallmentPlanRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * إنشاء خطة تقسيط
+     * 
+     * @bodyParam user_id integer required معرف العميل. Example: 1
+     * @bodyParam total_amount number required إجمالي المبلغ. Example: 5000
+     * @bodyParam installment_count integer required عدد الأقساط. Example: 10
      */
     public function store(StoreInstallmentPlanRequest $request): JsonResponse
     {
@@ -170,12 +177,16 @@ class InstallmentPlanController extends Controller
     }
 
     /**
-     * عرض خطة تقسيط محددة.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * تفاصيل خطة تقسيط
+     * 
+     * @urlParam installmentPlan required معرف الخطة. Example: 1
+     * 
+     * @apiResource App\Http\Resources\InstallmentPlan\InstallmentPlanResource
+     * @apiResourceModel App\Models\InstallmentPlan
      */
-    public function show(string $id): JsonResponse
+    public function show(InstallmentPlan $installmentPlan): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
@@ -186,7 +197,8 @@ class InstallmentPlanController extends Controller
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
 
-            $plan = InstallmentPlan::with($this->relations)->findOrFail($id);
+            // Load relations for the already resolved InstallmentPlan model
+            $installmentPlan->load($this->relations);
 
             // التحقق من صلاحيات العرض
             $canView = false;
@@ -194,17 +206,17 @@ class InstallmentPlanController extends Controller
                 $canView = true; // المسؤول العام يرى أي خطة تقسيط
             } elseif ($authUser->hasAnyPermission([perm_key('installment_plans.view_all'), perm_key('admin.company')])) {
                 // يرى إذا كانت خطة التقسيط تنتمي للشركة النشطة (بما في ذلك مديرو الشركة)
-                $canView = $plan->belongsToCurrentCompany();
+                $canView = $installmentPlan->belongsToCurrentCompany();
             } elseif ($authUser->hasPermissionTo(perm_key('installment_plans.view_children'))) {
                 // يرى إذا كانت خطة التقسيط أنشأها هو أو أحد التابعين له وتابعة للشركة النشطة
-                $canView = $plan->belongsToCurrentCompany() && $plan->createdByUserOrChildren();
+                $canView = $installmentPlan->belongsToCurrentCompany() && $installmentPlan->createdByUserOrChildren();
             } elseif ($authUser->hasPermissionTo(perm_key('installment_plans.view_self'))) {
                 // يرى إذا كانت خطة التقسيط أنشأها هو وتابعة للشركة النشطة
-                $canView = $plan->belongsToCurrentCompany() && $plan->createdByCurrentUser();
+                $canView = $installmentPlan->belongsToCurrentCompany() && $installmentPlan->createdByCurrentUser();
             }
 
             if ($canView) {
-                return api_success(new InstallmentPlanResource($plan), 'تم استرداد خطة التقسيط بنجاح.');
+                return api_success(new InstallmentPlanResource($installmentPlan), 'تم استرداد خطة التقسيط بنجاح.');
             }
 
             return api_forbidden('ليس لديك إذن لعرض خطة التقسيط هذه.');
@@ -214,11 +226,12 @@ class InstallmentPlanController extends Controller
     }
 
     /**
-     * تحديث خطة تقسيط محددة.
-     *
-     * @param UpdateInstallmentPlanRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * تحديث خطة تقسيط
+     * 
+     * @urlParam id required معرف الخطة. Example: 1
+     * @bodyParam status string الحالة الجديدة.
      */
     public function update(UpdateInstallmentPlanRequest $request, string $id): JsonResponse
     {
@@ -275,10 +288,11 @@ class InstallmentPlanController extends Controller
     }
 
     /**
-     * حذف خطة تقسيط محددة.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام الأقساط
+     * 
+     * حذف خطة تقسيط
+     * 
+     * @urlParam id required معرف الخطة. Example: 1
      */
     public function destroy(string $id): JsonResponse
     {

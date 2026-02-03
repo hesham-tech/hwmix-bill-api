@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Resources\Payment;
 
+use App\Http\Resources\User\UserBasicResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PaymentResource extends JsonResource
@@ -17,7 +18,8 @@ class PaymentResource extends JsonResource
             'is_split' => $this->is_split,
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
-            'installments' => PaymentInstallmentResource::collection($this->whenLoaded('installments')),
+            'customer' => new UserBasicResource($this->whenLoaded('customer')),
+            'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'payment_method' => $this->whenLoaded('paymentMethod'),
         ];
     }

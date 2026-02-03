@@ -24,7 +24,21 @@ class WarehouseController extends Controller
     ];
 
     /**
-     * عرض قائمة بالمستودعات.
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة المستودعات
+     * 
+     * @queryParam active boolean فلترة حسب النشط/غير النشط. Example: true
+     * @queryParam name string البحث باسم المستودع. Example: المستودع الرئيسي
+     * @queryParam company_id integer فلترة حسب الشركة (للمسؤول العام فقط). Example: 1
+     * @queryParam created_at_from date تاريخ الإنشاء من. Example: 2023-01-01
+     * @queryParam created_at_to date تاريخ الإنشاء إلى. Example: 2023-12-31
+     * @queryParam sort_by string حقل الفرز. Default: id. Example: name
+     * @queryParam sort_order string ترتيب الفرز (asc/desc). Default: desc. Example: asc
+     * @queryParam per_page integer عدد العناصر في الصفحة. Default: 20. Example: 50
+     * 
+     * @apiResourceCollection App\Http\Resources\Warehouse\WarehouseResource
+     * @apiResourceModel App\Models\Warehouse
      */
     public function index(Request $request): JsonResponse
     {
@@ -64,11 +78,19 @@ class WarehouseController extends Controller
                 }
                 $query->where('company_id', $request->input('company_id'));
             }
-            if ($request->filled('active')) {
-                $query->where('active', (bool) $request->input('active'));
+            if ($request->filled('status')) {
+                $query->where('status', $request->input('status'));
             }
-            if ($request->filled('name')) { // إضافة فلتر الاسم
-                $query->where('name', 'like', '%' . $request->input('name') . '%');
+            if ($request->filled('is_default')) {
+                $query->where('is_default', $request->boolean('is_default'));
+            }
+            if ($request->filled('search')) {
+                $searchTerm = $request->input('search');
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('location', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('description', 'like', '%' . $searchTerm . '%');
+                });
             }
             if (!empty($request->get('created_at_from'))) {
                 $query->where('created_at', '>=', $request->get('created_at_from') . ' 00:00:00');
@@ -79,8 +101,9 @@ class WarehouseController extends Controller
 
             // التصفح والفرز
             $perPage = (int) $request->get('per_page', 20);
-            $sortField = $request->input('sort_by', 'id'); // تغيير الحقل الافتراضي للفرز
-            $sortOrder = $request->input('sort_order', 'desc');
+            $sortField = $request->input('sort_by');
+            $sortField = (!empty($sortField)) ? $sortField : 'id';
+            $sortOrder = $request->input('order', 'desc');
 
             $warehouses = $query->orderBy($sortField, $sortOrder);
             $warehouses = $perPage == -1
@@ -98,7 +121,14 @@ class WarehouseController extends Controller
     }
 
     /**
-     * تخزين مستودع جديد.
+     * @group 04. نظام المنتجات
+     * 
+     * إنشاء مستودع جديد
+     * 
+     * @bodyParam name string required اسم المستودع. Example: مستودع جدة
+     * @bodyParam address string عنوان المستودع. Example: شارع فلسطين
+     * @bodyParam active boolean حالة المستودع. Example: true
+     * @bodyParam company_id integer معرف الشركة (للمسؤول العام فقط). Example: 1
      */
     public function store(StoreWarehouseRequest $request): JsonResponse
     {
@@ -118,7 +148,7 @@ class WarehouseController extends Controller
                 $validatedData['created_by'] = $authUser->id;
 
                 // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمستخدم.
-                $warehouseCompanyId = $validatedData['company_id']
+                $warehouseCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
                     ? $validatedData['company_id']
                     : $companyId;
 
@@ -147,7 +177,11 @@ class WarehouseController extends Controller
     }
 
     /**
-     * عرض مستودع محدد.
+     * @group 04. نظام المنتجات
+     * 
+     * عرض تفاصيل مستودع
+     * 
+     * @urlParam warehouse required معرف المستودع. Example: 1
      */
     public function show(Warehouse $warehouse): JsonResponse // استخدام Route Model Binding
     {
@@ -184,7 +218,15 @@ class WarehouseController extends Controller
     }
 
     /**
-     * تحديث مستودع محدد.
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث بيانات مستودع
+     * 
+     * @urlParam warehouse required معرف المستودع. Example: 1
+     * @bodyParam name string اسم المستودع. Example: مستودع جدة الجديد
+     * @bodyParam address string عنوان المستودع. Example: شارع فلسطين، حي الجامعة
+     * @bodyParam active boolean حالة المستودع. Example: false
+     * @bodyParam company_id integer معرف الشركة (للمسؤول العام فقط). Example: 2
      */
     public function update(UpdateWarehouseRequest $request, Warehouse $warehouse): JsonResponse // استخدام Route Model Binding
     {
@@ -241,7 +283,11 @@ class WarehouseController extends Controller
     }
 
     /**
-     * حذف مستودع محدد.
+     * @group 04. نظام المنتجات
+     * 
+     * حذف مستودع
+     * 
+     * @urlParam warehouse required معرف المستودع. Example: 1
      */
     public function destroy(Warehouse $warehouse): JsonResponse // استخدام Route Model Binding
     {
@@ -289,6 +335,42 @@ class WarehouseController extends Controller
                 DB::rollBack();
 
                 return api_error('حدث خطأ أثناء حذف المستودع.', [], 500);
+            }
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
+    /**
+     * @group 04. نظام المنتجات
+     * 
+     * تعيين المستودع كافتراضي
+     * 
+     * @urlParam warehouse required معرف المستودع. Example: 1
+     */
+    public function setDefault(Warehouse $warehouse): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('warehouses.update_all')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+                return api_forbidden('ليس لديك إذن لتحديث المستودعات.');
+            }
+
+            if (!$warehouse->belongsToCurrentCompany() && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                return api_forbidden('هذا المستودع لا ينتمي لشركتك.');
+            }
+
+            DB::beginTransaction();
+            try {
+                $warehouse->update(['is_default' => true]);
+                // الموديل سيتكفل بجعل الباقي false في الـ boot method
+
+                DB::commit();
+                return api_success(new WarehouseResource($warehouse->fresh($this->relations)), 'تم تعيين المستودع كافتراضي بنجاح.');
+            } catch (Throwable $e) {
+                DB::rollBack();
+                return api_exception($e);
             }
         } catch (Throwable $e) {
             return api_exception($e);

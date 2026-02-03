@@ -9,8 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse; // للتأكد من استيراد JsonResponse
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\CashBoxType\CashBoxTypeResource;
 use Illuminate\Validation\ValidationException;
 use Throwable;
+use App\Services\ImageService;
 
 
 /**
@@ -22,11 +24,29 @@ use Throwable;
  */
 class CashBoxTypeController extends Controller
 {
+    private array $relations;
+
+    public function __construct()
+    {
+        $this->relations = [
+            'company',
+            'creator',
+            'cashBoxes',
+            'image',
+        ];
+    }
     /**
-     * عرض جميع أنواع الخزن مع الفلاتر والصلاحيات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض أنواع الخزن
+     * 
+     * استرجاع أنواع الصناديق المالية (مثل: خزنة فرعية، حساب بنكي، عهدة موظف).
+     * 
+     * @queryParam description string البحث بالوصف. Example: بنك
+     * @queryParam is_default boolean تصفية حسب الافتراضي. Example: 1
+     * 
+     * @apiResourceCollection App\Http\Resources\CashBoxType\CashBoxTypeResource
+     * @apiResourceModel App\Models\CashBoxType
      */
     public function index(Request $request): JsonResponse
     {
@@ -38,43 +58,57 @@ class CashBoxTypeController extends Controller
                 return api_unauthorized('يتطلب المصادقة.');
             }
 
-            $cashBoxTypeQuery = CashBoxType::query();
+            $cashBoxTypeQuery = CashBoxType::with($this->relations)->withCount('cashBoxes');
 
-            // تطبيق منطق الصلاحيات العامة
+            // تطبيق منطق الصلاحيات والسكوبس
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                // المسؤول العام يرى جميع الأنواع
+                // المسؤول العام يرى الجميع
             } elseif ($authUser->hasAnyPermission([perm_key('cash_box_types.view_all'), perm_key('admin.company')])) {
-                // مدير الشركة أو من لديه صلاحية 'view_all' يرى جميع أنواع شركته
-                // يجب إضافة scopeWhereCompanyIsCurrent() في موديل CashBoxType
                 $cashBoxTypeQuery->whereCompanyIsCurrent();
             } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.view_children'))) {
-                // يرى الأنواع التي أنشأها المستخدم أو المستخدمون التابعون له، ضمن الشركة النشطة
-                $cashBoxTypeQuery->whereCreatedByUserOrChildren()->whereCompanyIsCurrent();
+                $cashBoxTypeQuery->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
             } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.view_self'))) {
-                // يرى الأنواع التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
-                $cashBoxTypeQuery->whereCreatedByUser()->whereCompanyIsCurrent();
+                $cashBoxTypeQuery->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك صلاحية لعرض أنواع الخزن.');
+                return api_forbidden('ليس لديك إذن لعرض أنواع الخزن.');
             }
 
-            // التصفية باستخدام الحقول المقدمة
+            // تطبيق فلاتر البحث
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $cashBoxTypeQuery->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%$search%")
+                        ->orWhere('description', 'like', "%$search%");
+                });
+            }
+
+            if (!empty($request->get('name'))) {
+                $cashBoxTypeQuery->where('name', 'like', '%' . $request->get('name') . '%');
+            }
+
             if (!empty($request->get('description'))) {
                 $cashBoxTypeQuery->where('description', 'like', '%' . $request->get('description') . '%');
             }
+
+            if ($request->has('is_system')) {
+                $cashBoxTypeQuery->where('is_system', (bool) $request->get('is_system'));
+            }
+
             if (!empty($request->get('is_default'))) {
                 $cashBoxTypeQuery->where('is_default', (bool) $request->get('is_default'));
             }
+
             if (!empty($request->get('created_at_from'))) {
                 $cashBoxTypeQuery->where('created_at', '>=', $request->get('created_at_from') . ' 00:00:00');
             }
+
             if (!empty($request->get('created_at_to'))) {
                 $cashBoxTypeQuery->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
             }
 
             // تحديد عدد العناصر في الصفحة والفرز
-
-            $perPage = (int) $request->input('per_page', 20); // استخدام 'per_page' كاسم للمدخل
-            $sortField = $request->input('sort_by', 'created_at'); // استخدام 'created_at' كقيمة افتراضية للفرز
+            $perPage = (int) $request->input('per_page', 20);
+            $sortField = $request->input('sort_by', 'created_at');
             $sortOrder = $request->input('sort_order', 'desc');
 
             $cashBoxTypeQuery->orderBy($sortField, $sortOrder);
@@ -86,7 +120,7 @@ class CashBoxTypeController extends Controller
 
             // التحقق من وجود بيانات وتحديد الرسالة
             return api_success(
-                $cashBoxTypes,
+                $perPage == -1 ? CashBoxTypeResource::collection($cashBoxTypes) : $cashBoxTypes->setCollection($cashBoxTypes->getCollection()->mapInto(CashBoxTypeResource::class)),
                 $cashBoxTypes->isEmpty() ? 'لم يتم العثور على أنواع خزن.' : 'تم استرداد أنواع الخزن بنجاح.'
             );
         } catch (Throwable $e) {
@@ -95,20 +129,22 @@ class CashBoxTypeController extends Controller
     }
 
     /**
-     * Store a newly created CashBoxType in storage.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * إضافة نوع خزنة جديد
+     * 
+     * @bodyParam description string required وصف النوع. Example: نقدي
+     * @bodyParam is_default boolean هل هو النوع الافتراضي. Example: false
      */
     public function store(Request $request): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null; // افتراض أن أنواع الخزن يمكن أن ترتبط بالشركات
+            $companyId = $authUser->company_id ?? null;
 
-            if (!$authUser || (!$authUser->hasPermissionTo(perm_key('admin.super')))) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
             }
 
             // صلاحيات إنشاء نوع صندوق نقدي
@@ -118,29 +154,41 @@ class CashBoxTypeController extends Controller
 
             DB::beginTransaction();
             try {
-                // التحقق من البيانات المدخلة
                 $validatedData = $request->validate([
+                    'name' => 'required|string|max:255',
                     'description' => 'required|string|max:255',
                     'is_default' => 'boolean',
-                    // إذا كانت أنواع الصناديق مرتبطة بشركات:
                     'company_id' => 'nullable|exists:companies,id',
+                    'image_id' => 'nullable|integer',
                 ]);
 
-                $validatedData['company_id'] = $companyId;
-                // تعيين company_id بناءً على صلاحيات المستخدم
-                if ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id'])) {
-                    // السوبر أدمن يمكنه إنشاء نوع لأي شركة يحددها
+                $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
+
+                // تحديد الشركة
+                $validatedData['company_id'] = ($isSuperAdmin && isset($validatedData['company_id']))
+                    ? $validatedData['company_id']
+                    : $companyId;
+
+                // إذا كان سوبر أدمن، نجعلها نوع سيستم افتراضياً إذا لم تكن لشركة محددة
+                if ($isSuperAdmin && !isset($validatedData['company_id'])) {
+                    $validatedData['is_system'] = true;
                 }
 
                 $validatedData['created_by'] = $authUser->id;
 
                 $cashBoxType = CashBoxType::create($validatedData);
 
+                // ربط الصورة
+                if (!empty($validatedData['image_id'])) {
+                    ImageService::attachImagesToModel([$validatedData['image_id']], $cashBoxType, 'logo');
+                }
+
+                $cashBoxType->load($this->relations);
+
                 DB::commit();
-                return api_success($cashBoxType, 'تم إنشاء نوع الخزنة بنجاح.', 201);
+                return api_success(new CashBoxTypeResource($cashBoxType), 'تم إنشاء نوع الخزنة بنجاح.', 201);
             } catch (ValidationException $e) {
                 DB::rollback();
-                // return api_error('فشل التحقق من صحة البيانات أثناء تخزين نوع الخزنة.', $e->errors(), 422);
                 return api_exception($e, 500);
             } catch (Throwable $e) {
                 DB::rollback();
@@ -152,91 +200,91 @@ class CashBoxTypeController extends Controller
     }
 
     /**
-     * Display the specified CashBoxType.
-     *
-     * @param CashBoxType $cashBoxType
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض تفاصيل نوع خزنة
+     * 
+     * @urlParam cashBoxType required معرف النوع. Example: 1
      */
-    public function show(CashBoxType $cashBoxType): JsonResponse
+    public function show($id): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
 
-            if (!$authUser || (!$authUser->hasPermissionTo(perm_key('admin.super')))) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
             }
+
+            $cashBoxType = CashBoxType::with($this->relations)->findOrFail($id);
 
             // التحقق من صلاحيات العرض
             $canView = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $canView = true; // المسؤول العام يرى أي نوع صندوق
+                $canView = true;
             } elseif ($authUser->hasAnyPermission([perm_key('cash_box_types.view_all'), perm_key('admin.company')])) {
-                // يرى إذا كان نوع الصندوق ينتمي للشركة النشطة (بما في ذلك مديرو الشركة)
                 $canView = $cashBoxType->belongsToCurrentCompany();
             } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.view_children'))) {
-                // يرى إذا كان نوع الصندوق أنشأه هو أو أحد التابعين له وتابع للشركة النشطة
                 $canView = $cashBoxType->belongsToCurrentCompany() && $cashBoxType->createdByUserOrChildren();
             } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.view_self'))) {
-                // يرى إذا كان نوع الصندوق أنشأه هو وتابع للشركة النشطة
                 $canView = $cashBoxType->belongsToCurrentCompany() && $cashBoxType->createdByCurrentUser();
             }
 
-            if ($canView) {
-                return api_success($cashBoxType, 'تم استرداد نوع الخزنة بنجاح.');
+            if (!$canView) {
+                return api_forbidden('ليس لديك صلاحية لعرض نوع الخزنة هذا.');
             }
 
-            return api_forbidden('ليس لديك صلاحية لعرض نوع الخزنة هذا.');
+            return api_success(new CashBoxTypeResource($cashBoxType), 'تم استرداد نوع الخزنة بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
     }
 
     /**
-     * Update the specified CashBoxType in storage.
-     *
-     * @param Request $request
-     * @param CashBoxType $cashBoxType
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحديث نوع خزنة
+     * 
+     * @urlParam cashBoxType required معرف النوع. Example: 1
+     * @bodyParam description string وصف النوع المحدث. Example: عهدة شخصية
      */
-    public function update(Request $request, CashBoxType $cashBoxType): JsonResponse
+    public function update(Request $request, string $id): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
 
-            if (!$authUser || (!$authUser->hasPermissionTo(perm_key('admin.super')))) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
             }
+
+            $cashBoxType = CashBoxType::findOrFail($id);
 
             // التحقق من صلاحيات التحديث
             $canUpdate = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $canUpdate = true; // المسؤول العام يمكنه تعديل أي نوع
+                $canUpdate = true;
             } elseif ($authUser->hasAnyPermission([perm_key('cash_box_types.update_all'), perm_key('admin.company')])) {
-                // يمكنه تعديل أي نوع داخل الشركة النشطة (بما في ذلك مديرو الشركة)
                 $canUpdate = $cashBoxType->belongsToCurrentCompany();
             } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.update_children'))) {
-                // يمكنه تعديل الأنواع التي أنشأها هو أو أحد التابعين له وتابعة للشركة النشطة
                 $canUpdate = $cashBoxType->belongsToCurrentCompany() && $cashBoxType->createdByUserOrChildren();
             } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.update_self'))) {
-                // يمكنه تعديل نوعه الخاص الذي أنشأه وتابع للشركة النشطة
                 $canUpdate = $cashBoxType->belongsToCurrentCompany() && $cashBoxType->createdByCurrentUser();
             }
 
             if (!$canUpdate) {
-                return api_forbidden('ليس لديك صلاحية لتحديث نوع الخزنة هذا.');
+                return api_forbidden('ليس لديك إذن لتحديث هذا النوع من الخزن.');
             }
 
             DB::beginTransaction();
             try {
                 $validatedData = $request->validate([
+                    'name' => 'required|string|max:255',
                     'description' => 'required|string|max:255',
                     'is_default' => 'boolean',
-                    // إذا كانت أنواع الصناديق مرتبطة بشركات:
                     'company_id' => 'nullable|exists:companies,id',
+                    'image_id' => 'nullable|integer',
+                    'is_active' => 'boolean',
                 ]);
 
                 // التأكد من أن المستخدم مصرح له بتغيير company_id إذا كان سوبر أدمن
@@ -250,8 +298,15 @@ class CashBoxTypeController extends Controller
 
                 $cashBoxType->update($validatedData);
 
+                // تحديث الصورة
+                if (isset($validatedData['image_id'])) {
+                    ImageService::syncImagesWithModel($validatedData['image_id'] ? [$validatedData['image_id']] : [], $cashBoxType, 'logo');
+                }
+
+                $cashBoxType->load($this->relations);
+
                 DB::commit();
-                return api_success($cashBoxType, 'تم تحديث نوع الخزنة بنجاح.');
+                return api_success(new CashBoxTypeResource($cashBoxType), 'تم تحديث نوع الخزنة بنجاح.');
             } catch (ValidationException $e) {
                 DB::rollback();
                 return api_error('فشل التحقق من صحة البيانات أثناء تحديث نوع الخزنة.', $e->errors(), 422);
@@ -265,20 +320,20 @@ class CashBoxTypeController extends Controller
     }
 
     /**
-     * Remove the specified CashBoxType from storage.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * حذف أنواع خزن (Batch Delete)
+     * 
+     * @bodyParam item_ids integer[] required مصفوفة المعرفات. Example: [2, 3]
      */
     public function destroy(Request $request): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
 
-            if (!$authUser || (!$authUser->hasPermissionTo(perm_key('admin.super')))) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
             }
 
             $cashBoxTypeIds = $request->input('item_ids');
@@ -293,8 +348,9 @@ class CashBoxTypeController extends Controller
             try {
                 $deletedTypes = [];
                 foreach ($cashBoxTypesToDelete as $cashBoxType) {
-                    // التحقق من صلاحيات الحذف لكل عنصر
                     $canDelete = false;
+
+                    // تطبيق منطق الصلاحيات
                     if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                         $canDelete = true;
                     } elseif ($authUser->hasAnyPermission([perm_key('cash_box_types.delete_all'), perm_key('admin.company')])) {
@@ -306,22 +362,36 @@ class CashBoxTypeController extends Controller
                     }
 
                     if (!$canDelete) {
-                        DB::rollback();
-                        return api_forbidden('ليس لديك صلاحية لحذف نوع الخزنة بالمعرف: ' . $cashBoxType->id);
+                        DB::rollBack();
+                        return api_forbidden("ليس لديك إذن لحذف نوع الخزينة '{$cashBoxType->name}'.");
                     }
 
-                    // تحقق مما إذا كان نوع الصندوق مرتبطًا بأي صندوق نقدي فعلي قبل الحذف
-                    if (CashBox::where('type_box_id', $cashBoxType->id)->exists()) {
-                        DB::rollback();
-                        return api_error('لا يمكن حذف نوع الخزنة. إنه مرتبط بخزن نقدية موجودة (المعرف: ' . $cashBoxType->id . ').', [], 409);
+                    // ✅ حماية من حذف أنواع الصناديق الأساسية (is_system) لغير السوبر أدمن
+                    if ($cashBoxType->is_system && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                        DB::rollBack();
+                        return api_error(
+                            "لا يمكن حذف نوع خزينة أساسي من النظام: '{$cashBoxType->name}'. يمكنك تعطيله بدلاً من ذلك.",
+                            ['is_system' => true],
+                            403
+                        );
+                    }
+
+                    // تحقق من وجود صناديق مرتبطة
+                    if ($cashBoxType->cashBoxes()->exists()) {
+                        DB::rollBack();
+                        return api_error("لا يمكن حذف نوع الخزنة '{$cashBoxType->name}' لأنه مستخدم في صناديق موجودة.", [], 422);
                     }
 
                     // حفظ نسخة من العنصر قبل حذفه لإرجاعه في الاستجابة
                     $deletedType = $cashBoxType->replicate();
-                    $deletedType->setRelations($cashBoxType->getRelations()); // نسخ العلاقات المحملة
-                    $deletedTypes[] = $deletedType;
+                    $deletedType->setRelations($cashBoxType->getRelations());
+
+                    if ($cashBoxType->image) {
+                        ImageService::deleteImages([$cashBoxType->image->id]);
+                    }
 
                     $cashBoxType->delete();
+                    $deletedTypes[] = $deletedType;
                 }
 
                 DB::commit();
@@ -330,6 +400,55 @@ class CashBoxTypeController extends Controller
                 DB::rollback();
                 return api_error('حدث خطأ أثناء حذف أنواع الخزن.', [], 500);
             }
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تفعيل/تعطيل نوع الخزنة
+     * 
+     * @urlParam id required معرف النوع. Example: 1
+     */
+    public function toggle(string $id): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+
+            $cashBoxType = CashBoxType::findOrFail($id);
+
+            // التحقق من الصلاحيات
+            $canUpdate = false;
+            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                $canUpdate = true;
+            } elseif ($authUser->hasAnyPermission([perm_key('cash_box_types.update_all'), perm_key('admin.company')])) {
+                $canUpdate = $cashBoxType->belongsToCurrentCompany();
+            } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.update_children'))) {
+                $canUpdate = $cashBoxType->belongsToCurrentCompany() && $cashBoxType->createdByUserOrChildren();
+            } elseif ($authUser->hasPermissionTo(perm_key('cash_box_types.update_self'))) {
+                $canUpdate = $cashBoxType->belongsToCurrentCompany() && $cashBoxType->createdByCurrentUser();
+            }
+
+            if (!$canUpdate) {
+                return api_forbidden('ليس لديك إذن لتعديل حالة نوع الصندوق هذا.');
+            }
+
+            // تبديل الحالة
+            $cashBoxType->is_active = !$cashBoxType->is_active;
+            $cashBoxType->save();
+
+            $status = $cashBoxType->is_active ? 'مفعّل' : 'معطّل';
+            return api_success(
+                new CashBoxTypeResource($cashBoxType),
+                "نوع الصندوق '{$cashBoxType->name}' الآن {$status}."
+            );
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }

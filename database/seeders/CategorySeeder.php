@@ -11,8 +11,14 @@ class CategorySeeder extends Seeder
     {
         // بيانات فيك للأقسام (2 أقسام)
         Category::create([
-            'name' => ' الملابس الجاهزة',
-            'description' => ' قسم الملابس الجاهزة',
+            'name' => 'موبايلات',
+            'description' => 'أحدث الهواتف الذكية',
+            'company_id' => 1,
+            'created_by' => 1,
+        ]);
+        Category::create([
+            'name' => 'إكسسوارات',
+            'description' => 'إكسسوارات الهواتف والأجهزة',
             'company_id' => 1,
             'created_by' => 1,
         ]);

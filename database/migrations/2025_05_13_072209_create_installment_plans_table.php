@@ -12,6 +12,8 @@ return new class extends Migration {
             $table->id();  // رقم السطر
 
             $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');  // الفاتورة
+            $table->string('name')->nullable();
+            $table->string('description')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');  // العميل
             $table->foreignId('company_id')->constrained()->onDelete('cascade');  // الشركة
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');  // أنشئ بواسطة

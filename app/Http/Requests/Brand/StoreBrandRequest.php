@@ -26,6 +26,8 @@ class StoreBrandRequest extends FormRequest
             'company_id' => 'nullable|exists:companies,id',
             'created_by' => 'nullable|exists:users,id',
             'description' => 'nullable|string',
+            'image_id' => 'nullable|exists:images,id',
+            'active' => 'nullable|boolean',
         ];
     }
 }

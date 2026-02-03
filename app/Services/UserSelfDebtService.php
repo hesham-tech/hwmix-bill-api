@@ -26,31 +26,16 @@ class UserSelfDebtService
     {
         try {
             $companyId = $invoice->company_id ?? $user->company_id;
-
-            // خصم الدفعة الأولى من رصيد الموظف كعميل (لأن هذا يمثل دفعًا منه)
-            if ($downPayment > 0) {
-                // $user->withdraw($downPayment, $userCashBoxId);
-                $this->createTransaction(
-                    user: $user,
-                    type: 'خصم دفعة أولى (شراء لنفسه)',
-                    amount: $downPayment,
-                    description: 'خصم دفعة أولى من رصيد المستخدم (شراء لنفسه)',
-                    cashBoxId: $userCashBoxId,
-                    companyId: $companyId,
-                    invoiceId: $invoice->id,
-                    transactionType: 'withdrawal'
-                );
-            }
-
-            // تسجيل دين التقسيط المتبقي على الموظف كعميل
             $installmentDebt = $totalInstallmentAmount - $downPayment;
-            if ($installmentDebt > 0) {
-                // $user->withdraw($installmentDebt, $userCashBoxId); // الموظف يصبح مديوناً
+            $totalDebt = $totalInstallmentAmount;
+
+            // تسجيل إجمالي مديونية الفاتورة (مقدم + تقسيط) في معاملة واحدة واضحة
+            if ($totalDebt > 0) {
                 $this->createTransaction(
                     user: $user,
-                    type: 'تسجيل دين تقسيط (شراء لنفسه)',
-                    amount: $installmentDebt,
-                    description: 'تسجيل مديونية تقسيط على المستخدم (شراء لنفسه)',
+                    type: 'مديونية فاتورة بيع (شراء لنفسه)',
+                    amount: $totalDebt,
+                    description: "تسجيل إجمالي مديونية فاتورة التقسيط رقم #{$invoice->invoice_number} (مقدم: $downPayment + تقسيط: $installmentDebt)",
                     cashBoxId: $userCashBoxId,
                     companyId: $companyId,
                     invoiceId: $invoice->id,
@@ -73,20 +58,19 @@ class UserSelfDebtService
      * @return void
      * @throws \Throwable
      */
-    public function clearSelfSaleDebt(User $user, Invoice $invoice, ?int $companyCashBoxId = null, ?int $userCashBoxId = null): void
+    public function clearSelfSaleDebt(User $user, Invoice $invoice, float $totalPaidInstallments = 0, ?int $companyCashBoxId = null, ?int $userCashBoxId = null): void
     {
         try {
             $companyId = $invoice->company_id ?? $user->company_id;
 
-            // عكس الدفعة الأولى (إيداع المبلغ في رصيد الموظف كعميل)
-            $initialDownPayment = $invoice->installmentPlan->down_payment ?? 0;
-            if ($initialDownPayment > 0) {
-                // $user->deposit($initialDownPayment, $userCashBoxId);
+            // 1. عكس مديونية الفاتورة الأصلية (استرجاع إجمالي المبلغ لصفر الرصيد من هذه الفاتورة)
+            $originalTotalAmount = $invoice->installmentPlan->total_amount ?? 0;
+            if ($originalTotalAmount > 0) {
                 $this->createTransaction(
                     user: $user,
-                    type: 'عكس دفعة أولى (إلغاء شراء لنفسه)',
-                    amount: $initialDownPayment,
-                    description: 'إلغاء دفعة أولى وإرجاع المبلغ لرصيد المستخدم (إلغاء فاتورة)',
+                    type: 'إلغاء مديونية فاتورة (إلغاء شراء لنفسه)',
+                    amount: $originalTotalAmount,
+                    description: "عكس إجمالي مديونية الفاتورة رقم #{$invoice->invoice_number} بسبب الإلغاء",
                     cashBoxId: $userCashBoxId,
                     companyId: $companyId,
                     invoiceId: $invoice->id,
@@ -94,15 +78,13 @@ class UserSelfDebtService
                 );
             }
 
-            // عكس الدين المتبقي (إيداع المبلغ في رصيد الموظف كعميل)
-            $totalInstallmentDebt = ($invoice->installmentPlan->total_amount ?? 0) - ($invoice->installmentPlan->down_payment ?? 0);
-            if ($totalInstallmentDebt > 0) {
-                // $user->deposit($totalInstallmentDebt, $userCashBoxId);
+            // 2. رد مبالغ الأقساط التي تم سدادها فعلياً (إن وجدت)
+            if ($totalPaidInstallments > 0) {
                 $this->createTransaction(
                     user: $user,
-                    type: 'عكس دين تقسيط (إلغاء شراء لنفسه)',
-                    amount: $totalInstallmentDebt,
-                    description: 'إلغاء مديونية تقسيط على المستخدم (إلغاء فاتورة)',
+                    type: 'رد أقساط مسددة (إلغاء شراء لنفسه)',
+                    amount: $totalPaidInstallments,
+                    description: "رد مبالغ الأقساط المسددة للفاتورة رقم #{$invoice->invoice_number} بسبب الإلغاء",
                     cashBoxId: $userCashBoxId,
                     companyId: $companyId,
                     invoiceId: $invoice->id,
@@ -133,19 +115,19 @@ class UserSelfDebtService
     {
         try {
             $balanceBefore = $user->balanceBox($cashBoxId);
-            $balanceAfter  = ($transactionType === 'deposit') ? ($balanceBefore + $amount) : ($balanceBefore - $amount);
+            $balanceAfter = ($transactionType === 'deposit') ? ($balanceBefore + $amount) : ($balanceBefore - $amount);
 
             Transaction::create([
-                'user_id'        => $user->id,
-                'type'           => $type,
-                'amount'         => $amount,
+                'user_id' => $user->id,
+                'type' => $type,
+                'amount' => $amount,
                 'balance_before' => $balanceBefore,
-                'balance_after'  => $balanceAfter,
-                'description'    => $description,
-                'cashbox_id'     => $cashBoxId,
-                'company_id'     => $companyId,
-                'created_by'     => Auth::id(),
-                'invoice_id'     => $invoiceId,
+                'balance_after' => $balanceAfter,
+                'description' => $description,
+                'cashbox_id' => $cashBoxId,
+                'company_id' => $companyId,
+                'created_by' => Auth::id(),
+                'invoice_id' => $invoiceId,
             ]);
         } catch (\Throwable $e) {
             Log::error('UserSelfDebtService: فشل إنشاء المعاملة.', ['exception' => $e->getMessage(), 'user_id' => $user->id, 'type' => $type]);

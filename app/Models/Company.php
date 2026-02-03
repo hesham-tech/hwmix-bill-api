@@ -10,6 +10,7 @@ use App\Traits\HasImages;
 use App\Traits\LogsActivity;
 use App\Traits\RolePermissions;
 use App\Traits\Scopes;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,10 +22,10 @@ use Spatie\Permission\Traits\HasRoles;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Observers\CompanyObserver;
 
 // #[ScopedBy([CompanyScope::class])]
-
-
+#[ObservedBy([CompanyObserver::class])]
 class Company extends Model
 {
     use HasFactory, Notifiable, Translatable, HasRoles, Filterable, Scopes, RolePermissions, LogsActivity, HasImages;
@@ -37,17 +38,30 @@ class Company extends Model
         'address',
         'phone',
         'email',
+        'tax_number',
+        'website',
+        'social_links',
+        'settings',
         'created_by',
         'company_id',
     ];
 
-    // Define the many-to-many relationship
+    protected $casts = [
+        'social_links' => 'array',
+        'settings' => 'array',
+    ];
 
+    // Define the many-to-many relationship
+    protected $dates = [
+        'created_at',
+        'updated_at',
+    ];
     // يجيب المستخدمين مباشرة (Many To Many)
     public function users(): BelongsToMany
     {
         return $this
             ->belongsToMany(User::class, 'company_user', 'company_id', 'user_id')
+            ->using(CompanyUser::class)
             ->withTimestamps()
             ->withPivot([
                 'nickname_in_company',
@@ -100,5 +114,47 @@ class Company extends Model
     public function logo()
     {
         return $this->morphOne(Image::class, 'imageable')->where('type', 'logo');
+    }
+
+    /**
+     * العلاقة مع أنواع الفواتير عبر جدول الربط company_invoice_type
+     */
+    public function invoiceTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(InvoiceType::class, 'company_invoice_type')
+            ->withPivot('is_active')
+            ->withTimestamps();
+    }
+
+    /**
+     * أنواع الفواتير النشطة فقط لهذه الشركة
+     */
+    public function activeInvoiceTypes(): BelongsToMany
+    {
+        return $this->invoiceTypes()->wherePivot('is_active', true);
+    }
+
+    /**
+     * الحصول على إعدادات الطباعة من حقل settings مع قيم افتراضية
+     */
+    public function getPrintSettingsAttribute(): array
+    {
+        $defaults = [
+            'print_format' => 'thermal', // thermal, a4, a5
+            'show_logo' => true,
+            'header_text' => '',
+            'footer_text' => 'شكراً لتعاملكم معنا',
+            'thermal_width' => '80mm',
+        ];
+
+        return array_merge($defaults, $this->settings['print_settings'] ?? []);
+    }
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "الشركة ({$this->name})";
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Plan extends Model
 {
+    use \Illuminate\Database\Eloquent\Factories\HasFactory, \App\Traits\Scopes, \App\Traits\Blameable;
     protected $table = 'plans';
     protected $guarded = [];
 

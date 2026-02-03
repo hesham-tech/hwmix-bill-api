@@ -16,10 +16,9 @@ class CompanyUserBasicResource extends JsonResource
     public function toArray(Request $request): array
     {
         // الحصول على صورة الأفاتار للمستخدم من علاقة المستخدم
-        $avatarImage = $this->whenLoaded('user', function () {
-            return $this->user->images->where('type', 'avatar')->first();
+        $avatarUrl = $this->whenLoaded('user', function () {
+            return $this->user->images->where('type', 'avatar')->first()?->url;
         });
-        $avatarUrl = $avatarImage ? asset($avatarImage->url) : null;
 
         // الحصول على الخزنة الافتراضية للشركة الحالية
         $defaultCashBox = $this->whenLoaded('user', function () {
@@ -34,27 +33,25 @@ class CompanyUserBasicResource extends JsonResource
         });
 
         return [
-            // البيانات الأساسية للمستخدم (من جدول users)
+            // بيانات ملف العضو (سياق الشركة)
             'id' => $this->user_id,
-            'id_company_user' => $this->id,
-            'username' =>  $this->user_username,
-            'email' =>  $this->user_email,
-            'phone' =>  $this->user_phone,
-            'company_id' => $this->company_id,
-            'company_name' => $this->whenLoaded('company', fn() => $this->company->name),
-
-            // البيانات الخاصة بالشركة (من جدول company_user)
-            'nickname' => $this->nickname_in_company,
-            'balance' => $this->balance_in_company,
-            'full_name' => $this->full_name_in_company,
-            'customer_type' => $this->customer_type_in_company,
-            'position' => $this->position_in_company,
+            'name' => $this->name,
+            'nickname' => $this->nickname,
+            'full_name' => $this->full_name,
+            'phone' => $this->phone,
+            'balance' => $this->balance,
+            'position' => $this->position,
             'status' => $this->status,
-
-            // بيانات الخزنة الافتراضية
-            'cash_box_id' => $defaultCashBox?->id,
+            'customer_type' => $this->customer_type,
             'avatar_url' => $avatarUrl,
 
+            // معلومات إضافية
+            'id_company_user' => $this->id,
+            'company_id' => $this->company_id,
+            'company_name' => $this->whenLoaded('company', fn() => $this->company->name),
+            'cash_box_id' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? null : $defaultCashBox?->id,
+            'roles' => $this->whenLoaded('user', fn() => $this->user->roles->pluck('name')),
+            'direct_permissions' => $this->whenLoaded('user', fn() => $this->user->getDirectPermissions()->pluck('name')),
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
         ];

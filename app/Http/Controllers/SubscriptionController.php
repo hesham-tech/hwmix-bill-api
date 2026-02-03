@@ -25,86 +25,100 @@ class SubscriptionController extends Controller
             'company',
             'user', // المستخدم المشترك
             'plan', // خطة الاشتراك
+            'service', // الخدمة المرتبطة
         ];
     }
 
     /**
-     * عرض قائمة الاشتراكات.
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * عرض قائمة الاشتراكات
+     * 
+     * استرجاع سجلات اشتراك الشركات في باقات النظام المختلفة.
+     * 
+     * @queryParam user_id integer فلترة حسب المستخدم.
+     * @queryParam plan_id integer فلترة حسب الخطة.
+     * @queryParam status string الحالة (active, expired).
+     * 
+     * @apiResourceCollection App\Http\Resources\Subscription\SubscriptionResource
+     * @apiResourceModel App\Models\Subscription
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
+        // try {
+        /** @var \App\Models\User $authUser */
+        $authUser = Auth::user();
 
-            if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
-            }
-
-            $query = Subscription::query()->with($this->relations);
-            $companyId = $authUser->company_id ?? null;
-
-            // فلترة الصلاحيات
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                // المسؤول العام يرى جميع الاشتراكات
-            } elseif ($authUser->hasAnyPermission([perm_key('subscriptions.view_all'), perm_key('admin.company')])) {
-                $query->whereCompanyIsCurrent();
-            } elseif ($authUser->hasPermissionTo(perm_key('subscriptions.view_children'))) {
-                $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('subscriptions.view_self'))) {
-                $query->whereCompanyIsCurrent()->whereCreatedByUser();
-            } else {
-                return api_forbidden('ليس لديك إذن لعرض الاشتراكات.');
-            }
-
-            // فلاتر الطلب
-            if ($request->filled('user_id')) {
-                $query->where('user_id', $request->input('user_id'));
-            }
-            if ($request->filled('plan_id')) {
-                $query->where('plan_id', $request->input('plan_id'));
-            }
-            if ($request->filled('status')) {
-                $query->where('status', $request->input('status'));
-            }
-            if ($request->filled('starts_at_from')) {
-                $query->where('starts_at', '>=', $request->input('starts_at_from') . ' 00:00:00');
-            }
-            if ($request->filled('starts_at_to')) {
-                $query->where('starts_at', '<=', $request->input('starts_at_to') . ' 23:59:59');
-            }
-            if ($request->filled('ends_at_from')) {
-                $query->where('ends_at', '>=', $request->input('ends_at_from') . ' 00:00:00');
-            }
-            if ($request->filled('ends_at_to')) {
-                $query->where('ends_at', '<=', $request->input('ends_at_to') . ' 23:59:59');
-            }
-            if (!empty($request->get('created_at_from'))) {
-                $query->where('created_at', '>=', $request->get('created_at_from') . ' 00:00:00');
-            }
-            if (!empty($request->get('created_at_to'))) {
-                $query->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
-            }
-
-            // التصفح والفرز
-            $perPage = max(1, (int) $request->get('per_page', 20));
-            $sortField = $request->input('sort_by', 'id');
-            $sortOrder = $request->input('sort_order', 'desc');
-
-            $subscriptions = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
-
-            if ($subscriptions->isEmpty()) {
-                return api_success([], 'لم يتم العثور على اشتراكات.');
-            } else {
-                return api_success(SubscriptionResource::collection($subscriptions), 'تم جلب الاشتراكات بنجاح.');
-            }
-        } catch (Throwable $e) {
-            return api_exception($e);
+        if (!$authUser) {
+            return api_unauthorized('يتطلب المصادقة.');
         }
+
+        $query = Subscription::query()->with($this->relations);
+        $companyId = $authUser->company_id ?? null;
+
+        // فلترة الصلاحيات
+        if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+            // المسؤول العام يرى جميع الاشتراكات
+        } elseif ($authUser->hasAnyPermission([perm_key('subscriptions.view_all'), perm_key('admin.company')])) {
+            $query->whereCompanyIsCurrent();
+        } elseif ($authUser->hasPermissionTo(perm_key('subscriptions.view_children'))) {
+            $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
+        } elseif ($authUser->hasPermissionTo(perm_key('subscriptions.view_self'))) {
+            $query->whereCompanyIsCurrent()->whereCreatedByUser();
+        } else {
+            return api_forbidden('ليس لديك إذن لعرض الاشتراكات.');
+        }
+
+        // فلاتر الطلب
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+        if ($request->filled('plan_id')) {
+            $query->where('plan_id', $request->input('plan_id'));
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+        if ($request->filled('starts_at_from')) {
+            $query->where('starts_at', '>=', $request->input('starts_at_from') . ' 00:00:00');
+        }
+        if ($request->filled('starts_at_to')) {
+            $query->where('starts_at', '<=', $request->input('starts_at_to') . ' 23:59:59');
+        }
+        if ($request->filled('ends_at_from')) {
+            $query->where('ends_at', '>=', $request->input('ends_at_from') . ' 00:00:00');
+        }
+        if ($request->filled('ends_at_to')) {
+            $query->where('ends_at', '<=', $request->input('ends_at_to') . ' 23:59:59');
+        }
+        if (!empty($request->get('created_at_from'))) {
+            $query->where('created_at', '>=', $request->get('created_at_from') . ' 00:00:00');
+        }
+        if (!empty($request->get('created_at_to'))) {
+            $query->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
+        }
+
+        // التصفح والفرز
+        $perPage = max(1, (int) $request->get('per_page', 20));
+        $sortField = $request->input('sort_by', 'id');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        $subscriptions = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
+
+        if ($subscriptions->isEmpty()) {
+            return api_success([], 'لم يتم العثور على اشتراكات.');
+        } else {
+            return api_success(SubscriptionResource::collection($subscriptions), 'تم جلب الاشتراكات بنجاح.');
+        }
+        // } catch (Throwable $e) {
+        //     return api_exception($e);
+        // }
     }
 
     /**
-     * تخزين اشتراك جديد.
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * تسجيل اشتراك جديد
      */
     public function store(StoreSubscriptionRequest $request): JsonResponse
     {
@@ -132,21 +146,42 @@ class SubscriptionController extends Controller
             try {
                 $validatedData = $request->validated();
                 $validatedData['created_by'] = $authUser->id;
+                $validatedData['company_id'] = $companyId;
 
-                // تحقق من أن المستخدم والخطة ينتميان لنفس الشركة
+                // حساب تاريخ التجديد القادم إذا لم يكن موجوداً
+                if (empty($validatedData['next_billing_date']) && !empty($validatedData['starts_at'])) {
+                    $startDate = \Carbon\Carbon::parse($validatedData['starts_at']);
+                    $cycle = $validatedData['billing_cycle'] ?? 'monthly';
+
+                    $validatedData['next_billing_date'] = match ($cycle) {
+                        'daily' => $startDate->addDay(),
+                        'weekly' => $startDate->addWeek(),
+                        'yearly' => $startDate->addYear(),
+                        default => $startDate->addMonth(), // monthly is default
+                    };
+                }
+
+                // تحقق من أن المستخدم ينتمي للشركة (عبر جدول الربط أو الحقل المباشر)
                 $user = \App\Models\User::where('id', $validatedData['user_id'])
-                    ->where('company_id', $companyId)
+                    ->where(function ($q) use ($companyId) {
+                        $q->where('company_id', $companyId)
+                            ->orWhereHas('companies', function ($cq) use ($companyId) {
+                                $cq->where('companies.id', $companyId);
+                            });
+                    })
                     ->first();
 
                 if (!$user) {
                     return api_error('المستخدم غير موجود .', [], 404);
                 }
-                $plan = \App\Models\Plan::where('id', $validatedData['plan_id'])
-                    ->where('company_id', $companyId)
-                    ->first();
+                if ($request->filled('plan_id')) {
+                    $plan = \App\Models\Plan::where('id', $validatedData['plan_id'])
+                        ->where('company_id', $companyId)
+                        ->first();
 
-                if (!$plan) {
-                    return api_error('خطة التقسيط المحددة غير موجودة .', [], 404);
+                    if (!$plan) {
+                        return api_error('خطة التقسيط المحددة غير موجودة .', [], 404);
+                    }
                 }
 
                 $subscription = Subscription::create($validatedData);
@@ -239,13 +274,30 @@ class SubscriptionController extends Controller
                 $validatedData = $request->validated();
                 $validatedData['updated_by'] = $authUser->id;
 
-                // التحقق من أن المستخدم والخطة ينتميان لنفس الشركة إذا تم تغييرها
+                // إعادة حساب تاريخ التجديد إذا تغير تاريخ البدء أو الدورة ولم يتم إرسال تاريخ تجديد محدد
+                if (empty($validatedData['next_billing_date']) && (isset($validatedData['starts_at']) || isset($validatedData['billing_cycle']))) {
+                    $startDate = \Carbon\Carbon::parse($validatedData['starts_at'] ?? $subscription->starts_at);
+                    $cycle = $validatedData['billing_cycle'] ?? $subscription->billing_cycle;
+
+                    $validatedData['next_billing_date'] = match ($cycle) {
+                        'daily' => $startDate->copy()->addDay(),
+                        'weekly' => $startDate->copy()->addWeek(),
+                        'yearly' => $startDate->copy()->addYear(),
+                        default => $startDate->copy()->addMonth(),
+                    };
+                }
+
                 if (isset($validatedData['user_id']) && $validatedData['user_id'] != $subscription->user_id) {
                     \App\Models\User::where('id', $validatedData['user_id'])
-                        ->where('company_id', $companyId)
+                        ->where(function ($q) use ($companyId) {
+                            $q->where('company_id', $companyId)
+                                ->orWhereHas('companies', function ($cq) use ($companyId) {
+                                    $cq->where('companies.id', $companyId);
+                                });
+                        })
                         ->firstOrFail();
                 }
-                if (isset($validatedData['plan_id']) && $validatedData['plan_id'] != $subscription->plan_id) {
+                if (isset($validatedData['plan_id']) && $validatedData['plan_id'] != $subscription->plan_id && !empty($validatedData['plan_id'])) {
                     \App\Models\Plan::where('id', $validatedData['plan_id'])
                         ->where('company_id', $companyId)
                         ->firstOrFail();

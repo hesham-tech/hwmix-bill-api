@@ -8,11 +8,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @mixin IdeHelperInstallmentPayment
+ * Installment Payment Model
  */
 class InstallmentPayment extends Model
 {
-    use HasFactory, Scopes, Blameable;
+    use HasFactory, Scopes, Blameable, \App\Traits\LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "دفعة أقساط ({$this->payment_date}) - مبلغ: {$this->amount_paid}";
+    }
 
     protected $fillable = [
         'installment_plan_id',
@@ -22,7 +30,15 @@ class InstallmentPayment extends Model
         'amount_paid',
         'payment_method',
         'notes',
+        'cash_box_id',
+        'reference_number',
     ];
+
+    // Customer is retrieved via plan
+    public function getCustomerAttribute()
+    {
+        return $this->plan?->customer;
+    }
 
     public function plan()
     {
@@ -42,6 +58,11 @@ class InstallmentPayment extends Model
     public function details()
     {
         return $this->hasMany(InstallmentPaymentDetail::class, 'installment_payment_id');
+    }
+
+    public function cashBox()
+    {
+        return $this->belongsTo(CashBox::class, 'cash_box_id');
     }
 
     public function installments()

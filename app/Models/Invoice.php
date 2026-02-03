@@ -9,12 +9,60 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Observers\InvoiceObserver;
 
+#[ObservedBy([InvoiceObserver::class])]
 class Invoice extends Model
 {
     use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'total_tax' => 'decimal:2',
+        'tax_rate' => 'decimal:2',
+        'tax_inclusive' => 'boolean',
+        'issue_date' => 'date',
+        'due_date' => 'date',
+        'previous_balance' => 'decimal:2',
+        'initial_paid_amount' => 'decimal:2',
+        'initial_remaining_amount' => 'decimal:2',
+        'user_balance_after' => 'decimal:2',
+    ];
+
+    // Status Constants
+    const STATUS_DRAFT = 'draft';
+    const STATUS_CONFIRMED = 'confirmed';
+    const STATUS_PAID = 'paid';
+    const STATUS_PARTIALLY_PAID = 'partially_paid';
+    const STATUS_OVERDUE = 'overdue';
+    const STATUS_CANCELED = 'canceled';
+    const STATUS_REFUNDED = 'refunded';
+
+    // Payment Status Constants
+    const PAYMENT_UNPAID = 'unpaid';
+    const PAYMENT_PARTIALLY_PAID = 'partially_paid';
+    const PAYMENT_PAID = 'paid';
+    const PAYMENT_OVERPAID = 'overpaid';
+
+    /**
+     * تحديث حالة الدفع بناءً على المبالغ
+     */
+    public function updatePaymentStatus(): void
+    {
+        if ($this->paid_amount == 0) {
+            $this->payment_status = self::PAYMENT_UNPAID;
+        } elseif ($this->paid_amount >= $this->net_amount) {
+            $this->payment_status = $this->paid_amount > $this->net_amount
+                ? self::PAYMENT_OVERPAID
+                : self::PAYMENT_PAID;
+        } else {
+            $this->payment_status = self::PAYMENT_PARTIALLY_PAID;
+        }
+
+        $this->save();
+    }
 
     protected static function booted()
     {
@@ -27,6 +75,10 @@ class Invoice extends Model
 
             $invoice->company_id = $invoice->company_id ?? Auth::user()->company_id;
             $invoice->created_by = $invoice->created_by ?? Auth::id();
+
+            // تعيين المبالغ الابتدائية كـ Snapshot لا يتغير
+            $invoice->initial_paid_amount = $invoice->paid_amount ?? 0;
+            $invoice->initial_remaining_amount = $invoice->remaining_amount ?? 0;
         });
 
         static::updating(function ($invoice) {
@@ -54,9 +106,9 @@ class Invoice extends Model
             : implode('_', array_map(fn($p) => substr($p, 0, 3), $parts));
     }
 
-    public function user()
+    public function customer()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
     public function invoiceType()
     {
@@ -85,5 +137,26 @@ class Invoice extends Model
     public function installmentPlan()
     {
         return $this->hasOne(InstallmentPlan::class, 'invoice_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(InvoicePayment::class, 'invoice_id');
+    }
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "الفاتورة ({$this->invoice_number})";
+    }
+
+    /**
+     * Get the column name for accounting date filtering
+     */
+    public function getIssueDateColumn(): string
+    {
+        return 'issue_date';
     }
 }

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Traits\Blameable;
 use App\Traits\Scopes;
+use App\Traits\LogsActivity;
+use App\Traits\RolePermissions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Stock extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Scopes, LogsActivity, RolePermissions, Blameable;
 
     protected $fillable = [
         'quantity',
@@ -29,6 +31,14 @@ class Stock extends Model
         'created_by',
         'updated_by'
     ];
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "المخزون ({$this->variant?->name}) - كمية: {$this->quantity}";
+    }
 
     protected $casts = [
         'quantity' => 'integer',

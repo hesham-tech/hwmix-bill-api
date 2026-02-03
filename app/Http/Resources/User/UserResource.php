@@ -18,37 +18,28 @@ class UserResource extends JsonResource
      */
     public function toArray($request)
     {
-
-        $company = Company::with('logo')->find($this->company_id);
-
-        $logoUrl = $company?->logo?->url ? asset($company->logo->url) : null;
-        $avatarImage = $this->images->where('type', 'avatar')->first();
-
         return [
             'id' => $this->id,
+            'name' => $this->name,
             'nickname' => $this->nickname,
-            'balance' => optional($this->cashBoxDefault)->balance ?? 0,
             'full_name' => $this->full_name,
             'username' => $this->username,
             'email' => $this->email,
             'phone' => $this->phone,
+            'balance' => $this->balance,
+            'customer_type' => $this->customer_type,
             'position' => $this->position,
-            'settings' => $this->settings,
-            'cash_box_id' => optional($this->cashBoxDefault)->id,
-            'company_logo' => $logoUrl,
+            'status' => $this->status,
+            'avatar_url' => $this->avatar_url,
+            'company_id' => $this->company_id,
+            'company_logo' => $this->whenLoaded('company', fn() => $this->company->logo?->url),
+            'cash_box_id' => $this->getDefaultCashBoxForCompany()?->id,
             'last_login_at' => $this->last_login_at,
             'email_verified_at' => $this->email_verified_at,
-            'roles' => $this->getRolesWithPermissions(),
-            'avatar_url' => $avatarImage ? asset($avatarImage->url) : null,
-            'status' => $this->status,
-            'company_id' => $this->company_id,
             'created_by' => $this->created_by,
-            'customer_type' => $this->customer_type,
-            'cashBoxDefault' => new CashBoxResource($this->whenLoaded('cashBoxDefault')),
-            // الشركات التي يمكن للمستخدم الوصول إليها
-            'companies' => CompanyResource::collection($this->getVisibleCompaniesForUser()),
-            'cashBoxes' => CashBoxResource::collection($this->cashBoxes),
-            'permissions' => $this->getAllPermissions()->pluck('name'),
+            'roles' => $this->whenLoaded('roles', fn() => $this->roles->pluck('name')),
+            'direct_permissions' => $this->whenLoaded('permissions', fn() => $this->getDirectPermissions()->pluck('name')),
+            'companies' => CompanyResource::collection($this->whenLoaded('companies', fn() => $this->getVisibleCompaniesForUser(), collect())),
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
         ];
@@ -64,7 +55,7 @@ class UserResource extends JsonResource
         }
 
         if ($this->hasPermissionTo(perm_key('admin.super'))) {
-            return \App\Models\Company::all();
+            return Company::all();
         }
         return $this->companies;
     }

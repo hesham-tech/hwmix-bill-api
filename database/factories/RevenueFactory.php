@@ -12,12 +12,12 @@ class RevenueFactory extends Factory
     public function definition(): array
     {
         return [
-            'source_type' => $this->faker->randomElement(['sale_invoice', 'service_invoice']),
-            'source_id' => $this->faker->numberBetween(1, 10),
-            'user_id' => 1,
-            'created_by' => 1,
-            'wallet_id' => 1,
-            'company_id' => 1,
+            'source_type' => $this->faker->randomElement(['sale_invoice', 'service_invoice', 'manual']),
+            'source_id' => $this->faker->numberBetween(0, 100),
+            'user_id' => \App\Models\User::factory(),
+            'created_by' => \App\Models\User::factory(),
+            'wallet_id' => \App\Models\CashBox::factory(),
+            'company_id' => \App\Models\Company::factory(),
             'amount' => $this->faker->randomFloat(2, 100, 1000),
             'paid_amount' => $this->faker->randomFloat(2, 50, 1000),
             'remaining_amount' => 0,

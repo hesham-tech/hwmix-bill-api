@@ -18,6 +18,14 @@ trait HasImages
     }
 
     /**
+     * علاقة صورة واحدة (افتراضية - Polymorphic)
+     */
+    public function image(): MorphOne
+    {
+        return $this->morphOne(Image::class, 'imageable');
+    }
+
+    /**
      * علاقة اللوجو (صورة واحدة - Polymorphic)
      */
     public function logo(): MorphOne
@@ -44,9 +52,9 @@ trait HasImages
     /**
      * مزامنة الصور (إضافة الجديدة + حذف المحذوفة)
      */
-    public function syncImages(array $imageIds, string $type = 'gallery'): void
+    public function syncImages(array $imageIds, string $type = 'gallery', ?int $primaryImageId = null): void
     {
-        ImageService::syncImagesWithModel($imageIds, $this, $type);
+        ImageService::syncImagesWithModel($imageIds, $this, $type, $primaryImageId);
     }
 
     /**

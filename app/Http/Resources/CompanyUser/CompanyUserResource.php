@@ -21,19 +21,16 @@ class CompanyUserResource extends JsonResource
          * شعار الشركة
          */
         $companyLogoUrl = $this->whenLoaded('company', function () {
-            $logo = $this->company->logo;
-            return $logo && $logo->url ? asset($logo->url) : null;
+            return $this->company->logo?->url;
         });
 
         /**
          * صورة الأفاتار
          */
         $avatarUrl = $this->whenLoaded('user', function () {
-            $avatar = $this->user->images
+            return $this->user->images
                 ->where('type', 'avatar')
-                ->first();
-
-            return $avatar && $avatar->url ? asset($avatar->url) : null;
+                ->first()?->url;
         });
 
         /**
@@ -63,56 +60,28 @@ class CompanyUserResource extends JsonResource
         });
 
         return [
-            // بيانات المستخدم الأساسية
-            'id'                => $this->user_id,
-            'username'          => $this->whenLoaded('user', fn() => $this->user->username),
-            'email'             => $this->whenLoaded('user', fn() => $this->user->email),
-            'phone'             => $this->whenLoaded('user', fn() => $this->user->phone),
-            'last_login_at'     => $this->whenLoaded('user', fn() => $this->user->last_login_at),
-            'email_verified_at' => $this->whenLoaded('user', fn() => $this->user->email_verified_at),
-            'created_by'        => $this->whenLoaded('user', fn() => $this->user->created_by),
-
-            // بيانات من جدول company_user
-            'nickname'      => $this->nickname_in_company,
-            'full_name'     => $this->full_name_in_company,
-            'balance'       => $this->balance_in_company,
-            'position'      => $this->position_in_company,
-            'status'        => $this->status,
-            'customer_type' => $this->customer_type_in_company,
-
-            // الخزنة الافتراضية
-            'cash_box_id'     => $defaultCashBox?->id,
-            'cashBoxDefault'  => $defaultCashBox ? new CashBoxResource($defaultCashBox) : null,
-
-            // الشركة الحالية
-            'company_id'   => $this->company_id,
-            'company_logo' => $companyLogoUrl,
-
-            // الأدوار والصلاحيات
-            'roles'       => $this->whenLoaded('user', fn() => $this->user->getRolesWithPermissions()),
-            'permissions' => $this->whenLoaded('user', fn() => $this->user->getAllPermissions()->pluck('name')),
-
-            // الصورة
+            // بيانات ملف العضو (سياق الشركة)
+            'id' => $this->user_id,
+            'name' => $this->name,
+            'nickname' => $this->nickname,
+            'full_name' => $this->full_name,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'balance' => $this->balance,
+            'position' => $this->position,
+            'status' => $this->status,
+            'customer_type' => $this->customer_type,
             'avatar_url' => $avatarUrl,
 
-            // الشركات المرتبطة بالمستخدم
-            'companies' => $this->whenLoaded(
-                'user',
-                fn() =>
-                CompanyResource::collection($this->user->getVisibleCompaniesForUser())
-            ),
-
-            // الخزن التابعة للشركة
-            'cashBoxes' => $companyCashBoxes
-                ? CashBoxResource::collection($companyCashBoxes)
-                : [],
-
-            // أوقات الإنشاء والتحديث
+            // معلومات إضافية
+            'cash_box_id' => $this->getDefaultCashBoxAttribute()?->id,
+            'company_id' => $this->company_id,
+            'company_logo' => $companyLogoUrl,
+            'last_login_at' => $this->last_login_at,
+            'roles' => $this->whenLoaded('user', fn() => $this->user->roles->pluck('name')),
+            'direct_permissions' => $this->whenLoaded('user', fn() => $this->user->getDirectPermissions()->pluck('name')),
             'created_at' => $this->created_at?->format('Y-m-d'),
             'updated_at' => $this->updated_at?->format('Y-m-d'),
-
-            // الإعدادات
-            'settings' => $this->whenLoaded('user', fn() => $this->user->settings ?? null),
         ];
     }
 }

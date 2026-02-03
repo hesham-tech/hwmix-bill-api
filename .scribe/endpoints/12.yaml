@@ -1,0 +1,994 @@
+name: '04. نظام الأقساط'
+description: ''
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: api/installment-plans
+    metadata:
+      groupName: '04. نظام الأقساط'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'عرض قائمة خطط التقسيط'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      status:
+        name: status
+        description: 'الحالة (active, completed, canceled).'
+        required: false
+        example: active
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      search:
+        name: search
+        description: 'البحث بالاسم أو الهاتف.'
+        required: false
+        example: محمد
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      per_page:
+        name: per_page
+        description: 'عدد النتائج. Default: 20'
+        required: false
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      status: active
+      search: محمد
+      per_page: 17
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/installment-plan
+    metadata:
+      groupName: '04. نظام الأقساط'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'إنشاء خطة تقسيط'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      user_id:
+        name: user_id
+        description: 'معرف العميل.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      invoice_id:
+        name: invoice_id
+        description: 'The <code>id</code> of an existing record in the invoices table.'
+        required: true
+        example: ratione
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      total_amount:
+        name: total_amount
+        description: 'إجمالي المبلغ.'
+        required: true
+        example: 5000.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      down_payment:
+        name: down_payment
+        description: 'Must be at least 0.'
+        required: false
+        example: 82
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_count:
+        name: installment_count
+        description: 'عدد الأقساط.'
+        required: true
+        example: 10
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      installment_amount:
+        name: installment_amount
+        description: 'Must be at least 0.'
+        required: true
+        example: 33
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      start_date:
+        name: start_date
+        description: 'Must be a valid date.'
+        required: true
+        example: '2026-01-01T20:56:00'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      due_day:
+        name: due_day
+        description: 'Must be at least 1. Must not be greater than 31.'
+        required: true
+        example: 19
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      notes:
+        name: notes
+        description: ''
+        required: false
+        example: consequuntur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      user_id: 1
+      invoice_id: ratione
+      total_amount: 5000.0
+      down_payment: 82
+      installment_count: 10
+      installment_amount: 33
+      start_date: '2026-01-01T20:56:00'
+      due_day: 19
+      notes: consequuntur
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/installment-plan/{installmentPlan_id}'
+    metadata:
+      groupName: '04. نظام الأقساط'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تفاصيل خطة تقسيط'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      installmentPlan_id:
+        name: installmentPlan_id
+        description: 'The ID of the installmentPlan.'
+        required: true
+        example: 4
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      installmentPlan:
+        name: installmentPlan
+        description: 'معرف الخطة.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      installmentPlan_id: 4
+      installmentPlan: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"data":{"id":null,"user_id":null,"invoice_id":null,"name":null,"description":null,"status":"pending","status_label":"\u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641\u0629","round_step":"10","remaining_amount":"0.00","number_of_installments":null,"total_amount":"0.00","down_payment":"0.00","installment_count":null,"installment_amount":"0.00","total_installments_remaining":"0.00","total_installments_amount":"0.00","total_installments_pay":"0.00","total_pay":"0.00","start_date":null,"due_day":null,"notes":null,"created_at":null,"updated_at":null,"installments":[]}}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/installment-plan/{installmentPlan}'
+    metadata:
+      groupName: '04. نظام الأقساط'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحديث خطة تقسيط'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      installmentPlan:
+        name: installmentPlan
+        description: ''
+        required: true
+        example: 5
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      id:
+        name: id
+        description: 'معرف الخطة.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      installmentPlan: 5
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      user_id:
+        name: user_id
+        description: 'The <code>id</code> of an existing record in the users table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      invoice_id:
+        name: invoice_id
+        description: 'The <code>id</code> of an existing record in the invoices table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      total_amount:
+        name: total_amount
+        description: 'Must be at least 0.'
+        required: false
+        example: 57
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      down_payment:
+        name: down_payment
+        description: 'Must be at least 0.'
+        required: false
+        example: 65
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      installment_count:
+        name: installment_count
+        description: 'Must be at least 1.'
+        required: false
+        example: 33
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      installment_amount:
+        name: installment_amount
+        description: 'Must be at least 0.'
+        required: false
+        example: 77
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      start_date:
+        name: start_date
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-01-01T20:56:00'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      due_day:
+        name: due_day
+        description: 'Must be at least 1. Must not be greater than 31.'
+        required: false
+        example: 6
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      notes:
+        name: notes
+        description: ''
+        required: false
+        example: neque
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      status:
+        name: status
+        description: 'الحالة الجديدة.'
+        required: false
+        example: est
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      total_amount: 57
+      down_payment: 65
+      installment_count: 33
+      installment_amount: 77
+      start_date: '2026-01-01T20:56:00'
+      due_day: 6
+      notes: neque
+      status: est
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/installment-plan/{installmentPlan}'
+    metadata:
+      groupName: '04. نظام الأقساط'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'حذف خطة تقسيط'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      installmentPlan:
+        name: installmentPlan
+        description: ''
+        required: true
+        example: 18
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      id:
+        name: id
+        description: 'معرف الخطة.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      installmentPlan: 18
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/installments
+    metadata:
+      groupName: '04. نظام الأقساط'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'عرض قائمة الأقساط'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      status:
+        name: status
+        description: 'الحالة (pending, paid, late).'
+        required: false
+        example: pending
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      due_date_from:
+        name: due_date_from
+        description: 'date تاريخ الاستحقاق من.'
+        required: false
+        example: '2023-01-01'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      user_id:
+        name: user_id
+        description: 'فلترة حسب المستخدم.'
+        required: false
+        example: 6
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      status: pending
+      due_date_from: '2023-01-01'
+      user_id: 6
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"data":[{"id":null,"installment_plan_id":null,"installment_number":null,"due_date":null,"amount":"0.00","status":null,"status_label":"\u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641","paid_at":null,"remaining":"0.00","created_by":null,"company_id":null,"user_id":null,"created_at":null,"updated_at":null},{"id":null,"installment_plan_id":null,"installment_number":null,"due_date":null,"amount":"0.00","status":null,"status_label":"\u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641","paid_at":null,"remaining":"0.00","created_by":null,"company_id":null,"user_id":null,"created_at":null,"updated_at":null}]}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/installment
+    metadata:
+      groupName: '04. نظام الأقساط'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'إنشاء قسط يدوي'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      installment_plan_id:
+        name: installment_plan_id
+        description: 'The <code>id</code> of an existing record in the installment_plans table.'
+        required: true
+        example: qui
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      due_date:
+        name: due_date
+        description: 'تاريخ الاستحقاق.'
+        required: true
+        example: '2023-06-01'
+        type: date
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      amount:
+        name: amount
+        description: 'مبلغ القسط.'
+        required: true
+        example: 500.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: ''
+        required: true
+        example: est
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      paid_at:
+        name: paid_at
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-01-01T20:56:00'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      remaining:
+        name: remaining
+        description: 'Must be at least 0.'
+        required: false
+        example: 90
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      user_id:
+        name: user_id
+        description: 'معرف العميل.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      description:
+        name: description
+        description: 'وصف إضافي.'
+        required: false
+        example: 'قسط شهر يونيو'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      installment_plan_id: qui
+      due_date: '2023-06-01'
+      amount: 500.0
+      status: est
+      paid_at: '2026-01-01T20:56:00'
+      remaining: 90
+      user_id: 1
+      description: 'قسط شهر يونيو'
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/installment/{installment}'
+    metadata:
+      groupName: '04. نظام الأقساط'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        if (!$authUser || !$companyId) {
+        return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+        }
+
+        $installment = Installment::with($this->relations)->findOrFail($id);
+
+        // التحقق من صلاحيات العرض
+        $canView = false;
+        if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+        $canView = true; // المسؤول العام يرى أي قسط
+        } elseif ($authUser->hasAnyPermission([perm_key('installments.view_all'), perm_key('admin.company')])) {
+        // يرى إذا كان القسط ينتمي للشركة النشطة (بما في ذلك مديرو الشركة)
+        $canView = $installment->belongsToCurrentCompany();
+        } elseif ($authUser->hasPermissionTo(perm_key('installments.view_children'))) {
+        // يرى إذا كان القسط أنشأه هو أو أحد التابعين له وتابع للشركة النشطة
+        $canView = $installment->belongsToCurrentCompany() && $installment->createdByUserOrChildren();
+        } elseif ($authUser->hasPermissionTo(perm_key('installments.view_self'))) {
+        // يرى إذا كان القسط أنشأه هو وتابع للشركة النشطة
+        $canView = $installment->belongsToCurrentCompany() && $installment->createdByCurrentUser();
+        }
+
+        if ($canView) {
+        return api_success(new InstallmentResource($installment), 'تم استرداد القسط بنجاح.');
+        }
+
+        return api_forbidden('ليس لديك إذن لعرض هذا القسط.');
+        } catch (Throwable $e) {
+        return api_exception($e, 500);
+        }
+        }
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      installment:
+        name: installment
+        description: 'The installment.'
+        required: true
+        example: 6
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      id:
+        name: id
+        description: 'معرف القسط.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      installment: 6
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      installment_plan_id:
+        name: installment_plan_id
+        description: 'The <code>id</code> of an existing record in the installment_plans table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      due_date:
+        name: due_date
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-01-01T20:56:00'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      amount:
+        name: amount
+        description: 'المبلغ الجديد.'
+        required: false
+        example: 550.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: ''
+        required: false
+        example: occaecati
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      paid_at:
+        name: paid_at
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-01-01T20:56:00'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      remaining:
+        name: remaining
+        description: 'Must be at least 0.'
+        required: false
+        example: 34
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      due_date: '2026-01-01T20:56:00'
+      amount: 550.0
+      status: occaecati
+      paid_at: '2026-01-01T20:56:00'
+      remaining: 34
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/installment/{installment}'
+    metadata:
+      groupName: '04. نظام الأقساط'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'حذف قسط'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      installment:
+        name: installment
+        description: 'The installment.'
+        required: true
+        example: 14
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      id:
+        name: id
+        description: 'معرف القسط.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      installment: 14
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/installment-payment/pay
+    metadata:
+      groupName: '04. نظام الأقساط'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        تحصيل أقساط (دفع)
+
+        عملية سداد مبلغ للأقساط المحددة، يتم توزيع المبلغ تلقائياً على الأقساط المختارة.
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      installment_ids:
+        name: installment_ids
+        description: 'معرفات الأقساط المراد دفعها.'
+        required: true
+        example:
+          - 1
+          - 2
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      amount:
+        name: amount
+        description: 'المبلغ المدفوع إجمالاً.'
+        required: true
+        example: 1000.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      payment_method_id:
+        name: payment_method_id
+        description: 'معرف طريقة الدفع.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      cash_box_id:
+        name: cash_box_id
+        description: 'معرف الخزنة (اختياري، يستخدم الافتراضي إذا لم يحدد).'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      installment_plan_id:
+        name: installment_plan_id
+        description: 'The <code>id</code> of an existing record in the installment_plans table.'
+        required: true
+        example: consequuntur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      user_id:
+        name: user_id
+        description: 'The <code>id</code> of an existing record in the users table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      notes:
+        name: notes
+        description: ''
+        required: false
+        example: aut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      paid_at:
+        name: paid_at
+        description: 'تاريخ الدفع.'
+        required: false
+        example: '2023-10-25 14:00:00'
+        type: datetime
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      installment_ids:
+        - 1
+        - 2
+      amount: 1000.0
+      payment_method_id: 1
+      cash_box_id: 1
+      installment_plan_id: consequuntur
+      notes: aut
+      paid_at: '2023-10-25 14:00:00'
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []

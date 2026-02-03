@@ -31,127 +31,137 @@ use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\InstallmentPlanController;
 use App\Http\Controllers\InstallmentPaymentController;
 use App\Http\Controllers\InstallmentPaymentDetailController;
+use App\Http\Controllers\PlanController;
+use App\Http\Controllers\Api\DevToolController;
+use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\TaskGroupController;
+use App\Http\Controllers\Api\BackupController;
+use App\Http\Controllers\Api\ErrorReportController;
+use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\SubscriptionController;
 
-use App\Models\CompanyUser; // النموذج لجدول company_user
-use App\Models\CashBox;
-use App\Models\CashBoxType; // لضمان العثور على نوع الخزنة
-use Illuminate\Support\Facades\DB;
-use App\Models\User; // لنموذج المستخدم
-use App\Models\Company; // لنموذج الشركة
-
-Route::get('/fix-missing-default-cashboxes', function () {
-    
-    // افتراض ID نوع الخزنة النقدي
-    $cashType = CashBoxType::where('name', 'نقدي')->first();
-    
-    if (!$cashType) {
-        return response()->json([
-            'status' => 'error', 
-            'message' => 'لم يتم العثور على نوع الخزنة "نقدي". لا يمكن إكمال العملية.'
-        ], 500);
-    }
-    
-    $missingCount = 0;
-    
-    // 1. جلب جميع ارتباطات المستخدمين بالشركات
-    // يتم تحميل علاقة الشركة (company) لضمان الحصول على اسمها.
-    $userCompanies = CompanyUser::with('company')
-                                ->get(['user_id', 'company_id', 'created_by']);
-
-    // نستخدم المعاملة لضمان أن جميع عمليات الإنشاء تتم بنجاح أو تفشل جميعاً.
-    DB::beginTransaction();
-
-    try {
-        foreach ($userCompanies as $cu) {
-            // 2. التحقق من وجود خزنة افتراضية لهذا الزوج (المستخدم + الشركة)
-            $exists = CashBox::where('user_id', $cu->user_id)
-                             ->where('company_id', $cu->company_id)
-                             ->where('is_default', 1)
-                             ->exists();
-
-            if (!$exists) {
-                // 3. إنشاء الخزنة النقدية الافتراضية المفقودة
-                
-                // جلب اسم الشركة لوضعه في الوصف
-                $companyName = $cu->company ? $cu->company->name : 'غير محدد';
-                
-                CashBox::create([
-                    'name'             => 'الخزنة النقدية',
-                    'balance'          => '0.00',
-                    'cash_box_type_id' => $cashType->id,
-                    'is_default'       => 1,
-                    'user_id'          => $cu->user_id,
-                    'created_by'       => $cu->created_by ?? $cu->user_id, // استخدام created_by من سجل الارتباط
-                    'company_id'       => $cu->company_id,
-                    'description'      => "تصحيح بيانات: تم إنشاؤها تلقائيًا للشركة: **{$companyName}**",
-                    'account_number'   => null,
-                ]);
-
-                $missingCount++;
-            }
-        }
-        
-        DB::commit();
-        
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تمت عملية تصحيح السجلات القديمة بنجاح.',
-            'boxes_created' => $missingCount,
-            'note' => 'يرجى حذف هذا المسار المؤقت فوراً.'
-        ]);
-
-    } catch (\Throwable $e) {
-        DB::rollBack();
-        \Log::error('API Fix CashBoxes Failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-        
-        return response()->json([
-            'status' => 'error',
-            'message' => 'فشل التصحيح! حدث خطأ في قاعدة البيانات.',
-            'error_details' => $e->getMessage()
-        ], 500);
-    }
-
-})->name('emergency.fix.cashboxes');
+Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceController::class, 'fixMissingCashBoxes'])->name('emergency.fix.cashboxes');
 
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+Route::post('error-reports', [ErrorReportController::class, 'store']);
+Route::get('media/view/{path}', [ImageController::class, 'serve'])->where('path', '.*')->name('media.serve');
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('/auth/check', [AuthController::class, 'checkLogin']);
+
+    // Session Management
+    Route::get('/auth/sessions', [AuthController::class, 'listTokens']);
+    Route::delete('/auth/sessions-others', [AuthController::class, 'revokeAllOtherTokens']);
+    Route::delete('/auth/sessions/{id}', [AuthController::class, 'revokeToken']);
+    // Health check
+    Route::get('/artisan/health', [ArtisanController::class, 'health']);
+
+    // Error Reporting Management
+    Route::controller(ErrorReportController::class)->group(function () {
+        Route::get('error-reports', 'index');
+        Route::patch('error-reports/{errorReport}', 'update');
+    });
+
+    // ================== Reports Routes ==================
+    Route::prefix('reports')->group(function () {
+        // Sales Reports
+        Route::get('/sales', [\App\Http\Controllers\Reports\SalesReportController::class, 'index']);
+        Route::get('/sales/top-products', [\App\Http\Controllers\Reports\SalesReportController::class, 'topProducts']);
+        Route::get('/sales/top-customers', [\App\Http\Controllers\Reports\SalesReportController::class, 'topCustomers']);
+        Route::get('/sales/trend', [\App\Http\Controllers\Reports\SalesReportController::class, 'trend']);
+
+        // Profit & Loss Reports
+        Route::get('/profit-loss', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'index']);
+        Route::get('/profit-loss/monthly-comparison', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'monthlyComparison']);
+
+        // Stock Reports
+        Route::get('/stock', [\App\Http\Controllers\Reports\StockReportController::class, 'index']);
+        Route::get('/stock/valuation', [\App\Http\Controllers\Reports\StockReportController::class, 'valuation']);
+        Route::get('/stock/low-stock', [\App\Http\Controllers\Reports\StockReportController::class, 'lowStock']);
+        Route::get('/stock/inactive', [\App\Http\Controllers\Reports\StockReportController::class, 'inactiveStock']);
+
+        // Cash Flow Reports
+        Route::get('/cash-flow', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'index']);
+        Route::get('/cash-flow/by-cash-box', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'byCashBox']);
+        Route::get('/cash-flow/summary', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'summary']);
+        Route::get('/cash-flow/trend', [\App\Http\Controllers\Reports\CashFlowReportController::class, 'trend']);
+
+        // Tax Reports
+        Route::get('/tax', [\App\Http\Controllers\Reports\TaxReportController::class, 'index']);
+        Route::get('/tax/collected', [\App\Http\Controllers\Reports\TaxReportController::class, 'collected']);
+        Route::get('/tax/paid', [\App\Http\Controllers\Reports\TaxReportController::class, 'paid']);
+        Route::get('/tax/net', [\App\Http\Controllers\Reports\TaxReportController::class, 'netTax']);
+
+        // Customer/Supplier Reports
+        Route::get('/customers/top', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'topCustomers']);
+        Route::get('/customers/debts', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'customerDebts']);
+        Route::get('/suppliers/debts', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'supplierDebts']);
+        Route::get('/customers/performance', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'performance']);
+    });
+
+    // ================== Activity Logs (Audit Trail) ==================
+    Route::prefix('activity-logs')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ActivityController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\ActivityController::class, 'show']);
+        Route::get('/subject/logs', [\App\Http\Controllers\ActivityController::class, 'forSubject']);
+        Route::get('/user/{userId}', [\App\Http\Controllers\ActivityController::class, 'userActivity']);
+        Route::get('/invoice/{invoiceId}', [\App\Http\Controllers\ActivityController::class, 'invoiceActivities']);
+        Route::post('/export', [\App\Http\Controllers\ActivityController::class, 'export']);
+    });
+
+    // ================== Dashboard ==================
+    Route::get('/dashboard/summary', [\App\Http\Controllers\DashboardController::class, 'index']);
     // Auth Controller
     Route::get('me', [AuthController::class, 'me']);
     // User Controller
     Route::controller(UserController::class)
         ->group(function () {
             Route::get('users', 'index');
+            Route::get('users/lookup', 'lookup');
+            Route::get('users/stats', 'stats');
             Route::get('users/search', 'usersSearch');
             Route::get('users/search-advanced', 'indexWithSearch');
-            Route::post('user', 'store');
-            Route::get('user/{user}', 'show');
-            Route::put('user/{user}', 'update');
+            Route::post('users', 'store');
+            Route::get('users/{user}', 'show');
+            Route::put('users/{user}', 'update');
             Route::put('change-company/{user}', 'changeCompany');
-            Route::put('user/{user}/cashbox/{cashBoxId}/set-default', 'setDefaultCashBox');
+            Route::put('users/{user}/cashbox/{cashBoxId}/set-default', 'setDefaultCashBox');
             Route::post('users/delete', 'destroy');
         });
+
     // company Controller
     Route::controller(CompanyController::class)
         ->group(function () {
-            Route::get('companys', 'index');
-            Route::post('company', 'store');
-            Route::get('company/{company}', 'show');
-            Route::put('company/{company}', 'update');
-            Route::post('company/delete', 'destroy');
+            Route::get('companies', 'index');
+            Route::post('companies', 'store');
+            Route::get('companies/{company}', 'show');
+            Route::put('companies/{company}', 'update');
+            Route::post('companies/delete', 'destroy');
         });
 
-    // Image Controller 
+    // Images Controller
     Route::controller(ImageController::class)
         ->group(function () {
             Route::get('images', 'index');
-            Route::post('image', 'store');
-            Route::put('image/{Image}', 'update');
+            Route::post('images', 'store');
+            Route::put('images/{image}', 'update');
+            Route::post('images/{image}/set-primary', 'setPrimary');
             Route::post('images/delete', 'destroy');
         });
+
+    // Backup Controller
+    Route::controller(BackupController::class)->group(function () {
+        Route::get('backups', 'index');
+        Route::post('backups/run', 'run');
+        Route::get('backups/{id}/download', 'download');
+        Route::delete('backups/{id}', 'destroy');
+        Route::get('backups/settings', 'getSettings');
+        Route::put('backups/settings', 'updateSettings');
+        Route::post('backups/{id}/restore', 'restore');
+    });
 
 
     // Transaction Controller
@@ -164,34 +174,54 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('transactions/user/{cashBoxId?}', 'userTransactions');
             Route::post('/transactions/{transaction}/reverse', 'reverseTransaction');
         });
+    // Invoice Controller
+    Route::controller(InvoiceController::class)
+        ->group(function () {
+            Route::get('invoices', 'index');
+            Route::post('invoices', 'store');
+            Route::get('invoices/{invoice}', 'show');
+            Route::put('invoices/{invoice}', 'update');
+            Route::delete('invoices/{invoice}', 'destroy');
+            Route::post('invoices/deletes', 'deleteMultiple');
+
+            // PDF Routes
+            Route::get('invoice/{id}/pdf', 'downloadPDF')->name('invoice.download-pdf');
+            Route::get('invoice/{id}/pdf-data', 'getInvoiceForPDF')->name('invoice.pdf-data');
+            Route::post('invoice/{id}/email-pdf', 'emailPDF')->name('invoice.email-pdf');
+
+            // Excel Export
+            Route::post('invoices/export-excel', 'exportExcel')->name('invoices.export-excel');
+        });
     // Role Controller
     Route::controller(RoleController::class)
         ->group(function () {
             Route::get('roles', 'index');
-            Route::post('role', 'store');
-            Route::get('role/{role}', 'show');
-            Route::put('role/{role}', 'update');
-            Route::delete('role/{role}', 'destroy');
-            Route::post('role/assignRole', 'assignRole');
+            Route::post('roles', 'store');
+            Route::get('roles/{role}', 'show');
+            Route::put('roles/{role}', 'update');
+            Route::delete('roles/{role}', 'destroy'); // Single delete
+            Route::post('roles/batch-delete', 'destroy'); // Batch delete
+            Route::post('roles/assign', 'assignRole');
         });
     // cashBoxTypes Controller
     Route::controller(CashBoxTypeController::class)
         ->group(function () {
-            Route::get('cashBoxTypes', 'index');
-            Route::post('cashBoxType', 'store');
-            Route::get('cashBoxType/{cashBoxType}', 'show');
-            Route::put('cashBoxType/{cashBoxType}', 'update');
-            Route::delete('cashBoxType/{cashBoxType}', 'destroy');
+            Route::get('cash-box-types', 'index');
+            Route::post('cash-box-types', 'store');
+            Route::get('cash-box-types/{cashBoxType}', 'show');
+            Route::put('cash-box-types/{cashBoxType}', 'update');
+            Route::patch('cash-box-types/{id}/toggle', 'toggle');
+            Route::delete('cash-box-types/{cashBoxType}', 'destroy');
         });
     // CashBox Controller
     Route::controller(CashBoxController::class)
         ->group(function () {
-            Route::get('cashBoxs', 'index');
-            Route::post('cashBox', 'store');
-            Route::get('cashBox/{cashBox}', 'show');
-            Route::put('cashBox/{cashBox}', 'update');
-            Route::delete('cashBox/{cashBox}', 'destroy');
-            Route::post('cashBox/transfer', 'transferFunds');
+            Route::get('cash-boxes', 'index');
+            Route::post('cash-boxes', 'store');
+            Route::get('cash-boxes/{cashBox}', 'show');
+            Route::put('cash-boxes/{cashBox}', 'update');
+            Route::delete('cash-boxes/{cashBox}', 'destroy');
+            Route::post('cash-boxes/transfer', 'transferFunds');
         });
     // Logs Controller
     Route::controller(LogController::class)
@@ -204,50 +234,52 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(ProductController::class)
         ->group(function () {
             Route::get('products', 'index');
-            Route::post('product', 'store');
-            Route::get('product/{product}', 'show');
-            Route::put('product/{product}', 'update');
-            Route::delete('product/delete/{product}', 'destroy');
+            Route::post('products', 'store');
+            Route::get('products/{product}', 'show');
+            Route::put('products/{product}', 'update');
+            Route::delete('products/{product}', 'destroy');
         });
     // Attribute Controller
     Route::controller(AttributeController::class)
         ->group(function () {
             Route::get('attributes', 'index');
-            Route::post('attribute', 'store');
-            Route::get('attribute/{attribute}', 'show');
-            Route::put('attribute/{attribute}', 'update');
-            Route::delete('attribute/{attribute}', 'destroy');
+            Route::post('attributes', 'store');
+            Route::get('attributes/{attribute}', 'show');
+            Route::put('attributes/{attribute}', 'update');
+            Route::delete('attributes/{attribute}', 'destroy');
+            Route::patch('attributes/{id}/toggle', 'toggle');
             Route::post('attribute/deletes', 'deleteMultiple');
         });
     // Attribute Value Controller
     Route::controller(AttributeValueController::class)
         ->group(function () {
             Route::get('attribute-values', 'index');
-            Route::post('attribute-value', 'store');
-            Route::get('attribute-value/{attributeValue}', 'show');
-            Route::put('attribute-value/{attributeValue}', 'update');
-            Route::delete('attribute-value/{attributeValue}', 'destroy');
+            Route::post('attribute-values', 'store');
+            Route::get('attribute-values/{attributeValue}', 'show');
+            Route::put('attribute-values/{attributeValue}', 'update');
+            Route::delete('attribute-values/{attributeValue}', 'destroy');
             Route::post('attribute-value/deletes', 'deleteMultiple');
         });
     // Product Variant Controller
     Route::controller(ProductVariantController::class)
         ->group(function () {
             Route::get('product-variants', 'index');
-            Route::post('product-variant', 'store');
-            Route::get('product-variant/{productVariant}', 'show');
-            Route::put('product-variant/{productVariant}', 'update');
-            Route::delete('product-variant/{productVariant}', 'destroy');
-            Route::post('product-variant/delete', 'deleteMultiple');
+            Route::post('product-variants', 'store');
             Route::get('product-variants/search-by-product', 'searchByProduct');
+            Route::get('product-variants/{productVariant}', 'show');
+            Route::put('product-variants/{productVariant}', 'update');
+            Route::delete('product-variants/{productVariant}', 'destroy');
+            Route::post('product-variants/delete', 'deleteMultiple');
         });
     // Warehouse Controller
     Route::controller(WarehouseController::class)
         ->group(function () {
             Route::get('warehouses', 'index');
-            Route::post('warehouse', 'store');
-            Route::get('warehouse/{warehouse}', 'show');
-            Route::put('warehouse/{warehouse}', 'update');
-            Route::post('warehouse/delete', 'destroy');
+            Route::post('warehouses', 'store');
+            Route::get('warehouses/{warehouse}', 'show');
+            Route::put('warehouses/{warehouse}', 'update');
+            Route::delete('warehouses/{warehouse}', 'destroy');
+            Route::patch('warehouses/{warehouse}/set-default', 'setDefault');
         });
     // Stock Controller
     Route::controller(StockController::class)
@@ -256,42 +288,46 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('stock', 'store');
             Route::get('stock/{stock}', 'show');
             Route::put('stock/{stock}', 'update');
-            Route::post('stock/delete', 'destroy');
+            Route::delete('stock/{stock}', 'destroy');
         });
     // Category Controller
     Route::controller(CategoryController::class)
         ->group(function () {
             Route::get('categories', 'index');
-            Route::post('category', 'store');
-            Route::get('category/{category}', 'show');
-            Route::put('category/{category}', 'update');
-            Route::post('category/delete', 'destroy');
+            Route::post('categories', 'store');
+            Route::get('categories/{category}', 'show');
+            Route::put('categories/{category}', 'update');
+            Route::patch('categories/{id}/toggle', 'toggle');
+            Route::get('categories/{id}/breadcrumbs', 'breadcrumbs');
+            Route::delete('categories/{category}', 'destroy');
         });
     // Brand Controller
     Route::controller(BrandController::class)
         ->group(function () {
             Route::get('brands', 'index');
-            Route::post('brand', 'store');
-            Route::get('brand/{brand}', 'show');
-            Route::put('brand/{brand}', 'update');
-            Route::delete('brand/delete/{brand}', 'destroy');
+            Route::post('brands', 'store');
+            Route::get('brands/{brand}', 'show');
+            Route::put('brands/{brand}', 'update');
+            Route::patch('brands/{id}/toggle', 'toggle');
+            Route::delete('brands/{brand}', 'destroy');
         });
     // InvoiceType Controller
     Route::controller(InvoiceTypeController::class)->group(function () {
         Route::get('invoice-types', 'index');
-        Route::post('invoice-type', 'store');
-        Route::get('invoice-type/{invoiceType}', 'show');
-        Route::put('invoice-type/{invoiceType}', 'update');
-        Route::delete('invoice-type/{invoiceType}', 'destroy');
+        Route::post('invoice-types', 'store');
+        Route::get('invoice-types/{invoiceType}', 'show');
+        Route::put('invoice-types/{invoiceType}', 'update');
+        Route::delete('invoice-types/{invoiceType}', 'destroy');
     });
-    // Invoice Controller
-    Route::controller(InvoiceController::class)->group(function () {
-        Route::get('invoices', 'index');
-        Route::post('invoice', 'store');
-        Route::get('invoice/{invoice}', 'show');
-        Route::put('invoice/{invoice}', 'update');
-        Route::delete('invoice/{invoice}', 'destroy');
-    });
+
+    // Service Controller
+    Route::apiResource('services', ServiceController::class);
+
+    // Subscription Controller
+    Route::apiResource('subscriptions', SubscriptionController::class);
+    Route::post('subscriptions/{id}/renew', [\App\Http\Controllers\Api\SubscriptionRenewalController::class, 'renew']);
+    Route::get('subscriptions/{id}/history', [\App\Http\Controllers\Api\SubscriptionRenewalController::class, 'history']);
+
     // InvoiceItem Controller
     Route::controller(InvoiceItemController::class)->group(function () {
         Route::get('invoice-items', 'index');
@@ -303,63 +339,65 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // InstallmentPlan Controller
     Route::controller(InstallmentPlanController::class)->group(function () {
         Route::get('installment-plans', 'index');
-        Route::post('installment-plan', 'store');
-        Route::get('installment-plan/{installmentPlan}', 'show');
-        Route::put('installment-plan/{installmentPlan}', 'update');
-        Route::delete('installment-plan/{installmentPlan}', 'destroy');
+        Route::post('installment-plans', 'store');
+        Route::get('installment-plans/{installmentPlan}', 'show');
+        Route::put('installment-plans/{installmentPlan}', 'update');
+        Route::delete('installment-plans/{installmentPlan}', 'destroy');
     });
+
     // Installment Controller
     Route::controller(InstallmentController::class)->group(function () {
         Route::get('installments', 'index');
-        Route::post('installment', 'store');
-        Route::get('installment/{installment}', 'show');
-        Route::put('installment/{installment}', 'update');
-        Route::delete('installment/{installment}', 'destroy');
+        Route::post('installments', 'store');
+        Route::get('installments/{installment}', 'show');
+        Route::put('installments/{installment}', 'update');
+        Route::delete('installments/{installment}', 'destroy');
     });
     // Payment Controller
     Route::controller(PaymentController::class)->group(function () {
         Route::get('payments', 'index');
-        Route::post('payment', 'store');
-        Route::get('payment/{payment}', 'show');
-        Route::put('payment/{payment}', 'update');
-        Route::delete('payment/{payment}', 'destroy');
+        Route::post('payments', 'store');
+        Route::get('payments/{payment}', 'show');
+        Route::put('payments/{payment}', 'update');
+        Route::delete('payments/{payment}', 'destroy');
     });
     // PaymentMethod Controller
     Route::controller(PaymentMethodController::class)
         ->group(function () {
             Route::get('payment-methods', 'index');
-            Route::post('payment-method', 'store');
+            Route::post('payment-methods', 'store');
 
-            Route::get('payment-method/{paymentMethod}', 'show');
-            Route::put('payment-method/{paymentMethod}', 'update');
-            Route::delete('payment-method/delete/{paymentMethod}', 'destroy');
+            Route::get('payment-methods/{paymentMethod}', 'show');
+            Route::put('payment-methods/{paymentMethod}', 'update');
+            Route::patch('payment-methods/{id}/toggle', 'toggle');
+            Route::delete('payment-methods/{paymentMethod}', 'destroy');
         });
     Route::controller(InstallmentPaymentController::class)
         ->group(function () {
             Route::get('installment-payments', 'index');
-            Route::post('installment-payment', 'store');
-            Route::post('installment-payment/pay', 'payInstallments');
-            Route::get('installment-payment/{installmentPayment}', 'show');
-            Route::put('installment-payment/{installmentPayment}', 'update');
-            Route::delete('installment-payment/delete/{installmentPayment}', 'destroy');
+            Route::post('installment-payments', 'store');
+            Route::post('installment-payments/pay', 'payInstallments');
+            Route::get('installment-payments/{installmentPayment}', 'show');
+            Route::put('installment-payments/{installmentPayment}', 'update');
+            Route::delete('installment-payments/{installmentPayment}', 'destroy');
         });
     // Revenue Controller
     Route::controller(RevenueController::class)
         ->group(function () {
             Route::get('revenues', 'index');
-            Route::post('revenue', 'store');
-            Route::get('revenue/{revenue}', 'show');
-            Route::put('revenue/{revenue}', 'update');
-            Route::delete('revenue/delete/{revenue}', 'destroy');
+            Route::post('revenues', 'store');
+            Route::get('revenues/{revenue}', 'show');
+            Route::put('revenues/{revenue}', 'update');
+            Route::delete('revenues/{revenue}', 'destroy');
         });
     // Profit Controller
     Route::controller(ProfitController::class)
         ->group(function () {
             Route::get('profits', 'index');
-            Route::post('profit', 'store');
-            Route::get('profit/{profit}', 'show');
-            Route::put('profit/{profit}', 'update');
-            Route::delete('profit/delete/{profit}', 'destroy');
+            Route::post('profits', 'store');
+            Route::get('profits/{profit}', 'show');
+            Route::put('profits/{profit}', 'update');
+            Route::delete('profits/{profit}', 'destroy');
         });
     // InstallmentPaymentDetail Controller
     Route::controller(InstallmentPaymentDetailController::class)
@@ -370,17 +408,59 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::put('installment-payment-detail/{installmentPaymentDetail}', 'update');
             Route::delete('installment-payment-detail/delete/{installmentPaymentDetail}', 'destroy');
         });
+    // Plan Controller
+    Route::apiResource('plans', PlanController::class);
+    // InvoiceItem Controller
+    Route::controller(InvoiceItemController::class)
+        ->group(function () {
+            Route::get('invoice-items', 'index');
+            Route::post('invoice-items', 'store');
+            Route::get('invoice-items/{id}', 'show');
+            Route::put('invoice-items/{id}', 'update');
+            Route::delete('invoice-items/{id}', 'destroy');
+        });
+    // InvoiceType Controller
+    Route::controller(InvoiceTypeController::class)
+        ->group(function () {
+            Route::get('invoice-types', 'index');
+            Route::post('invoice-type', 'store');
+            Route::get('invoice-type/{id}', 'show');
+            Route::put('invoice-type/{id}', 'update');
+            Route::delete('invoice-type/delete/{id}', 'destroy');
+        });
     Route::get('/permissions', [PermissionController::class, 'index']);
+
+    // ================== Financials (Expenses & Ledger) ==================
+    Route::apiResource('expenses', \App\Http\Controllers\ExpenseController::class);
+    Route::get('expenses/summary', [\App\Http\Controllers\ExpenseController::class, 'getSummary']);
+    Route::apiResource('expense-categories', \App\Http\Controllers\ExpenseCategoryController::class);
+    Route::get('financial-ledger', [\App\Http\Controllers\FinancialLedgerController::class, 'index']);
+    Route::post('financial-ledger/export', [\App\Http\Controllers\FinancialLedgerController::class, 'export']);
+
+    // Summary Reports (High Performance)
+    Route::get('reports/profit-loss-summary', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'profitLossSummary']);
+
+    // ================== Task Management ==================
+    Route::apiResource('tasks', TaskController::class);
+    Route::post('tasks/{task}/comments', [TaskController::class, 'addComment']);
+    Route::post('tasks/{task}/attachments', [TaskController::class, 'uploadAttachment']);
+    Route::apiResource('task-groups', TaskGroupController::class);
+
+    // ================== Dev Tools ==================
+    Route::prefix('dev')->group(function () {
+        Route::get('/testing-checklist', [DevToolController::class, 'getTestingChecklist']);
+        Route::post('/testing-checklist', [DevToolController::class, 'saveTestingChecklist']);
+    });
 });
 // Artisan commands routes
 Route::controller(ArtisanController::class)->prefix('php')->group(function () {
     Route::get('runComposerDump', 'runComposerDump'); // عمل اوتو لود للملفات 
     Route::get('generateBackup', 'generateBackup'); //  توليد السيدرز الاحتياطية
+    Route::get('migrate', 'migrate'); // تحديث الجداول
     Route::get('migrateAndSeed', 'migrateAndSeed'); // ميجريشن ريفرش وعمل سيدرنج لقاعدة البيانات من جديد
     Route::get('applyBackup', 'applyBackup');     //  تطبيق السيدرز الاحتياطية
     Route::get('PermissionsSeeder', 'PermissionsSeeder'); // تشغيل PermissionsSeeder
     Route::get('DatabaseSeeder', 'DatabaseSeeder'); // تشغيل DatabaseSeeder
     Route::get('seedRolesAndPermissions', 'seedRolesAndPermissions'); // تشغيل RolesAndPermissionsSeeder
     Route::get('clear', 'clearAllCache'); // مسح جميع الكاشات وإعادة بنائها
-    Route::get('ensureCashBoxesForAllUsers', 'ensureCashBoxesForAllUsers'); //
 });

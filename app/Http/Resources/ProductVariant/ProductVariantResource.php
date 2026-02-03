@@ -11,6 +11,7 @@ use App\Http\Resources\Product\ProductResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\Category\CategoryResource;
 use App\Http\Resources\Warehouse\WarehouseResource;
+use App\Http\Resources\Image\ImageResource;
 use App\Http\Resources\ProductVariantAttribute\ProductVariantAttributeResource;
 
 class ProductVariantResource extends JsonResource
@@ -24,8 +25,11 @@ class ProductVariantResource extends JsonResource
             'barcode' => $this->barcode,
             'sku' => $this->sku,
             'retail_price' => $this->retail_price,
-            'wholesale_price' => $this->wholesale_price,
-            'image' => $this->image,
+            'wholesale_price' => $this->when(auth()->user()?->hasAnyPermission(['products.view_wholesale_price', 'admin.super', 'admin.company']), $this->wholesale_price),
+            'purchase_price' => $this->when(auth()->user()?->hasAnyPermission(['products.view_purchase_price', 'admin.super', 'admin.company']), $this->purchase_price),
+            'profit_margin' => $this->profit_margin,
+            'image' => $this->image?->url,
+            'primary_image_url' => $this->image?->url ?? $this->product?->image?->url,
             'weight' => $this->weight,
             'dimensions' => $this->dimensions,
             'tax' => $this->tax,
@@ -51,6 +55,8 @@ class ProductVariantResource extends JsonResource
                 'category_id' => $this->product->category_id,
                 'brand_id' => $this->product->brand_id,
                 'company_id' => $this->product->company_id,
+                'product_type' => $this->product->product_type,
+                'requires_stock' => (bool) $this->product->requiresStock(),
             ]),
 
             // ✅ الخصائص (attributes) + القيم المرتبطة
@@ -64,6 +70,9 @@ class ProductVariantResource extends JsonResource
 
             // ✅ الشركة التابعة للمتغير
             'company' => new CompanyResource($this->whenLoaded('company')),
+
+            // ✅ صور المتغير
+            'images' => ImageResource::collection($this->whenLoaded('images')),
         ];
     }
 }

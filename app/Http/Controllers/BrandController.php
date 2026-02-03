@@ -8,9 +8,10 @@ use App\Http\Requests\Brand\UpdateBrandRequest;
 use App\Http\Resources\Brand\BrandResource;
 use App\Models\Brand;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse; // للتأكد من استيراد JsonResponse
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\ImageService;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -29,16 +30,23 @@ class BrandController extends Controller
     {
         $this->relations = [
             'creator',
-            'company',   // للتحقق من belongsToCurrentCompany
-            'products',  // للتحقق من المنتجات المرتبطة قبل الحذف
+            'company',
+            'products',
+            'image',
         ];
     }
 
     /**
-     * عرض جميع العلامات التجارية.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * عرض قائمة الماركات
+     * 
+     * استرجاع قائمة العلامات التجارية المسجلة في النظام.
+     * 
+     * @queryParam search string البحث باسم الماركة أو وصفها. Example: سامسونج
+     * 
+     * @apiResourceCollection App\Http\Resources\Brand\BrandResource
+     * @apiResourceModel App\Models\Brand
      */
     public function index(Request $request): JsonResponse
     {
@@ -69,7 +77,7 @@ class BrandController extends Controller
                 $query->where(function ($q) use ($search) {
                     $q
                         ->where('name', 'like', "%$search%")
-                        ->orWhere('desc', 'like', "%$search%");
+                        ->orWhere('description', 'like', "%$search%");
                 });
             }
             if ($request->filled('name')) {
@@ -81,8 +89,8 @@ class BrandController extends Controller
             $sortOrder = $request->input('sort_order', 'desc');
             $query->orderBy($sortBy, $sortOrder);
 
-            $perPage = max(1, (int) $request->get('per_page', 10));
-            $brands = $query->get();
+            $perPage = max(1, (int) $request->get('per_page', 12));
+            $brands = $query->paginate($perPage);
 
             if ($brands->isEmpty()) {
                 return api_success($brands, 'لم يتم العثور على علامات تجارية.');
@@ -95,10 +103,12 @@ class BrandController extends Controller
     }
 
     /**
-     * إضافة علامة تجارية جديدة.
-     *
-     * @param StoreBrandRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * إضافة ماركة جديدة
+     * 
+     * @bodyParam name string required اسم العلامة التجارية. Example: آبل
+     * @bodyParam desc string وصف الماركة. Example: شركة تقنية عالمية
      */
     public function store(StoreBrandRequest $request): JsonResponse
     {
@@ -135,6 +145,11 @@ class BrandController extends Controller
                 $validatedData['created_by'] = $authUser->id;
 
                 $brand = Brand::create($validatedData);
+
+                if (!empty($validatedData['image_id'])) {
+                    ImageService::attachImagesToModel([$validatedData['image_id']], $brand, 'logo');
+                }
+
                 $brand->load($this->relations);
                 DB::commit();
                 return api_success(new BrandResource($brand), 'تم إنشاء العلامة التجارية بنجاح.');
@@ -151,10 +166,9 @@ class BrandController extends Controller
     }
 
     /**
-     * عرض علامة تجارية محددة.
-     *
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * عرض ماركة محددة
      */
     public function show(string $id): JsonResponse
     {
@@ -192,11 +206,9 @@ class BrandController extends Controller
     }
 
     /**
-     * تحديث علامة تجارية.
-     *
-     * @param UpdateBrandRequest $request
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * تحديث بيانات ماركة
      */
     public function update(UpdateBrandRequest $request, string $id): JsonResponse
     {
@@ -248,6 +260,12 @@ class BrandController extends Controller
                 $validatedData['updated_by'] = $updatedBy; // من قام بالتعديل
 
                 $brand->update($validatedData);
+
+                if (isset($validatedData['image_id'])) {
+                    $newImageIds = $validatedData['image_id'] ? [$validatedData['image_id']] : [];
+                    ImageService::syncImagesWithModel($newImageIds, $brand, 'logo');
+                }
+
                 $brand->load($this->relations);
                 DB::commit();
                 return api_success(new BrandResource($brand), 'تم تحديث العلامة التجارية بنجاح.');
@@ -264,10 +282,9 @@ class BrandController extends Controller
     }
 
     /**
-     * حذف علامة تجارية.
-     *
-     * @param Brand $brand
-     * @return \Illuminate\Http\JsonResponse
+     * @group 04. نظام المنتجات
+     * 
+     * حذف ماركة
      */
     public function destroy(Brand $brand): JsonResponse
     {
@@ -309,7 +326,12 @@ class BrandController extends Controller
 
                 // حفظ نسخة من العلامة التجارية قبل حذفها لإرجاعها في الاستجابة
                 $deletedBrand = $brand->replicate();
-                $deletedBrand->setRelations($brand->getRelations()); // نسخ العلاقات المحملة
+                $deletedBrand->setRelations($brand->getRelations());
+
+                // حذف الصورة المرتبطة
+                if ($brand->image) {
+                    ImageService::deleteImages([$brand->image->id]);
+                }
 
                 $brand->delete();
                 DB::commit();
@@ -318,6 +340,22 @@ class BrandController extends Controller
                 DB::rollBack();
                 return api_error('حدث خطأ أثناء حذف العلامة التجارية.', [], 500);
             }
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 04. نظام المنتجات
+     * 
+     * تغيير حالة الماركة (تفعيل/تعطيل)
+     */
+    public function toggle(string $id): JsonResponse
+    {
+        try {
+            $brand = Brand::findOrFail($id);
+            $brand->update(['active' => !$brand->active]);
+            return api_success(new BrandResource($brand), 'تم تغيير حالة العلامة التجارية بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }

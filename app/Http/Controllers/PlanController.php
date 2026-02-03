@@ -24,7 +24,14 @@ class PlanController extends Controller
     ];
 
     /**
-     * عرض قائمة الخطط.
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * عرض خطط الأسعار
+     * 
+     * استرجاع الباقات والخطط المتاحة للاشتراك في النظام.
+     * 
+     * @apiResourceCollection App\Http\Resources\Plan\PlanResource
+     * @apiResourceModel App\Models\Plan
      */
     public function index(Request $request): JsonResponse
     {
@@ -144,7 +151,9 @@ class PlanController extends Controller
     }
 
     /**
-     * عرض خطة محددة.
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * تفاصيل خطة
      */
     public function show(Plan $plan): JsonResponse
     {

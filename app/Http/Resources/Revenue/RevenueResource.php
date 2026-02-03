@@ -32,7 +32,8 @@ class RevenueResource extends JsonResource
             'updated_at' => $this->updated_at,
             // علاقات
             'company' => $this->whenLoaded('company'),
-            'creator' => $this->whenLoaded('creator'),
+            'customer' => new \App\Http\Resources\User\UserBasicResource($this->whenLoaded('customer')),
+            'creator' => new \App\Http\Resources\User\UserBasicResource($this->whenLoaded('creator')),
         ];
     }
 }

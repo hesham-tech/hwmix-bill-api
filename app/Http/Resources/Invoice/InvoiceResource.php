@@ -22,26 +22,38 @@ class InvoiceResource extends JsonResource
             'invoice_number' => $this->invoice_number,
             // الحقول المالية
             'gross_amount' => number_format($this->gross_amount, 2, '.', ''),
-            'total_amount' => number_format($this->total_amount, 2, '.', ''),
             'paid_amount' => number_format($this->paid_amount, 2, '.', ''),
             'remaining_amount' => number_format($this->remaining_amount, 2, '.', ''),
+            'previous_balance' => number_format($this->previous_balance, 2, '.', ''),
+            'total_required' => number_format($this->net_amount - $this->previous_balance, 2, '.', ''),
             'round_step' => $this->round_step,
             'net_amount' => number_format($this->net_amount, 2, '.', ''),
             'total_discount' => number_format($this->total_discount, 2, '.', ''),
+            'initial_paid_amount' => number_format($this->initial_paid_amount, 2, '.', ''),
+            'initial_remaining_amount' => number_format($this->initial_remaining_amount, 2, '.', ''),
+            'user_balance_after' => number_format($this->user_balance_after, 2, '.', ''),
 
             'status' => $this->status,
-            'status_label' => $this->getStatusLabel(), // إضافة status_label
+            'status_label' => $this->getStatusLabel(),
+            'payment_status' => $this->payment_status,
+            'payment_status_label' => $this->getPaymentStatusLabel(),
             'notes' => $this->notes,
+            'cash_box_id' => $this->cash_box_id,
+            'warehouse_id' => $this->warehouse_id,
+            'reference_number' => $this->reference_number,
 
-            'issue_date' => optional($this->issue_date)->format('Y-m-d H:i:s'),
-            'due_date' => optional($this->due_date)->format('Y-m-d H:i:s'),
+            'issue_date' => $this->issue_date ? $this->issue_date->format('Y-m-d') : null,
+            'due_date' => $this->due_date ? $this->due_date->format('Y-m-d') : null,
             'created_at' => optional($this->created_at)->format('Y-m-d H:i:s'),
             'updated_at' => optional($this->updated_at)->format('Y-m-d H:i:s'),
 
             // العلاقات لما تكون محملة فقط
-            'user' => new UserBasicResource($this->whenLoaded('user')),
+            'customer' => new UserBasicResource($this->whenLoaded('customer')),
             'invoice_type' => new InvoiceTypeResource($this->whenLoaded('invoiceType')),
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
+            'payments' => $this->whenLoaded('payments', function () {
+                return \App\Http\Resources\Invoice\InvoicePaymentResource::collection($this->payments);
+            }),
             'company' => new CompanyResource($this->whenLoaded('company')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'installment_plan' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
@@ -50,6 +62,7 @@ class InvoiceResource extends JsonResource
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,
             'installment_plan_id' => $this->installment_plan_id,
+            'user_balance' => $this->customer ? $this->customer->balance : 0,
         ];
     }
 
@@ -63,7 +76,21 @@ class InvoiceResource extends JsonResource
             'confirmed' => 'مؤكدة',
             'canceled' => 'ملغاة',
             'paid' => 'مدفوعة بالكامل',
-            'partially_paid' => 'مدفوعة جزئياً', // إضافة حالة محتملة
+            'partially_paid' => 'مدفوعة جزئياً',
+            default => 'غير معروفة',
+        };
+    }
+
+    /**
+     * ترجمة حالة الدفع.
+     */
+    protected function getPaymentStatusLabel()
+    {
+        return match ($this->payment_status) {
+            'unpaid' => 'غير مدفوعة',
+            'partially_paid' => 'مدفوعة جزئياً',
+            'paid' => 'مدفوعة بالكامل',
+            'overpaid' => 'مدفوعة بزيادة',
             default => 'غير معروفة',
         };
     }

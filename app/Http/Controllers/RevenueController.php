@@ -22,16 +22,23 @@ class RevenueController extends Controller
     {
         $this->relations = [
             'company',   // للتحقق من belongsToCurrentCompany
+            'customer',  // العميل المرتبط بالإيراد
             'creator',   // للتحقق من createdByCurrentUser/OrChildren
-            // أضف أي علاقات أخرى ذات صلة هنا، مثل 'invoice' أو 'user' إذا كانت الإيرادات مرتبطة بها مباشرةً
         ];
     }
 
     /**
-     * عرض قائمة الإيرادات.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض قائمة الإيرادات
+     * 
+     * @queryParam amount_from number المبلغ من. Example: 100
+     * @queryParam amount_to number المبلغ إلى. Example: 1000
+     * @queryParam created_at_from date التاريخ من. Example: 2023-01-01
+     * @queryParam per_page integer عدد النتائج. Default: 15
+     * 
+     * @apiResourceCollection App\Http\Resources\Revenue\RevenueResource
+     * @apiResourceModel App\Models\Revenue
      */
     public function index(Request $request): JsonResponse
     {
@@ -101,10 +108,13 @@ class RevenueController extends Controller
     }
 
     /**
-     * تخزين إيراد جديد.
-     *
-     * @param StoreRevenueRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تسجيل إيراد جديد
+     * 
+     * @bodyParam amount number required المبلغ. Example: 500
+     * @bodyParam description string required وصف الإيراد. Example: مبيعات خدمات فرعية
+     * @bodyParam company_id integer معرف الشركة (للمدراء). Example: 1
      */
     public function store(StoreRevenueRequest $request): JsonResponse
     {
@@ -155,10 +165,14 @@ class RevenueController extends Controller
     }
 
     /**
-     * عرض إيراد محدد.
-     *
-     * @param Revenue $revenue
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * عرض تفاصيل إيراد
+     * 
+     * @urlParam revenue required معرف الإيراد. Example: 1
+     * 
+     * @apiResource App\Http\Resources\Revenue\RevenueResource
+     * @apiResourceModel App\Models\Revenue
      */
     public function show(Revenue $revenue): JsonResponse
     {
@@ -195,11 +209,12 @@ class RevenueController extends Controller
     }
 
     /**
-     * تحديث إيراد محدد.
-     *
-     * @param UpdateRevenueRequest $request
-     * @param Revenue $revenue
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * تحديث إيراد
+     * 
+     * @urlParam revenue required معرف الإيراد. Example: 1
+     * @bodyParam amount number المبلغ المحدث. Example: 600
      */
     public function update(UpdateRevenueRequest $request, Revenue $revenue): JsonResponse
     {
@@ -261,10 +276,11 @@ class RevenueController extends Controller
     }
 
     /**
-     * حذف إيراد محدد.
-     *
-     * @param Revenue $revenue
-     * @return \Illuminate\Http\JsonResponse
+     * @group 06. العمليات المالية والخزينة
+     * 
+     * حذف إيراد
+     * 
+     * @urlParam revenue required معرف الإيراد. Example: 1
      */
     public function destroy(Revenue $revenue): JsonResponse
     {

@@ -4,18 +4,28 @@ namespace App\Models;
 
 use App\Traits\Blameable;
 use App\Traits\Scopes;
+use App\Traits\HasImages;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * @mixin IdeHelperProduct
- */
+use App\Traits\LogsActivity;
+
 class Product extends Model
 {
-    use HasFactory, Blameable,Scopes;
+    use HasFactory, Blameable, Scopes, LogsActivity, HasImages;
 
     protected $fillable = [
         'name',
+        'product_type',
+        'require_stock',
+        'is_downloadable',
+        'download_url',
+        'download_limit',
+        'license_keys',
+        'available_keys_count',
+        'validity_days',
+        'expires_at',
+        'delivery_instructions',
         'slug',
         'active',
         'featured',
@@ -26,14 +36,32 @@ class Product extends Model
         'category_id',
         'brand_id',
         'company_id',
-        'created_by'
+        'created_by',
+        'sales_count'
     ];
 
+    protected $guarded = [];
+
+    // Product Type Constants
+    const TYPE_PHYSICAL = 'physical';
+    const TYPE_DIGITAL = 'digital';
+    const TYPE_SERVICE = 'service';
+    const TYPE_SUBSCRIPTION = 'subscription';
+
     protected $casts = [
+        'product_type' => 'string',
+        'require_stock' => 'boolean',
+        'is_downloadable' => 'boolean',
+        'download_limit' => 'integer',
+        'license_keys' => 'array',
+        'available_keys_count' => 'integer',
+        'validity_days' => 'integer',
+        'expires_at' => 'datetime',
         'active' => 'boolean',
         'featured' => 'boolean',
         'returnable' => 'boolean',
         'published_at' => 'datetime',
+        'sales_count' => 'integer',
     ];
 
     public function creator()
@@ -62,11 +90,74 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
-    // // علاقة المنتج مع الصور
-    // public function images()
-    // {
-    //     return $this->hasMany(ProductImage::class);  // إذا كان هناك صور متعددة
-    // }
+    public function digitalDeliveries()
+    {
+        return $this->hasMany(DigitalProductDelivery::class);
+    }
+
+    // ==================== Scopes ====================
+
+    public function scopePhysical($query)
+    {
+        return $query->where('product_type', self::TYPE_PHYSICAL);
+    }
+
+    public function scopeDigital($query)
+    {
+        return $query->where('product_type', self::TYPE_DIGITAL);
+    }
+
+    public function scopeService($query)
+    {
+        return $query->where('product_type', self::TYPE_SERVICE);
+    }
+
+    public function scopeSubscription($query)
+    {
+        return $query->where('product_type', self::TYPE_SUBSCRIPTION);
+    }
+
+    // ==================== Helper Methods ====================
+
+    public function isPhysical(): bool
+    {
+        return $this->product_type === self::TYPE_PHYSICAL;
+    }
+
+    public function isDigital(): bool
+    {
+        return $this->product_type === self::TYPE_DIGITAL;
+    }
+
+    public function isService(): bool
+    {
+        return $this->product_type === self::TYPE_SERVICE;
+    }
+
+    public function isSubscription(): bool
+    {
+        return $this->product_type === self::TYPE_SUBSCRIPTION;
+    }
+
+    public function requiresStock(): bool
+    {
+        return $this->require_stock;
+    }
+
+    public function hasAvailableKeys(): bool
+    {
+        return $this->isDigital() && $this->available_keys_count > 0;
+    }
+
+    // ==================== العلاقات ====================
+
+    /**
+     * علاقة المنتج مع الصور عبر التحويل المتعدد (Polymorphic)
+     */
+    public function images()
+    {
+        return $this->morphMany(Image::class, 'imageable');
+    }
 
     // دالة لتوليد الـ slug
     public static function generateSlug($name)
@@ -90,4 +181,12 @@ class Product extends Model
 
         return $slug;
     }
-};
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "المنتج ({$this->name})";
+    }
+}
