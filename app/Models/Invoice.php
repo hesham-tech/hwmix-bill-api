@@ -76,6 +76,12 @@ class Invoice extends Model
             $invoice->company_id = $invoice->company_id ?? Auth::user()->company_id;
             $invoice->created_by = $invoice->created_by ?? Auth::id();
 
+            // تعيين تاريخ الاستحقاق الافتراضي (6 أشهر) إذا لم يحدد
+            if (empty($invoice->due_date)) {
+                $baseDate = $invoice->issue_date ? \Carbon\Carbon::parse($invoice->issue_date) : now();
+                $invoice->due_date = $baseDate->addMonths(6);
+            }
+
             // تعيين المبالغ الابتدائية كـ Snapshot لا يتغير
             $invoice->initial_paid_amount = $invoice->paid_amount ?? 0;
             $invoice->initial_remaining_amount = $invoice->remaining_amount ?? 0;

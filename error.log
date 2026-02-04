@@ -482,3 +482,33 @@ Stack Trace: TypeError: Failed to fetch dynamically imported module: http://loca
 URL: http://localhost:5173/app/users?page=1&per_page=10&sort_by=created_at&sort_order=desc
 User ID: Guest
 --------------------------------------------------
+[2026-02-03 23:14:02] VUE_ERROR: _ctx.isItemActive is not a function
+Stack Trace: TypeError: _ctx.isItemActive is not a function
+    at http://localhost:5173/src/components/layout/Sidebar.vue?t=1770160441873:317:48
+    at renderList (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:4988:16)
+    at http://localhost:5173/src/components/layout/Sidebar.vue?t=1770160441873:289:81
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-RBEVNHDK.js?v=bf8373e3:846:58)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:6548:31
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:2763:13)
+    at Proxy.<anonymous> (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:3233:79)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:7481:26)
+URL: http://localhost:5173/app/invoices/create?type=sale
+User ID: Guest
+--------------------------------------------------
+[2026-02-03 23:28:53] VUE_ERROR: searchTimeout is not defined
+Stack Trace: ReferenceError: searchTimeout is not defined
+    at handleSearch (http://localhost:5173/src/modules/invoices/components/ProductSelector.vue?t=1770160202088:85:16)
+    at callWithErrorHandling (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:2270:17)
+    at emit (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:8466:5)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:10175:45
+    at http://localhost:5173/src/components/common/AppAutocomplete.vue?t=1770160202088:230:3
+    at callWithErrorHandling (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:2263:19)
+    at callWithAsyncErrorHandling (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:2270:17)
+    at baseWatchOptions.call (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:8275:47)
+    at job (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=bf8373e3:1992:18)
+URL: http://localhost:5173/app/invoices/create?type=installment_sale
+User ID: Guest
+--------------------------------------------------

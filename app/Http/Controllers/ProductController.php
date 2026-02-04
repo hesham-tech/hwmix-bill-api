@@ -41,7 +41,7 @@ class ProductController extends Controller
             'brand',
             'images',
             'variants' => function ($q) {
-                $q->select('id', 'product_id', 'retail_price', 'wholesale_price', 'product_type');
+                $q->select('id', 'product_id', 'retail_price', 'wholesale_price');
             }
         ];
 
@@ -131,10 +131,10 @@ class ProductController extends Controller
         $query->withMin('variants', 'retail_price')
             ->withMax('variants', 'retail_price')
             ->addSelect([
-                'total_available_quantity' => Stock::selectRaw('SUM(quantity)')
-                    ->join('product_variants', 'stocks.product_variant_id', '=', 'product_variants.id')
+                'total_available_quantity' => Stock::selectRaw('IFNULL(SUM(quantity), 0)')
+                    ->join('product_variants', 'stocks.variant_id', '=', 'product_variants.id')
                     ->whereColumn('product_variants.product_id', 'products.id')
-                    ->where('stocks.status', 'available')
+                    ->where('stocks.status', '=', 'available')
             ]);
     }
 

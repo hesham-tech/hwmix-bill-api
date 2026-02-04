@@ -35,6 +35,34 @@ class SaleInvoiceService implements DocumentServiceInterface
             // دمج البيانات المحسوبة مع البيانات المدخلة
             $data = array_merge($data, $calculatedData);
 
+            // ✅ تحديد تاريخ الاستحقاق في حالة البيع بالتقسيط
+            if (empty($data['due_date']) && !empty($data['installment_plan'])) {
+                $plan = $data['installment_plan'];
+                $startDate = isset($plan['start_date']) ? \Carbon\Carbon::parse($plan['start_date']) : now();
+                $count = $plan['number_of_installments'] ?? 1;
+                $frequency = $plan['frequency'] ?? 'monthly';
+
+                // حساب تاريخ آخر قسط
+                $lastInstallmentDate = $startDate->copy();
+
+                // بما أن القسط الأول هو تاريخ البداية، نضيف (العدد - 1)
+                $intervalsToAdd = max(0, $count - 1);
+
+                if ($frequency === 'weekly') {
+                    $lastInstallmentDate->addWeeks($intervalsToAdd);
+                } elseif ($frequency === 'biweekly') {
+                    $lastInstallmentDate->addWeeks($intervalsToAdd * 2);
+                } elseif ($frequency === 'quarterly') {
+                    $lastInstallmentDate->addMonths($intervalsToAdd * 3);
+                } else {
+                    // الافتراضي شهري
+                    $lastInstallmentDate->addMonths($intervalsToAdd);
+                }
+
+                // إضافة شهر واحد على تاريخ آخر قسط
+                $data['due_date'] = $lastInstallmentDate->addMonth()->format('Y-m-d');
+            }
+
             $this->checkVariantsStock($data['items'], 'deduct', $data['warehouse_id'] ?? null);
 
             $invoice = $this->createInvoice($data);

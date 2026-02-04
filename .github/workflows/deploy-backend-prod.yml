@@ -1,0 +1,76 @@
+name: Deploy Laravel Backend to Production (SSH)
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
+
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+            QyNTUxOQAAACA6g37ShyPiZgfHaFfVnmicCN5PLQIWh4/t247UWaQcEAAAAIgdHZUuHR2V
+            LgAAAAtzc2gtZWQyNTUxOQAAACA6g37ShyPiZgfHaFfVnmicCN5PLQIWh4/t247UWaQcEA
+            AAAEBclRKUG/1G65MQ0XImU2COe0ZPBRsZaFhBvYsDc2sHlDqDftKHI+JmB8doV9WeaJwI
+            3k8tAhaHj+3bjtRZpBwQAAAABWh3bml4
+            -----END OPENSSH PRIVATE KEY-----
+
+      - name: Ensure Remote Directory Exists
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "mkdir -p /home/u715355537/domains/hwnix.com/public_html/api/"
+
+      - name: Deploy via Rsync
+        run: |
+          rsync -avz --delete -e "ssh -p 65002 -o StrictHostKeyChecking=no" \
+          --exclude='.git/' \
+          --exclude='.github/' \
+          --exclude='node_modules/' \
+          --exclude='tests/' \
+          --exclude='storage/' \
+          --exclude='public/storage' \
+          --exclude='.env' \
+          --exclude='phpunit.xml' \
+          --exclude='README.md' \
+          ./ u715355537@212.107.17.234:/home/u715355537/domains/hwnix.com/public_html/api/
+
+      - name: Run Database Migrations
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api && php artisan migrate --force"
+
+      - name: Clear All Caches
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api && php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan event:clear"
+
+      - name: Rebuild Composer Autoloader
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api && composer dump-autoload -o"
+
+      - name: Optimize for Production
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api && php artisan config:cache && php artisan route:cache && php artisan optimize"
+
+      - name: Alignment Fixes for Storage Link (Optional)
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api && php artisan storage:link"
+
+      - name: Deployment Complete
+        run: echo "✅ Production Deployment successful!"

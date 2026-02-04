@@ -323,22 +323,21 @@ class ProductVariantController extends Controller
                     foreach ($request->input('attributes') as $attr) {
                         if (!empty($attr['attribute_id']) && !empty($attr['attribute_value_id'])) {
                             if (isset($attr['id'])) {
-                                DB::table('product_variant_attributes')
-                                    ->where('id', $attr['id'])
-                                    ->update([
+                                $existingAttr = $productVariant->attributes()->find($attr['id']);
+                                if ($existingAttr) {
+                                    $existingAttr->update([
                                         'attribute_id' => $attr['attribute_id'],
                                         'attribute_value_id' => $attr['attribute_value_id'],
                                         'company_id' => $variantCompanyId,
                                         'updated_by' => $authUser->id,
-                                        'updated_at' => now(),
                                     ]);
+                                }
                             } else {
-                                $productVariant->attributes()->attach($attr['attribute_id'], [
+                                $productVariant->attributes()->create([
+                                    'attribute_id' => $attr['attribute_id'],
                                     'attribute_value_id' => $attr['attribute_value_id'],
                                     'company_id' => $variantCompanyId,
                                     'created_by' => $authUser->id,
-                                    'created_at' => now(),
-                                    'updated_at' => now(),
                                 ]);
                             }
                         }
