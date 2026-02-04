@@ -622,3 +622,13 @@ Stack Trace: ReferenceError: sortOrder is not defined
 URL: http://localhost:5173/app/users?page=1&per_page=10&sort_by=created_at&sort_order=desc
 User ID: Guest
 --------------------------------------------------
+[2026-02-04 14:27:35] VUE_ERROR: Request failed with status code 500
+Stack Trace: AxiosError: Request failed with status code 500
+    at settle (http://localhost:5173/node_modules/.vite/deps/axios.js?v=d4efab1b:1235:12)
+    at XMLHttpRequest.onloadend (http://localhost:5173/node_modules/.vite/deps/axios.js?v=d4efab1b:1566:7)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=d4efab1b:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1770212165629:30:24)
+    at async loadReport (http://localhost:5173/src/modules/reports/pages/SalesReport.vue:50:22)
+URL: http://localhost:5173/app/reports/sales
+User ID: Guest
+--------------------------------------------------

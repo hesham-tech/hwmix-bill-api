@@ -160,9 +160,15 @@ trait InvoiceHelperTrait
             // تحديث أو إضافة البنود
             foreach ($newItemsCollection as $itemData) {
                 if (isset($itemData['id']) && $existingItem = $currentItems->get($itemData['id'])) {
-                    $costPrice = $this->resolveItemCostPrice($invoice->invoice_type_code, $itemData['variant_id'] ?? null, $itemData['unit_price']);
-
                     // البند موجود: تحديثه
+                    // حماية اللقطة التاريخية: لا نعيد حساب التكلفة إذا كانت موجودة بالفعل
+                    $costPrice = $existingItem->cost_price;
+
+                    // إذا كانت التكلفة صفر أو غير موجودة، نحاول جلبها مرة أخرى (لترميم الفواتير القديمة)
+                    if (!$costPrice || $costPrice <= 0) {
+                        $costPrice = $this->resolveItemCostPrice($invoice->invoice_type_code, $itemData['variant_id'] ?? null, $itemData['unit_price']);
+                    }
+
                     $existingItem->update([
                         'product_id' => $itemData['product_id'] ?? null,
                         'variant_id' => $itemData['variant_id'] ?? null,
@@ -502,10 +508,26 @@ trait InvoiceHelperTrait
             return (float) $unitPrice;
         }
 
-        // إذا كانت فاتورة بيع أو مرتجع بيع، نجلب سعر الشراء الحالي من المنتج
+        // إذا كانت فاتورة بيع أو مرتجع بيع، نتبع تسلسل الجلب الذكي (Best Practices)
         if ($variantId) {
+            // 1. الأولوية لتكلفة الدفعة من المخزون (Batch Cost)
+            $stockCost = (float) \DB::table('stocks')
+                ->where('variant_id', $variantId)
+                ->where('cost', '>', 0)
+                ->latest('created_at')
+                ->value('cost');
+
+            if ($stockCost > 0) {
+                return $stockCost;
+            }
+
+            // 2. البديل الثاني: سعر الشراء في الكتالوج (Catalog Master Price)
             $variant = ProductVariant::find($variantId);
-            return (float) ($variant->purchase_price ?? 0);
+            $catalogPrice = (float) ($variant?->purchase_price ?? 0);
+
+            if ($catalogPrice > 0) {
+                return $catalogPrice;
+            }
         }
 
         return 0;

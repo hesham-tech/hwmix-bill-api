@@ -75,6 +75,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Profit & Loss Reports
         Route::get('/profit-loss', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'index']);
+        Route::get('/profit-loss-summary', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'index']);
         Route::get('/profit-loss/monthly-comparison', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'monthlyComparison']);
 
         // Stock Reports

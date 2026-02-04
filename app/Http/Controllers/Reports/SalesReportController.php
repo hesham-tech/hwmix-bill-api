@@ -205,7 +205,12 @@ class SalesReportController extends BaseReportController
             ->first();
 
         $activeSubscriptions = \DB::table('subscriptions')
-            ->whereIn('invoice_id', $invoiceSubQuery) // Only if linked to this set of invoices
+            ->whereIn('id', function ($q) use ($invoiceSubQuery) {
+                $q->select('subscription_id')
+                    ->from('invoice_items')
+                    ->whereIn('invoice_id', $invoiceSubQuery)
+                    ->whereNotNull('subscription_id');
+            })
             ->orWhere(function ($q) use ($query) {
                 // Or linked to the same customers in the same period
                 $customerIds = (clone $query)->select('user_id');

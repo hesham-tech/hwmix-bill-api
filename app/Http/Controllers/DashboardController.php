@@ -28,12 +28,17 @@ class DashboardController extends Controller
         $now = Carbon::now();
         $startOfMonth = $now->copy()->startOfMonth();
 
-        // فحص ما إذا كان المستخدم عميلاً
-        $isCustomer = !$user->hasAnyRole(['admin.super', 'admin.company', 'manager', 'accountant', 'sales', 'stock']) && !$user->hasPermissionTo('admin.page');
+        // فحص ما إذا كان المستخدم عميلاً (ليس لديه صلاحيات إدارية)
+        $isCustomer = !$user->hasAnyPermission([
+            perm_key('admin.super'),
+            perm_key('admin.company'),
+            'admin.page',
+            perm_key('users.view_all')
+        ]);
 
         // استراتيجية النسخة (Cache Versioning) لتسهيل التنظيف
-        $version = \Illuminate\Support\Facades\Cache::get("dashboard_version_{$companyId}", 1);
-        $cacheKey = "dashboard_stats_comp_{$companyId}_user_{$user->id}_v{$version}";
+        $version = \Illuminate\Support\Facades\Cache::get("dashboard_version_{$companyId}", '1.3');
+        $cacheKey = "dashboard_stats_comp_{$companyId}_user_{$user->id}_v{$version}_final_fix";
 
         $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(15), function () use ($user, $companyId, $now, $startOfMonth, $isCustomer) {
             if ($isCustomer) {
@@ -78,18 +83,23 @@ class DashboardController extends Controller
             }
 
             // --- لوحة تحكم الإدارة ---
-            $stats = [
-                'total_sales' => Invoice::where('company_id', $companyId)
-                    ->where('invoice_type_code', 'sale')
-                    ->sum('net_amount'),
+            $currentMonth = $now->format('Y-m');
 
-                'monthly_sales' => Invoice::where('company_id', $companyId)
-                    ->where('invoice_type_code', 'sale')
-                    ->whereBetween('created_at', [$startOfMonth, $now])
-                    ->sum('net_amount'),
+            // 1. Fetch KPI stats from pre-aggregated summaries
+            $monthlyStats = \App\Models\MonthlySalesSummary::where('company_id', $companyId)
+                ->where('year_month', $currentMonth)
+                ->first();
+
+            // For Total Sales (Lifetime), we can sum up all monthly summaries or fetch from cache if expensive
+            $totalSales = \App\Models\MonthlySalesSummary::where('company_id', $companyId)->sum('total_revenue');
+
+            $stats = [
+                'total_sales' => $totalSales,
+                'monthly_sales' => $monthlyStats?->total_revenue ?? 0,
 
                 'pending_payments' => Invoice::where('company_id', $companyId)
                     ->where('remaining_amount', '>', 0)
+                    ->whereIn('status', ['confirmed', 'partial']) // Ensure we look at valid invoices
                     ->sum('remaining_amount'),
 
                 'total_customers' => CompanyUser::where('company_id', $companyId)
@@ -99,17 +109,11 @@ class DashboardController extends Controller
                 'total_products' => Product::where('company_id', $companyId)->count(),
             ];
 
-            // 2. تحليل المبيعات (آخر 7 أيام)
-            $salesTrend = Invoice::where('company_id', $companyId)
-                ->where('invoice_type_code', 'sale')
-                ->where('created_at', '>=', $now->copy()->subDays(7))
-                ->select(
-                    DB::raw('DATE(created_at) as date'),
-                    DB::raw('SUM(net_amount) as total')
-                )
-                ->groupBy('date')
-                ->orderBy('date')
-                ->get();
+            // 2. تحليل المبيعات (آخر 7 أيام) من جدول الملخص اليومي
+            $salesTrend = \App\Models\DailySalesSummary::where('company_id', $companyId)
+                ->where('date', '>=', $now->copy()->subDays(7)->toDateString())
+                ->orderBy('date', 'asc')
+                ->get(['date', 'total_revenue as total']);
 
             // 3. أحدث العمليات
             $recentInvoices = Invoice::with(['customer', 'invoiceType'])
@@ -136,6 +140,11 @@ class DashboardController extends Controller
                 'top_products' => $topProducts,
             ];
         });
+
+        \Log::info('Dashboard Response for Request', [
+            'company_id' => $request->user()->company_id,
+            'data_kpis' => $data['kpis'] ?? null
+        ]);
 
         return response()->json([
             'success' => true,

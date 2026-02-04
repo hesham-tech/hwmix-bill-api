@@ -713,7 +713,7 @@ class UserController extends Controller
                 ->where('company_id', $newCompanyId)
                 ->exists();
 
-            if (!$companyUserExists) {
+            if (!$companyUserExists && !$user->hasPermissionTo(perm_key('admin.super'))) {
                 DB::rollback();
                 return api_error('المستخدم غير مرتبط بالشركة المحددة.', [], 400);
             }
