@@ -36,7 +36,7 @@ jobs:
 
       - name: Ensure Remote Directory Exists
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "mkdir -p /home/u715355537/domains/hwnix.com/public_html/api/"
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "mkdir -p /home/u715355537/domains/hwnix.com/public_html/bill-api/"
 
       - name: Deploy via Rsync
         run: |
@@ -50,27 +50,27 @@ jobs:
           --exclude='.env' \
           --exclude='phpunit.xml' \
           --exclude='README.md' \
-          ./ u715355537@212.107.17.234:/home/u715355537/domains/hwnix.com/public_html/api/
+          ./ u715355537@212.107.17.234:/home/u715355537/domains/hwnix.com/public_html/bill-api/
 
       - name: Run Database Migrations
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api && php artisan migrate --force"
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan migrate --force"
 
       - name: Clear All Caches
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api && php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan event:clear"
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan event:clear"
 
       - name: Rebuild Composer Autoloader
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api && composer dump-autoload -o"
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && composer dump-autoload -o"
 
       - name: Optimize for Production
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api && php artisan config:cache && php artisan route:cache && php artisan optimize"
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan config:cache && php artisan route:cache && php artisan optimize"
 
       - name: Alignment Fixes for Storage Link (Optional)
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api && php artisan storage:link"
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan storage:link"
 
       - name: Deployment Complete
         run: echo "✅ Production Deployment successful!"
