@@ -66,7 +66,7 @@ jobs:
 
       - name: Optimize for Production
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan config:cache && php artisan route:cache && php artisan optimize"
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan config:cache && php artisan route:cache"
 
       - name: Alignment Fixes for Storage Link (Optional)
         run: |
