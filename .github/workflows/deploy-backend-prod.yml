@@ -44,7 +44,7 @@ jobs:
           --exclude='.git/' \
           --exclude='.github/' \
           --exclude='node_modules/' \
-          --exclude='tests/' \
+          --exclude='/tests/' \
           --exclude='storage/' \
           --exclude='public/storage' \
           --exclude='.env' \
