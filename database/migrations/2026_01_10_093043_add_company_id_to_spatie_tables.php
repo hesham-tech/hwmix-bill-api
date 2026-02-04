@@ -32,16 +32,10 @@ return new class extends Migration {
 
         // Re-create Primary Key if needed
         try {
-            Schema::table($tableName1, function (Blueprint $table) use ($columnNames) {
-                // Check if current PK is already the extended one
-                $indices = DB::select("SHOW INDEX FROM " . $columnNames['model_has_permissions']); // Re-using variable logic
-            });
-        } catch (\Throwable $e) {
-            // Let's do a more direct approach
-            try {
+            if (DB::connection()->getDriverName() !== 'sqlite') {
                 DB::statement("ALTER TABLE `{$tableName1}` DROP PRIMARY KEY, ADD PRIMARY KEY (`permission_id`, `{$columnNames['model_morph_key']}`, `model_type`, `company_id`) USING BTREE;");
-            } catch (\Throwable $e) {
             }
+        } catch (\Throwable $e) {
         }
 
         // 2. model_has_roles
@@ -56,7 +50,9 @@ return new class extends Migration {
         }
 
         try {
-            DB::statement("ALTER TABLE `{$tableName2}` DROP PRIMARY KEY, ADD PRIMARY KEY (`role_id`, `{$columnNames['model_morph_key']}`, `model_type`, `company_id`) USING BTREE;");
+            if (DB::connection()->getDriverName() !== 'sqlite') {
+                DB::statement("ALTER TABLE `{$tableName2}` DROP PRIMARY KEY, ADD PRIMARY KEY (`role_id`, `{$columnNames['model_morph_key']}`, `model_type`, `company_id`) USING BTREE;");
+            }
         } catch (\Throwable $e) {
         }
 
@@ -64,21 +60,16 @@ return new class extends Migration {
         $tableName3 = $tableNames['roles'];
         if (Schema::hasTable($tableName3)) {
             Schema::table($tableName3, function (Blueprint $table) use ($tableName3) {
-                $indices = DB::select("SHOW INDEX FROM " . $tableName3);
-                $indexNames = array_map(fn($index) => $index->Key_name, $indices);
-
-                if (in_array($tableName3 . '_name_guard_name_unique', $indexNames)) {
-                    try {
-                        $table->dropUnique($tableName3 . '_name_guard_name_unique');
-                    } catch (\Throwable $e) {
-                    }
+                // Drop old unique if exists
+                try {
+                    $table->dropUnique($tableName3 . '_name_guard_name_unique');
+                } catch (\Throwable $e) {
                 }
 
-                if (!in_array($tableName3 . '_name_guard_name_company_id_unique', $indexNames)) {
-                    try {
-                        $table->unique(['name', 'guard_name', 'company_id'], $tableName3 . '_name_guard_name_company_id_unique');
-                    } catch (\Throwable $e) {
-                    }
+                // Add new unique with company_id
+                try {
+                    $table->unique(['name', 'guard_name', 'company_id'], $tableName3 . '_name_guard_name_company_id_unique');
+                } catch (\Throwable $e) {
                 }
             });
         }

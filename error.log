@@ -512,3 +512,8 @@ Stack Trace: ReferenceError: searchTimeout is not defined
 URL: http://localhost:5173/app/invoices/create?type=installment_sale
 User ID: Guest
 --------------------------------------------------
+[2026-02-04 06:48:30] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/invoices/pages/InvoiceCreate.vue?t=1770162221884
+Stack Trace: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/invoices/pages/InvoiceCreate.vue?t=1770162221884
+URL: http://localhost:5173/app/invoices/create?type=installment_sale
+User ID: Guest
+--------------------------------------------------
