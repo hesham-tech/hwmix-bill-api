@@ -411,8 +411,8 @@ class UserController extends Controller
         $isSuperAdmin = $authUser->can(perm_key('admin.super'));
         $useBasicResource = filter_var($request->input('basic', true), FILTER_VALIDATE_BOOLEAN);
 
-        // 1. [قاعدة الرفاق]: إذا كان المستخدم يطلب بياناته الشخصية (Self)
-        if ($authUser->id === $user->id || $isSuperAdmin && !$activeCompanyId) {
+        // 1. [قاعدة الرفاق]: إذا كان المستخدم يطلب بياناته الشخصية (Self) أو كان سوبر أدمن
+        if ($authUser->id === $user->id || $isSuperAdmin) {
             $user->load($this->relations);
             return api_success(new UserResource($user), 'تم جلب بيانات ملفك الشخصي بنجاح.');
         }
