@@ -7,7 +7,6 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @mixin IdeHelperQuotation
  */
 class Quotation extends Model
 {

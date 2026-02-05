@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;  // استيراد فئة Pivo
 // Spatie\Permission\Models\Permission لا داعي لاستيرادها هنا إذا لم يتم استخدامها مباشرة.
 
 /**
- * @mixin IdeHelperRoleCompany
  */
 class RoleCompany extends Pivot  // **** التعديل الرئيسي: يجب أن يمتد من Pivot ****
 {

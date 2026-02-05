@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * @mixin IdeHelperProductVariant
  */
 class ProductVariant extends Model
 {

@@ -7,7 +7,6 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @mixin IdeHelperOrder
  */
 class Order extends Model
 {

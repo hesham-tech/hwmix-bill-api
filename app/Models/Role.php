@@ -12,7 +12,6 @@ use Spatie\Permission\Contracts\Role as RoleContract;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
- * @mixin IdeHelperRole
  */
 class Role extends SpatieRole implements RoleContract
 {

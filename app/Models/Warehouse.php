@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\LogsActivity;
 
 /**
- * @mixin IdeHelperWarehouse
  */
 class Warehouse extends Model
 {
