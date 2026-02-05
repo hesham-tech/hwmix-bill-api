@@ -27,7 +27,7 @@ class SalesReportController extends BaseReportController
         // Base query for sales invoices
         $query = Invoice::query()
             ->whereHas('invoiceType', function ($q) {
-                $q->where('code', 'sale');
+                $q->whereIn('context', ['sales', 'services']);
             })
             ->with(['items.product', 'customer', 'invoiceType']);
 
@@ -37,23 +37,20 @@ class SalesReportController extends BaseReportController
         // Get grouping preference
         $groupBy = $filters['group_by'] ?? null;
 
-        // Generate report based on grouping
+        // 1. Calculate summary and additional metrics BEFORE pagination/grouping
+        // This prevents 'limit' or 'groupBy' from polluting the subqueries in helper methods
+        $summary = $this->calculateSummary(clone $query);
+        $summary['total_items_sold'] = $this->getTotalItemsSold(clone $query);
+        $summary['unique_customers'] = (clone $query)->distinct('user_id')->count('user_id');
+        $summary['services_summary'] = $this->getServicesSummary(clone $query);
+
+        // 2. Generate report based on grouping or pagination
         if ($groupBy) {
             $report = $this->generateGroupedReport($query, $groupBy);
         } else {
             $report = $query->latest()
                 ->paginate($filters['per_page'] ?? 50);
         }
-
-        // Calculate summary
-        $summary = $this->calculateSummary(clone $query);
-
-        // Add additional sales-specific metrics
-        $summary['total_items_sold'] = $this->getTotalItemsSold($query);
-        $summary['unique_customers'] = $query->distinct('user_id')->count('user_id');
-
-        // 📊 إحصائيات الخدمات والاشتراكات
-        $summary['services_summary'] = $this->getServicesSummary(clone $query);
 
         $result = [
             'report' => $report,
@@ -108,7 +105,7 @@ class SalesReportController extends BaseReportController
 
         $query = Invoice::query()
             ->whereHas('invoiceType', function ($q) {
-                $q->where('code', 'sale');
+                $q->whereIn('context', ['sales', 'services']);
             });
 
         $query = $this->applyFilters($query, $filters);
@@ -138,7 +135,7 @@ class SalesReportController extends BaseReportController
 
         $query = Invoice::query()
             ->whereHas('invoiceType', function ($q) {
-                $q->where('code', 'sale');
+                $q->whereIn('context', ['sales', 'services']);
             });
 
         $query = $this->applyFilters($query, $filters);
@@ -170,7 +167,7 @@ class SalesReportController extends BaseReportController
 
         $query = Invoice::query()
             ->whereHas('invoiceType', function ($q) {
-                $q->where('code', 'sale');
+                $q->whereIn('context', ['sales', 'services']);
             });
 
         $query = $this->applyFilters($query, $filters);

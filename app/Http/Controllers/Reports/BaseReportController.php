@@ -18,11 +18,29 @@ abstract class BaseReportController extends Controller
         $dateColumn = method_exists($query->getModel(), 'getIssueDateColumn') ? 'issue_date' : 'created_at';
 
         if (!empty($filters['date_from'])) {
-            $query->whereDate($dateColumn, '>=', $filters['date_from']);
+            $query->where(function ($q) use ($dateColumn, $filters) {
+                if ($dateColumn === 'issue_date') {
+                    $q->whereDate('issue_date', '>=', $filters['date_from'])
+                        ->orWhere(function ($sq) use ($filters) {
+                            $sq->whereNull('issue_date')->whereDate('created_at', '>=', $filters['date_from']);
+                        });
+                } else {
+                    $q->whereDate($dateColumn, '>=', $filters['date_from']);
+                }
+            });
         }
 
         if (!empty($filters['date_to'])) {
-            $query->whereDate($dateColumn, '<=', $filters['date_to']);
+            $query->where(function ($q) use ($dateColumn, $filters) {
+                if ($dateColumn === 'issue_date') {
+                    $q->whereDate('issue_date', '<=', $filters['date_to'])
+                        ->orWhere(function ($sq) use ($filters) {
+                            $sq->whereNull('issue_date')->whereDate('created_at', '<=', $filters['date_to']);
+                        });
+                } else {
+                    $q->whereDate($dateColumn, '<=', $filters['date_to']);
+                }
+            });
         }
 
         // Company scope
@@ -67,10 +85,11 @@ abstract class BaseReportController extends Controller
         };
 
         $dateColumn = method_exists($query->getModel(), 'getIssueDateColumn') ? 'issue_date' : 'created_at';
+        $effectiveDateColumn = ($dateColumn === 'issue_date') ? "COALESCE(issue_date, created_at)" : "created_at";
 
         $selectRaw = $isSqlite
-            ? "strftime('{$dateFormat}', {$dateColumn}) as period"
-            : "DATE_FORMAT({$dateColumn}, '{$dateFormat}') as period";
+            ? "strftime('{$dateFormat}', {$effectiveDateColumn}) as period"
+            : "DATE_FORMAT({$effectiveDateColumn}, '{$dateFormat}') as period";
 
         return $query->selectRaw("
                 {$selectRaw},
@@ -236,9 +255,9 @@ abstract class BaseReportController extends Controller
      */
     protected function validateFilters(Request $request): array
     {
-        return $request->validate([
-            'date_from' => 'nullable|date',
-            'date_to' => 'nullable|date|after_or_equal:date_from',
+        $data = $request->validate([
+            'date_from' => 'nullable', // Flexible date validation
+            'date_to' => 'nullable',
             'company_id' => 'nullable|exists:companies,id',
             'user_id' => 'nullable|exists:users,id',
             'product_id' => 'nullable|exists:products,id',
@@ -247,6 +266,25 @@ abstract class BaseReportController extends Controller
             'export' => 'nullable|in:pdf,excel,csv',
             'per_page' => 'nullable|integer|min:10|max:100',
         ]);
+
+        // Normalize dates to Y-m-d
+        if (!empty($data['date_from'])) {
+            try {
+                $data['date_from'] = \Carbon\Carbon::parse($data['date_from'])->toDateString();
+            } catch (\Exception $e) {
+                $data['date_from'] = null;
+            }
+        }
+
+        if (!empty($data['date_to'])) {
+            try {
+                $data['date_to'] = \Carbon\Carbon::parse($data['date_to'])->toDateString();
+            } catch (\Exception $e) {
+                $data['date_to'] = null;
+            }
+        }
+
+        return $data;
     }
 
     /**

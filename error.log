@@ -632,3 +632,33 @@ Stack Trace: AxiosError: Request failed with status code 500
 URL: http://localhost:5173/app/reports/sales
 User ID: Guest
 --------------------------------------------------
+[2026-02-04 19:20:20] VUE_ERROR: Request failed with status code 500
+Stack Trace: AxiosError: Request failed with status code 500
+    at settle (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9617f2c6:1235:12)
+    at XMLHttpRequest.onloadend (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9617f2c6:1566:7)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9617f2c6:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1770221657972:30:24)
+    at async loadReport (http://localhost:5173/src/modules/reports/pages/SalesReport.vue?t=1770221657972:50:22)
+URL: http://localhost:5173/app/reports/sales
+User ID: Guest
+--------------------------------------------------
+[2026-02-04 19:30:05] VUE_ERROR: Request failed with status code 500
+Stack Trace: AxiosError: Request failed with status code 500
+    at settle (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9617f2c6:1235:12)
+    at XMLHttpRequest.onloadend (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9617f2c6:1566:7)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9617f2c6:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1770221657972:30:24)
+    at async loadReport (http://localhost:5173/src/modules/reports/pages/SalesReport.vue?t=1770221657972:50:22)
+URL: http://localhost:5173/app/reports/sales
+User ID: Guest
+--------------------------------------------------
+[2026-02-04 19:30:30] VUE_ERROR: Request failed with status code 500
+Stack Trace: AxiosError: Request failed with status code 500
+    at settle (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9617f2c6:1235:12)
+    at XMLHttpRequest.onloadend (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9617f2c6:1566:7)
+    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=9617f2c6:2124:41)
+    at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1770221657972:30:24)
+    at async loadReport (http://localhost:5173/src/modules/reports/pages/SalesReport.vue?t=1770221657972:50:22)
+URL: http://localhost:5173/app/reports/sales
+User ID: Guest
+--------------------------------------------------
