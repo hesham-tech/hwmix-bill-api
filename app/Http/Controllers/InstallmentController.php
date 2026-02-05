@@ -94,7 +94,12 @@ class InstallmentController extends Controller
             // الترتيب
             $sortBy = $request->get('sort_by', 'due_date');
             $sortOrder = $request->get('sort_order', 'asc');
-            $query->orderBy($sortBy, $sortOrder === 'desc' ? 'desc' : 'asc');
+
+            if ($sortBy === 'due_date' && $sortOrder === 'asc') {
+                $query->orderByPriority();
+            } else {
+                $query->orderBy($sortBy, $sortOrder === 'desc' ? 'desc' : 'asc');
+            }
 
             // التصفحة
             $perPage = (int) $request->get('limit', 20);

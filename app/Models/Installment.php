@@ -75,4 +75,26 @@ class Installment extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    /**
+     * نطاق للترتيب حسب الأولوية الذكية:
+     * 1. المتأخر والمستحق اليوم (Priority 1)
+     * 2. القادم (معلق أو مدفوع جزئياً ولم يحن موعده) (Priority 2)
+     * 3. المدفوع بالكامل (Priority 3)
+     * 4. الملغي (Priority 4)
+     */
+    public function scopeOrderByPriority($query)
+    {
+        $now = now();
+
+        return $query->orderByRaw("
+            CASE 
+                WHEN status NOT IN ('paid', 'canceled') AND due_date <= '{$now}' THEN 1
+                WHEN status NOT IN ('paid', 'canceled') AND due_date > '{$now}' THEN 2
+                WHEN status = 'paid' THEN 3
+                WHEN status = 'canceled' THEN 4
+                ELSE 5
+            END ASC
+        ")->orderBy('due_date', 'asc');
+    }
 }
