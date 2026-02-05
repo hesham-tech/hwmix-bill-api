@@ -700,7 +700,8 @@ class User extends Authenticatable
         if ($this->hasPermissionTo(perm_key('admin.super'))) {
             return Company::all();
         }
-        return $this->companies;
+        // استخدام withoutGlobalScopes لرؤية جميع الشركات المرتبط بها المستخدم
+        return $this->companies()->withoutGlobalScopes()->get();
     }
 
     /**

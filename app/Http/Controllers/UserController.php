@@ -709,7 +709,7 @@ class UserController extends Controller
         try {
             $newCompanyId = $validated['company_id'];
 
-            $companyUserExists = CompanyUser::where('user_id', $user->id)
+            $companyUserExists = CompanyUser::withoutGlobalScopes()->where('user_id', $user->id)
                 ->where('company_id', $newCompanyId)
                 ->exists();
 
