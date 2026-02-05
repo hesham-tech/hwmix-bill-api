@@ -50,8 +50,41 @@ icacls server_key.pem /inheritance:r /grant:r "$($env:USERNAME):R"
 
 ## 3. الاتصال (Connect)
 
-استبدل القيم بما يناسب سيرفرك:
+استخدم هذا الأمر للاتصال مباشرة:
 
 ```powershell
 ssh -i server_key.pem -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234
 ```
+
+---
+
+# أوامر سريعة للتصحيح (Debugging Shortcuts)
+
+### 📂 المسارات الأساسية (Core Paths)
+
+- **API (Production):** `/home/u715355537/domains/hwnix.com/public_html/api`
+- **Frontend (Production):** `/home/u715355537/domains/hwnix.com/public_html/bill`
+
+### 📝 سجلات الأخطاء (Logs)
+
+لقراءة آخر 50 خطأ في مشروع الـ API:
+
+```bash
+tail -n 50 /home/u715355537/domains/hwnix.com/public_html/api/storage/logs/laravel.log
+```
+
+لقراءة الأخطاء المسجلة من الواجهة (Frontend Errors):
+
+```bash
+tail -n 50 /home/u715355537/domains/hwnix.com/public_html/api/error.log
+```
+
+### 🗄️ الاستعلام عن جدول الأخطاء (Database Logs)
+
+إذا فشل `tinker` بسبب تصاريح المجلد، استخدم SQL مباشرة:
+
+```bash
+mysql -u u715355537_api_teste -p u715355537_api_teste -e "SELECT id, message, type, created_at FROM error_reports ORDER BY id DESC LIMIT 5;"
+```
+
+_(ملاحظة: سيطلب كلمة المرور: `29Qjbd$J`)_
