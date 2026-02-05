@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 #[ScopedBy([CompanyScope::class])]
 /**
- * @mixin IdeHelperCashBox
  */
 class CashBox extends Model
 {

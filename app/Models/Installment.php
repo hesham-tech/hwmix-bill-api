@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * @mixin IdeHelperInstallment
  */
 class Installment extends Model
 {
@@ -85,14 +84,14 @@ class Installment extends Model
      */
     public function scopeOrderByPriority($query)
     {
-        $now = now();
+        $now = now()->toDateTimeString();
 
         return $query->orderByRaw("
             CASE 
-                WHEN status NOT IN ('paid', 'canceled') AND due_date <= '{$now}' THEN 1
-                WHEN status NOT IN ('paid', 'canceled') AND due_date > '{$now}' THEN 2
+                WHEN status NOT IN ('paid', 'canceled', 'cancelled') AND due_date <= '{$now}' THEN 1
+                WHEN status NOT IN ('paid', 'canceled', 'cancelled') AND due_date > '{$now}' THEN 2
                 WHEN status = 'paid' THEN 3
-                WHEN status = 'canceled' THEN 4
+                WHEN status IN ('canceled', 'cancelled') THEN 4
                 ELSE 5
             END ASC
         ")->orderBy('due_date', 'asc');

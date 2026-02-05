@@ -8,7 +8,6 @@ use App\Traits\Blameable;
 use App\Traits\Scopes;
 
 /**
- * @mixin IdeHelperAttribute
  */
 class Attribute extends Model
 {

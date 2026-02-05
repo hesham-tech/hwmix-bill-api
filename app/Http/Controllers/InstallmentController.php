@@ -67,15 +67,11 @@ class InstallmentController extends Controller
                 $query->where('user_id', $authUser->id);
             }
 
-            // التصفية بناءً على طلب المستخدم
-            if ($request->filled('status')) {
-                $query->where('status', $request->input('status'));
-            }
             // فلتر الحالة: استثناء الملغاة افتراضياً ما لم يتم طلبها صراحةً
             if ($request->filled('status')) {
                 $query->where('status', $request->input('status'));
             } else {
-                $query->where('status', '!=', 'canceled');
+                $query->where('status', '!=', 'canceled')->where('status', '!=', 'cancelled');
             }
             if ($request->filled('due_date_from')) {
                 $query->where('due_date', '>=', $request->input('due_date_from'));
@@ -102,7 +98,7 @@ class InstallmentController extends Controller
             }
 
             // التصفحة
-            $perPage = (int) $request->get('limit', 20);
+            $perPage = (int) $request->get('per_page', 20);
             $installments = $query->paginate($perPage);
 
             if ($installments->isEmpty()) {
