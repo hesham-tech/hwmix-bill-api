@@ -700,4 +700,67 @@ return [
         'tax' => ['key' => 'reports.tax', 'label' => 'عرض تقرير الضرائب'],
         'export' => ['key' => 'reports.export', 'label' => 'تصدير التقارير'],
     ],
+    // => INVOICE TYPES
+    'invoice_types' => [
+        'name' => ['key' => 'invoice_types', 'label' => 'صلاحيات أنواع المستندات'],
+        'page' => ['key' => 'invoice_types.page', 'label' => 'صفحة أنواع المستندات'],
+        'view_all' => ['key' => 'invoice_types.view_all', 'label' => 'عرض كل أنواع المستندات'],
+        'view_children' => ['key' => 'invoice_types.view_children', 'label' => 'عرض الأنواع للتابعين'],
+        'view_self' => ['key' => 'invoice_types.view_self', 'label' => 'عرض الأنواع الخاصة'],
+        'update_all' => ['key' => 'invoice_types.update_all', 'label' => 'تعديل أي نوع (تفعيل/تعطيل)'],
+    ],
+    // => PLANS
+    'plans' => [
+        'name' => ['key' => 'plans', 'label' => 'صلاحيات خطط الأسعار'],
+        'page' => ['key' => 'plans.page', 'label' => 'صفحة خطط الأسعار'],
+        'view_all' => ['key' => 'plans.view_all', 'label' => 'عرض جميع الخطط'],
+        'view_children' => ['key' => 'plans.view_children', 'label' => 'عرض خطط التابعين'],
+        'view_self' => ['key' => 'plans.view_self', 'label' => 'عرض خططي الشخصية'],
+        'create' => ['key' => 'plans.create', 'label' => 'إنشاء خطة جديدة'],
+        'update_all' => ['key' => 'plans.update_all', 'label' => 'تعديل أي خطة'],
+        'update_children' => ['key' => 'plans.update_children', 'label' => 'تعديل خطط التابعين'],
+        'update_self' => ['key' => 'plans.update_self', 'label' => 'تعديل خطتي الشخصية'],
+        'delete_all' => ['key' => 'plans.delete_all', 'label' => 'حذف أي خطة'],
+        'delete_children' => ['key' => 'plans.delete_children', 'label' => 'حذف خطط التابعين'],
+        'delete_self' => ['key' => 'plans.delete_self', 'label' => 'حذف خطتي الشخصية'],
+    ],
+    // => TASKS
+    'tasks' => [
+        'name' => ['key' => 'tasks', 'label' => 'صلاحيات إدارة المهام'],
+        'page' => ['key' => 'tasks.page', 'label' => 'صفحة المهام'],
+        'view_all' => ['key' => 'tasks.view_all', 'label' => 'عرض جميع المهام'],
+        'view_children' => ['key' => 'tasks.view_children', 'label' => 'عرض مهام التابعين'],
+        'view_self' => ['key' => 'tasks.view_self', 'label' => 'عرض مهامي الشخصية'],
+        'create' => ['key' => 'tasks.create', 'label' => 'إنشاء مهمة جديدة'],
+        'update_all' => ['key' => 'tasks.update_all', 'label' => 'تعديل أي مهمة'],
+        'delete_all' => ['key' => 'tasks.delete_all', 'label' => 'حذف أي مهمة'],
+    ],
+    // => ERROR REPORTS
+    'error_reports' => [
+        'name' => ['key' => 'error_reports', 'label' => 'صلاحيات تقارير الأخطاء'],
+        'page' => ['key' => 'error_reports.page', 'label' => 'صفحة تقارير الأخطاء'],
+        'view_all' => ['key' => 'error_reports.view_all', 'label' => 'عرض جميع تقارير الأخطاء'],
+        'update_all' => ['key' => 'error_reports.update_all', 'label' => 'تحديث حالة التقرير'],
+    ],
+    // => BACKUPS
+    'backups' => [
+        'name' => ['key' => 'backups', 'label' => 'صلاحيات النسخ الاحتياطي'],
+        'page' => ['key' => 'backups.page', 'label' => 'صفحة النسخ الاحتياطي'],
+        'create' => ['key' => 'backups.create', 'label' => 'تشغيل نسخة احتياطية'],
+        'view_all' => ['key' => 'backups.view_all', 'label' => 'عرض النسخ السابقة'],
+    ],
+    // => QUOTATIONS
+    'quotations' => [
+        'name' => ['key' => 'quotations', 'label' => 'صلاحيات عروض الأسعار'],
+        'page' => ['key' => 'quotations.page', 'label' => 'صفحة عروض الأسعار'],
+        'view_all' => ['key' => 'quotations.view_all', 'label' => 'عرض جميع عروض الأسعار'],
+        'create' => ['key' => 'quotations.create', 'label' => 'إنشاء عرض سعر'],
+    ],
+    // => ORDERS
+    'orders' => [
+        'name' => ['key' => 'orders', 'label' => 'صلاحيات طلبات الشراء/البيع'],
+        'page' => ['key' => 'orders.page', 'label' => 'صفحة الطلبات'],
+        'view_all' => ['key' => 'orders.view_all', 'label' => 'عرض جميع الطلبات'],
+        'create' => ['key' => 'orders.create', 'label' => 'إنشاء طلب جديد'],
+    ],
 ];

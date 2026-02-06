@@ -91,12 +91,29 @@ class ErrorReportController extends Controller
             // Append to physical error.log file in the backend root directory
             try {
                 $logPath = base_path('error.log');
-                $logMessage = "[" . date('Y-m-d H:i:s') . "] " . strtoupper($report->type) . ": " . $report->message . PHP_EOL;
-                if ($report->stack_trace) {
-                    $logMessage .= "Stack Trace: " . $report->stack_trace . PHP_EOL;
+                $timestamp = date('Y-m-d H:i:s');
+                $user = Auth::user();
+                $userName = $user ? ($user->name ?? $user->username ?? 'User') : 'Guest';
+
+                $logMessage = "[$timestamp] " . strtoupper($report->type) . ": " . $report->message . PHP_EOL;
+                $logMessage .= "Severity: " . strtoupper($report->severity) . " | Browser: " . ($report->browser ?? 'Unknown') . " | OS: " . ($report->os ?? 'Unknown') . PHP_EOL;
+                $logMessage .= "URL: " . ($report->url ?? 'No URL') . PHP_EOL;
+                $logMessage .= "User: " . ($report->user_id ?? 'Guest') . " ($userName)";
+
+                if ($report->user_notes) {
+                    $logMessage .= " | Notes: " . $report->user_notes;
                 }
-                $logMessage .= "URL: " . $report->url . PHP_EOL;
-                $logMessage .= "User ID: " . ($report->user_id ?? 'Guest') . PHP_EOL;
+                $logMessage .= PHP_EOL;
+
+                if (!empty($report->payload)) {
+                    $payloadStr = json_encode($report->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                    $logMessage .= "Payload: " . $payloadStr . PHP_EOL;
+                }
+
+                if ($report->stack_trace) {
+                    $logMessage .= "Stack Trace Snippet: " . substr($report->stack_trace, 0, 500) . (strlen($report->stack_trace) > 500 ? '...' : '') . PHP_EOL;
+                }
+
                 $logMessage .= str_repeat('-', 50) . PHP_EOL;
 
                 file_put_contents($logPath, $logMessage, FILE_APPEND);
