@@ -99,6 +99,11 @@ class InstallmentController extends Controller
 
             // التصفحة
             $perPage = (int) $request->get('per_page', 20);
+            if ($perPage <= 0)
+                $perPage = 20;
+            if ($perPage > 1000)
+                $perPage = 1000;
+
             $installments = $query->paginate($perPage);
 
             if ($installments->isEmpty()) {

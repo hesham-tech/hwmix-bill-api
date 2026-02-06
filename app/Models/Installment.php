@@ -88,10 +88,10 @@ class Installment extends Model
 
         return $query->orderByRaw("
             CASE 
-                WHEN status NOT IN ('paid', 'canceled', 'cancelled') AND due_date <= '{$now}' THEN 1
-                WHEN status NOT IN ('paid', 'canceled', 'cancelled') AND due_date > '{$now}' THEN 2
-                WHEN status = 'paid' THEN 3
-                WHEN status IN ('canceled', 'cancelled') THEN 4
+                WHEN status NOT IN ('paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي') AND due_date <= '{$now}' THEN 1
+                WHEN status NOT IN ('paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي') AND due_date > '{$now}' THEN 2
+                WHEN status IN ('paid', 'تم الدفع') THEN 3
+                WHEN status IN ('canceled', 'cancelled', 'ملغي') THEN 4
                 ELSE 5
             END ASC
         ")->orderBy('due_date', 'asc');

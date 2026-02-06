@@ -37,14 +37,12 @@ class InstallmentResource extends JsonResource
     protected function getStatusLabel()
     {
         return match ($this->status) {
-            'pending' => 'في الانتظار',
-            'لم يتم الدفع' => 'في الانتظار',
-            'paid' => 'مدفوع',
-            'تم الدفع' => 'مدفوع',
-            'partially_paid' => 'مدفوع جزئياً',
-            'canceled' => 'ملغى',
-            'overdue' => 'متأخر', // حالة محتملة للأقساط
-            default => 'غير معروف',
+            'pending', 'في الانتظار', 'لم يتم الدفع' => 'في الانتظار',
+            'paid', 'تم الدفع' => 'مدفوع',
+            'partially_paid', 'مدفوع جزئياً' => 'مدفوع جزئياً',
+            'canceled', 'cancelled', 'ملغي', 'ملغى' => 'ملغي',
+            'overdue', 'متأخر' => 'متأخر',
+            default => $this->status,
         };
     }
 }
