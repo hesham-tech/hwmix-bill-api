@@ -18,16 +18,25 @@ class CompanyDataSyncSeeder extends Seeder
     {
         $this->command->info('🚀 Starting Global Company Data Sync...');
 
+        // 0. Ensure Base Templates Exist
+        $this->command->comment('0/5 Ensuring Base Templates (Sources) exist...');
+        $this->call([
+            InvoiceTypeSeeder::class,
+            PaymentMethodSeeder::class,
+            CashBoxTypeSeeder::class,
+            ExpenseCategorySeeder::class,
+        ]);
+
         // 1. Sync Invoice Types
-        $this->command->comment('1/5 Syncing Invoice Types...');
+        $this->command->comment('1/5 Syncing Invoice Types with Companies...');
         $this->call(CompanyInvoiceTypeSeeder::class);
 
         // 2. Sync Payment Methods
-        $this->command->comment('2/5 Syncing Payment Methods...');
+        $this->command->comment('2/5 Syncing Payment Methods with Companies...');
         $this->call(CompanyPaymentMethodSeeder::class);
 
         // 3. Sync Cash Box Types
-        $this->command->comment('3/5 Syncing Cash Box Types...');
+        $this->command->comment('3/5 Syncing Cash Box Types with Companies...');
         $this->call(CompanyCashBoxTypeSeeder::class);
 
         $companies = Company::all();
