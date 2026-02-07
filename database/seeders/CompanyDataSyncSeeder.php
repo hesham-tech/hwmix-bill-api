@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 class CompanyDataSyncSeeder extends Seeder
 {
     /**
+     * **
      * Run the database seeds.
      */
     public function run(): void
