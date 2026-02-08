@@ -24,6 +24,25 @@ if (!function_exists('api_success')) {
         if ($data instanceof AbstractPaginator) {
             $response['data'] = $data->items();
             $response['total'] = $data->total(); // مهم لـ v-data-table-server
+
+            // ✅ إضافة بيانات الترقيم القياسية
+            $response['meta'] = [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'from' => $data->firstItem(),
+                'to' => $data->lastItem(),
+            ];
+
+            // ✅ إضافة روابط التنقل القياسية
+            $response['links'] = [
+                'first' => $data->url(1),
+                'last' => $data->url($data->lastPage()),
+                'prev' => $data->previousPageUrl(),
+                'next' => $data->nextPageUrl(),
+            ];
+
             return response()->json($response, $code);
         }
 
@@ -31,13 +50,30 @@ if (!function_exists('api_success')) {
         if ($data instanceof ResourceCollection) {
             $original = $data->resource;
 
-            // لو فيها Pagination
             if ($original instanceof AbstractPaginator) {
                 $response['data'] = $data->collection;
                 $response['total'] = $original->total();
+
+                // ✅ إضافة بيانات الترقيم القياسية من البجينيشن الأصلي
+                $response['meta'] = [
+                    'current_page' => $original->currentPage(),
+                    'last_page' => $original->lastPage(),
+                    'per_page' => $original->perPage(),
+                    'total' => $original->total(),
+                    'from' => $original->firstItem(),
+                    'to' => $original->lastItem(),
+                ];
+
+                // ✅ إضافة روابط التنقل من البجينيشن الأصلي
+                $response['links'] = [
+                    'first' => $original->url(1),
+                    'last' => $original->url($original->lastPage()),
+                    'prev' => $original->previousPageUrl(),
+                    'next' => $original->nextPageUrl(),
+                ];
             } else {
                 $response['data'] = $data->collection;
-                $response['total'] = $data->count(); // عدد العناصر
+                $response['total'] = $data->count();
             }
 
             return response()->json($response, $code);

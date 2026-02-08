@@ -1,0 +1,1837 @@
+[2026-02-07 21:29:18] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/cashboxes?page=1&per_page=12&sort_by=name&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/cashboxes?page=1&per_page=12&sort_by=name&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-07 21:47:30] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770500836812:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 21:50:32] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770500836812:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 21:50:47] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770500836812:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 21:54:12] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770500836812:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 21:57:45] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770500836812:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 21:58:01] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770500836812:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 21:58:42] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501480992:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 22:01:44] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501480992:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 22:01:56] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501480992:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 22:02:02] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501480992:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 22:02:04] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501480992:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 22:02:37] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501480992:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 22:03:29] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501756408:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 22:04:26] VUE_ERROR: _ctx.getStatusText is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusText is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501756408:275:76
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/chunk-6YZ4IJ6N.js?v=f58e3eb9:364:59)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:9733:34)
+    at createBaseV...
+--------------------------------------------------
+[2026-02-07 22:05:32] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501756408
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "reason": []
+}
+Stack Trace Snippet: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501756408
+--------------------------------------------------
+[2026-02-07 22:06:06] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501756408
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "reason": []
+}
+Stack Trace Snippet: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770501756408
+--------------------------------------------------
+[2026-02-07 22:22:34] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770502949553
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "reason": []
+}
+Stack Trace Snippet: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770502949553
+--------------------------------------------------
+[2026-02-07 22:41:12] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-07 22:45:52] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-07 22:46:21] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-07 22:46:37] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-07 22:47:43] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-07 22:53:37] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-07 22:55:11] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-07 22:55:19] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770504917286:192:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (htt...
+--------------------------------------------------
+[2026-02-07 22:55:46] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770504944133:192:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (htt...
+--------------------------------------------------
+[2026-02-07 22:58:47] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770505126676:192:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (htt...
+--------------------------------------------------
+[2026-02-07 22:59:09] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770505148319:186:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (htt...
+--------------------------------------------------
+[2026-02-07 23:03:02] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770505380100:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-07 23:03:25] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770505403898:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-07 23:05:04] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770505403898:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-07 23:05:13] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770505403898:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 04:50:28] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770505403898:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 04:50:33] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770505403898:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 04:55:35] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770505403898:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 04:58:00] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770526678871:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 05:02:36] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770526952604:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 05:11:17] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770527476082:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 05:11:42] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770527476082:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 05:12:42] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770527561716:95:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 05:18:18] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770527897150:97:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 05:18:28] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=100&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770527897150:97:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 05:18:46] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=100&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770527924783:97:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 05:21:40] VUE_ERROR: tableRootRef.value?.querySelector is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=100&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "mounted hook"
+}
+Stack Trace Snippet: TypeError: tableRootRef.value?.querySelector is not a function
+    at ComputedRefImpl.fn (http://localhost:5173/src/components/common/AppDataTable.vue?t=1770528099070:97:92)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f58e3eb9:1701:30)
+    at toValue (http...
+--------------------------------------------------
+[2026-02-08 05:27:23] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=100&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=100&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:27:33] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=100&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=100&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:28:40] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=100&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=100&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:30:11] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/admin/dashboard
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/admin\/dashboard",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:30:17] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/admin/dashboard
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/admin\/dashboard",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:30:30] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:33:16] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:33:32] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:35:28] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:37:55] VUE_ERROR: _ctx.getStatusColor is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusColor is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770528811304:251:45
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9...
+--------------------------------------------------
+[2026-02-08 05:37:55] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/61",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:38:26] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-payments?plan_id=61
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-payments?plan_id=61",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:38:40] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-payments?plan_id=61
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-payments?plan_id=61",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:38:46] VUE_ERROR: _ctx.getStatusColor is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusColor is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770528811304:251:45
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9...
+--------------------------------------------------
+[2026-02-08 05:38:46] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/61",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:39:52] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:43:35] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:43:52] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=2&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=2&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 05:44:09] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 06:15:52] VUE_ERROR: toggleSelectAll is not defined
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "setup function"
+}
+Stack Trace Snippet: ReferenceError: toggleSelectAll is not defined
+    at useDataTable (http://localhost:5173/src/composables/useDataTable.js?t=1770531308543:247:20)
+    at setup (http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770531308543:72:5)
+    at callWithErrorHandling (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2263:19)
+    at setupStatefulComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9983:25)
+    at setup...
+--------------------------------------------------
+[2026-02-08 06:16:12] VUE_ERROR: toggleSelectAll is not defined
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "setup function"
+}
+Stack Trace Snippet: ReferenceError: toggleSelectAll is not defined
+    at useDataTable (http://localhost:5173/src/composables/useDataTable.js?t=1770531308543:247:20)
+    at setup (http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770531308543:72:5)
+    at callWithErrorHandling (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2263:19)
+    at setupStatefulComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9983:25)
+    at setup...
+--------------------------------------------------
+[2026-02-08 06:17:00] VUE_ERROR: toggleSelectAll is not defined
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "setup function"
+}
+Stack Trace Snippet: ReferenceError: toggleSelectAll is not defined
+    at useDataTable (http://localhost:5173/src/composables/useDataTable.js?t=1770531419698:248:20)
+    at setup (http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770531419698:72:5)
+    at callWithErrorHandling (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2263:19)
+    at setupStatefulComponent (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9983:25)
+    at setup...
+--------------------------------------------------
+[2026-02-08 06:20:21] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 06:24:19] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770531852993
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "reason": []
+}
+Stack Trace Snippet: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanList.vue?t=1770531852993
+--------------------------------------------------
+[2026-02-08 06:57:30] VUE_ERROR: Cannot read properties of undefined (reading 'from')
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: Cannot read properties of undefined (reading 'from')
+    at http://localhost:5173/src/components/common/AppDataTable.vue?t=1770533849004:731:95
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:97...
+--------------------------------------------------
+[2026-02-08 06:57:51] VUE_ERROR: Cannot read properties of undefined (reading 'from')
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: Cannot read properties of undefined (reading 'from')
+    at http://localhost:5173/src/components/common/AppDataTable.vue?t=1770533869865:733:95
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:97...
+--------------------------------------------------
+[2026-02-08 06:58:46] VUE_ERROR: Cannot read properties of undefined (reading 'from')
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: Cannot read properties of undefined (reading 'from')
+    at http://localhost:5173/src/components/common/AppDataTable.vue?t=1770533869865:733:95
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:97...
+--------------------------------------------------
+[2026-02-08 06:58:48] VUE_ERROR: Cannot read properties of undefined (reading 'from')
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: Cannot read properties of undefined (reading 'from')
+    at http://localhost:5173/src/components/common/AppDataTable.vue?t=1770533869865:733:95
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:97...
+--------------------------------------------------
+[2026-02-08 06:59:24] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 06:59:36] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 06:59:56] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:04:10] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:04:16] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:04:21] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:08:55] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:15:23] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:21:52] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:25:14] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:26:32] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:26:52] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:27:20] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:30:03] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:30:26] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:30:33] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:30:54] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:33:15] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:34:40] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:35:08] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:35:20] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:35:25] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:36:13] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 07:36:20] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 08:51:25] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 08:51:38] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 08:51:58] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 08:52:20] VUE_ERROR: sortBy.value.find is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: sortBy.value.find is not a function
+    at isSorted (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VDataTable_index__mjs.js?v=f1cffb23:916:27)
+    at VDataTableHeaderCell (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VDataTable_index__mjs.js?v=f1cffb23:1098:39)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:8608:13)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:51...
+--------------------------------------------------
+[2026-02-08 08:53:13] VUE_ERROR: sortBy.value.find is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: sortBy.value.find is not a function
+    at isSorted (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VDataTable_index__mjs.js?v=f1cffb23:916:27)
+    at VDataTableHeaderCell (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VDataTable_index__mjs.js?v=f1cffb23:1098:39)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:8608:13)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:51...
+--------------------------------------------------
+[2026-02-08 08:53:14] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 08:54:06] VUE_ERROR: sortBy.value.find is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: sortBy.value.find is not a function
+    at isSorted (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VDataTable_index__mjs.js?v=f1cffb23:916:27)
+    at VDataTableHeaderCell (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VDataTable_index__mjs.js?v=f1cffb23:1098:39)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:8608:13)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:51...
+--------------------------------------------------
+[2026-02-08 08:54:07] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 08:54:30] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 08:54:53] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 08:55:26] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 08:55:52] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 09:03:50] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 09:05:32] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 09:07:58] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 09:08:23] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 09:13:50] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 09:26:05] VUE_ERROR: hpush is not defined
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: ReferenceError: hpush is not defined
+    at ComputedRefImpl.fn (http://localhost:5173/src/modules/installments/components/InstallmentsTable.vue?t=1770542744111:111:3)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:1701:30)
+    at Object.get (http://l...
+--------------------------------------------------
+[2026-02-08 09:26:06] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 11:57:31] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 11:58:39] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 11:58:56] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:01:06] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:01:16] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:02:57] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=50&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:06:31] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:06:45] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/invoices/98
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/invoices\/98",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:07:04] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:07:12] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/invoices/69
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/invoices\/69",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:07:25] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/invoices/69
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/invoices\/69",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:07:47] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:11:23] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments?page=1&per_page=10&sort_by=due_date&sort_order=asc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:26:35] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:26:44] VUE_ERROR: _ctx.getStatusColor is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusColor is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770552063325:251:45
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9...
+--------------------------------------------------
+[2026-02-08 12:26:44] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/61",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:27:23] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:27:31] VUE_ERROR: _ctx.getStatusColor is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusColor is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770552681491:251:45
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9...
+--------------------------------------------------
+[2026-02-08 12:27:32] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/62",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:27:44] VUE_ERROR: _ctx.getStatusColor is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusColor is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770552681491:251:45
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9...
+--------------------------------------------------
+[2026-02-08 12:27:44] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/62",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:29:38] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:31:57] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:32:33] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:36:58] VUE_ERROR: _ctx.getStatusColor is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusColor is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770552681491:251:45
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9...
+--------------------------------------------------
+[2026-02-08 12:36:58] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/61",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:37:35] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/61",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:37:59] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/61",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:40:58] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installments
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installments",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:41:18] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 12:41:24] VUE_ERROR: _ctx.getStatusColor is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusColor is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770552681491:251:45
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9...
+--------------------------------------------------
+[2026-02-08 12:41:24] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/62",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:06:03] VUE_ERROR: _ctx.getStatusColor is not a function
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: TypeError: _ctx.getStatusColor is not a function
+    at http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770554374510:251:45
+    at Proxy.renderFnWithContext (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:2763:13)
+    at default (http://localhost:5173/node_modules/.vite/deps/vuetify_lib_components_VCard_index__mjs.js?v=f1cffb23:421:58)
+    at normalizeChildren (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:9...
+--------------------------------------------------
+[2026-02-08 13:06:03] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/62",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:07:20] VUE_ERROR: collectedAmount is not defined
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "info": "render function"
+}
+Stack Trace Snippet: ReferenceError: collectedAmount is not defined
+    at ComputedRefImpl.fn (http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770556035783:42:22)
+    at refreshComputed (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:636:29)
+    at get value (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:1828:5)
+    at unref (http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=f1cffb23:1701:30)
+    at Object.get (h...
+--------------------------------------------------
+[2026-02-08 13:07:31] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/62",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:07:40] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/62",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:12:42] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/admin/dashboard
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/admin\/dashboard",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:12:51] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/62",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:13:02] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/62",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:13:07] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/admin/dashboard
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/admin\/dashboard",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:13:11] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/admin/dashboard
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/admin\/dashboard",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:13:16] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/62
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/62",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:17:48] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:17:55] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/61
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/61",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:18:57] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans?page=1&per_page=10&sort_by=start_date&sort_order=desc",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:19:06] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/52
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/52",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------
+[2026-02-08 13:27:02] WINDOW_ERROR: ResizeObserver loop completed with undelivered notifications.
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/52
+User: Guest (Guest)
+Payload: {
+    "source": "http:\/\/localhost:5173\/app\/installment-plans\/52",
+    "lineno": 0,
+    "colno": 0
+}
+--------------------------------------------------

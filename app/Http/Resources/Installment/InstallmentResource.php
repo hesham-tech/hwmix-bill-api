@@ -23,6 +23,8 @@ class InstallmentResource extends JsonResource
             'created_by' => $this->created_by,
             'company_id' => $this->company_id,
             'user_id' => $this->user_id,
+            'commitment_days' => $this->getCommitmentDays(),
+            'commitment_label' => $this->getCommitmentLabel(),
             'created_at' => $this->created_at ? $this->created_at->toDateTimeString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toDateTimeString() : null,
             'customer' => new UserBasicResource($this->whenLoaded('customer')),

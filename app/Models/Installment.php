@@ -76,6 +76,46 @@ class Installment extends Model
     }
 
     /**
+     * حساب عدد أيام الالتزام (تأخير أو تبكير).
+     */
+    public function getCommitmentDays()
+    {
+        if (!$this->paid_at || !$this->due_date) {
+            return null;
+        }
+
+        // حساب الفرق بالأيام بين تاريخ السداد وتاريخ الاستحقاق
+        // الموجب يعني تأخير، السالب يعني تبكير
+        $due = \Carbon\Carbon::parse($this->due_date)->startOfDay();
+        $paid = \Carbon\Carbon::parse($this->paid_at)->startOfDay();
+
+        return $due->diffInDays($paid, false);
+    }
+
+    /**
+     * نص توضيحي لحالة الالتزام.
+     */
+    public function getCommitmentLabel()
+    {
+        $days = $this->getCommitmentDays();
+
+        if ($days === null) {
+            return 'غير مدفوع';
+        }
+
+        if ($days == 0) {
+            return 'ملتزم في الموعد';
+        }
+
+        if ($days > 0) {
+            return "تأخير {$days} يوم";
+        }
+
+        $earlyDays = abs($days);
+        return "مبكر {$earlyDays} يوم";
+    }
+
+    /**
      * نطاق للترتيب حسب الأولوية الذكية:
      * 1. المتأخر والمستحق اليوم (Priority 1)
      * 2. القادم (معلق أو مدفوع جزئياً ولم يحن موعده) (Priority 2)
