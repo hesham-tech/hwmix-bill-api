@@ -8,9 +8,12 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Observers\InstallmentObserver;
 
 /**
  */
+#[ObservedBy([InstallmentObserver::class])]
 class Installment extends Model
 {
     use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes;

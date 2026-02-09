@@ -16,12 +16,18 @@ class InstallmentPlanBasicResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name, // لو بتستخدمه في القوائم
-            'total_amount' => $this->total_amount,
-            'down_payment' => $this->down_payment ?? 0,
-            'remaining_amount' => $this->remaining_amount ?? 0,
+            'name' => $this->name,
+            'total_amount' => number_format($this->total_amount, 2, '.', ''),
+            'down_payment' => number_format($this->down_payment ?? 0, 2, '.', ''),
+            'total_pay' => number_format($this->total_collected, 2, '.', ''),
+            'remaining_amount' => number_format($this->actual_remaining, 2, '.', ''),
+            'payment_progress' => $this->payment_progress,
+
+            'interest_rate' => $this->interest_rate,
+            'interest_amount' => number_format($this->interest_amount ?? $this->calculated_interest_amount, 2, '.', ''),
+
             'installment_count' => $this->number_of_installments,
-            'installment_amount' => $this->installment_amount ?? 0,
+            'installment_amount' => number_format($this->installment_amount ?? 0, 2, '.', ''),
             'number_of_installments' => $this->number_of_installments,
             'start_date' => $this->start_date ? $this->start_date->format('Y-m-d') : null,
             'due_date' => $this->end_date ? $this->end_date->format('Y-m-d') : null,

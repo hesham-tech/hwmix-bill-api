@@ -39,18 +39,24 @@ class InstallmentPlanResource extends JsonResource
             'status' => $this->status ?? 'pending',
             'status_label' => $this->getStatusLabel(),
             'round_step' => $this->round_step ?? '10',
-            'remaining_amount' => number_format($this->remaining_amount ?? 0, 2, '.', ''),
-            'number_of_installments' => $this->number_of_installments ?? $this->installment_count,
 
+            // المبالغ المحسوبة بدقة من الموديل (وحدة الحقيقة)
             'total_amount' => number_format($this->total_amount, 2, '.', ''),
             'down_payment' => number_format($this->down_payment, 2, '.', ''),
+            'total_pay' => number_format($this->total_collected, 2, '.', ''),
+            'remaining_amount' => number_format($this->actual_remaining, 2, '.', ''),
+            'payment_progress' => $this->payment_progress,
+
+            'number_of_installments' => $this->number_of_installments ?? $this->installment_count,
             'installment_count' => $this->installment_count,
             'installment_amount' => number_format($this->installment_amount, 2, '.', ''),
+
+            'interest_rate' => $this->interest_rate,
+            'interest_amount' => number_format($this->interest_amount ?? $this->calculated_interest_amount, 2, '.', ''),
 
             'total_installments_remaining' => number_format($totalInstallmentsRemaining, 2, '.', ''),
             'total_installments_amount' => number_format($totalInstallmentsAmount, 2, '.', ''),
             'total_installments_pay' => number_format($totalInstallmentsPay, 2, '.', ''),
-            'total_pay' => number_format($totalPay, 2, '.', ''),
 
             'start_date' => $this->start_date ? $this->start_date->format('Y-m-d H:i:s') : null,
             'due_day' => $this->due_day,

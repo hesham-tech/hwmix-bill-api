@@ -76,4 +76,49 @@ class InstallmentPlan extends Model
     {
         return $this->hasMany(InstallmentPayment::class);
     }
+
+    /**
+     * حساب إجمالي المبلغ المحصل (المقدم + ما تم دفعه من أقساط)
+     */
+    public function getTotalCollectedAttribute()
+    {
+        $paidInstallments = $this->installments()
+            ->whereIn('status', ['paid', 'partially_paid'])
+            ->get()
+            ->sum(fn($inst) => bcsub($inst->amount, $inst->remaining, 2));
+
+        return bcadd($this->down_payment ?? 0, $paidInstallments, 2);
+    }
+
+    /**
+     * حساب المتبقي الفعلي (الإجمالي - المحصل الفعلي)
+     */
+    public function getActualRemainingAttribute()
+    {
+        return bcsub($this->total_amount, $this->total_collected, 2);
+    }
+
+    /**
+     * حساب نسبة التقدم في السداد بدقة
+     */
+    public function getPaymentProgressAttribute()
+    {
+        if ($this->total_amount <= 0)
+            return 0;
+        $progress = bcmul(bcdiv($this->total_collected, $this->total_amount, 4), '100', 2);
+        return (float) $progress;
+    }
+
+    /**
+     * حساب مبلغ الفائدة بناءً على النسبة والمدة (للتأكد من وحدة المنطق)
+     */
+    public function getCalculatedInterestAmountAttribute()
+    {
+        $net = $this->net_amount ?? 0;
+        $rate = $this->interest_rate ?? 0;
+        $months = $this->number_of_installments ?? 0;
+
+        $factualRate = bcdiv(bcmul($rate, $months, 4), '12', 4);
+        return bcmul($net, bcdiv($factualRate, '100', 4), 2);
+    }
 }

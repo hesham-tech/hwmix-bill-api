@@ -97,8 +97,31 @@ class InstallmentPlanController extends Controller
 
             // ✅ تحديد عدد العناصر في الصفحة والفرز
             $perPage = (int) $request->input('per_page', 20);
+
+            // Whitelist for sorting to prevent SQL injection or unknown column errors
+            $allowedSortFields = [
+                'id',
+                'created_at',
+                'start_date',
+                'end_date',
+                'total_amount',
+                'remaining_amount',
+                'status',
+                'installment_amount'
+            ];
+
             $sortField = $request->input('sort_by', 'created_at');
             $sortOrder = $request->input('sort_order', 'desc');
+
+            // Map frontend virtual fields to physical backend columns
+            if ($sortField === 'due_date') {
+                $sortField = 'start_date';
+            }
+
+            // Fallback to created_at if sort field is not allowed
+            if (!in_array($sortField, $allowedSortFields)) {
+                $sortField = 'created_at';
+            }
 
             $query->orderBy($sortField, $sortOrder);
 

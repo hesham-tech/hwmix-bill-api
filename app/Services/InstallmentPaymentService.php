@@ -137,21 +137,17 @@ class InstallmentPaymentService
                 throw new Exception('InstallmentPaymentService: فشل تحديث رصيد العميل (تقليل الدين): ' . json_encode($depositResultClient));
             }
 
-            DB::commit();
-
-            // تحديث الفاتورة الأم
-            try {
-                $parentInvoice = $installmentPlan->invoice;
-                if ($parentInvoice) {
-                    $parentInvoice->paid_amount += $totalAmountSuccessfullyPaid;
-                    $parentInvoice->remaining_amount = max(0, $parentInvoice->net_amount - $parentInvoice->paid_amount);
-                    $parentInvoice->updatePaymentStatus();
-                }
-            } catch (Exception $e) {
-                Log::error('InstallmentPaymentService: فشل تحديث الفاتورة الأم.', ['error' => $e->getMessage()]);
+            // تحديث الفاتورة الأم (داخل الـ Transaction لضمان الكل أو لا شيء)
+            $parentInvoice = $installmentPlan->invoice;
+            if ($parentInvoice) {
+                $parentInvoice->paid_amount += $totalAmountSuccessfullyPaid;
+                $parentInvoice->remaining_amount = max(0, $parentInvoice->net_amount - $parentInvoice->paid_amount);
+                $parentInvoice->updatePaymentStatus();
             }
 
-            // جلب القسط القادم لإظهاره للمستخدم
+            DB::commit();
+
+            // جلب القسط القادم لإظهاره للمستخدم (خارج الـ Transaction لأنه للقراءة فقط)
             $nextInstallment = $installmentPlan->installments()
                 ->where('status', 'pending')
                 ->where('remaining', '>', 0)
