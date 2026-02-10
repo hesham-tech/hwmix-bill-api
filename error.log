@@ -95,3 +95,21 @@ Stack Trace Snippet: AxiosError: Request failed with status code 500
     at async Object.get (http://localhost:5173/src/composables/useApi.js?t=1770561327974:30:24)
     at async fetchPlans (http://localhost:5173/src/module...
 --------------------------------------------------
+[2026-02-09 23:56:53] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770681387140
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/39
+User: Guest (Guest)
+Payload: {
+    "reason": []
+}
+Stack Trace Snippet: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770681387140
+--------------------------------------------------
+[2026-02-09 23:56:55] UNHANDLED_REJECTION: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770681387140
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Unknown
+URL: http://localhost:5173/app/installment-plans/39
+User: Guest (Guest)
+Payload: {
+    "reason": []
+}
+Stack Trace Snippet: TypeError: Failed to fetch dynamically imported module: http://localhost:5173/src/modules/installments/pages/InstallmentPlanView.vue?t=1770681387140
+--------------------------------------------------

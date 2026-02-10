@@ -17,8 +17,13 @@ trait RolePermissions
         return $this->creator->created_by == auth()->id();
     }
 
-    public function isٍٍٍSelf()
+    public function isSelf()
     {
         return $this->created_by == auth()->id();
+    }
+
+    public function isCurrentCompany()
+    {
+        return $this->id == auth()->user()->company_id;
     }
 }

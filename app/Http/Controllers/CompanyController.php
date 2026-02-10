@@ -37,17 +37,18 @@ class CompanyController extends Controller
             $authUser = Auth::user();
             $query = Company::with($this->relations);
 
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+            if ($authUser->hasPermissionTo(perm_key('admin.super')) || $authUser->hasPermissionTo(perm_key('companies.view_all'))) {
                 // وصول مطلق
-            } elseif (
-                $authUser->hasAnyPermission([
-                    perm_key('companies.view_all'),
-                    perm_key('admin.company'),
-                    perm_key('companies.view_children'),
-                    perm_key('companies.view_self')
-                ])
-            ) {
-                $query->whereIn('id', $authUser->companies->pluck('id')->toArray());
+            } elseif ($authUser->hasPermissionTo(perm_key('admin.company'))) {
+                // يرى شركته والشركات المرتبطة به
+                $myCompanyIds = $authUser->companies->pluck('id')->toArray();
+                $query->whereIn('id', $myCompanyIds);
+            } elseif ($authUser->hasPermissionTo(perm_key('companies.view_children'))) {
+                // يرى فقط ما يتبع لشجرته
+                $descendantIds = $authUser->getDescendantUserIds();
+                $query->whereIn('created_by', array_merge([$authUser->id], $descendantIds));
+            } elseif ($authUser->hasPermissionTo(perm_key('companies.view_self'))) {
+                $query->where('created_by', $authUser->id);
             } else {
                 return api_forbidden('ليس لديك صلاحية لعرض الشركات.');
             }
@@ -142,7 +143,7 @@ class CompanyController extends Controller
             $authUser->hasPermissionTo(perm_key('companies.view_all')) ||
             ($authUser->hasPermissionTo(perm_key('companies.view_children')) && $company->isOwn()) ||
             ($authUser->hasPermissionTo(perm_key('companies.view_self')) && $company->isSelf()) ||
-            ($authUser->hasPermissionTo(perm_key('admin.company')) && $authUser->company_id === $company->company_id)
+            ($authUser->hasPermissionTo(perm_key('admin.company')) && ($company->isCurrentCompany() || $company->isOwn()))
         ) {
             return api_success(new CompanyResource($company->load($this->relations)), 'تم جلب بيانات الشركة بنجاح');
         }
@@ -159,7 +160,7 @@ class CompanyController extends Controller
             $authUser->hasPermissionTo(perm_key('companies.update_all')) ||
             ($authUser->hasPermissionTo(perm_key('companies.update_children')) && $company->isOwn()) ||
             ($authUser->hasPermissionTo(perm_key('companies.update_self')) && $company->isSelf()) ||
-            ($authUser->hasPermissionTo(perm_key('admin.company')) && $authUser->company_id === $company->company_id)
+            ($authUser->hasPermissionTo(perm_key('admin.company')) && ($company->isCurrentCompany() || $company->isOwn()))
         ) {
             try {
                 DB::beginTransaction();
@@ -204,8 +205,8 @@ class CompanyController extends Controller
                     $authUser->hasPermissionTo(perm_key('admin.super')) ||
                     $authUser->hasPermissionTo(perm_key('companies.delete_all')) ||
                     ($authUser->hasPermissionTo(perm_key('companies.delete_children')) && $company->isOwn()) ||
-                    ($authUser->hasPermissionTo(perm_key('companies.delete_self')) && $company->created_by == $authUser->id) ||
-                    ($authUser->hasPermissionTo(perm_key('admin.company')) && $authUser->company_id === $company->company_id)
+                    ($authUser->hasPermissionTo(perm_key('companies.delete_self')) && $company->isSelf()) ||
+                    ($authUser->hasPermissionTo(perm_key('admin.company')) && ($company->isCurrentCompany() || $company->isOwn()))
                 )
             ) {
                 return api_forbidden('ليس لديك صلاحية لحذف الشركة ذات المعرف: ' . $company->id);
