@@ -473,9 +473,13 @@ class UserController extends Controller
             $validated = $request->validated();
 
             // 1. [تعديل الهوية]: جدول users
-            // السوبر أدمن أو صاحب الحساب فقط يمكنه تعديل البيانات العالمية
+            // السوبر أدمن، صاحب الحساب، أو الموظفين ذوي الصلاحيات يمكنهم تعديل البيانات العالمية
             $isUpdatingSelf = ($authUser->id === $user->id);
-            if ($isSuperAdmin || $isUpdatingSelf) {
+            $canUpdateAll = $authUser->can(perm_key('users.update_all'));
+            $canUpdateChildren = $authUser->can(perm_key('users.update_children'));
+            $isDescendant = $canUpdateChildren ? in_array($user->id, $authUser->getDescendantUserIds()) : false;
+
+            if ($isSuperAdmin || $isUpdatingSelf || $canUpdateAll || $isDescendant) {
                 $userData = array_intersect_key($validated, array_flip([
                     'username',
                     'email',

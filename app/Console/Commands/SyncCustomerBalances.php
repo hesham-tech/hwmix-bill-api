@@ -3,7 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Models\Invoice;
 use App\Models\Installment;
+use App\Models\CashBox;
+use App\Models\CompanyUser;
+use App\Services\CashBoxService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -21,80 +25,162 @@ class SyncCustomerBalances extends Command
      *
      * @var string
      */
-    protected $description = 'مزامنة أرصدة صناديق العملاء (من ليس لديهم صلاحيات) لتساوي إجمالي الأقساط المتبقية بالسالب';
+    protected $description = 'تدقيق شامل للبيانات المالية: تصحيح أرصدة الفواتير، الأقساط، إنشاء الخزائن المفقودة، ومزامنة أرصدة العملاء.';
 
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(CashBoxService $cashBoxService)
     {
-        $this->info('بدء عملية مزامنة أرصدة العملاء...');
+        $this->info('--- بدء عملية التدقيق المالي الشامل ---');
         $dryRun = $this->option('dry-run');
 
         if ($dryRun) {
-            $this->warn('!! وضع المحاكاة نشط - لن يتم حفظ أي تغييرات !!');
+            $this->warn('!! وضع المحاكاة نشط !!');
         }
 
-        // جلب المستخدمين مع أدوارهم وصلاحياتهم وعلاقاتهم بالشركات
-        $users = User::with(['roles', 'permissions', 'companyUsers.defaultCashBox'])->get();
+        // 1. تصحيح أرصدة وحالات الأقساط
+        $this->info('1. تصحيح الأقساط بناءً على تفاصيل الدفع...');
+        $this->auditInstallments($dryRun);
 
-        $count = 0;
-        $skipped = 0;
+        // 2. تصحيح أرصدة وحالات الفواتير
+        $this->info('2. تصحيح الفواتير بناءً على المدفوعات...');
+        $this->auditInvoices($dryRun);
+
+        // 3. ضمان وجود صناديق نقدية لكافة المستخدمين في شركاتهم
+        $this->info('3. فحص وإنشاء الصناديق النقدية المفقودة...');
+        $this->ensureCashBoxes($cashBoxService, $dryRun);
+
+        // 4. مزامنة أرصدة العملاء (مديونية الأقساط)
+        $this->info('4. مزامنة أرصدة العملاء (إجمالي الأقساط المتبقية)...');
+        $this->syncUserBalances($dryRun);
+
+        $this->info('--- اكتملت عملية التدقيق والمزامنة بنجاح ---');
+    }
+
+    protected function auditInstallments($dryRun)
+    {
+        $installments = Installment::all();
+        $corrected = 0;
+
+        foreach ($installments as $inst) {
+            $totalPaid = DB::table('installment_payment_details')
+                ->where('installment_id', $inst->id)
+                ->sum('amount_paid');
+
+            $calculatedRemaining = round($inst->amount - $totalPaid, 2);
+            $newStatus = $inst->status;
+
+            if ($calculatedRemaining <= 0) {
+                $newStatus = 'paid';
+                $calculatedRemaining = 0;
+            } elseif ($calculatedRemaining < $inst->amount) {
+                $newStatus = 'partially_paid';
+            }
+
+            if (round($inst->remaining, 2) != $calculatedRemaining || $inst->status != $newStatus) {
+                if (!$dryRun) {
+                    $inst->update([
+                        'remaining' => $calculatedRemaining,
+                        'status' => $newStatus,
+                        'paid_at' => ($newStatus == 'paid' && !$inst->paid_at) ? now() : $inst->paid_at
+                    ]);
+                }
+                $corrected++;
+            }
+        }
+        $this->line("   - تم تصحيح {$corrected} قسط.");
+    }
+
+    protected function auditInvoices($dryRun)
+    {
+        $invoices = Invoice::all();
+        $corrected = 0;
+
+        foreach ($invoices as $inv) {
+            $totalPaid = DB::table('invoice_payments')
+                ->where('invoice_id', $inv->id)
+                ->whereNull('deleted_at')
+                ->sum('amount');
+
+            $calculatedRemaining = round($inv->net_amount - $totalPaid, 2);
+            $newStatus = $inv->status;
+
+            if ($calculatedRemaining <= 0) {
+                $newStatus = 'paid';
+                $calculatedRemaining = 0;
+            } elseif ($calculatedRemaining < $inv->net_amount) {
+                $newStatus = 'partially_paid';
+            }
+
+            if (round($inv->paid_amount, 2) != round($totalPaid, 2) || round($inv->remaining_amount, 2) != $calculatedRemaining) {
+                if (!$dryRun) {
+                    $inv->paid_amount = $totalPaid;
+                    $inv->remaining_amount = $calculatedRemaining;
+                    $inv->status = $newStatus;
+                    $inv->save();
+                    $inv->updatePaymentStatus();
+                }
+                $corrected++;
+            }
+        }
+        $this->line("   - تم تصحيح {$corrected} فاتورة.");
+    }
+
+    protected function ensureCashBoxes($cashBoxService, $dryRun)
+    {
+        $companyUsers = CompanyUser::all();
+        $created = 0;
+
+        foreach ($companyUsers as $cu) {
+            $exists = CashBox::where('user_id', $cu->user_id)
+                ->where('company_id', $cu->company_id)
+                ->where('is_default', true)
+                ->exists();
+
+            if (!$exists) {
+                if (!$dryRun) {
+                    $cashBoxService->createDefaultCashBoxForUserCompany($cu->user_id, $cu->company_id, 1);
+                }
+                $created++;
+            }
+        }
+        $this->line("   - تم إنشاء {$created} صندوق نقدي مفقود.");
+    }
+
+    protected function syncUserBalances($dryRun)
+    {
+        $users = User::with(['roles', 'permissions'])->get();
+        $synced = 0;
 
         foreach ($users as $user) {
-            // شرط العميل: لا يملك أدواراً ولا صلاحيات مباشرة
+            // تخطي الموظفين (من لديهم أي صلاحية أو دور)
             if ($user->roles->count() > 0 || $user->permissions->count() > 0) {
-                $skipped++;
                 continue;
             }
 
-            // جلب كافة الشركات المرتبط بها هذا العميل
-            $companies = DB::table('company_user')
-                ->where('user_id', $user->id)
-                ->pluck('company_id');
+            $cashBoxes = CashBox::where('user_id', $user->id)
+                ->where('is_default', true)
+                ->get();
 
-            foreach ($companies as $companyId) {
-                // جلب الصندوق النقدي الافتراضي لهذا المستخدم في هذه الشركة
-                $cashBox = DB::table('cash_boxes')
-                    ->where('user_id', $user->id)
-                    ->where('company_id', $companyId)
-                    ->where('is_default', true)
-                    ->first();
-
-                if (!$cashBox) {
-                    continue;
-                }
-
-                // حساب إجمالي المتبقي من الأقساط غير المسددة لهذا المستخدم في هذه الشركة
+            foreach ($cashBoxes as $cb) {
                 $totalRemaining = DB::table('installments')
                     ->where('user_id', $user->id)
-                    ->where('company_id', $companyId)
+                    ->where('company_id', $cb->company_id)
                     ->whereNull('deleted_at')
                     ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
                     ->sum('remaining');
 
                 $newBalance = -abs($totalRemaining);
 
-                if (round($cashBox->balance, 2) != round($newBalance, 2)) {
-                    $this->line("مزامنة العميل: {$user->nickname} [ID: {$user->id}, شركة: {$companyId}]");
-                    $this->line("   - الرصيد: {$cashBox->balance} -> {$newBalance}");
-
+                if (round($cb->balance, 2) != round($newBalance, 2)) {
                     if (!$dryRun) {
-                        DB::table('cash_boxes')
-                            ->where('id', $cashBox->id)
-                            ->update(['balance' => $newBalance]);
+                        $cb->update(['balance' => $newBalance]);
                     }
-                    $count++;
+                    $synced++;
                 }
             }
         }
-
-        if ($dryRun) {
-            $this->info("تم فحص البيانات. سيتم تحديث {$count} صندوق عند التنفيذ الفعلي.");
-        } else {
-            $this->info("اكتملت المزامنة بنجاح. تم تحديث {$count} صندوق نقدي.");
-        }
-
-        $this->comment("تجاهل المستخدمين (الموظفين): {$skipped}");
+        $this->line("   - تم تحديث أرصدة {$synced} عميل.");
     }
 }
