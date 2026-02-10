@@ -46,9 +46,9 @@ class DashboardController extends Controller
                 $stats = [
                     'total_invoices' => Invoice::where('user_id', $user->id)->count(),
                     'total_paid' => InvoicePayment::whereHas('invoice', fn($q) => $q->where('user_id', $user->id))->sum('amount'),
-                    'remaining_balance' => Invoice::where('user_id', $user->id)->count() > 0 ? Invoice::where('user_id', $user->id)->sum('remaining_amount') : 0,
+                    'remaining_balance' => (float) ($user->defaultCashBox?->balance ?? 0),
                     'upcoming_installments_count' => Installment::where('user_id', $user->id)
-                        ->where('status', 'pending')
+                        ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
                         ->where('due_date', '>=', $now)
                         ->count(),
                 ];
@@ -65,9 +65,9 @@ class DashboardController extends Controller
                     ->limit(5)
                     ->get();
 
-                $upcomingInstallments = Installment::with(['installmentPlan.invoice'])
+                $upcomingInstallments = Installment::with(['installmentPlan.invoice.items.product'])
                     ->where('user_id', $user->id)
-                    ->where('status', 'pending')
+                    ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
                     ->where('due_date', '>=', $now)
                     ->orderBy('due_date', 'asc')
                     ->limit(5)
