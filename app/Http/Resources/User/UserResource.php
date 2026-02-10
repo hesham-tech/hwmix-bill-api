@@ -32,6 +32,7 @@ class UserResource extends JsonResource
             'status' => $this->status,
             'avatar_url' => $this->avatar_url,
             'company_id' => $this->company_id,
+            'company_name' => $this->whenLoaded('company', fn() => $this->company->name),
             'company_logo' => $this->whenLoaded('company', fn() => $this->company->logo?->url),
             'cash_box_id' => $this->getDefaultCashBoxForCompany()?->id,
             'last_login_at' => $this->last_login_at,

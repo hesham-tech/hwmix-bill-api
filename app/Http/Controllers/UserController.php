@@ -69,7 +69,7 @@ class UserController extends Controller
 
             if ($isGlobalView) {
                 // العرض العالمي: جلب سجلات فريدة من جدول users
-                $query = User::query()->with(['companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes']);
+                $query = User::query()->with(['company', 'companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes']);
             } else {
                 // العرض السياقي: جلب سجلات من company_user
                 if (!$activeCompanyId && !$isSuperAdmin) {
