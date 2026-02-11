@@ -175,10 +175,7 @@ class SyncCustomerBalances extends Command
         $synced = 0;
 
         foreach ($users as $user) {
-            // تخطي الموظفين (من لديهم أي صلاحية أو دور)
-            if ($user->roles->count() > 0 || $user->permissions->count() > 0) {
-                continue;
-            }
+            // مزامنة الجميع (عملاء وموظفين) لضمان اتساق البيانات المالية الشامل
 
             $cashBoxes = CashBox::where('user_id', $user->id)
                 ->where('is_default', true)
