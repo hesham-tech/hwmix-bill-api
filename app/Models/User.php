@@ -873,12 +873,11 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على الرصيد (Context-Aware)
+     * الحصول على الرصيد (المصدر الوحيد: الخزنة)
      */
     public function getBalanceAttribute()
     {
-        $activeCompanyUser = $this->relationLoaded('activeCompanyUser') ? $this->activeCompanyUser : null;
-        return (float) ($activeCompanyUser?->balance_in_company ?? 0);
+        return (float) $this->balanceBox();
     }
 
     /**

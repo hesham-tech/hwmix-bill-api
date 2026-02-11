@@ -46,6 +46,15 @@ class InstallmentPlan extends Model
         'round_step',
     ];
 
+    /**
+     * الحقول التي تضاف تلقائياً عند تحويل النموذج لـ JSON
+     */
+    protected $appends = [
+        'actual_remaining',
+        'total_collected',
+        'payment_progress'
+    ];
+
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
@@ -82,12 +91,17 @@ class InstallmentPlan extends Model
      */
     public function getTotalCollectedAttribute()
     {
-        $paidInstallments = $this->installments()
-            ->whereIn('status', ['paid', 'partially_paid'])
-            ->get()
-            ->sum(fn($inst) => bcsub($inst->amount, $inst->remaining, 2));
+        // استخدام العلاقة المحملة إذا وجدت لتجنب الاستعلامات المتكررة
+        $installments = $this->relationLoaded('installments') ? $this->installments : $this->installments()->get();
 
-        return bcadd($this->down_payment ?? 0, $paidInstallments, 2);
+        $paidInstallments = $installments->reduce(function ($carry, $inst) {
+            $paid = bcsub((string) $inst->amount, (string) $inst->remaining, 2);
+            return bcadd($carry, $paid, 2);
+        }, '0.00');
+
+        $downPayment = (string) ($this->down_payment ?? '0');
+
+        return bcadd($downPayment, $paidInstallments, 2);
     }
 
     /**

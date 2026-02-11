@@ -27,7 +27,7 @@ class InstallmentResource extends JsonResource
             'commitment_label' => $this->getCommitmentLabel(),
             'created_at' => $this->created_at ? $this->created_at->toDateTimeString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toDateTimeString() : null,
-            'customer' => new UserBasicResource($this->whenLoaded('customer')),
+            'customer' => new UserBasicResource($this->whenLoaded('user')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'installment_plan' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
         ];

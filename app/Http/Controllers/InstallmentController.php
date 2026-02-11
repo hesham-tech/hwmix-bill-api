@@ -67,17 +67,27 @@ class InstallmentController extends Controller
                 $query->where('user_id', $authUser->id);
             }
 
-            // فلتر الحالة: استثناء الملغاة افتراضياً ما لم يتم طلبها صراحةً
+            // فلتر الحالة: دعم حالات متعددة (comma-separated) أو حالة واحدة
             if ($request->filled('status')) {
-                $query->where('status', $request->input('status'));
+                $status = $request->input('status');
+                if (is_string($status) && str_contains($status, ',')) {
+                    $status = explode(',', $status);
+                }
+
+                if (is_array($status)) {
+                    $query->whereIn('status', $status);
+                } else {
+                    $query->where('status', $status);
+                }
             } else {
-                $query->where('status', '!=', 'canceled')->where('status', '!=', 'cancelled');
+                $query->whereNotIn('status', ['canceled', 'cancelled', 'ملغي']);
             }
+
             if ($request->filled('due_date_from')) {
-                $query->where('due_date', '>=', $request->input('due_date_from'));
+                $query->where('due_date', '>=', $request->input('due_date_from') . ' 00:00:00');
             }
             if ($request->filled('due_date_to')) {
-                $query->where('due_date', '<=', $request->input('due_date_to'));
+                $query->where('due_date', '<=', $request->input('due_date_to') . ' 23:59:59');
             }
             if ($request->filled('user_id')) {
                 $query->where('user_id', $request->input('user_id'));

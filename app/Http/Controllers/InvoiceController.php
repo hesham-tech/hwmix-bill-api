@@ -241,6 +241,26 @@ class InvoiceController extends Controller
             if (!empty($request->get('created_at_to'))) {
                 $query->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
             }
+            if (!empty($request->get('due_date_from'))) {
+                $query->where('due_date', '>=', $request->get('due_date_from') . ' 00:00:00');
+            }
+            if (!empty($request->get('due_date_to'))) {
+                $query->where('due_date', '<=', $request->get('due_date_to') . ' 23:59:59');
+            }
+
+            // فلتر حالة الدفع (payment_status) - دعم حالات متعددة
+            if ($request->filled('payment_status')) {
+                $pStatus = $request->input('payment_status');
+                if (is_string($pStatus) && str_contains($pStatus, ',')) {
+                    $pStatus = explode(',', $pStatus);
+                }
+
+                if (is_array($pStatus)) {
+                    $query->whereIn('payment_status', $pStatus);
+                } else {
+                    $query->where('payment_status', $pStatus);
+                }
+            }
 
             // تحديد عدد العناصر في الصفحة والفرز
             $perPage = max(1, (int) $request->input('per_page', 20));

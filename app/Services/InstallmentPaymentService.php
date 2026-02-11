@@ -125,6 +125,21 @@ class InstallmentPaymentService
             $installmentPayment->update(['amount_paid' => $totalAmountSuccessfullyPaid]);
             $this->updateInstallmentPlanStatus($installmentPlan);
 
+            $parentInvoice = $installmentPlan->invoice;
+
+            // إنشاء سجل دفع عام (Payment) ليظهر في الداشبورد والتقارير الموحدة
+            \App\Models\Payment::create([
+                'user_id' => $clientUser->id,
+                'company_id' => $installmentPlan->company_id,
+                'created_by' => $authUser->id,
+                'payment_date' => $options['paid_at'] ?? now(),
+                'amount' => $totalAmountSuccessfullyPaid,
+                'method' => $paymentMethodName,
+                'notes' => "سداد أقساط - فاتورة #{$parentInvoice?->invoice_number} - دفعة #{$installmentPayment->id}",
+                'payment_method_id' => $options['payment_method_id'] ?? null,
+                'cash_box_id' => $cashBoxId,
+            ]);
+
             // إيداع المبلغ في خزنة الموظف
             $depositResultStaff = $authUser->deposit($totalAmountSuccessfullyPaid, $cashBoxId, "تحصيل أقساط - دفعة #{$installmentPayment->id}");
             if ($depositResultStaff !== true) {
@@ -138,7 +153,6 @@ class InstallmentPaymentService
             }
 
             // تحديث الفاتورة الأم (داخل الـ Transaction لضمان الكل أو لا شيء)
-            $parentInvoice = $installmentPlan->invoice;
             if ($parentInvoice) {
                 $parentInvoice->paid_amount += $totalAmountSuccessfullyPaid;
                 $parentInvoice->remaining_amount = max(0, $parentInvoice->net_amount - $parentInvoice->paid_amount);

@@ -32,12 +32,15 @@ class InvoicePaymentHandler
     ): void {
         // المبلغ المدفوع → يذهب لخزنة البائع (الموظف)
         if ($paidAmount > 0) {
-            // ملاحظة: يتم تمرير معرف الخزنة؛ إذا لم يكن مملوكاً للبائع، سيفشل الطلب أو يستخدم الافتراضية بناءً على منطق النموذج
             $result = $seller->deposit($paidAmount, $sellerCashBoxId);
             if ($result !== true) {
                 throw new \Exception('فشل إيداع المبلغ في خزنة البائع: ' . json_encode($result));
             }
             Log::info("InvoicePaymentHandler: إيداع {$paidAmount} في خزنة البائع");
+
+            // تحديث المبلغ المدفوع في الفاتورة
+            $invoice->paid_amount = ($invoice->paid_amount ?? 0) + $paidAmount;
+            $invoice->remaining_amount = max(0, $invoice->net_amount - $invoice->paid_amount);
         }
 
         // المبلغ المتبقي → دين على العميل (أو رصيد له في حالة دفع زيادة)
@@ -92,6 +95,10 @@ class InvoicePaymentHandler
                 throw new \Exception('فشل سحب المبلغ من خزنة الشركة: ' . json_encode($result));
             }
             Log::info("InvoicePaymentHandler: سحب {$paidAmount} من خزنة الشركة");
+
+            // تحديث المبلغ المدفوع في الفاتورة
+            $invoice->paid_amount = ($invoice->paid_amount ?? 0) + $paidAmount;
+            $invoice->remaining_amount = max(0, $invoice->net_amount - $invoice->paid_amount);
         }
 
         // المبلغ المتبقي → دين للمورد على الشركة (أو رصيد للشركة عند دفع زيادة)

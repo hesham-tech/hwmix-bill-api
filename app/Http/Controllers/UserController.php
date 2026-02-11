@@ -299,12 +299,24 @@ class UserController extends Controller
             ], [
                 'nickname_in_company' => $validatedData['nickname'] ?? $user->nickname,
                 'full_name_in_company' => $validatedData['full_name'] ?? $user->full_name,
-                'balance_in_company' => $validatedData['balance'] ?? 0,
                 'customer_type_in_company' => $validatedData['customer_type'] ?? 'default',
                 'status' => $validatedData['status'] ?? 'active',
                 'created_by' => $authUser->id,
             ]);
-            Log::info('CompanyUser record established', ['company_user_id' => $companyUser->id]);
+
+            // [تعديل]: التعامل مع الرصيد الابتدائي في الخزنة بدلاً من جدول الربط
+            if (isset($validatedData['balance']) && $validatedData['balance'] != 0) {
+                // نضمن أولاً وجود الخزنة (عبر الموديل والخدمة)
+                $box = $user->defaultCashBox; // هذا سيقوم بإنشائها إذا لم توجد عبر Lazy Loading أو أوبزيرفر
+                if ($box) {
+                    if ($validatedData['balance'] > 0) {
+                        $user->deposit($validatedData['balance']);
+                    } else {
+                        $user->withdraw(abs($validatedData['balance']));
+                    }
+                }
+            }
+            Log::info('CompanyUser record established and balance synced to box', ['company_user_id' => $companyUser->id]);
 
             // مزامنة الشركات الإضافية (إذا وجدت)
             if ($request->has('company_ids') && !empty($request->input('company_ids'))) {
@@ -508,8 +520,20 @@ class UserController extends Controller
                         $contextData['full_name_in_company'] = $validated['full_name'];
                     if (isset($validated['status']) && !$isUpdatingSelf)
                         $contextData['status'] = $validated['status'];
-                    if (isset($validated['balance']) && $isSuperAdmin)
-                        $contextData['balance_in_company'] = $validated['balance'];
+                    if (isset($validated['balance']) && $isSuperAdmin) {
+                        // [تعديل]: تحديث الرصيد في الخزنة مباشرة بدلاً من جدول الربط عند تعديل السوبر أدمن
+                        $currentBalance = (float) $companyUser->balance;
+                        $newBalance = (float) $validated['balance'];
+                        $difference = $newBalance - $currentBalance;
+
+                        if ($difference !== 0) {
+                            if ($difference > 0) {
+                                $user->deposit(abs($difference));
+                            } else {
+                                $user->withdraw(abs($difference));
+                            }
+                        }
+                    }
                     if (isset($validated['customer_type']))
                         $contextData['customer_type_in_company'] = $validated['customer_type'];
                     if (isset($validated['position']))

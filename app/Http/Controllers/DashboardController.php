@@ -25,8 +25,6 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $companyId = $user->company_id;
-        $now = Carbon::now();
-        $startOfMonth = $now->copy()->startOfMonth();
 
         // فحص ما إذا كان المستخدم عميلاً (ليس لديه صلاحيات إدارية)
         $isCustomer = !$user->hasAnyPermission([
@@ -37,108 +35,14 @@ class DashboardController extends Controller
         ]);
 
         // استراتيجية النسخة (Cache Versioning) لتسهيل التنظيف
-        $version = \Illuminate\Support\Facades\Cache::get("dashboard_version_{$companyId}", '1.3');
-        $cacheKey = "dashboard_stats_comp_{$companyId}_user_{$user->id}_v{$version}_final_fix";
+        $version = \Illuminate\Support\Facades\Cache::get("dashboard_version_{$companyId}", '3.1');
+        $cacheKey = "dashboard_stats_comp_{$companyId}_user_{$user->id}_v{$version}_refactored";
 
-        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(15), function () use ($user, $companyId, $now, $startOfMonth, $isCustomer) {
+        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(15), function () use ($user, $companyId, $isCustomer) {
             if ($isCustomer) {
-                // --- لوحة تحكم العميل ---
-                $stats = [
-                    'total_invoices' => Invoice::where('user_id', $user->id)->count(),
-                    'total_paid' => InvoicePayment::whereHas('invoice', fn($q) => $q->where('user_id', $user->id))->sum('amount'),
-                    'remaining_balance' => (float) ($user->defaultCashBox?->balance ?? 0),
-                    'upcoming_installments_count' => Installment::where('user_id', $user->id)
-                        ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
-                        ->where('due_date', '>=', $now)
-                        ->count(),
-                ];
-
-                $recentInvoices = Invoice::with(['invoiceType', 'items.product', 'payments.paymentMethod'])
-                    ->where('user_id', $user->id)
-                    ->latest()
-                    ->limit(5)
-                    ->get();
-
-                $recentPayments = InvoicePayment::with(['invoice', 'paymentMethod'])
-                    ->whereHas('invoice', fn($q) => $q->where('user_id', $user->id))
-                    ->latest()
-                    ->limit(5)
-                    ->get();
-
-                $upcomingInstallments = Installment::with(['installmentPlan.invoice.items.product'])
-                    ->where('user_id', $user->id)
-                    ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
-                    ->where('due_date', '>=', $now)
-                    ->orderBy('due_date', 'asc')
-                    ->limit(5)
-                    ->get();
-
-                return [
-                    'role' => 'customer',
-                    'kpis' => $stats,
-                    'recent_invoices' => $recentInvoices,
-                    'recent_payments' => $recentPayments,
-                    'upcoming_installments' => $upcomingInstallments,
-                ];
+                return $this->getCustomerDashboardData($user);
             }
-
-            // --- لوحة تحكم الإدارة ---
-            $currentMonth = $now->format('Y-m');
-
-            // 1. Fetch KPI stats from pre-aggregated summaries
-            $monthlyStats = \App\Models\MonthlySalesSummary::where('company_id', $companyId)
-                ->where('year_month', $currentMonth)
-                ->first();
-
-            // For Total Sales (Lifetime), we can sum up all monthly summaries or fetch from cache if expensive
-            $totalSales = \App\Models\MonthlySalesSummary::where('company_id', $companyId)->sum('total_revenue');
-
-            $stats = [
-                'total_sales' => $totalSales,
-                'monthly_sales' => $monthlyStats?->total_revenue ?? 0,
-
-                'pending_payments' => Invoice::where('company_id', $companyId)
-                    ->where('remaining_amount', '>', 0)
-                    ->whereIn('status', ['confirmed', 'partial']) // Ensure we look at valid invoices
-                    ->sum('remaining_amount'),
-
-                'total_customers' => CompanyUser::where('company_id', $companyId)
-                    ->where('role', 'customer')
-                    ->count(),
-
-                'total_products' => Product::where('company_id', $companyId)->count(),
-            ];
-
-            // 2. تحليل المبيعات (آخر 7 أيام) من جدول الملخص اليومي
-            $salesTrend = \App\Models\DailySalesSummary::where('company_id', $companyId)
-                ->where('date', '>=', $now->copy()->subDays(7)->toDateString())
-                ->orderBy('date', 'asc')
-                ->get(['date', 'total_revenue as total']);
-
-            // 3. أحدث العمليات
-            $recentInvoices = Invoice::with(['customer', 'invoiceType'])
-                ->where('company_id', $companyId)
-                ->latest()
-                ->limit(5)
-                ->get();
-
-            // 4. المنتجات الأعلى مبيعاً
-            $topProducts = DB::table('invoice_items')
-                ->join('products', 'invoice_items.product_id', '=', 'products.id')
-                ->where('products.company_id', $companyId)
-                ->select('products.name', DB::raw('SUM(invoice_items.quantity) as total_qty'))
-                ->groupBy('products.id', 'products.name')
-                ->orderBy('total_qty', 'desc')
-                ->limit(5)
-                ->get();
-
-            return [
-                'role' => 'admin',
-                'kpis' => $stats,
-                'sales_trend' => $salesTrend,
-                'recent_invoices' => $recentInvoices,
-                'top_products' => $topProducts,
-            ];
+            return $this->getAdminDashboardData($companyId);
         });
 
         \Log::info('Dashboard Response for Request', [
@@ -150,5 +54,109 @@ class DashboardController extends Controller
             'success' => true,
             'data' => $data
         ]);
+    }
+
+    /**
+     * جلب بيانات داشبورد العميل
+     */
+    private function getCustomerDashboardData($user)
+    {
+        $now = Carbon::now();
+        $tenDaysLater = $now->copy()->addDays(10)->endOfDay();
+
+        $stats = [
+            'total_invoices' => Invoice::where('user_id', $user->id)->count(),
+            'total_paid' => (float) \App\Models\Payment::where('user_id', $user->id)->sum('amount'),
+            'remaining_balance' => (float) $user->balance,
+            'active_installment_plans' => \App\Models\InstallmentPlan::where('user_id', $user->id)->where('status', '!=', 'paid')->count(),
+            'upcoming_installments_count' => Installment::where('user_id', $user->id)
+                ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
+                ->where('due_date', '<=', $tenDaysLater)
+                ->count(),
+        ];
+
+        $recentInvoices = Invoice::with(['invoiceType', 'items.product', 'payments.paymentMethod', 'installmentPlan.installments'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        $recentPayments = \App\Models\Payment::with(['paymentMethod'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        $upcomingInstallments = Installment::with(['installmentPlan.invoice.items.product'])
+            ->where('user_id', $user->id)
+            ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
+            ->where('due_date', '<=', $tenDaysLater)
+            ->orderBy('due_date', 'asc')
+            ->limit(10)
+            ->get();
+
+        return [
+            'role' => 'customer',
+            'kpis' => $stats,
+            'recent_invoices' => $recentInvoices,
+            'recent_payments' => $recentPayments,
+            'upcoming_installments' => $upcomingInstallments,
+        ];
+    }
+
+    /**
+     * جلب بيانات داشبورد الإدارة
+     */
+    private function getAdminDashboardData($companyId)
+    {
+        $now = Carbon::now();
+        $currentMonth = $now->format('Y-m');
+
+        $monthlyStats = \App\Models\MonthlySalesSummary::where('company_id', $companyId)
+            ->where('year_month', $currentMonth)
+            ->first();
+
+        $totalSales = \App\Models\MonthlySalesSummary::where('company_id', $companyId)->sum('total_revenue');
+
+        $stats = [
+            'total_sales' => (float) $totalSales,
+            'monthly_sales' => (float) ($monthlyStats?->total_revenue ?? 0),
+            'pending_payments' => (float) Invoice::where('company_id', $companyId)
+                ->where('remaining_amount', '>', 0)
+                ->whereIn('status', ['confirmed', 'partial'])
+                ->sum('remaining_amount'),
+            'total_customers' => CompanyUser::where('company_id', $companyId)
+                ->where('role', 'customer')
+                ->count(),
+            'total_products' => Product::where('company_id', $companyId)->count(),
+        ];
+
+        $salesTrend = \App\Models\DailySalesSummary::where('company_id', $companyId)
+            ->where('date', '>=', $now->copy()->subDays(7)->toDateString())
+            ->orderBy('date', 'asc')
+            ->get(['date', 'total_revenue as total']);
+
+        $recentInvoices = Invoice::with(['customer', 'invoiceType'])
+            ->where('company_id', $companyId)
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        $topProducts = DB::table('invoice_items')
+            ->join('products', 'invoice_items.product_id', '=', 'products.id')
+            ->where('products.company_id', $companyId)
+            ->select('products.name', DB::raw('SUM(invoice_items.quantity) as total_qty'))
+            ->groupBy('products.id', 'products.name')
+            ->orderBy('total_qty', 'desc')
+            ->limit(5)
+            ->get();
+
+        return [
+            'role' => 'admin',
+            'kpis' => $stats,
+            'sales_trend' => $salesTrend,
+            'recent_invoices' => $recentInvoices,
+            'top_products' => $topProducts,
+        ];
     }
 }
