@@ -43,8 +43,8 @@ class SyncCustomerBalances extends Command
         $this->info('1. تصحيح الأقساط بناءً على تفاصيل الدفع...');
         $this->auditInstallments($dryRun);
 
-        // 2. تصحيح أرصدة وحالات الفواتير
-        $this->info('2. تصحيح الفواتير بناءً على المدفوعات...');
+        // 2. تصحيح أرصدة وحالات الفواتير (بناءً على التقسيط أولاً ثم المدفوعات)
+        $this->info('2. تصحيح الفواتير بناءً على خطط التقسيط والمدفوعات...');
         $this->auditInvoices($dryRun);
 
         // 3. ضمان وجود صناديق نقدية لكافة المستخدمين في شركاتهم
@@ -94,32 +94,53 @@ class SyncCustomerBalances extends Command
 
     protected function auditInvoices($dryRun)
     {
-        $invoices = Invoice::all();
+        $invoices = Invoice::with('installmentPlan')->get();
         $corrected = 0;
 
         foreach ($invoices as $inv) {
-            $totalPaid = DB::table('invoice_payments')
-                ->where('invoice_id', $inv->id)
-                ->whereNull('deleted_at')
-                ->sum('amount');
+            $totalPaid = 0;
+            $calculatedRemaining = 0;
+            $referenceTotal = $inv->net_amount;
 
-            $calculatedRemaining = round($inv->net_amount - $totalPaid, 2);
+            if ($inv->installmentPlan) {
+                // إذا كان هناك خطة تقسيط، فالبيانات المرجعية هي الخطة (المحصل الفعلي والمتبقي الفعلي)
+                $totalPaid = (float) $inv->installmentPlan->total_collected;
+                $calculatedRemaining = (float) $inv->installmentPlan->actual_remaining;
+                $referenceTotal = (float) $inv->installmentPlan->total_amount;
+            } else {
+                // لو كاش عادي، نرجع لسجل المدفوعات
+                $totalPaid = (float) DB::table('invoice_payments')
+                    ->where('invoice_id', $inv->id)
+                    ->whereNull('deleted_at')
+                    ->sum('amount');
+                $calculatedRemaining = round($inv->net_amount - $totalPaid, 2);
+            }
+
             $newStatus = $inv->status;
 
             if ($calculatedRemaining <= 0) {
                 $newStatus = 'paid';
                 $calculatedRemaining = 0;
-            } elseif ($calculatedRemaining < $inv->net_amount) {
+            } elseif ($calculatedRemaining < $referenceTotal) {
                 $newStatus = 'partially_paid';
+            } else {
+                $newStatus = 'confirmed'; // Unpaid but confirmed
             }
 
-            if (round($inv->paid_amount, 2) != round($totalPaid, 2) || round($inv->remaining_amount, 2) != $calculatedRemaining) {
+            $needsUpdate = round($inv->paid_amount, 2) != round($totalPaid, 2) ||
+                round($inv->remaining_amount, 2) != round($calculatedRemaining, 2) ||
+                $inv->status != $newStatus;
+
+            if ($needsUpdate) {
                 if (!$dryRun) {
                     $inv->paid_amount = $totalPaid;
                     $inv->remaining_amount = $calculatedRemaining;
                     $inv->status = $newStatus;
                     $inv->save();
-                    $inv->updatePaymentStatus();
+                    // تحديث الـ payment_status الداخلي أيضاً
+                    if (method_exists($inv, 'updatePaymentStatus')) {
+                        $inv->updatePaymentStatus();
+                    }
                 }
                 $corrected++;
             }
