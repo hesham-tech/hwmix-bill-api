@@ -90,7 +90,8 @@ class InstallmentPaymentController extends Controller
                 $search = $request->input('search');
                 $fieldsToCompare = ['reference_number', 'plan.customer.full_name', 'plan.customer.nickname', 'plan.customer.phone', 'plan.invoice.invoice_number'];
 
-                $refined = (new InstallmentPayment())->refineSimilarity(collect($payments->items()), $search, $fieldsToCompare, 70);
+                $refined = (new InstallmentPayment())->refineSimilarity(collect($payments->items()), $search, $fieldsToCompare, 80);
+                /** @var \Illuminate\Pagination\LengthAwarePaginator $payments */
                 $payments->setCollection($refined);
             }
 

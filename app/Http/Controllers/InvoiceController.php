@@ -280,10 +280,11 @@ class InvoiceController extends Controller
                     collect($invoices->items()),
                     $search,
                     $fieldsToCompare,
-                    70 // العتبة المطلوبة (يمكن زيادتها لـ 75)
+                    80 // العتبة المطلوبة (زيادة الدقة لمنع النتائج غير المتشابهة)
                 );
 
                 // استبدال العناصر في الباجينيتور بالنتائج المحسنة
+                /** @var \Illuminate\Pagination\LengthAwarePaginator $invoices */
                 $invoices->setCollection($refinedCollection);
             }
 

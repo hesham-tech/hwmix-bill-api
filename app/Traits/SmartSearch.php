@@ -68,7 +68,7 @@ trait SmartSearch
      * @param int $threshold Match percentage (e.g. 75)
      * @return \Illuminate\Support\Collection
      */
-    public function refineSimilarity($items, $searchTerm, array $fields, int $threshold = 70)
+    public function refineSimilarity($items, $searchTerm, array $fields, int $threshold = 80)
     {
         if (empty($searchTerm) || $items->isEmpty()) {
             return $items;

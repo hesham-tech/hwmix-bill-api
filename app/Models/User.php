@@ -45,7 +45,7 @@ use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, Translatable, HasApiTokens, Filterable, Scopes, LogsActivity, HasImages, ManagesBalance, \App\Traits\FilterableByCompany;
+    use HasFactory, Notifiable, Translatable, HasApiTokens, Filterable, Scopes, LogsActivity, HasImages, ManagesBalance, \App\Traits\FilterableByCompany, \App\Traits\SmartSearch;
     use HasRoles, HasPermissions {
         HasPermissions::hasPermissionTo insteadof HasRoles;
         HasPermissions::hasPermissionTo as traitHasPermissionTo;

@@ -124,7 +124,8 @@ class InstallmentController extends Controller
                 $search = $request->input('search');
                 $fieldsToCompare = ['installment_number', 'user.full_name', 'user.nickname', 'user.phone', 'installmentPlan.invoice.invoice_number'];
 
-                $refined = (new Installment())->refineSimilarity(collect($installments->items()), $search, $fieldsToCompare, 70);
+                $refined = (new Installment())->refineSimilarity(collect($installments->items()), $search, $fieldsToCompare, 80);
+                /** @var \Illuminate\Pagination\LengthAwarePaginator $installments */
                 $installments->setCollection($refined);
             }
 

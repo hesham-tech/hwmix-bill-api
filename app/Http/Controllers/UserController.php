@@ -98,25 +98,22 @@ class UserController extends Controller
                 $query->where('user_id', '!=', $authUser->id);
             }
 
-            // تطبيق الفلاتر (نفس المنطق للجهتين مع اختلاف الحقول)
+            // تطبيق البحث الذكي (Smart Search)
             if ($request->filled('search')) {
                 $search = $request->input('search');
-                $query->where(function ($q) use ($search, $isGlobalView) {
-                    if ($isGlobalView) {
-                        $q->where('username', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%")
-                            ->orWhere('phone', 'like', "%{$search}%")
-                            ->orWhere('full_name', 'like', "%{$search}%");
-                    } else {
-                        $q->where('nickname_in_company', 'like', "%{$search}%")
-                            ->orWhere('full_name_in_company', 'like', "%{$search}%")
-                            ->orWhereHas('user', function ($uq) use ($search) {
-                                $uq->where('email', 'like', "%{$search}%")
-                                    ->orWhere('phone', 'like', "%{$search}%")
-                                    ->orWhere('username', 'like', "%{$search}%");
-                            });
-                    }
-                });
+
+                if ($isGlobalView) {
+                    // البحث العالمي للمشرف العام
+                    $columns = ['username', 'email', 'phone', 'full_name', 'nickname'];
+                    $query->smartSearch($search, $columns);
+                } else {
+                    // البحث السياقي داخل الشركة
+                    $columns = ['nickname_in_company', 'full_name_in_company'];
+                    $relationColumns = [
+                        'user' => ['email', 'phone', 'username', 'full_name', 'nickname']
+                    ];
+                    $query->smartSearch($search, $columns, $relationColumns);
+                }
             }
 
             // فلترة حسب نوع العميل
@@ -148,6 +145,30 @@ class UserController extends Controller
             }
 
             $data = $query->paginate($perPage);
+
+            // تحسين النتائج باستخدام التشابه (Similarity Matching) بنسبة 80%
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $items = $data->getCollection();
+
+                if ($isGlobalView) {
+                    $fieldsToCompare = ['username', 'email', 'phone', 'full_name', 'nickname'];
+                    $refined = (new User())->refineSimilarity($items, $search, $fieldsToCompare, 80);
+                } else {
+                    $fieldsToCompare = [
+                        'nickname_in_company',
+                        'full_name_in_company',
+                        'user.email',
+                        'user.phone',
+                        'user.username',
+                        'user.full_name',
+                        'user.nickname'
+                    ];
+                    $refined = (new CompanyUser())->refineSimilarity($items, $search, $fieldsToCompare, 80);
+                }
+
+                $data->setCollection($refined);
+            }
 
             $resourceClass = $isGlobalView ? UserResource::class : CompanyUserBasicResource::class;
 
@@ -824,11 +845,12 @@ class UserController extends Controller
             $baseQueryWithoutSearch = clone $baseQuery;
 
             if ($request->filled('search')) {
-                $baseQuery->where(function ($subQuery) use ($search) {
-                    $subQuery->where('nickname_in_company', 'like', '%' . $search . '%')
-                        ->orWhere('full_name_in_company', 'like', '%' . $search . '%')
-                        ->orWhere('user_phone', 'like', '%' . $search . '%');
-                });
+                $search = $request->input('search');
+                $columns = ['nickname_in_company', 'full_name_in_company'];
+                $relationColumns = [
+                    'user' => ['email', 'phone', 'username', 'full_name', 'nickname']
+                ];
+                $baseQuery->smartSearch($search, $columns, $relationColumns);
             }
 
             $baseQuery
@@ -859,22 +881,23 @@ class UserController extends Controller
 
             $companyUsers = $baseQuery->paginate($perPage);
 
-            if ($companyUsers->isEmpty() && $request->filled('search')) {
-                $allCompanyUsers = (clone $baseQueryWithoutSearch)->limit(500)->get();
+            // تحسين النتائج باستخدام التشابه (Similarity Matching) بنسبة 80%
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $items = $companyUsers->getCollection();
 
-                $paginated = smart_search_paginated(
-                    $allCompanyUsers,
-                    $search,
-                    ['nickname_in_company', 'full_name_in_company', 'user_phone'],
-                    $request->query(),
-                    null,
-                    $perPage,
-                    $page
-                );
+                $fieldsToCompare = [
+                    'nickname_in_company',
+                    'full_name_in_company',
+                    'user.email',
+                    'user.phone',
+                    'user.username',
+                    'user.full_name',
+                    'user.nickname'
+                ];
+                $refined = (new CompanyUser())->refineSimilarity($items, $search, $fieldsToCompare, 80);
 
-                Log::debug("✅ عدد النتائج الذكية بعد الترتيب: " . $paginated->total());
-
-                return api_success(CompanyUserBasicResource::collection($paginated), 'تم إرجاع نتائج مقترحة بناءً على البحث.');
+                $companyUsers->setCollection($refined);
             }
 
             if ($companyUsers->isEmpty()) {

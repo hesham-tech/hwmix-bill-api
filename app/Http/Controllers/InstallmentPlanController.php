@@ -129,9 +129,10 @@ class InstallmentPlanController extends Controller
 
                 $items = $plans instanceof \Illuminate\Pagination\LengthAwarePaginator ? collect($plans->items()) : $plans;
 
-                $refined = (new InstallmentPlan())->refineSimilarity($items, $search, $fieldsToCompare, 70);
+                $refined = (new InstallmentPlan())->refineSimilarity($items, $search, $fieldsToCompare, 80);
 
                 if ($plans instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+                    /** @var \Illuminate\Pagination\LengthAwarePaginator $plans */
                     $plans->setCollection($refined);
                 } else {
                     $plans = $refined;

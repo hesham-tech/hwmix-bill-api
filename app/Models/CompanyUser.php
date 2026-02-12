@@ -16,7 +16,7 @@ use App\Observers\CompanyUserObserver;
 class CompanyUser extends Pivot
 {
     // تم الإبقاء على HasFactory فقط من الـ Traits الأساسية للنماذج
-    use HasFactory, FilterableByCompany;
+    use HasFactory, FilterableByCompany, \App\Traits\SmartSearch;
 
     protected $table = 'company_user';
 
