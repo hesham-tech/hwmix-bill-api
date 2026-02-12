@@ -8,12 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes; // ← ✅ استيراد السوفت دليت
 
+use App\Traits\SmartSearch;
+
 /**
  * InstallmentPlan Model
  */
 class InstallmentPlan extends Model
 {
-    use HasFactory, Blameable, Scopes, SoftDeletes, \App\Traits\LogsActivity;
+    use HasFactory, Blameable, Scopes, SoftDeletes, \App\Traits\LogsActivity, SmartSearch;
 
     /**
      * Label for activity logs.

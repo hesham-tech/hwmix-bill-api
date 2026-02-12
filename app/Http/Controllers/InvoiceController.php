@@ -139,12 +139,14 @@ class InvoiceController extends Controller
     public function __construct()
     {
         $this->indexRelations = [
+            'customer',
             'invoiceType',
             'company',
             'creator',
         ];
 
         $this->showRelations = [
+            'customer',
             'company',
             'invoiceType',
             'items.variant',
@@ -195,14 +197,9 @@ class InvoiceController extends Controller
             // البحث (رقم الفاتورة أو اسم العميل)
             if ($request->filled('search')) {
                 $search = $request->input('search');
-                $query->where(function ($q) use ($search) {
-                    $q->where('invoice_number', 'like', "%{$search}%")
-                        ->orWhereHas('customer', function ($qu) use ($search) {
-                            $qu->where('full_name', 'like', "%{$search}%")
-                                ->orWhere('nickname', 'like', "%{$search}%")
-                                ->orWhere('phone', 'like', "%{$search}%");
-                        });
-                });
+                $query->smartSearch($search, ['invoice_number'], [
+                    'customer' => ['full_name', 'nickname', 'phone']
+                ]);
             }
             // إضافة صلاحيات العرض
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -272,6 +269,23 @@ class InvoiceController extends Controller
             }
 
             $invoices = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
+
+            // تحسين النتائج بالتشابه (Fuzzy Search Refinement) في حال وجود بحث
+            if ($request->filled('search') && $invoices->isNotEmpty()) {
+                $search = $request->input('search');
+                $fieldsToCompare = ['invoice_number', 'customer.full_name', 'customer.nickname', 'customer.phone'];
+
+                // نقوم بتطبيق الفلترة والترتيب حسب التشابه
+                $refinedCollection = (new Invoice())->refineSimilarity(
+                    collect($invoices->items()),
+                    $search,
+                    $fieldsToCompare,
+                    70 // العتبة المطلوبة (يمكن زيادتها لـ 75)
+                );
+
+                // استبدال العناصر في الباجينيتور بالنتائج المحسنة
+                $invoices->setCollection($refinedCollection);
+            }
 
             if ($invoices->isEmpty()) {
                 return api_success([], 'لم يتم العثور على فواتير.');

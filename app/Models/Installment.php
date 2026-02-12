@@ -11,12 +11,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use App\Observers\InstallmentObserver;
 
+use App\Traits\SmartSearch;
+
 /**
  */
 #[ObservedBy([InstallmentObserver::class])]
 class Installment extends Model
 {
-    use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes;
+    use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes, SmartSearch;
 
     /**
      * Label for activity logs.

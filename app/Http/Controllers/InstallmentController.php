@@ -92,10 +92,13 @@ class InstallmentController extends Controller
             if ($request->filled('user_id')) {
                 $query->where('user_id', $request->input('user_id'));
             }
-            if ($request->filled('invoice_id')) {
-                $query->where('invoice_id', $request->input('invoice_id'));
+            if ($request->filled('search')) {
+                $search = trim($request->input('search'));
+                $query->smartSearch($search, ['installment_number'], [
+                    'user' => ['full_name', 'nickname', 'phone'],
+                    'installmentPlan.invoice' => ['invoice_number']
+                ]);
             }
-            // يمكنك إضافة المزيد من فلاتر البحث هنا
 
             // الترتيب
             $sortBy = $request->get('sort_by', 'due_date');
@@ -115,6 +118,15 @@ class InstallmentController extends Controller
                 $perPage = 1000;
 
             $installments = $query->paginate($perPage);
+
+            // تحسين النتائج بالتشابه (Similarity Refinement)
+            if ($request->filled('search') && $installments->isNotEmpty()) {
+                $search = $request->input('search');
+                $fieldsToCompare = ['installment_number', 'user.full_name', 'user.nickname', 'user.phone', 'installmentPlan.invoice.invoice_number'];
+
+                $refined = (new Installment())->refineSimilarity(collect($installments->items()), $search, $fieldsToCompare, 70);
+                $installments->setCollection($refined);
+            }
 
             if ($installments->isEmpty()) {
                 return api_success($installments, 'لم يتم العثور على أقساط.');

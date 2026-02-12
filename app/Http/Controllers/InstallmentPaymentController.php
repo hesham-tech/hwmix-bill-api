@@ -62,6 +62,14 @@ class InstallmentPaymentController extends Controller
             }
 
             // التصفية
+            if ($request->filled('search')) {
+                $search = trim($request->input('search'));
+                $query->smartSearch($search, ['reference_number'], [
+                    'plan.customer' => ['full_name', 'nickname', 'phone'],
+                    'plan.invoice' => ['invoice_number']
+                ]);
+            }
+
             if ($request->filled('installment_plan_id')) {
                 $query->where('installment_plan_id', $request->input('installment_plan_id'));
             }
@@ -77,6 +85,19 @@ class InstallmentPaymentController extends Controller
             $sortOrder = $request->get('sort_order', 'desc');
             $payments = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
 
+            // تحسين النتائج بالتشابه (Similarity Refinement)
+            if ($request->filled('search') && $payments->isNotEmpty()) {
+                $search = $request->input('search');
+                $fieldsToCompare = ['reference_number', 'plan.customer.full_name', 'plan.customer.nickname', 'plan.customer.phone', 'plan.invoice.invoice_number'];
+
+                $refined = (new InstallmentPayment())->refineSimilarity(collect($payments->items()), $search, $fieldsToCompare, 70);
+                $payments->setCollection($refined);
+            }
+
+            if ($payments->isEmpty()) {
+                // If after refinement, the collection is empty, you might want to return an empty success or a specific message.
+                // For now, it will proceed to the general success message with an empty collection.
+            }
             return api_success(InstallmentPaymentResource::collection($payments), 'تم جلب سجلات الدفع بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);

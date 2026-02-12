@@ -79,19 +79,13 @@ class InstallmentPlanController extends Controller
                 $query->where('user_id', $request->input('user_id'));
             }
 
-            // ✅ منطق البحث (الاسم أو الهاتف من جدول المستخدمين)
+            // ✅ منطق البحث الذكي (رقم الفاتورة، الاسم، الهاتف)
             if ($request->filled('search')) {
                 $search = trim($request->input('search'));
-
-                $query->whereHas('customer', function ($q) use ($search) {
-                    $q->where(function ($qq) use ($search) {
-                        $qq->where('nickname', 'LIKE', "%{$search}%")
-                            ->orWhere('phone', 'LIKE', "%{$search}%");
-                        if (is_numeric($search)) {
-                            $qq->orWhere('id', $search);
-                        }
-                    });
-                });
+                $query->smartSearch($search, ['id'], [
+                    'customer' => ['full_name', 'nickname', 'phone'],
+                    'invoice' => ['invoice_number']
+                ]);
             }
 
 
@@ -126,10 +120,22 @@ class InstallmentPlanController extends Controller
             $query->orderBy($sortField, $sortOrder);
 
             // ✅ جلب البيانات مع أو بدون الباجينيشن
-            if ($perPage == -1) {
-                $plans = $query->get();
-            } else {
-                $plans = $query->paginate(max(1, $perPage));
+            $plans = $perPage == -1 ? $query->get() : $query->paginate(max(1, $perPage));
+
+            // تحسين النتائج بالتشابه (Similarity Refinement)
+            if ($request->filled('search') && $plans->isNotEmpty()) {
+                $search = $request->input('search');
+                $fieldsToCompare = ['id', 'customer.full_name', 'customer.nickname', 'customer.phone', 'invoice.invoice_number'];
+
+                $items = $plans instanceof \Illuminate\Pagination\LengthAwarePaginator ? collect($plans->items()) : $plans;
+
+                $refined = (new InstallmentPlan())->refineSimilarity($items, $search, $fieldsToCompare, 70);
+
+                if ($plans instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+                    $plans->setCollection($refined);
+                } else {
+                    $plans = $refined;
+                }
             }
 
             // ✅ بناء الاستجابة

@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use App\Observers\InvoiceObserver;
 
+use App\Traits\SmartSearch;
+
 #[ObservedBy([InvoiceObserver::class])]
 class Invoice extends Model
 {
-    use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes;
+    use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes, SmartSearch;
 
     protected $guarded = [];
 

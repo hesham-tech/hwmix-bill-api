@@ -7,12 +7,14 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\SmartSearch;
+
 /**
  * Installment Payment Model
  */
 class InstallmentPayment extends Model
 {
-    use HasFactory, Scopes, Blameable, \App\Traits\LogsActivity;
+    use HasFactory, Scopes, Blameable, \App\Traits\LogsActivity, SmartSearch;
 
     /**
      * Label for activity logs.
