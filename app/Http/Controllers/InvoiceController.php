@@ -265,7 +265,13 @@ class InvoiceController extends Controller
             $sortField = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $invoices = $query->orderByRaw('GREATEST(updated_at, created_at) DESC')->paginate($perPage);
+            // التحقق من الحقول المسموح بها للفرز
+            $allowedSortFields = ['id', 'invoice_number', 'issue_date', 'status', 'payment_status', 'net_amount'];
+            if (!in_array($sortField, $allowedSortFields)) {
+                $sortField = 'id';
+            }
+
+            $invoices = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
 
             if ($invoices->isEmpty()) {
                 return api_success([], 'لم يتم العثور على فواتير.');
