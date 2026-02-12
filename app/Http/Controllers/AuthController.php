@@ -49,7 +49,9 @@ class AuthController extends Controller
             \Log::info('Attempting to create user', ['phone' => $validated['phone']]);
 
             $company = \App\Models\Company::first();
-            $companyId = $company ? $company->id : 1;
+            $companyId = $company ? $company->id : 1; // Default to 1 if no company exists yet
+
+            \Log::info('Creating user with company ID', ['company_id' => $companyId]);
 
             $user = User::create([
                 'phone' => $validated['phone'],
