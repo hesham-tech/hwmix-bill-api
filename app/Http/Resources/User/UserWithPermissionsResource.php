@@ -28,7 +28,7 @@ class UserWithPermissionsResource extends JsonResource
             'phone' => $this->phone,
             'position' => $this->position,
             'settings' => $this->settings,
-            'cash_box_id' => $this->whenLoaded('cashBoxDefault', fn() => $this->cashBoxDefault?->id),
+            'cash_box_id' => $this->getDefaultCashBoxForCompany()?->id,
             'company_logo' => $this->whenLoaded('company', fn() => $this->company->logo?->url),
             'last_login_at' => $this->last_login_at,
             'email_verified_at' => $this->email_verified_at,
@@ -38,7 +38,7 @@ class UserWithPermissionsResource extends JsonResource
             'created_by' => $this->created_by,
             'customer_type' => $this->customer_type,
             'has_installments' => $this->whenLoaded('installments', fn() => $this->installments()->exists(), false),
-            'cashBoxDefault' => new CashBoxResource($this->whenLoaded('cashBoxDefault')),
+            'cashBoxDefault' => new CashBoxResource($this->getDefaultCashBoxForCompany()),
             // الشركات التي يمكن للمستخدم الوصول إليها
             'companies' => CompanyResource::collection($this->whenLoaded('companies', fn() => $this->getVisibleCompaniesForUser(), collect())),
             'cashBoxes' => CashBoxResource::collection($this->whenLoaded('cashBoxes')),

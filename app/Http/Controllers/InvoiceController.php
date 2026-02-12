@@ -139,14 +139,12 @@ class InvoiceController extends Controller
     public function __construct()
     {
         $this->indexRelations = [
-            'customer.cashBoxDefault',
             'invoiceType',
             'company',
             'creator',
         ];
 
         $this->showRelations = [
-            'customer.cashBoxDefault',
             'company',
             'invoiceType',
             'items.variant',

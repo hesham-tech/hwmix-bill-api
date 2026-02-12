@@ -79,7 +79,7 @@ class CompanyUserWithPermissionsResource extends JsonResource
 
             // الخزنة الافتراضية
             'cash_box_id' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? null : $defaultCashBox?->id,
-            'cashBoxDefault' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? $defaultCashBox : ($defaultCashBox ? new CashBoxResource($defaultCashBox) : null),
+            'cashBoxDefault' => $defaultCashBox ? new CashBoxResource($defaultCashBox) : null,
 
             // الشركة الحالية
             'company_id' => $this->company_id,

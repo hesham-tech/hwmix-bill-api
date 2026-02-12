@@ -150,7 +150,7 @@ class InstallmentPaymentController extends Controller
             $companyId = $authUser->company_id ?? null;
             $validatedData = $request->validated();
 
-            $cashBoxId = $validatedData['cash_box_id'] ?? $authUser->cashBoxDefault?->id;
+            $cashBoxId = $validatedData['cash_box_id'] ?? $authUser->getDefaultCashBoxForCompany()?->id;
             if (!$cashBoxId) {
                 return api_error('لم يتم العثور على صندوق نقدي افتراضي للمستخدم.', [], 400);
             }
