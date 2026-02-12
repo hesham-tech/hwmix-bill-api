@@ -40,7 +40,7 @@ endpoints:
         name: date_to
         description: 'date تاريخ النهاية.'
         required: false
-        example: praesentium
+        example: voluptas
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -60,7 +60,7 @@ endpoints:
         name: export
         description: 'تصدير التقرير (excel, csv).'
         required: false
-        example: et
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -68,9 +68,9 @@ endpoints:
         custom: []
     cleanQueryParameters:
       date_from: '2024-01-01'
-      date_to: praesentium
+      date_to: voluptas
       group_by: month
-      export: et
+      export: qui
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -268,7 +268,7 @@ endpoints:
         name: product_id
         description: 'فلترة حسب المنتج.'
         required: false
-        example: 12
+        example: 2
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -278,15 +278,15 @@ endpoints:
         name: date_from
         description: 'date تاريخ البداية.'
         required: false
-        example: laborum
+        example: sapiente
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanQueryParameters:
-      product_id: 12
-      date_from: laborum
+      product_id: 2
+      date_from: sapiente
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -494,7 +494,7 @@ endpoints:
         name: date_to
         description: 'date تاريخ النهاية.'
         required: false
-        example: aut
+        example: id
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -502,7 +502,7 @@ endpoints:
         custom: []
     cleanQueryParameters:
       date_from: '2023-10-01'
-      date_to: aut
+      date_to: id
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []

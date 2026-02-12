@@ -28,26 +28,6 @@ endpoints:
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      phone:
-        name: phone
-        description: 'رقم الهاتف (يجب أن يكون فريداً).'
-        required: true
-        example: '01099223344'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      password:
-        name: password
-        description: 'كلمة المرور (8 أحرف على الأقل).'
-        required: true
-        example: password123
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
       full_name:
         name: full_name
         description: 'الاسم الكامل للمستخدم.'
@@ -68,6 +48,26 @@ endpoints:
         exampleWasSpecified: true
         nullable: false
         custom: []
+      phone:
+        name: phone
+        description: 'رقم الهاتف (يجب أن يكون فريداً).'
+        required: true
+        example: '01099223344'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      password:
+        name: password
+        description: 'كلمة المرور (8 أحرف على الأقل).'
+        required: true
+        example: password123
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
       email:
         name: email
         description: 'البريد الإلكتروني (اختياري وفريد).'
@@ -79,10 +79,10 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      phone: '01099223344'
-      password: password123
       full_name: 'هشام محمد'
       nickname: 'أبو هيبة'
+      phone: '01099223344'
+      password: password123
       email: user@example.com
     fileParameters: []
     responses:
@@ -238,6 +238,125 @@ endpoints:
           access-control-allow-origin: '*'
         description: null
         custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/auth/sessions
+    metadata:
+      groupName: '01. إدارة المصادقة'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        قائمة الجلسات النشطة
+
+        استرجاع جميع الأجهزة المسجل الدخول منها حالياً.
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: api/auth/sessions-others
+    metadata:
+      groupName: '01. إدارة المصادقة'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تسجيل الخروج من جميع الأجهزة الأخرى'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/auth/sessions/{id}'
+    metadata:
+      groupName: '01. إدارة المصادقة'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        حذف جلسة محددة
+
+        تسجيل الخروج من جهاز معين.
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the session.'
+        required: true
+        example: voluptatem
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: voluptatem
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
     responseFields: []
     auth: []
     controller: null

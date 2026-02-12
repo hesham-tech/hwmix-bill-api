@@ -80,9 +80,21 @@ class RoleController extends Controller
             }
 
             // [جديد] تطبيق القيد الهرمي: غير المدراء لا يرون إلا أدوارهم الخاصة
-            if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')])) {
-                $myRoleNames = $authUser->getRoleNames()->toArray();
-                $query->whereIn('name', $myRoleNames);
+            $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
+            $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
+
+            if (!$isSuperAdmin) {
+                if ($isCompanyAdmin) {
+                    // مدير الشركة لا يرى الأدوار التي تحتوي على صلاحيات لا يملكها (مثل السوبر أدمن)
+                    $myPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
+                    $query->whereDoesntHave('permissions', function ($q) use ($myPermissions) {
+                        $q->whereNotIn('name', $myPermissions);
+                    });
+                } else {
+                    // المستخدم العادي لا يرى إلا أدواره الخاصة
+                    $myRoleNames = $authUser->getRoleNames()->toArray();
+                    $query->whereIn('name', $myRoleNames);
+                }
             }
 
             if ($request->filled('company_id')) {

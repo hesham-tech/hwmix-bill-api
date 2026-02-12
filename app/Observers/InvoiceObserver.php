@@ -102,10 +102,14 @@ class InvoiceObserver
         $date = $invoice->issue_date ?? $invoice->created_at;
         if ($date && $invoice->company_id) {
             \Illuminate\Support\Facades\DB::afterCommit(function () use ($date, $invoice) {
+                // 1. Existing Daily Summary (Snapshot)
                 \App\Jobs\UpdateDailySalesSummary::dispatchSync(
                     $date->toDateString(),
                     $invoice->company_id
                 );
+
+                // 2. New Cumulative Stats (Aggregated)
+                \App\Jobs\UpdateInvoiceStatsJob::dispatch($invoice);
             });
         }
     }

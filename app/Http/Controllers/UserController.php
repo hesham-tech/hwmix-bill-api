@@ -378,7 +378,7 @@ class UserController extends Controller
 
                 if ($request->has('roles')) {
                     $requestedRoles = (array) $validatedData['roles'];
-                    if (!$isSystemAdmin) {
+                    if (!$isSuperAdmin) {
                         $myRoles = $authUser->getRoleNames()->toArray();
                         $unauthorizedRoles = array_diff($requestedRoles, $myRoles);
                         if (!empty($unauthorizedRoles)) {
@@ -390,7 +390,7 @@ class UserController extends Controller
 
                 if ($request->has('permissions')) {
                     $requestedPermissions = (array) $validatedData['permissions'];
-                    if (!$isSystemAdmin) {
+                    if (!$isSuperAdmin) {
                         $myPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
                         $unauthorizedPermissions = array_diff($requestedPermissions, $myPermissions);
                         if (!empty($unauthorizedPermissions)) {
@@ -572,11 +572,9 @@ class UserController extends Controller
 
             // 3. تحديث الأدوار والصلاحيات (سياق الشركة الحالية)
             if ($activeCompanyId && !$isUpdatingSelf) {
-                $isSystemAdmin = $isSuperAdmin || $authUser->can(perm_key('admin.company'));
-
                 if ($request->has('roles')) {
                     $requestedRoles = $validated['roles'];
-                    if (!$isSystemAdmin) {
+                    if (!$isSuperAdmin) {
                         $myRoles = $authUser->getRoleNames()->toArray();
                         $unauthorizedRoles = array_diff($requestedRoles, $myRoles);
                         if (!empty($unauthorizedRoles)) {
@@ -588,7 +586,7 @@ class UserController extends Controller
 
                 if ($request->has('permissions')) {
                     $requestedPermissions = $validated['permissions'];
-                    if (!$isSystemAdmin) {
+                    if (!$isSuperAdmin) {
                         $myPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
                         $unauthorizedPermissions = array_diff($requestedPermissions, $myPermissions);
                         if (!empty($unauthorizedPermissions)) {

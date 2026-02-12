@@ -5,6 +5,7 @@ use App\Http\Controllers\LogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\ProfitController;
@@ -113,8 +114,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/export', [\App\Http\Controllers\ActivityController::class, 'export']);
     });
 
-    // ================== Dashboard ==================
+    // ================== Dashboard & Analytics ==================
     Route::get('/dashboard/summary', [\App\Http\Controllers\DashboardController::class, 'index']);
+    Route::controller(AnalyticsController::class)->prefix('analytics')->group(function () {
+        Route::get('dashboard', 'dashboard');
+        Route::get('top-products', 'topProducts');
+        Route::get('user-history/{userId}', 'userHistory');
+    });
     // Auth Controller
     Route::get('me', [AuthController::class, 'me']);
     // User Controller

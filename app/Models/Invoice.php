@@ -31,6 +31,7 @@ class Invoice extends Model
         'initial_paid_amount' => 'decimal:2',
         'initial_remaining_amount' => 'decimal:2',
         'user_balance_after' => 'decimal:2',
+        'is_aggregated' => 'boolean',
     ];
 
     // Status Constants

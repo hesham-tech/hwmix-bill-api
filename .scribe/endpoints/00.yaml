@@ -28,7 +28,326 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"status":"success","message":"\u062a\u0645\u062a \u0639\u0645\u0644\u064a\u0629 \u062a\u0635\u062d\u064a\u062d \u0627\u0644\u0633\u062c\u0644\u0627\u062a \u0627\u0644\u0642\u062f\u064a\u0645\u0629 \u0628\u0646\u062c\u0627\u062d.","boxes_created":1,"note":"\u064a\u0631\u062c\u0649 \u0627\u0644\u0639\u0644\u0645 \u0623\u0646 \u0647\u0630\u0627 \u0627\u0644\u0645\u0633\u0627\u0631 \u0645\u062e\u0641\u064a \u0645\u0646 \u0627\u0644\u062a\u0648\u062b\u064a\u0642 \u0648\u0644\u0623\u063a\u0631\u0627\u0636 \u0627\u0644\u0635\u064a\u0627\u0646\u0629 \u0641\u0642\u0637."}'
+        content: '{"status":"success","message":"\u062a\u0645\u062a \u0639\u0645\u0644\u064a\u0629 \u062a\u0635\u062d\u064a\u062d \u0627\u0644\u0633\u062c\u0644\u0627\u062a \u0627\u0644\u0642\u062f\u064a\u0645\u0629 \u0628\u0646\u062c\u0627\u062d.","boxes_created":0,"note":"\u064a\u0631\u062c\u0649 \u0627\u0644\u0639\u0644\u0645 \u0623\u0646 \u0647\u0630\u0627 \u0627\u0644\u0645\u0633\u0627\u0631 \u0645\u062e\u0641\u064a \u0645\u0646 \u0627\u0644\u062a\u0648\u062b\u064a\u0642 \u0648\u0644\u0623\u063a\u0631\u0627\u0636 \u0627\u0644\u0635\u064a\u0627\u0646\u0629 \u0641\u0642\u0637."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/error-reports
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Store a new error report.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/media/view/{path}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Serve image with CORS headers'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      path:
+        name: path
+        description: ''
+        required: true
+        example: '#"!'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      path: '#"!'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 404
+        content: |-
+          {
+              "message": "The route api/media/view could not be found."
+          }
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/error-reports
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Display a listing of error reports (Super Admin only).'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PATCH
+    uri: 'api/error-reports/{errorReport_id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update report status (Super Admin only).'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      errorReport_id:
+        name: errorReport_id
+        description: 'The ID of the errorReport.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      errorReport_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      status:
+        name: status
+        description: ''
+        required: true
+        example: in_review
+        type: string
+        enumValues:
+          - pending
+          - in_review
+          - investigating
+          - resolved
+          - closed
+          - ignored
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      severity:
+        name: severity
+        description: ''
+        required: false
+        example: low
+        type: string
+        enumValues:
+          - low
+          - medium
+          - high
+          - critical
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      status: in_review
+      severity: low
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/reports/profit-loss
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تقرير الأرباح والخسائر العام (يستخدم كمدخل رئيسي)'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/reports/profit-loss-summary
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تقرير ملخص الأرباح والخسائر عالي الأداء'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/reports/profit-loss/monthly-comparison
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'مقارنة الأداء الشهرية (للرسم البياني)'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -227,7 +546,7 @@ endpoints:
         name: subject_type
         description: ''
         required: true
-        example: doloremque
+        example: voluptatem
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -237,15 +556,15 @@ endpoints:
         name: subject_id
         description: ''
         required: true
-        example: 11
+        example: 14
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      subject_type: doloremque
-      subject_id: 11
+      subject_type: voluptatem
+      subject_id: 14
     fileParameters: []
     responses:
       -
@@ -285,14 +604,14 @@ endpoints:
         name: userId
         description: ''
         required: true
-        example: 1
-        type: integer
+        example: adipisci
+        type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      userId: 1
+      userId: adipisci
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -397,7 +716,7 @@ endpoints:
   -
     httpMethods:
       - POST
-    uri: api/image
+    uri: api/images
     metadata:
       groupName: Endpoints
       groupDescription: ''
@@ -428,7 +747,7 @@ endpoints:
   -
     httpMethods:
       - PUT
-    uri: 'api/image/{Image_id}'
+    uri: 'api/images/{image_id}'
     metadata:
       groupName: Endpoints
       groupDescription: ''
@@ -443,18 +762,60 @@ endpoints:
       Content-Type: application/json
       Accept: application/json
     urlParameters:
-      Image_id:
-        name: Image_id
-        description: 'The ID of the Image.'
+      image_id:
+        name: image_id
+        description: 'The ID of the image.'
         required: true
-        example: 14
+        example: 10
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      Image_id: 14
+      image_id: 10
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/images/{image_id}/set-primary'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تعيين الصورة كصورة أساسية فوراً'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      image_id:
+        name: image_id
+        description: 'The ID of the image.'
+        required: true
+        example: 10
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      image_id: 10
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -501,7 +862,295 @@ endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/attribute-value/{attributeValue}'
+    uri: api/backups
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List all backup history.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/backups/run
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Run a manual backup.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/backups/{id}/download'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Download a specific backup file.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the backup.'
+        required: true
+        example: voluptatibus
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: voluptatibus
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/backups/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Delete a backup record and file.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the backup.'
+        required: true
+        example: animi
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: animi
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/backups/settings
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get backup settings.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: api/backups/settings
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update backup settings.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/backups/{id}/restore'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Restore from backup (High Security).'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the backup.'
+        required: true
+        example: quae
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: quae
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      token:
+        name: token
+        description: ''
+        required: true
+        example: omnis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      token: omnis
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/attribute-values/{attributeValue}'
     metadata:
       groupName: Endpoints
       groupDescription: ''
@@ -552,7 +1201,7 @@ endpoints:
   -
     httpMethods:
       - PUT
-    uri: 'api/attribute-value/{attributeValue}'
+    uri: 'api/attribute-values/{attributeValue}'
     metadata:
       groupName: Endpoints
       groupDescription: ''
@@ -584,9 +1233,9 @@ endpoints:
     bodyParameters:
       name:
         name: name
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: true
-        example: crrd
+        example: zhnznviptzjxnmgv
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -594,9 +1243,9 @@ endpoints:
         custom: []
       color:
         name: color
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: jt
+        example: hehgxaunino
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -606,7 +1255,7 @@ endpoints:
         name: attribute_id
         description: 'The <code>id</code> of an existing record in the attributes table.'
         required: true
-        example: architecto
+        example: velit
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -623,9 +1272,9 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      name: crrd
-      color: jt
-      attribute_id: architecto
+      name: zhnznviptzjxnmgv
+      color: hehgxaunino
+      attribute_id: velit
     fileParameters: []
     responses: []
     responseFields: []
@@ -637,7 +1286,7 @@ endpoints:
   -
     httpMethods:
       - DELETE
-    uri: 'api/attribute-value/{attributeValue}'
+    uri: 'api/attribute-values/{attributeValue}'
     metadata:
       groupName: Endpoints
       groupDescription: ''
@@ -679,7 +1328,7 @@ endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/invoice-type/{invoiceType}'
+    uri: 'api/invoice-types/{invoiceType}'
     metadata:
       groupName: Endpoints
       groupDescription: ''
@@ -730,7 +1379,7 @@ endpoints:
   -
     httpMethods:
       - PUT
-    uri: 'api/invoice-type/{invoiceType}'
+    uri: 'api/invoice-types/{invoiceType}'
     metadata:
       groupName: Endpoints
       groupDescription: ''
@@ -762,9 +1411,9 @@ endpoints:
     bodyParameters:
       name:
         name: name
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: jcrmhbssonygcvjcgidnim
+        example: kyllksiizqbzsjzpabijahgeo
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -774,7 +1423,7 @@ endpoints:
         name: description
         description: ''
         required: false
-        example: 'Architecto fugit deleniti dolorem vitae consequatur est voluptatum dolor.'
+        example: 'Molestiae repellendus aut ex neque earum voluptatum.'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -782,9 +1431,9 @@ endpoints:
         custom: []
       code:
         name: code
-        description: 'Must not be greater than 100 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 100 حرفًا.'
         required: false
-        example: pa
+        example: u
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -792,19 +1441,30 @@ endpoints:
         custom: []
       context:
         name: context
-        description: 'Must not be greater than 100 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 100 حرفًا.'
         required: false
-        example: rsyanvqdw
+        example: ngpofw
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
+      is_active:
+        name: is_active
+        description: ''
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
     cleanBodyParameters:
-      name: jcrmhbssonygcvjcgidnim
-      description: 'Architecto fugit deleniti dolorem vitae consequatur est voluptatum dolor.'
-      code: pa
-      context: rsyanvqdw
+      name: kyllksiizqbzsjzpabijahgeo
+      description: 'Molestiae repellendus aut ex neque earum voluptatum.'
+      code: u
+      context: ngpofw
+      is_active: false
     fileParameters: []
     responses: []
     responseFields: []
@@ -816,7 +1476,7 @@ endpoints:
   -
     httpMethods:
       - DELETE
-    uri: 'api/invoice-type/{invoiceType}'
+    uri: 'api/invoice-types/{invoiceType}'
     metadata:
       groupName: Endpoints
       groupDescription: ''
@@ -858,6 +1518,693 @@ endpoints:
   -
     httpMethods:
       - POST
+    uri: api/services
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تخزين خدمة جديدة.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: true
+        example: fewgb
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      description:
+        name: description
+        description: ''
+        required: false
+        example: 'Et laboriosam qui maiores ipsum est.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      default_price:
+        name: default_price
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: true
+        example: 89
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      company_id:
+        name: company_id
+        description: 'The <code>id</code> of an existing record in the companies table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      name: fewgb
+      description: 'Et laboriosam qui maiores ipsum est.'
+      default_price: 89
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/services/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'عرض خدمة محددة.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the service.'
+        required: true
+        example: 15
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 15
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/services/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحديث خدمة محددة.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the service.'
+        required: true
+        example: 13
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 13
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: true
+        example: fz
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      description:
+        name: description
+        description: ''
+        required: false
+        example: 'Illo quo aut laborum.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      default_price:
+        name: default_price
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: true
+        example: 1
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      company_id:
+        name: company_id
+        description: 'The <code>id</code> of an existing record in the companies table.'
+        required: true
+        example: earum
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: fz
+      description: 'Illo quo aut laborum.'
+      default_price: 1
+      company_id: earum
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/services/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'حذف خدمة محددة.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the service.'
+        required: true
+        example: 6
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 6
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/subscriptions/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'عرض اشتراك محدد.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the subscription.'
+        required: true
+        example: 18
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 18
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/subscriptions/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحديث اشتراك محدد.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the subscription.'
+        required: true
+        example: 14
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 14
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      user_id:
+        name: user_id
+        description: 'The <code>id</code> of an existing record in the users table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      service_id:
+        name: service_id
+        description: 'The <code>id</code> of an existing record in the services table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      plan_id:
+        name: plan_id
+        description: 'The <code>id</code> of an existing record in the plans table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      start_date:
+        name: start_date
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
+        required: false
+        example: '2026-02-12T18:00:50'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      starts_at:
+        name: starts_at
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
+        required: false
+        example: '2026-02-12T18:00:50'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      next_billing_date:
+        name: next_billing_date
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
+        required: false
+        example: '2026-02-12T18:00:50'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      ends_at:
+        name: ends_at
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
+        required: false
+        example: '2026-02-12T18:00:50'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      billing_cycle:
+        name: billing_cycle
+        description: ''
+        required: false
+        example: qui
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      price:
+        name: price
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: false
+        example: 40
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      partial_payment:
+        name: partial_payment
+        description: ''
+        required: false
+        example: 4597808.0303026
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: ''
+        required: false
+        example: quo
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      unique_identifier:
+        name: unique_identifier
+        description: ''
+        required: false
+        example: praesentium
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      auto_renew:
+        name: auto_renew
+        description: ''
+        required: false
+        example: true
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      renewal_type:
+        name: renewal_type
+        description: ''
+        required: false
+        example: non
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      notes:
+        name: notes
+        description: ''
+        required: false
+        example: suscipit
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      start_date: '2026-02-12T18:00:50'
+      starts_at: '2026-02-12T18:00:50'
+      next_billing_date: '2026-02-12T18:00:50'
+      ends_at: '2026-02-12T18:00:50'
+      billing_cycle: qui
+      price: 40
+      partial_payment: 4597808.0303026
+      status: quo
+      unique_identifier: praesentium
+      auto_renew: true
+      renewal_type: non
+      notes: suscipit
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/subscriptions/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'حذف اشتراك محدد.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the subscription.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/subscriptions/{id}/renew'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Renew subscription'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the subscription.'
+        required: true
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 12
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      amount:
+        name: amount
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: true
+        example: 51
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      payment_method_id:
+        name: payment_method_id
+        description: 'The <code>id</code> of an existing record in the payment_methods table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      cash_box_id:
+        name: cash_box_id
+        description: 'The <code>id</code> of an existing record in the cash_boxes table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      notes:
+        name: notes
+        description: ''
+        required: false
+        example: atque
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      amount: 51
+      notes: atque
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/subscriptions/{id}/history'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get subscription payment history'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the subscription.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
     uri: api/invoice-item
     metadata:
       groupName: Endpoints
@@ -881,7 +2228,7 @@ endpoints:
         name: invoice_id
         description: 'The <code>id</code> of an existing record in the invoices table.'
         required: true
-        example: exercitationem
+        example: minus
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -891,7 +2238,7 @@ endpoints:
         name: name
         description: ''
         required: true
-        example: est
+        example: ratione
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -899,9 +2246,9 @@ endpoints:
         custom: []
       quantity:
         name: quantity
-        description: 'Must be at least 1.'
+        description: 'يجب أن تكون قيمة value على الأقل 1.'
         required: true
-        example: 49
+        example: 69
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -909,9 +2256,9 @@ endpoints:
         custom: []
       unit_price:
         name: unit_price
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: true
-        example: 50
+        example: 68
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -919,9 +2266,9 @@ endpoints:
         custom: []
       discount:
         name: discount
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 72
+        example: 31
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -929,9 +2276,9 @@ endpoints:
         custom: []
       total:
         name: total
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: true
-        example: 40
+        example: 7
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -948,12 +2295,12 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      invoice_id: exercitationem
-      name: est
-      quantity: 49
-      unit_price: 50
-      discount: 72
-      total: 40
+      invoice_id: minus
+      name: ratione
+      quantity: 69
+      unit_price: 68
+      discount: 31
+      total: 7
     fileParameters: []
     responses: []
     responseFields: []
@@ -1035,14 +2382,14 @@ endpoints:
         name: invoiceItem
         description: ''
         required: true
-        example: 3
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      invoiceItem: 3
+      invoiceItem: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -1060,7 +2407,7 @@ endpoints:
         name: name
         description: ''
         required: false
-        example: minima
+        example: ex
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1068,9 +2415,9 @@ endpoints:
         custom: []
       quantity:
         name: quantity
-        description: 'Must be at least 1.'
+        description: 'يجب أن تكون قيمة value على الأقل 1.'
         required: false
-        example: 21
+        example: 86
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -1078,9 +2425,9 @@ endpoints:
         custom: []
       unit_price:
         name: unit_price
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 39
+        example: 65
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -1088,9 +2435,9 @@ endpoints:
         custom: []
       discount:
         name: discount
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 83
+        example: 3
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -1098,9 +2445,9 @@ endpoints:
         custom: []
       total:
         name: total
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 69
+        example: 68
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -1117,11 +2464,11 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      name: minima
-      quantity: 21
-      unit_price: 39
-      discount: 83
-      total: 69
+      name: ex
+      quantity: 86
+      unit_price: 65
+      discount: 3
+      total: 68
     fileParameters: []
     responses: []
     responseFields: []
@@ -1152,14 +2499,14 @@ endpoints:
         name: invoiceItem
         description: ''
         required: true
-        example: 8
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      invoiceItem: 8
+      invoiceItem: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -1181,7 +2528,7 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'عرض قائمة بالأقساط.'
+      title: 'عرض قائمة بدفعات الأقساط.'
       description: ''
       authenticated: false
       deprecated: false
@@ -1214,111 +2561,14 @@ endpoints:
     custom: []
   -
     httpMethods:
-      - POST
-    uri: api/installment-payment
-    metadata:
-      groupName: Endpoints
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Store a newly created resource in storage.'
-      description: ''
-      authenticated: false
-      deprecated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      installment_plan_id:
-        name: installment_plan_id
-        description: 'The <code>id</code> of an existing record in the installment_plans table.'
-        required: true
-        example: autem
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      due_date:
-        name: due_date
-        description: 'Must be a valid date.'
-        required: true
-        example: '2026-01-01T20:56:01'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      amount:
-        name: amount
-        description: 'Must be at least 0.'
-        required: true
-        example: 76
-        type: number
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      status:
-        name: status
-        description: ''
-        required: true
-        example: eligendi
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      paid_at:
-        name: paid_at
-        description: 'Must be a valid date.'
-        required: false
-        example: '2026-01-01T20:56:01'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        custom: []
-      remaining:
-        name: remaining
-        description: 'Must be at least 0.'
-        required: false
-        example: 58
-        type: number
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        custom: []
-    cleanBodyParameters:
-      installment_plan_id: autem
-      due_date: '2026-01-01T20:56:01'
-      amount: 76
-      status: eligendi
-      paid_at: '2026-01-01T20:56:01'
-      remaining: 58
-    fileParameters: []
-    responses: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
       - GET
-    uri: 'api/installment-payment/{installmentPayment}'
+    uri: 'api/installment-payments/{installmentPayment}'
     metadata:
       groupName: Endpoints
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Display the specified resource.'
+      title: 'Display the specified payment.'
       description: ''
       authenticated: false
       deprecated: false
@@ -1331,14 +2581,14 @@ endpoints:
         name: installmentPayment
         description: ''
         required: true
-        example: corrupti
+        example: autem
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      installmentPayment: corrupti
+      installmentPayment: autem
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -1363,13 +2613,13 @@ endpoints:
   -
     httpMethods:
       - PUT
-    uri: 'api/installment-payment/{installmentPayment}'
+    uri: 'api/installment-payments/{installmentPayment}'
     metadata:
       groupName: Endpoints
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Update the specified resource in storage.'
+      title: 'Update the specified payment (Note: Payments are usually read-only for history).'
       description: ''
       authenticated: false
       deprecated: false
@@ -1382,83 +2632,18 @@ endpoints:
         name: installmentPayment
         description: ''
         required: true
-        example: nam
+        example: dolor
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      installmentPayment: nam
+      installmentPayment: dolor
     queryParameters: []
     cleanQueryParameters: []
-    bodyParameters:
-      installment_plan_id:
-        name: installment_plan_id
-        description: 'The <code>id</code> of an existing record in the installment_plans table.'
-        required: false
-        example: null
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      due_date:
-        name: due_date
-        description: 'Must be a valid date.'
-        required: false
-        example: '2026-01-01T20:56:01'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      amount:
-        name: amount
-        description: 'Must be at least 0.'
-        required: false
-        example: 29
-        type: number
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      status:
-        name: status
-        description: ''
-        required: false
-        example: ex
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      paid_at:
-        name: paid_at
-        description: 'Must be a valid date.'
-        required: false
-        example: '2026-01-01T20:56:01'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        custom: []
-      remaining:
-        name: remaining
-        description: 'Must be at least 0.'
-        required: false
-        example: 26
-        type: number
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        custom: []
-    cleanBodyParameters:
-      due_date: '2026-01-01T20:56:01'
-      amount: 29
-      status: ex
-      paid_at: '2026-01-01T20:56:01'
-      remaining: 26
+    bodyParameters: []
+    cleanBodyParameters: []
     fileParameters: []
     responses: []
     responseFields: []
@@ -1470,13 +2655,13 @@ endpoints:
   -
     httpMethods:
       - DELETE
-    uri: 'api/installment-payment/delete/{installmentPayment}'
+    uri: 'api/installment-payments/{installmentPayment}'
     metadata:
       groupName: Endpoints
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Remove the specified resource from storage.'
+      title: 'Remove the specified payment (Note: Payments are usually read-only for history).'
       description: ''
       authenticated: false
       deprecated: false
@@ -1489,14 +2674,14 @@ endpoints:
         name: installmentPayment
         description: ''
         required: true
-        example: sit
+        example: voluptas
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      installmentPayment: sit
+      installmentPayment: voluptas
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -1575,7 +2760,7 @@ endpoints:
         name: installment_payment_id
         description: 'The <code>id</code> of an existing record in the installment_payments table.'
         required: true
-        example: voluptatibus
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1585,7 +2770,7 @@ endpoints:
         name: installment_id
         description: 'The <code>id</code> of an existing record in the installments table.'
         required: true
-        example: eum
+        example: id
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1593,18 +2778,18 @@ endpoints:
         custom: []
       amount_paid:
         name: amount_paid
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: true
-        example: 9
+        example: 39
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      installment_payment_id: voluptatibus
-      installment_id: eum
-      amount_paid: 9
+      installment_payment_id: qui
+      installment_id: id
+      amount_paid: 39
     fileParameters: []
     responses: []
     responseFields: []
@@ -1635,14 +2820,14 @@ endpoints:
         name: installmentPaymentDetail_id
         description: 'The ID of the installmentPaymentDetail.'
         required: true
-        example: 14
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      installmentPaymentDetail_id: 14
+      installmentPaymentDetail_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -1686,14 +2871,14 @@ endpoints:
         name: installmentPaymentDetail_id
         description: 'The ID of the installmentPaymentDetail.'
         required: true
-        example: 15
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      installmentPaymentDetail_id: 15
+      installmentPaymentDetail_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -1719,16 +2904,16 @@ endpoints:
         custom: []
       amount_paid:
         name: amount_paid
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 10
+        example: 13
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      amount_paid: 10
+      amount_paid: 13
     fileParameters: []
     responses: []
     responseFields: []
@@ -1759,14 +2944,14 @@ endpoints:
         name: installmentPaymentDetail_id
         description: 'The ID of the installmentPaymentDetail.'
         required: true
-        example: 4
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      installmentPaymentDetail_id: 4
+      installmentPaymentDetail_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -1803,9 +2988,9 @@ endpoints:
     bodyParameters:
       name:
         name: name
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: true
-        example: jtizxwjcaeby
+        example: ycxedtmvqtbeavfjo
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1813,9 +2998,9 @@ endpoints:
         custom: []
       code:
         name: code
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: yubpikpcgko
+        example: gutjfzcdbxd
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1825,7 +3010,7 @@ endpoints:
         name: description
         description: ''
         required: false
-        example: 'Quidem quo vitae ipsum labore amet.'
+        example: 'Quisquam soluta quis earum temporibus quo.'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1843,9 +3028,9 @@ endpoints:
         custom: []
       price:
         name: price
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 71
+        example: 4
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -1853,9 +3038,9 @@ endpoints:
         custom: []
       currency:
         name: currency
-        description: 'Must not be greater than 10 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 10 حرفًا.'
         required: false
-        example: mi
+        example: ruvq
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1863,9 +3048,9 @@ endpoints:
         custom: []
       duration:
         name: duration
-        description: 'Must be at least 1.'
+        description: 'يجب أن تكون قيمة value على الأقل 1.'
         required: false
-        example: 39
+        example: 81
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -1873,9 +3058,9 @@ endpoints:
         custom: []
       duration_unit:
         name: duration_unit
-        description: 'Must not be greater than 20 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 20 حرفًا.'
         required: false
-        example: urnefzadrjabziqsco
+        example: dtsmgnob
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1883,9 +3068,9 @@ endpoints:
         custom: []
       trial_days:
         name: trial_days
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 32
+        example: 89
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -1903,9 +3088,9 @@ endpoints:
         custom: []
       features:
         name: features
-        description: 'Must be a valid JSON string.'
+        description: 'يجب أن يكون الحقل value نصًا بتنسيق JSON صحيحًا.'
         required: false
-        example: '["sed","ut"]'
+        example: '["quidem","recusandae"]'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1913,9 +3098,9 @@ endpoints:
         custom: []
       max_users:
         name: max_users
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 57
+        example: 42
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -1923,9 +3108,9 @@ endpoints:
         custom: []
       max_projects:
         name: max_projects
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 81
+        example: 11
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -1933,9 +3118,9 @@ endpoints:
         custom: []
       max_storage_mb:
         name: max_storage_mb
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 41
+        example: 40
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -1943,9 +3128,9 @@ endpoints:
         custom: []
       type:
         name: type
-        description: 'Must not be greater than 50 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 50 حرفًا.'
         required: false
-        example: svkuigcrldma
+        example: jotiazijdlthtwc
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1953,30 +3138,30 @@ endpoints:
         custom: []
       icon:
         name: icon
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: tqzom
+        example: rgmcxmprrgbjafyy
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
         custom: []
     cleanBodyParameters:
-      name: jtizxwjcaeby
-      code: yubpikpcgko
-      description: 'Quidem quo vitae ipsum labore amet.'
-      price: 71
-      currency: mi
-      duration: 39
-      duration_unit: urnefzadrjabziqsco
-      trial_days: 32
+      name: ycxedtmvqtbeavfjo
+      code: gutjfzcdbxd
+      description: 'Quisquam soluta quis earum temporibus quo.'
+      price: 4
+      currency: ruvq
+      duration: 81
+      duration_unit: dtsmgnob
+      trial_days: 89
       is_active: false
-      features: '["sed","ut"]'
-      max_users: 57
-      max_projects: 81
-      max_storage_mb: 41
-      type: svkuigcrldma
-      icon: tqzom
+      features: '["quidem","recusandae"]'
+      max_users: 42
+      max_projects: 11
+      max_storage_mb: 40
+      type: jotiazijdlthtwc
+      icon: rgmcxmprrgbjafyy
     fileParameters: []
     responses: []
     responseFields: []
@@ -2008,22 +3193,22 @@ endpoints:
         name: id
         description: 'The ID of the plan.'
         required: true
-        example: 11
+        example: 14
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 11
+      id: 14
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       name:
         name: name
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: true
-        example: bkvvgfdgpellmdmmbrr
+        example: dpavqv
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2031,9 +3216,9 @@ endpoints:
         custom: []
       code:
         name: code
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: ofllfzddkade
+        example: dojxltipflnsycfwlunnknjv
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2043,7 +3228,7 @@ endpoints:
         name: description
         description: ''
         required: false
-        example: 'Ea eaque voluptate et totam.'
+        example: 'Aliquid debitis facere quidem ipsa ut.'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2061,9 +3246,9 @@ endpoints:
         custom: []
       price:
         name: price
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 14
+        example: 50
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -2071,9 +3256,9 @@ endpoints:
         custom: []
       currency:
         name: currency
-        description: 'Must not be greater than 10 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 10 حرفًا.'
         required: false
-        example: uophcbjaiy
+        example: zzrenz
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2081,9 +3266,9 @@ endpoints:
         custom: []
       duration:
         name: duration
-        description: 'Must be at least 1.'
+        description: 'يجب أن تكون قيمة value على الأقل 1.'
         required: false
-        example: 54
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -2091,9 +3276,9 @@ endpoints:
         custom: []
       duration_unit:
         name: duration_unit
-        description: 'Must not be greater than 20 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 20 حرفًا.'
         required: false
-        example: ybnvgtccrbwzqxb
+        example: ylq
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2101,9 +3286,9 @@ endpoints:
         custom: []
       trial_days:
         name: trial_days
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 0
+        example: 71
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -2113,7 +3298,7 @@ endpoints:
         name: is_active
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -2121,9 +3306,9 @@ endpoints:
         custom: []
       features:
         name: features
-        description: 'Must be a valid JSON string.'
+        description: 'يجب أن يكون الحقل value نصًا بتنسيق JSON صحيحًا.'
         required: false
-        example: '["odit","consequatur"]'
+        example: '["ut","quae"]'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2131,9 +3316,9 @@ endpoints:
         custom: []
       max_users:
         name: max_users
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 68
+        example: 74
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -2141,9 +3326,9 @@ endpoints:
         custom: []
       max_projects:
         name: max_projects
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 8
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -2151,9 +3336,9 @@ endpoints:
         custom: []
       max_storage_mb:
         name: max_storage_mb
-        description: 'Must be at least 0.'
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 2
+        example: 31
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -2161,9 +3346,9 @@ endpoints:
         custom: []
       type:
         name: type
-        description: 'Must not be greater than 50 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 50 حرفًا.'
         required: false
-        example: xfstowmyawlcjlprdobcjn
+        example: pptewurvbdazrkgqztokfeec
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2171,30 +3356,30 @@ endpoints:
         custom: []
       icon:
         name: icon
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: vfjp
+        example: zbvkomzdyzpg
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
         custom: []
     cleanBodyParameters:
-      name: bkvvgfdgpellmdmmbrr
-      code: ofllfzddkade
-      description: 'Ea eaque voluptate et totam.'
-      price: 14
-      currency: uophcbjaiy
-      duration: 54
-      duration_unit: ybnvgtccrbwzqxb
-      trial_days: 0
-      is_active: true
-      features: '["odit","consequatur"]'
-      max_users: 68
-      max_projects: 8
-      max_storage_mb: 2
-      type: xfstowmyawlcjlprdobcjn
-      icon: vfjp
+      name: dpavqv
+      code: dojxltipflnsycfwlunnknjv
+      description: 'Aliquid debitis facere quidem ipsa ut.'
+      price: 50
+      currency: zzrenz
+      duration: 17
+      duration_unit: ylq
+      trial_days: 71
+      is_active: false
+      features: '["ut","quae"]'
+      max_users: 74
+      max_projects: 3
+      max_storage_mb: 31
+      type: pptewurvbdazrkgqztokfeec
+      icon: zbvkomzdyzpg
     fileParameters: []
     responses: []
     responseFields: []
@@ -2225,6 +3410,779 @@ endpoints:
         name: id
         description: 'The ID of the plan.'
         required: true
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 12
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/invoice-items
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تخزين عنصر فاتورة جديد.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      invoice_id:
+        name: invoice_id
+        description: 'The <code>id</code> of an existing record in the invoices table.'
+        required: true
+        example: non
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      name:
+        name: name
+        description: ''
+        required: true
+        example: ipsum
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      quantity:
+        name: quantity
+        description: 'يجب أن تكون قيمة value على الأقل 1.'
+        required: true
+        example: 24
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      unit_price:
+        name: unit_price
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: true
+        example: 30
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      discount:
+        name: discount
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: false
+        example: 10
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      total:
+        name: total
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: true
+        example: 82
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      product_id:
+        name: product_id
+        description: 'The <code>id</code> of an existing record in the products table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      invoice_id: non
+      name: ipsum
+      quantity: 24
+      unit_price: 30
+      discount: 10
+      total: 82
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/invoice-items/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'عرض عنصر فاتورة محدد.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the invoice item.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/invoice-items/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحديث عنصر فاتورة محدد.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the invoice item.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      invoice_id:
+        name: invoice_id
+        description: 'The <code>id</code> of an existing record in the invoices table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      name:
+        name: name
+        description: ''
+        required: false
+        example: error
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      quantity:
+        name: quantity
+        description: 'يجب أن تكون قيمة value على الأقل 1.'
+        required: false
+        example: 88
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      unit_price:
+        name: unit_price
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: false
+        example: 71
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      discount:
+        name: discount
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: false
+        example: 53
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      total:
+        name: total
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: false
+        example: 37
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      product_id:
+        name: product_id
+        description: 'The <code>id</code> of an existing record in the products table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      name: error
+      quantity: 88
+      unit_price: 71
+      discount: 53
+      total: 37
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/invoice-items/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'حذف عنصر فاتورة محدد.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the invoice item.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/invoice-type/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'عرض نوع فاتورة محدد.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the invoice type.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/invoice-type/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحديث نوع فاتورة محدد.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the invoice type.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: false
+        example: lkwyhbjqgun
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      description:
+        name: description
+        description: ''
+        required: false
+        example: 'Itaque consequatur et voluptatem velit.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      code:
+        name: code
+        description: 'يجب ألا يتجاوز طول النص value 100 حرفًا.'
+        required: false
+        example: runeeqcbdofgsurls
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      context:
+        name: context
+        description: 'يجب ألا يتجاوز طول النص value 100 حرفًا.'
+        required: false
+        example: csluholjnstbp
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      is_active:
+        name: is_active
+        description: ''
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: lkwyhbjqgun
+      description: 'Itaque consequatur et voluptatem velit.'
+      code: runeeqcbdofgsurls
+      context: csluholjnstbp
+      is_active: false
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/invoice-type/delete/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'حذف نوع فاتورة محدد.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the delete.'
+        required: true
+        example: autem
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: autem
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/expenses
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/expenses
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      expense_category_id:
+        name: expense_category_id
+        description: 'The <code>id</code> of an existing record in the expense_categories table.'
+        required: true
+        example: fugiat
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      amount:
+        name: amount
+        description: 'يجب أن تكون قيمة value على الأقل 0.01.'
+        required: true
+        example: 46
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      expense_date:
+        name: expense_date
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
+        required: true
+        example: '2026-02-12T18:00:51'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      notes:
+        name: notes
+        description: ''
+        required: false
+        example: odio
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      reference_number:
+        name: reference_number
+        description: 'يجب ألا يتجاوز طول النص value 100 حرفًا.'
+        required: false
+        example: dhoubhnlp
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      expense_category_id: fugiat
+      amount: 46
+      expense_date: '2026-02-12T18:00:51'
+      notes: odio
+      reference_number: dhoubhnlp
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/expenses/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the expense.'
+        required: true
+        example: 11
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 11
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      expense_category_id:
+        name: expense_category_id
+        description: 'The <code>id</code> of an existing record in the expense_categories table.'
+        required: true
+        example: dignissimos
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      amount:
+        name: amount
+        description: 'يجب أن تكون قيمة value على الأقل 0.01.'
+        required: true
+        example: 26
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      expense_date:
+        name: expense_date
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
+        required: true
+        example: '2026-02-12T18:00:51'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      notes:
+        name: notes
+        description: ''
+        required: false
+        example: debitis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      reference_number:
+        name: reference_number
+        description: 'يجب ألا يتجاوز طول النص value 100 حرفًا.'
+        required: false
+        example: tmfecgxmf
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      expense_category_id: dignissimos
+      amount: 26
+      expense_date: '2026-02-12T18:00:51'
+      notes: debitis
+      reference_number: tmfecgxmf
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/expenses/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the expense.'
+        required: true
         example: 4
         type: integer
         enumValues: []
@@ -2233,6 +4191,985 @@ endpoints:
         custom: []
     cleanUrlParameters:
       id: 4
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/expenses/summary
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/expense-categories
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/expense-categories
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/expense-categories/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the expense category.'
+        required: true
+        example: 8
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 8
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/expense-categories/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the expense category.'
+        required: true
+        example: 4
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 4
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/financial-ledger
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/financial-ledger/export
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/tasks
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Display a listing of the tasks.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/tasks
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Store a newly created task in storage.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      title:
+        name: title
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: true
+        example: cu
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      description:
+        name: description
+        description: ''
+        required: false
+        example: 'Saepe quaerat sequi culpa beatae iste.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      priority:
+        name: priority
+        description: ''
+        required: true
+        example: medium
+        type: string
+        enumValues:
+          - urgent
+          - high
+          - medium
+          - low
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      deadline:
+        name: deadline
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
+        required: false
+        example: '2026-02-12T18:00:51'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      assignments:
+        name: assignments
+        description: ''
+        required: true
+        example: []
+        type: object
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      title: cu
+      description: 'Saepe quaerat sequi culpa beatae iste.'
+      priority: medium
+      deadline: '2026-02-12T18:00:51'
+      assignments: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/tasks/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Display the specified task.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the task.'
+        required: true
+        example: 8
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 8
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/tasks/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update the specified task status/progress.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the task.'
+        required: true
+        example: 2
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 2
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      status:
+        name: status
+        description: ''
+        required: false
+        example: cancelled
+        type: string
+        enumValues:
+          - pending
+          - doing
+          - review
+          - completed
+          - cancelled
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      progress:
+        name: progress
+        description: 'يجب أن تكون قيمة value على الأقل 0. يجب ألا تكون قيمة value أكبر من 100.'
+        required: false
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      description:
+        name: description
+        description: ''
+        required: false
+        example: 'Magnam occaecati assumenda facere natus dolorem cum consectetur quaerat.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      title:
+        name: title
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: false
+        example: dcqenoqibwtznortbvwmxbb
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      status: cancelled
+      progress: 12
+      description: 'Magnam occaecati assumenda facere natus dolorem cum consectetur quaerat.'
+      title: dcqenoqibwtznortbvwmxbb
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/tasks/{task_id}/comments'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Add a comment/activity to the task.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      task_id:
+        name: task_id
+        description: 'The ID of the task.'
+        required: true
+        example: 9
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      task_id: 9
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      content:
+        name: content
+        description: ''
+        required: true
+        example: voluptatum
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      content: voluptatum
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/tasks/{task_id}/attachments'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Upload an attachment to the task.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: multipart/form-data
+      Accept: application/json
+    urlParameters:
+      task_id:
+        name: task_id
+        description: 'The ID of the task.'
+        required: true
+        example: 20
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      task_id: 20
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      file:
+        name: file
+        description: 'Must be a file. يجب ألا يتجاوز حجم الملف value 10240 كيلوبايت.'
+        required: true
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters: []
+    fileParameters:
+      file: null
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/task-groups
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List all task groups for the active company.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/task-groups
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Store a new task group.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: true
+        example: xmdxcmoprbkywyh
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      description:
+        name: description
+        description: ''
+        required: false
+        example: 'Quis est debitis ex reiciendis eum consequatur.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      color:
+        name: color
+        description: 'يجب ألا يتجاوز طول النص value 20 حرفًا.'
+        required: false
+        example: gxnujvvyvtyr
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      user_ids:
+        name: user_ids
+        description: 'The <code>id</code> of an existing record in the users table.'
+        required: false
+        example: null
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: xmdxcmoprbkywyh
+      description: 'Quis est debitis ex reiciendis eum consequatur.'
+      color: gxnujvvyvtyr
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/task-groups/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update an existing task group.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the task group.'
+        required: true
+        example: 9
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 9
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: false
+        example: kowgzmsoyn
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      description:
+        name: description
+        description: ''
+        required: false
+        example: 'Inventore iusto voluptas porro aut saepe fuga enim.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      color:
+        name: color
+        description: 'يجب ألا يتجاوز طول النص value 20 حرفًا.'
+        required: false
+        example: bcuhneklesybqbdaeavf
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      user_ids:
+        name: user_ids
+        description: 'The <code>id</code> of an existing record in the users table.'
+        required: false
+        example: null
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: kowgzmsoyn
+      description: 'Inventore iusto voluptas porro aut saepe fuga enim.'
+      color: bcuhneklesybqbdaeavf
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/task-groups/{id}'
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Delete a task group.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the task group.'
+        required: true
+        example: 2
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 2
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/dev/testing-checklist
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get the testing checklist data.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/dev/testing-checklist
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Save the testing checklist data.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -2312,7 +5249,47 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"status":true,"message":"\u062a\u0645 \u0627\u0643\u062a\u0645\u0627\u0644 \u0627\u0644\u0646\u0633\u062e \u0627\u0644\u0627\u062d\u062a\u064a\u0627\u0637\u064a \u0628\u0646\u062c\u0627\u062d.","data":{"steps":["\ud83d\ude80 \u0628\u062f\u0621 \u0639\u0645\u0644\u064a\u0629 \u0627\u0644\u0646\u0633\u062e \u0627\u0644\u0627\u062d\u062a\u064a\u0627\u0637\u064a \u0648\u062a\u0648\u0644\u064a\u062f seeders","\ud83e\uddf9 \u062a\u0645 \u062d\u0630\u0641 \u0627\u0644\u0646\u0633\u062e \u0627\u0644\u0642\u062f\u064a\u0645\u0629 \u0628\u0646\u062c\u0627\u062d","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: companies","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: companies","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: users","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: users","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: password_reset_tokens","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: sessions","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: cache","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: cache_locks","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: jobs","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: job_batches","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: failed_jobs","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: personal_access_tokens","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: translations","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: permissions","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: permissions","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: roles","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: roles","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: model_has_permissions","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: model_has_permissions","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: model_has_roles","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: role_has_permissions","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: role_has_permissions","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: company_user","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: company_user","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: cash_box_types","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: cash_box_types","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: cash_boxes","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: transactions","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: images","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: role_company","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: role_company","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: user_company_cash","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: warehouses","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: warehouses","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: categories","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: categories","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: brands","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: brands","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: attributes","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: attributes","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: attribute_values","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: attribute_values","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: products","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: products","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: product_variants","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: product_variants","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: product_variant_attributes","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: stocks","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: stocks","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: invoice_types","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: invoice_types","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: invoices","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: installment_plans","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: installments","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: installment_payments","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: invoice_items","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: installment_payment_details","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: payments","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: payment_methods","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: payment_methods","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: revenues","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: profits","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: services","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: subscriptions","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: payment_installment","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: plans","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: invoice_payments","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: digital_product_deliveries","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: activity_logs","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0627\u0644\u0631\u0626\u064a\u0633\u064a RunAllBackupSeeders.php"],"errors":[],"seeders":["N001_CompaniesBackupSeeder","N002_UsersBackupSeeder","N003_PermissionsBackupSeeder","N004_RolesBackupSeeder","N005_ModelHasPermissionsBackupSeeder","N006_RoleHasPermissionsBackupSeeder","N007_CompanyUserBackupSeeder","N008_CashBoxTypesBackupSeeder","N009_RoleCompanyBackupSeeder","N010_WarehousesBackupSeeder","N011_CategoriesBackupSeeder","N012_BrandsBackupSeeder","N013_AttributesBackupSeeder","N014_AttributeValuesBackupSeeder","N015_ProductsBackupSeeder","N016_ProductVariantsBackupSeeder","N017_StocksBackupSeeder","N018_InvoiceTypesBackupSeeder","N019_PaymentMethodsBackupSeeder"]},"total":3}'
+        content: '{"status":true,"message":"\u062a\u0645 \u0627\u0643\u062a\u0645\u0627\u0644 \u0627\u0644\u0646\u0633\u062e \u0627\u0644\u0627\u062d\u062a\u064a\u0627\u0637\u064a \u0628\u0646\u062c\u0627\u062d.","data":{"steps":["\ud83d\ude80 \u0628\u062f\u0621 \u0639\u0645\u0644\u064a\u0629 \u0627\u0644\u0646\u0633\u062e \u0627\u0644\u0627\u062d\u062a\u064a\u0627\u0637\u064a \u0648\u062a\u0648\u0644\u064a\u062f seeders","\ud83e\uddf9 \u062a\u0645 \u062d\u0630\u0641 \u0627\u0644\u0646\u0633\u062e \u0627\u0644\u0642\u062f\u064a\u0645\u0629 \u0628\u0646\u062c\u0627\u062d","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: companies","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: companies","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: users","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: users","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: password_reset_tokens","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: sessions","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: cache","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: cache","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: cache_locks","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: jobs","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: jobs","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: job_batches","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: failed_jobs","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: personal_access_tokens","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: personal_access_tokens","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: translations","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: permissions","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: permissions","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: roles","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: roles","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: model_has_permissions","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: model_has_permissions","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: model_has_roles","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: model_has_roles","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: role_has_permissions","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: role_has_permissions","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: company_user","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: company_user","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: cash_box_types","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: cash_box_types","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: cash_boxes","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: cash_boxes","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: transactions","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: images","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: images","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: role_company","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: role_company","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: user_company_cash","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: warehouses","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: warehouses","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: categories","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: categories","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: brands","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: brands","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: attributes","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: attributes","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: attribute_values","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: attribute_values","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: products","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: products","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: product_variants","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: product_variants","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: product_variant_attributes","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: product_variant_attributes","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: stocks","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: stocks","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: invoice_types","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: invoice_types","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: invoices","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: invoices","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: installment_plans","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: installment_plans","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: installments","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: installments","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: installment_payments","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: installment_payments","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: invoice_items","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: invoice_items","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: installment_payment_details","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: installment_payment_details","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: payments","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: payment_methods","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: payment_methods","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: revenues","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: profits","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: services","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: subscriptions","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: payment_installment","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: plans","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: invoice_payments","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: digital_product_deliveries","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: activity_logs","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: activity_logs","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: company_invoice_type","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: company_invoice_type","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: task_groups","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: task_group_user","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: tasks","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: task_assignments","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: task_activities","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: task_attachments","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: backup_history","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: backup_settings","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: backup_settings","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: error_reports","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: error_reports","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: expense_categories","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: expenses","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: financial_ledger","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: financial_ledger","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: daily_sales_summary","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: daily_sales_summary","\ud83d\udce6 \u062c\u0627\u0631\u064a \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u062c\u062f\u0648\u0644: monthly_sales_summary","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0644\u062c\u062f\u0648\u0644: monthly_sales_summary","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: subscription_payments","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: stats_user_product_matrix","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: stats_products_summary","\u23e9 \u062a\u0645 \u062a\u062e\u0637\u064a \u0627\u0644\u062c\u062f\u0648\u0644 \u0627\u0644\u0641\u0627\u0631\u063a: stats_users_summary","\u2705 \u062a\u0645 \u062a\u0648\u0644\u064a\u062f Seeder \u0627\u0644\u0631\u0626\u064a\u0633\u064a RunAllBackupSeeders.php"],"errors":[],"seeders":["N001_CompaniesBackupSeeder","N002_UsersBackupSeeder","N003_CacheBackupSeeder","N004_JobsBackupSeeder","N005_PersonalAccessTokensBackupSeeder","N006_PermissionsBackupSeeder","N007_RolesBackupSeeder","N008_ModelHasPermissionsBackupSeeder","N009_ModelHasRolesBackupSeeder","N010_RoleHasPermissionsBackupSeeder","N011_CompanyUserBackupSeeder","N012_CashBoxTypesBackupSeeder","N013_CashBoxesBackupSeeder","N014_ImagesBackupSeeder","N015_RoleCompanyBackupSeeder","N016_WarehousesBackupSeeder","N017_CategoriesBackupSeeder","N018_BrandsBackupSeeder","N019_AttributesBackupSeeder","N020_AttributeValuesBackupSeeder","N021_ProductsBackupSeeder","N022_ProductVariantsBackupSeeder","N023_ProductVariantAttributesBackupSeeder","N024_StocksBackupSeeder","N025_InvoiceTypesBackupSeeder","N026_InvoicesBackupSeeder","N027_InstallmentPlansBackupSeeder","N028_InstallmentsBackupSeeder","N029_InstallmentPaymentsBackupSeeder","N030_InvoiceItemsBackupSeeder","N031_InstallmentPaymentDetailsBackupSeeder","N032_PaymentMethodsBackupSeeder","N033_ActivityLogsBackupSeeder","N034_CompanyInvoiceTypeBackupSeeder","N035_BackupSettingsBackupSeeder","N036_ErrorReportsBackupSeeder","N037_FinancialLedgerBackupSeeder","N038_DailySalesSummaryBackupSeeder","N039_MonthlySalesSummaryBackupSeeder"]},"total":3}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/php/migrate
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"status":true,"message":"\u062a\u0645 \u062a\u0646\u0641\u064a\u0630 \u0627\u0644\u0645\u064a\u062c\u0631\u064a\u0634\u0646 \u0628\u0646\u062c\u0627\u062d \u0644\u062a\u062d\u062f\u064a\u062b \u0647\u064a\u0643\u0644 \u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a.","data":{"output":"\n   INFO  Nothing to migrate.  \n\r\n"},"total":1}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -2351,8 +5328,8 @@ endpoints:
     fileParameters: []
     responses:
       -
-        status: 200
-        content: '{"status":true,"message":"\u062a\u0645 \u062a\u0631\u062d\u064a\u0644 \u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0648\u062a\u063a\u0630\u064a\u062a\u0647\u0627 \u0628\u0646\u062c\u0627\u062d.","data":{"migrate_output":"\r\n  Dropping all tables .............................................................. 1s DONE\r\n\r\n   INFO  Preparing database.  \n\r\n  Creating migration table .................................................... 40.05ms DONE\r\n\r\n   INFO  Running migrations.  \n\r\n  0001_01_01_000003_create_companies_table .................................... 75.05ms DONE\r\n  0001_01_01_000004_create_users_table ....................................... 431.53ms DONE\r\n  0001_01_01_000005_create_cache_table ........................................ 43.08ms DONE\r\n  0001_01_01_000006_create_jobs_table ........................................ 107.46ms DONE\r\n  2024_11_15_094219_create_personal_access_tokens_table ....................... 62.35ms DONE\r\n  2024_11_19_205426_create_translations_table ................................. 39.95ms DONE\r\n  2024_11_19_223350_create_permission_tables ................................. 493.85ms DONE\r\n  2024_12_20_131955_add_created_by_to_roles_table ............................ 217.30ms DONE\r\n  2024_12_31_185428_create_company_user_table ................................ 259.97ms DONE\r\n  2024_12_31_194330_create_cash_box_types_table .............................. 204.29ms DONE\r\n  2024_12_31_194332_create_cash_boxes_table .................................. 469.82ms DONE\r\n  2024_12_31_194333_create_transactions_table ................................ 556.11ms DONE\r\n  2025_01_05_210854_create_images_table ...................................... 205.70ms DONE\r\n  2025_01_08_133632_create_role_company_table ................................ 323.32ms DONE\r\n  2025_01_16_170520_create_user_company_cash_table ........................... 375.86ms DONE\r\n  2025_02_06_210525_create_warehouses_table .................................. 201.51ms DONE\r\n  2025_02_07_204214_create_categories_table .................................. 278.64ms DONE\r\n  2025_02_07_204416_create_brands_table ...................................... 195.30ms DONE\r\n  2025_02_07_205820_create_attributes_table .................................. 189.87ms DONE\r\n  2025_02_07_210056_create_attribute_values_table ............................ 251.87ms DONE\r\n  2025_02_08_204529_create_products_table .................................... 435.34ms DONE\r\n  2025_02_08_210203_create_product_variants_table ............................ 328.50ms DONE\r\n  2025_02_08_210408_create_product_variant_attributes_table .................. 489.26ms DONE\r\n  2025_02_08_210636_create_stocks_table ...................................... 466.61ms DONE\r\n  2025_05_13_072207_create_invoice_types_table ............................... 203.68ms DONE\r\n  2025_05_13_072208_create_invoices_table .................................... 644.82ms DONE\r\n  2025_05_13_072209_create_installment_plans_table ........................... 463.53ms DONE\r\n  2025_05_13_072210_create_installments_table ................................ 388.95ms DONE\r\n  2025_05_13_072211_create_installment_payments_table ........................ 282.92ms DONE\r\n  2025_05_13_072211_create_invoice_items_table ............................... 583.63ms DONE\r\n  2025_05_13_072213_create_installment_payment_details_table ................. 183.03ms DONE\r\n  2025_05_13_072214_create_payments_table .................................... 272.92ms DONE\r\n  2025_05_13_100000_create_payment_methods_table ............................. 164.49ms DONE\r\n  2025_05_31_000000_create_revenues_table .................................... 419.06ms DONE\r\n  2025_05_31_000002_create_profits_table ..................................... 282.32ms DONE\r\n  2025_06_02_100001_create_services_table .................................... 176.59ms DONE\r\n  2025_06_02_100002_create_subscriptions_table ............................... 391.95ms DONE\r\n  2025_06_16_013749_create_payment_installment_table ......................... 178.71ms DONE\r\n  2025_07_02_000000_create_plans_table ....................................... 289.53ms DONE\r\n  2025_07_17_014328_add_cash_box_id_to_installment_payments_table ............ 125.32ms DONE\r\n  2025_07_30_184638_add_company_specific_fields_to_company_user_table ........ 207.19ms DONE\r\n  2025_12_10_203305_add_is_active_to_cash_boxes_table ......................... 39.85ms DONE\r\n  2026_01_01_162623_add_is_system_to_payment_methods_and_cash_box_types ....... 44.63ms DONE\r\n  2026_01_01_163341_add_is_active_to_cash_box_types ........................... 23.11ms DONE\r\n  2026_01_01_163353_add_is_active_to_cash_box_types ............................ 0.12ms DONE\r\n  2026_01_01_170025_add_tax_fields_to_invoices_and_items_tables .............. 162.27ms DONE\r\n  2026_01_01_170025_update_invoice_status_enum ............................... 156.99ms DONE\r\n  2026_01_01_171118_create_invoice_payments_table ............................ 590.72ms DONE\r\n  2026_01_01_173037_add_digital_product_fields_to_products_table ............. 311.85ms DONE\r\n  2026_01_01_173038_create_digital_product_deliveries_table .................. 704.10ms DONE\r\n  2026_01_01_190315_create_activity_logs_table ............................... 292.77ms DONE\r\n\r\n","seed_output":"\u062a\u0645 \u062a\u0646\u0641\u064a\u0630 Seeders \u0628\u0646\u062c\u0627\u062d."},"total":2}'
+        status: 500
+        content: '{"status":false,"message":"\u062e\u0637\u0623 \u0641\u064a \u062c\u0644\u0628 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a","error":"SQLSTATE[42000]: Syntax error or access violation: 1091 Can''t DROP ''roles_name_guard_name_unique''; check that column\/key exists (Connection: mysql, SQL: alter table `roles` drop index `roles_name_guard_name_unique`)","exception":"Illuminate\\Database\\QueryException","file":"D:\\Dev\\projects\\hwnix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php","line":825,"trace":[]}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -2431,8 +5408,8 @@ endpoints:
     fileParameters: []
     responses:
       -
-        status: 200
-        content: '{"status":true,"message":"\u062a\u0645 \u062a\u0646\u0641\u064a\u0630 PermissionsSeeder \u0628\u0646\u062c\u0627\u062d.","data":[],"total":0}'
+        status: 500
+        content: '{"status":false,"message":"\u062e\u0637\u0623 \u0641\u064a \u062c\u0644\u0628 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a","error":"Attempt to read property \"id\" on null","exception":"ErrorException","file":"D:\\Dev\\projects\\hwnix-bill-api\\database\\seeders\\RolesAndPermissionsSeeder.php","line":58,"trace":[]}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -2472,7 +5449,7 @@ endpoints:
     responses:
       -
         status: 500
-        content: '{"status":false,"message":"\u062e\u0637\u0623 \u0641\u064a \u062c\u0644\u0628 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a","error":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry ''product-1'' for key ''products.products_slug_unique'' (Connection: mysql, SQL: insert into `products` (`name`, `slug`, `active`, `featured`, `returnable`, `published_at`, `desc`, `desc_long`, `company_id`, `category_id`, `brand_id`, `created_by`, `updated_at`, `created_at`) values (\u0645\u0646\u062a\u062c 1, product-1, 1, 0, 1, 2026-01-01 20:56:22, \u0648\u0635\u0641 \u0627\u0644\u0645\u0646\u062a\u062c 1, \u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0645\u0646\u062a\u062c 1, 1, 1, 1, 1, 2026-01-01 20:56:22, 2026-01-01 20:56:22))","exception":"Illuminate\\Database\\UniqueConstraintViolationException","file":"D:\\Dev\\projects\\hwmix-bill-api\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php","line":820,"trace":[]}'
+        content: '{"status":false,"message":"\u062e\u0637\u0623 \u0641\u064a \u062c\u0644\u0628 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a","error":"Attempt to read property \"id\" on null","exception":"ErrorException","file":"D:\\Dev\\projects\\hwnix-bill-api\\database\\seeders\\RolesAndPermissionsSeeder.php","line":58,"trace":[]}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -2511,8 +5488,8 @@ endpoints:
     fileParameters: []
     responses:
       -
-        status: 200
-        content: '{"status":true,"message":"\u062a\u0645 \u062a\u0646\u0641\u064a\u0630 RolesAndPermissionsSeeder \u0628\u0646\u062c\u0627\u062d.","data":[],"total":0}'
+        status: 500
+        content: '{"status":false,"message":"\u062e\u0637\u0623 \u0641\u064a \u062c\u0644\u0628 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a","error":"Attempt to read property \"id\" on null","exception":"ErrorException","file":"D:\\Dev\\projects\\hwnix-bill-api\\database\\seeders\\RolesAndPermissionsSeeder.php","line":58,"trace":[]}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -2553,6 +5530,47 @@ endpoints:
       -
         status: 200
         content: '{"status":true,"message":"\u062a\u0645 \u0645\u0633\u062d \u062c\u0645\u064a\u0639 \u0627\u0644\u0643\u0627\u0634\u0627\u062a \u0648\u0625\u0639\u0627\u062f\u0629 \u0628\u0646\u0627\u0626\u0647\u0627 \u0628\u0646\u062c\u0627\u062d.","data":{"cache":"\u062a\u0645 \u0645\u0633\u062d \u0627\u0644\u0643\u0627\u0634","config":"\u062a\u0645 \u0645\u0633\u062d \u0648\u0625\u0639\u0627\u062f\u0629 \u0628\u0646\u0627\u0621 \u0643\u0627\u0634 \u0627\u0644\u0625\u0639\u062f\u0627\u062f\u0627\u062a","route":"\u062a\u0645 \u0645\u0633\u062d \u0648\u0625\u0639\u0627\u062f\u0629 \u0628\u0646\u0627\u0621 \u0643\u0627\u0634 \u0627\u0644\u0645\u0633\u0627\u0631\u0627\u062a","view":"\u062a\u0645 \u0645\u0633\u062d \u0643\u0627\u0634 \u0627\u0644\u0639\u0631\u0648\u0636","compiled":"\u062a\u0645 \u0645\u0633\u062d \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0627\u0644\u0645\u062a\u0631\u062c\u0645\u0629","permissions":"\u062a\u0645 \u0645\u0633\u062d \u0643\u0627\u0634 \u0635\u0644\u0627\u062d\u064a\u0627\u062a Spatie (\u0625\u0630\u0627 \u0643\u0627\u0646 \u0645\u0648\u062c\u0648\u062f\u064b\u0627)"},"total":6}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+      - POST
+    uri: api/broadcasting/auth
+    metadata:
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Authenticate the request for channel access.'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json

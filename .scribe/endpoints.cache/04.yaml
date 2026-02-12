@@ -30,7 +30,7 @@ endpoints:
         name: user_id
         description: 'فلترة حسب المستخدم.'
         required: false
-        example: 7
+        example: 18
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -40,7 +40,7 @@ endpoints:
         name: subject_type
         description: 'نوع النموذج (مثل Product, Invoice).'
         required: false
-        example: officia
+        example: molestias
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -50,7 +50,7 @@ endpoints:
         name: action
         description: 'نوع العملية (created, updated, deleted).'
         required: false
-        example: dolor
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -60,17 +60,17 @@ endpoints:
         name: date_from
         description: 'date تاريخ البداية.'
         required: false
-        example: consequatur
+        example: laudantium
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanQueryParameters:
-      user_id: 7
-      subject_type: officia
-      action: dolor
-      date_from: consequatur
+      user_id: 18
+      subject_type: molestias
+      action: qui
+      date_from: laudantium
     bodyParameters:
       user_id:
         name: user_id
@@ -86,7 +86,7 @@ endpoints:
         name: subject_type
         description: ''
         required: false
-        example: at
+        example: omnis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -96,7 +96,7 @@ endpoints:
         name: subject_id
         description: ''
         required: false
-        example: 14
+        example: 19
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -106,7 +106,7 @@ endpoints:
         name: action
         description: ''
         required: false
-        example: quia
+        example: aliquam
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -114,9 +114,9 @@ endpoints:
         custom: []
       date_from:
         name: date_from
-        description: 'Must be a valid date.'
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-01-01T20:55:59'
+        example: '2026-02-12T18:00:48'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -124,9 +124,9 @@ endpoints:
         custom: []
       date_to:
         name: date_to
-        description: 'Must be a valid date. Must be a date after or equal to <code>date_from</code>.'
+        description: 'الحقل value ليس تاريخًا صحيحًا. يجب أن يكون value تاريخًا مطابقًا لـ <code>date_from</code> أو بعده.'
         required: false
-        example: '2056-02-20'
+        example: '2078-03-09'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -134,21 +134,32 @@ endpoints:
         custom: []
       per_page:
         name: per_page
-        description: 'Must be at least 10. Must not be greater than 100.'
+        description: 'يجب أن تكون قيمة value على الأقل 10. يجب ألا تكون قيمة value أكبر من 100.'
         required: false
-        example: 6
+        example: 14
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
         custom: []
+      search:
+        name: search
+        description: ''
+        required: false
+        example: voluptas
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
     cleanBodyParameters:
-      subject_type: at
-      subject_id: 14
-      action: quia
-      date_from: '2026-01-01T20:55:59'
-      date_to: '2056-02-20'
-      per_page: 6
+      subject_type: omnis
+      subject_id: 19
+      action: aliquam
+      date_from: '2026-02-12T18:00:48'
+      date_to: '2078-03-09'
+      per_page: 14
+      search: voluptas
     fileParameters: []
     responses:
       -
@@ -294,7 +305,7 @@ endpoints:
         name: date_from
         description: 'تاريخ البداية.'
         required: true
-        example: eius
+        example: ea
         type: date
         enumValues: []
         exampleWasSpecified: false
@@ -304,7 +315,7 @@ endpoints:
         name: date_to
         description: 'تاريخ النهاية.'
         required: true
-        example: quia
+        example: quaerat
         type: date
         enumValues: []
         exampleWasSpecified: false
@@ -321,8 +332,8 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      date_from: eius
-      date_to: quia
+      date_from: ea
+      date_to: quaerat
       format: excel
     fileParameters: []
     responses: []
@@ -341,7 +352,47 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'عرض قائمة المستخدمين'
+      title: 'عرض قائمة المستخدمين (عالمياً للسوبر أدمن، أو حسب الشركة للمديرين)'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/users/lookup
+    metadata:
+      groupName: '07. الإدارة وسجلات النظام'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'البحث عن مستخدم موجود مسبقاً في النظام (بناءً على الهاتف أو الإيميل)'
       description: ''
       authenticated: false
       deprecated: false
@@ -352,49 +403,81 @@ endpoints:
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
-      nickname:
-        name: nickname
-        description: 'فلترة حسب اللقب.'
-        required: false
-        example: magni
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
       phone:
         name: phone
-        description: 'فلترة حسب الهاتف.'
+        description: 'رقم الهاتف للبحث.'
         required: false
-        example: maxime
+        example: voluptatum
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
-      per_page:
-        name: per_page
-        description: 'عدد النتائج.'
+      email:
+        name: email
+        description: 'البريد الإلكتروني للبحث.'
         required: false
-        example: 14
-        type: integer
+        example: ghilpert@example.net
+        type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanQueryParameters:
-      nickname: magni
-      phone: maxime
-      per_page: 14
+      phone: voluptatum
+      email: ghilpert@example.net
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
-        status: 200
-        content: '{"data":[{"id":1,"username":"system_owner","email":"admin@admin.com","phone":"1234567890","last_login_at":null,"email_verified_at":null,"created_by":null,"nickname":null,"full_name":null,"balance":"0.00","position":null,"status":"active","customer_type":"retail","cash_box_id":null,"cashBoxDefault":null,"company_id":1,"company_logo":null,"roles":[],"permissions":["admin.page","admin.super","admin.company","companies.change_active_company","companies.page","companies.view_all","companies.view_children","companies.view_self","companies.create","companies.update_all","companies.update_children","companies.update_self","companies.delete_all","companies.delete_children","companies.delete_self","users.page","users.view_all","users.view_children","users.view_self","users.create","users.update_all","users.update_children","users.update_self","users.delete_all","users.delete_children","users.delete_self","personal_access_tokens.page","personal_access_tokens.view_all","personal_access_tokens.view_children","personal_access_tokens.view_self","personal_access_tokens.create","personal_access_tokens.update_all","personal_access_tokens.update_children","personal_access_tokens.update_self","personal_access_tokens.delete_all","personal_access_tokens.delete_children","personal_access_tokens.delete_self","translations.page","translations.view_all","translations.view_children","translations.view_self","translations.create","translations.update_all","translations.update_children","translations.update_self","translations.delete_all","translations.delete_children","translations.delete_self","transactions.page","transactions.view_all","transactions.view_children","transactions.view_self","transactions.create","transactions.update_all","transactions.update_children","transactions.update_self","transactions.delete_all","transactions.delete_children","transactions.delete_self","activity_logs.page","activity_logs.view_all","activity_logs.view_children","activity_logs.view_self","activity_logs.delete_all","activity_logs.delete_children","activity_logs.delete_self","cash_box_types.page","cash_box_types.view_all","cash_box_types.view_children","cash_box_types.view_self","cash_box_types.create","cash_box_types.update_all","cash_box_types.update_children","cash_box_types.update_self","cash_box_types.delete_all","cash_box_types.delete_children","cash_box_types.delete_self","cash_boxes.page","cash_boxes.view_all","cash_boxes.view_children","cash_boxes.view_self","cash_boxes.create","cash_boxes.update_all","cash_boxes.update_children","cash_boxes.update_self","cash_boxes.delete_all","cash_boxes.delete_children","cash_boxes.delete_self","images.page","images.view_all","images.view_children","images.view_self","images.create","images.update_all","images.update_children","images.update_self","images.delete_all","images.delete_children","images.delete_self","warehouses.page","warehouses.view_all","warehouses.view_children","warehouses.view_self","warehouses.create","warehouses.update_all","warehouses.update_children","warehouses.update_self","warehouses.delete_all","warehouses.delete_children","warehouses.delete_self","categories.page","categories.view_all","categories.view_children","categories.view_self","categories.create","categories.update_all","categories.update_children","categories.update_self","categories.delete_all","categories.delete_children","categories.delete_self","brands.page","brands.view_all","brands.view_children","brands.view_self","brands.create","brands.update_all","brands.update_children","brands.update_self","brands.delete_all","brands.delete_children","brands.delete_self","attributes.page","attributes.view_all","attributes.view_children","attributes.view_self","attributes.create","attributes.update_all","attributes.update_children","attributes.update_self","attributes.delete_all","attributes.delete_children","attributes.delete_self","attribute_values.page","attribute_values.view_all","attribute_values.view_children","attribute_values.view_self","attribute_values.create","attribute_values.update_all","attribute_values.update_children","attribute_values.update_self","attribute_values.delete_all","attribute_values.delete_children","attribute_values.delete_self","products.page","products.view_all","products.view_children","products.view_self","products.create","products.update_all","products.update_children","products.update_self","products.delete_all","products.delete_children","products.delete_self","product_variants.page","product_variants.view_all","product_variants.view_children","product_variants.view_self","product_variants.create","product_variants.update_all","product_variants.update_children","product_variants.update_self","product_variants.delete_all","product_variants.delete_children","product_variants.delete_self","product_variant_attributes.page","product_variant_attributes.view_all","product_variant_attributes.view_children","product_variant_attributes.view_self","product_variant_attributes.create","product_variant_attributes.update_all","product_variant_attributes.update_children","product_variant_attributes.update_self","product_variant_attributes.delete_all","product_variant_attributes.delete_children","product_variant_attributes.delete_self","stocks.page","stocks.view_all","stocks.view_children","stocks.view_self","stocks.create","stocks.update_all","stocks.update_children","stocks.update_self","stocks.delete_all","stocks.delete_children","stocks.delete_self","invoices.page","invoices.view_all","invoices.view_children","invoices.view_self","invoices.create","invoices.update_all","invoices.update_children","invoices.update_self","invoices.delete_all","invoices.delete_children","invoices.delete_self","installment_plans.page","installment_plans.view_all","installment_plans.view_children","installment_plans.view_self","installment_plans.create","installment_plans.update_all","installment_plans.update_children","installment_plans.update_self","installment_plans.delete_all","installment_plans.delete_children","installment_plans.delete_self","installments.page","installments.view_all","installments.view_children","installments.view_self","installments.create","installments.update_all","installments.update_children","installments.update_self","installments.delete_all","installments.delete_children","installments.delete_self","installment_payments.page","installment_payments.view_all","installment_payments.view_children","installment_payments.view_self","installment_payments.create","installment_payments.update_all","installment_payments.update_children","installment_payments.update_self","installment_payments.delete_all","installment_payments.delete_children","installment_payments.delete_self","invoice_items.page","invoice_items.view_all","invoice_items.view_children","invoice_items.view_self","invoice_items.create","invoice_items.update_all","invoice_items.update_children","invoice_items.update_self","invoice_items.delete_all","invoice_items.delete_children","invoice_items.delete_self","payments.page","payments.view_all","payments.view_children","payments.view_self","payments.create","payments.update_all","payments.update_children","payments.update_self","payments.delete_all","payments.delete_children","payments.delete_self","payment_methods.page","payment_methods.view_all","payment_methods.view_children","payment_methods.view_self","payment_methods.create","payment_methods.update_all","payment_methods.update_children","payment_methods.update_self","payment_methods.delete_all","payment_methods.delete_children","payment_methods.delete_self","revenues.page","revenues.view_all","revenues.view_children","revenues.view_self","revenues.create","revenues.update_all","revenues.update_children","revenues.update_self","revenues.delete_all","revenues.delete_children","revenues.delete_self","profits.page","profits.view_all","profits.view_children","profits.view_self","profits.create","profits.update_all","profits.update_children","profits.update_self","profits.delete_all","profits.delete_children","profits.delete_self","services.page","services.view_all","services.view_children","services.view_self","services.create","services.update_all","services.update_children","services.update_self","services.delete_all","services.delete_children","services.delete_self","subscriptions.page","subscriptions.view_all","subscriptions.view_children","subscriptions.view_self","subscriptions.create","subscriptions.update_all","subscriptions.update_children","subscriptions.update_self","subscriptions.delete_all","subscriptions.delete_children","subscriptions.delete_self","roles.page","roles.view_all","roles.view_children","roles.view_self","roles.create","roles.update_all","roles.update_children","roles.update_self","roles.delete_all","roles.delete_children","roles.delete_self"],"avatar_url":null,"companies":[{"id":1,"owner_name":"System Owner","name":"System Company","field":"Technology","phone":"010123456789","address":"123 System Street","description":"A description for the system company.","email":"company@admin.com","created_by":null,"logo":null,"created_at":"2026-01-01 19:40:43","updated_at":"2026-01-01 19:40:43"}],"cashBoxes":[],"created_at":"2026-01-01","updated_at":"2026-01-01","settings":null},{"id":1,"username":"system_owner","email":"admin@admin.com","phone":"1234567890","last_login_at":null,"email_verified_at":null,"created_by":null,"nickname":null,"full_name":null,"balance":"0.00","position":null,"status":"active","customer_type":"retail","cash_box_id":null,"cashBoxDefault":null,"company_id":1,"company_logo":null,"roles":[],"permissions":["admin.page","admin.super","admin.company","companies.change_active_company","companies.page","companies.view_all","companies.view_children","companies.view_self","companies.create","companies.update_all","companies.update_children","companies.update_self","companies.delete_all","companies.delete_children","companies.delete_self","users.page","users.view_all","users.view_children","users.view_self","users.create","users.update_all","users.update_children","users.update_self","users.delete_all","users.delete_children","users.delete_self","personal_access_tokens.page","personal_access_tokens.view_all","personal_access_tokens.view_children","personal_access_tokens.view_self","personal_access_tokens.create","personal_access_tokens.update_all","personal_access_tokens.update_children","personal_access_tokens.update_self","personal_access_tokens.delete_all","personal_access_tokens.delete_children","personal_access_tokens.delete_self","translations.page","translations.view_all","translations.view_children","translations.view_self","translations.create","translations.update_all","translations.update_children","translations.update_self","translations.delete_all","translations.delete_children","translations.delete_self","transactions.page","transactions.view_all","transactions.view_children","transactions.view_self","transactions.create","transactions.update_all","transactions.update_children","transactions.update_self","transactions.delete_all","transactions.delete_children","transactions.delete_self","activity_logs.page","activity_logs.view_all","activity_logs.view_children","activity_logs.view_self","activity_logs.delete_all","activity_logs.delete_children","activity_logs.delete_self","cash_box_types.page","cash_box_types.view_all","cash_box_types.view_children","cash_box_types.view_self","cash_box_types.create","cash_box_types.update_all","cash_box_types.update_children","cash_box_types.update_self","cash_box_types.delete_all","cash_box_types.delete_children","cash_box_types.delete_self","cash_boxes.page","cash_boxes.view_all","cash_boxes.view_children","cash_boxes.view_self","cash_boxes.create","cash_boxes.update_all","cash_boxes.update_children","cash_boxes.update_self","cash_boxes.delete_all","cash_boxes.delete_children","cash_boxes.delete_self","images.page","images.view_all","images.view_children","images.view_self","images.create","images.update_all","images.update_children","images.update_self","images.delete_all","images.delete_children","images.delete_self","warehouses.page","warehouses.view_all","warehouses.view_children","warehouses.view_self","warehouses.create","warehouses.update_all","warehouses.update_children","warehouses.update_self","warehouses.delete_all","warehouses.delete_children","warehouses.delete_self","categories.page","categories.view_all","categories.view_children","categories.view_self","categories.create","categories.update_all","categories.update_children","categories.update_self","categories.delete_all","categories.delete_children","categories.delete_self","brands.page","brands.view_all","brands.view_children","brands.view_self","brands.create","brands.update_all","brands.update_children","brands.update_self","brands.delete_all","brands.delete_children","brands.delete_self","attributes.page","attributes.view_all","attributes.view_children","attributes.view_self","attributes.create","attributes.update_all","attributes.update_children","attributes.update_self","attributes.delete_all","attributes.delete_children","attributes.delete_self","attribute_values.page","attribute_values.view_all","attribute_values.view_children","attribute_values.view_self","attribute_values.create","attribute_values.update_all","attribute_values.update_children","attribute_values.update_self","attribute_values.delete_all","attribute_values.delete_children","attribute_values.delete_self","products.page","products.view_all","products.view_children","products.view_self","products.create","products.update_all","products.update_children","products.update_self","products.delete_all","products.delete_children","products.delete_self","product_variants.page","product_variants.view_all","product_variants.view_children","product_variants.view_self","product_variants.create","product_variants.update_all","product_variants.update_children","product_variants.update_self","product_variants.delete_all","product_variants.delete_children","product_variants.delete_self","product_variant_attributes.page","product_variant_attributes.view_all","product_variant_attributes.view_children","product_variant_attributes.view_self","product_variant_attributes.create","product_variant_attributes.update_all","product_variant_attributes.update_children","product_variant_attributes.update_self","product_variant_attributes.delete_all","product_variant_attributes.delete_children","product_variant_attributes.delete_self","stocks.page","stocks.view_all","stocks.view_children","stocks.view_self","stocks.create","stocks.update_all","stocks.update_children","stocks.update_self","stocks.delete_all","stocks.delete_children","stocks.delete_self","invoices.page","invoices.view_all","invoices.view_children","invoices.view_self","invoices.create","invoices.update_all","invoices.update_children","invoices.update_self","invoices.delete_all","invoices.delete_children","invoices.delete_self","installment_plans.page","installment_plans.view_all","installment_plans.view_children","installment_plans.view_self","installment_plans.create","installment_plans.update_all","installment_plans.update_children","installment_plans.update_self","installment_plans.delete_all","installment_plans.delete_children","installment_plans.delete_self","installments.page","installments.view_all","installments.view_children","installments.view_self","installments.create","installments.update_all","installments.update_children","installments.update_self","installments.delete_all","installments.delete_children","installments.delete_self","installment_payments.page","installment_payments.view_all","installment_payments.view_children","installment_payments.view_self","installment_payments.create","installment_payments.update_all","installment_payments.update_children","installment_payments.update_self","installment_payments.delete_all","installment_payments.delete_children","installment_payments.delete_self","invoice_items.page","invoice_items.view_all","invoice_items.view_children","invoice_items.view_self","invoice_items.create","invoice_items.update_all","invoice_items.update_children","invoice_items.update_self","invoice_items.delete_all","invoice_items.delete_children","invoice_items.delete_self","payments.page","payments.view_all","payments.view_children","payments.view_self","payments.create","payments.update_all","payments.update_children","payments.update_self","payments.delete_all","payments.delete_children","payments.delete_self","payment_methods.page","payment_methods.view_all","payment_methods.view_children","payment_methods.view_self","payment_methods.create","payment_methods.update_all","payment_methods.update_children","payment_methods.update_self","payment_methods.delete_all","payment_methods.delete_children","payment_methods.delete_self","revenues.page","revenues.view_all","revenues.view_children","revenues.view_self","revenues.create","revenues.update_all","revenues.update_children","revenues.update_self","revenues.delete_all","revenues.delete_children","revenues.delete_self","profits.page","profits.view_all","profits.view_children","profits.view_self","profits.create","profits.update_all","profits.update_children","profits.update_self","profits.delete_all","profits.delete_children","profits.delete_self","services.page","services.view_all","services.view_children","services.view_self","services.create","services.update_all","services.update_children","services.update_self","services.delete_all","services.delete_children","services.delete_self","subscriptions.page","subscriptions.view_all","subscriptions.view_children","subscriptions.view_self","subscriptions.create","subscriptions.update_all","subscriptions.update_children","subscriptions.update_self","subscriptions.delete_all","subscriptions.delete_children","subscriptions.delete_self","roles.page","roles.view_all","roles.view_children","roles.view_self","roles.create","roles.update_all","roles.update_children","roles.update_self","roles.delete_all","roles.delete_children","roles.delete_self"],"avatar_url":null,"companies":[{"id":1,"owner_name":"System Owner","name":"System Company","field":"Technology","phone":"010123456789","address":"123 System Street","description":"A description for the system company.","email":"company@admin.com","created_by":null,"logo":null,"created_at":"2026-01-01 19:40:43","updated_at":"2026-01-01 19:40:43"}],"cashBoxes":[],"created_at":"2026-01-01","updated_at":"2026-01-01","settings":null}]}'
-        headers: []
-        description: ''
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/users/stats
+    metadata:
+      groupName: '07. الإدارة وسجلات النظام'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'إحصائيات المستخدمين'
+      description: ''
+      authenticated: false
+      deprecated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
         custom: []
     responseFields: []
     auth: []
@@ -405,7 +488,7 @@ endpoints:
   -
     httpMethods:
       - POST
-    uri: api/user
+    uri: api/users
     metadata:
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
@@ -428,17 +511,17 @@ endpoints:
         name: phone
         description: 'رقم الهاتف.'
         required: true
-        example: sit
+        example: hic
         type: string
         enumValues: []
         exampleWasSpecified: false
-        nullable: true
+        nullable: false
         custom: []
       password:
         name: password
-        description: 'Must be at least 8 characters.'
+        description: 'يجب أن يكون طول النص value على الأقل 8 حروف.'
         required: false
-        example: '`(_k[SViS#jJIC|U'
+        example: '^kuoOP''`T>ZJ`#j"`'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -446,9 +529,9 @@ endpoints:
         custom: []
       email:
         name: email
-        description: 'Must be a valid email address.'
+        description: 'يجب أن يكون value عنوان بريد إلكتروني صحيحًا.'
         required: false
-        example: stracke.lela@example.net
+        example: duncan.thiel@example.com
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -456,29 +539,29 @@ endpoints:
         custom: []
       full_name:
         name: full_name
-        description: 'Must not be greater than 255 characters.'
-        required: false
-        example: qfdvbvvnencoxkrkzwmrvnvt
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: true
+        example: memnfnwmjevydzmucvhdvyxvj
         type: string
         enumValues: []
         exampleWasSpecified: false
-        nullable: true
+        nullable: false
         custom: []
       nickname:
         name: nickname
         description: اللقب.
         required: false
-        example: molestiae
+        example: deleniti
         type: string
         enumValues: []
         exampleWasSpecified: false
-        nullable: true
+        nullable: false
         custom: []
       username:
         name: username
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: v
+        example: llzniydunzsi
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -486,9 +569,9 @@ endpoints:
         custom: []
       position:
         name: position
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: sbftdvnqymhdlrgqtalf
+        example: zorlqwnwshotksrnulustqkif
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -496,9 +579,9 @@ endpoints:
         custom: []
       settings:
         name: settings
-        description: 'Must be a valid JSON string.'
+        description: 'يجب أن يكون الحقل value نصًا بتنسيق JSON صحيحًا.'
         required: false
-        example: '["porro","consectetur"]'
+        example: '["consequuntur","repellendus"]'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -506,9 +589,9 @@ endpoints:
         custom: []
       last_login_at:
         name: last_login_at
-        description: 'Must be a valid date.'
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-01-01T20:55:59'
+        example: '2026-02-12T18:00:48'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -516,9 +599,9 @@ endpoints:
         custom: []
       email_verified_at:
         name: email_verified_at
-        description: 'Must be a valid date.'
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-01-01T20:55:59'
+        example: '2026-02-12T18:00:48'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -528,7 +611,7 @@ endpoints:
         name: type
         description: ''
         required: false
-        example: accounting
+        example: client
         type: string
         enumValues:
           - system_owner
@@ -544,7 +627,7 @@ endpoints:
         name: balance
         description: ''
         required: false
-        example: 113.077
+        example: 5665.52965
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -564,7 +647,7 @@ endpoints:
         name: status
         description: ''
         required: false
-        example: inactive
+        example: active
         type: string
         enumValues:
           - active
@@ -614,21 +697,47 @@ endpoints:
         exampleWasSpecified: false
         nullable: true
         custom: []
+      roles:
+        name: roles
+        description: 'The <code>name</code> of an existing record in the roles table.'
+        required: false
+        example:
+          - perspiciatis
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      permissions:
+        name: permissions
+        description: 'The <code>name</code> of an existing record in the permissions table.'
+        required: false
+        example:
+          - facilis
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
     cleanBodyParameters:
-      phone: sit
-      password: '`(_k[SViS#jJIC|U'
-      email: stracke.lela@example.net
-      full_name: qfdvbvvnencoxkrkzwmrvnvt
-      nickname: molestiae
-      username: v
-      position: sbftdvnqymhdlrgqtalf
-      settings: '["porro","consectetur"]'
-      last_login_at: '2026-01-01T20:55:59'
-      email_verified_at: '2026-01-01T20:55:59'
-      type: accounting
-      balance: 113.077
-      status: inactive
+      phone: hic
+      password: '^kuoOP''`T>ZJ`#j"`'
+      email: duncan.thiel@example.com
+      full_name: memnfnwmjevydzmucvhdvyxvj
+      nickname: deleniti
+      username: llzniydunzsi
+      position: zorlqwnwshotksrnulustqkif
+      settings: '["consequuntur","repellendus"]'
+      last_login_at: '2026-02-12T18:00:48'
+      email_verified_at: '2026-02-12T18:00:48'
+      type: client
+      balance: 5665.52965
+      status: active
       customer_type: wholesale
+      roles:
+        - perspiciatis
+      permissions:
+        - facilis
     fileParameters: []
     responses: []
     responseFields: []
@@ -640,7 +749,7 @@ endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/user/{user_id}'
+    uri: 'api/users/{user_id}'
     metadata:
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
@@ -686,7 +795,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":{"id":1,"nickname":"System Owner","balance":0,"full_name":"Admin","username":"system_owner","email":"admin@admin.com","phone":"1234567890","position":null,"settings":null,"cash_box_id":null,"company_logo":null,"last_login_at":null,"email_verified_at":null,"roles":[],"avatar_url":null,"status":"1","company_id":1,"created_by":null,"customer_type":"retail","cashBoxDefault":null,"companies":[{"id":1,"owner_name":"System Owner","name":"System Company","field":"Technology","phone":"010123456789","address":"123 System Street","description":"A description for the system company.","email":"company@admin.com","created_by":null,"logo":null,"created_at":"2026-01-01 19:40:43","updated_at":"2026-01-01 19:40:43"}],"cashBoxes":[],"permissions":["admin.page","admin.super","admin.company","companies.change_active_company","companies.page","companies.view_all","companies.view_children","companies.view_self","companies.create","companies.update_all","companies.update_children","companies.update_self","companies.delete_all","companies.delete_children","companies.delete_self","users.page","users.view_all","users.view_children","users.view_self","users.create","users.update_all","users.update_children","users.update_self","users.delete_all","users.delete_children","users.delete_self","personal_access_tokens.page","personal_access_tokens.view_all","personal_access_tokens.view_children","personal_access_tokens.view_self","personal_access_tokens.create","personal_access_tokens.update_all","personal_access_tokens.update_children","personal_access_tokens.update_self","personal_access_tokens.delete_all","personal_access_tokens.delete_children","personal_access_tokens.delete_self","translations.page","translations.view_all","translations.view_children","translations.view_self","translations.create","translations.update_all","translations.update_children","translations.update_self","translations.delete_all","translations.delete_children","translations.delete_self","transactions.page","transactions.view_all","transactions.view_children","transactions.view_self","transactions.create","transactions.update_all","transactions.update_children","transactions.update_self","transactions.delete_all","transactions.delete_children","transactions.delete_self","activity_logs.page","activity_logs.view_all","activity_logs.view_children","activity_logs.view_self","activity_logs.delete_all","activity_logs.delete_children","activity_logs.delete_self","cash_box_types.page","cash_box_types.view_all","cash_box_types.view_children","cash_box_types.view_self","cash_box_types.create","cash_box_types.update_all","cash_box_types.update_children","cash_box_types.update_self","cash_box_types.delete_all","cash_box_types.delete_children","cash_box_types.delete_self","cash_boxes.page","cash_boxes.view_all","cash_boxes.view_children","cash_boxes.view_self","cash_boxes.create","cash_boxes.update_all","cash_boxes.update_children","cash_boxes.update_self","cash_boxes.delete_all","cash_boxes.delete_children","cash_boxes.delete_self","images.page","images.view_all","images.view_children","images.view_self","images.create","images.update_all","images.update_children","images.update_self","images.delete_all","images.delete_children","images.delete_self","warehouses.page","warehouses.view_all","warehouses.view_children","warehouses.view_self","warehouses.create","warehouses.update_all","warehouses.update_children","warehouses.update_self","warehouses.delete_all","warehouses.delete_children","warehouses.delete_self","categories.page","categories.view_all","categories.view_children","categories.view_self","categories.create","categories.update_all","categories.update_children","categories.update_self","categories.delete_all","categories.delete_children","categories.delete_self","brands.page","brands.view_all","brands.view_children","brands.view_self","brands.create","brands.update_all","brands.update_children","brands.update_self","brands.delete_all","brands.delete_children","brands.delete_self","attributes.page","attributes.view_all","attributes.view_children","attributes.view_self","attributes.create","attributes.update_all","attributes.update_children","attributes.update_self","attributes.delete_all","attributes.delete_children","attributes.delete_self","attribute_values.page","attribute_values.view_all","attribute_values.view_children","attribute_values.view_self","attribute_values.create","attribute_values.update_all","attribute_values.update_children","attribute_values.update_self","attribute_values.delete_all","attribute_values.delete_children","attribute_values.delete_self","products.page","products.view_all","products.view_children","products.view_self","products.create","products.update_all","products.update_children","products.update_self","products.delete_all","products.delete_children","products.delete_self","product_variants.page","product_variants.view_all","product_variants.view_children","product_variants.view_self","product_variants.create","product_variants.update_all","product_variants.update_children","product_variants.update_self","product_variants.delete_all","product_variants.delete_children","product_variants.delete_self","product_variant_attributes.page","product_variant_attributes.view_all","product_variant_attributes.view_children","product_variant_attributes.view_self","product_variant_attributes.create","product_variant_attributes.update_all","product_variant_attributes.update_children","product_variant_attributes.update_self","product_variant_attributes.delete_all","product_variant_attributes.delete_children","product_variant_attributes.delete_self","stocks.page","stocks.view_all","stocks.view_children","stocks.view_self","stocks.create","stocks.update_all","stocks.update_children","stocks.update_self","stocks.delete_all","stocks.delete_children","stocks.delete_self","invoices.page","invoices.view_all","invoices.view_children","invoices.view_self","invoices.create","invoices.update_all","invoices.update_children","invoices.update_self","invoices.delete_all","invoices.delete_children","invoices.delete_self","installment_plans.page","installment_plans.view_all","installment_plans.view_children","installment_plans.view_self","installment_plans.create","installment_plans.update_all","installment_plans.update_children","installment_plans.update_self","installment_plans.delete_all","installment_plans.delete_children","installment_plans.delete_self","installments.page","installments.view_all","installments.view_children","installments.view_self","installments.create","installments.update_all","installments.update_children","installments.update_self","installments.delete_all","installments.delete_children","installments.delete_self","installment_payments.page","installment_payments.view_all","installment_payments.view_children","installment_payments.view_self","installment_payments.create","installment_payments.update_all","installment_payments.update_children","installment_payments.update_self","installment_payments.delete_all","installment_payments.delete_children","installment_payments.delete_self","invoice_items.page","invoice_items.view_all","invoice_items.view_children","invoice_items.view_self","invoice_items.create","invoice_items.update_all","invoice_items.update_children","invoice_items.update_self","invoice_items.delete_all","invoice_items.delete_children","invoice_items.delete_self","payments.page","payments.view_all","payments.view_children","payments.view_self","payments.create","payments.update_all","payments.update_children","payments.update_self","payments.delete_all","payments.delete_children","payments.delete_self","payment_methods.page","payment_methods.view_all","payment_methods.view_children","payment_methods.view_self","payment_methods.create","payment_methods.update_all","payment_methods.update_children","payment_methods.update_self","payment_methods.delete_all","payment_methods.delete_children","payment_methods.delete_self","revenues.page","revenues.view_all","revenues.view_children","revenues.view_self","revenues.create","revenues.update_all","revenues.update_children","revenues.update_self","revenues.delete_all","revenues.delete_children","revenues.delete_self","profits.page","profits.view_all","profits.view_children","profits.view_self","profits.create","profits.update_all","profits.update_children","profits.update_self","profits.delete_all","profits.delete_children","profits.delete_self","services.page","services.view_all","services.view_children","services.view_self","services.create","services.update_all","services.update_children","services.update_self","services.delete_all","services.delete_children","services.delete_self","subscriptions.page","subscriptions.view_all","subscriptions.view_children","subscriptions.view_self","subscriptions.create","subscriptions.update_all","subscriptions.update_children","subscriptions.update_self","subscriptions.delete_all","subscriptions.delete_children","subscriptions.delete_self","roles.page","roles.view_all","roles.view_children","roles.view_self","roles.create","roles.update_all","roles.update_children","roles.update_self","roles.delete_all","roles.delete_children","roles.delete_self"],"created_at":"2026-01-01","updated_at":"2026-01-01"}}'
+        content: '{"data":{"id":1,"name":"System Owner","nickname":"System Owner","full_name":"Admin","username":"system_owner","email":"admin@admin.com","phone":"1234567890","balance":0,"customer_type":null,"position":null,"status":"1","avatar_url":null,"company_id":2,"cash_box_id":834,"last_login_at":null,"email_verified_at":null,"created_by":null,"companies":[],"created_at":"2025-07-09","updated_at":"2026-02-09"}}'
         headers: []
         description: ''
         custom: []
@@ -699,7 +808,7 @@ endpoints:
   -
     httpMethods:
       - PUT
-    uri: 'api/user/{user_id}'
+    uri: 'api/users/{user_id}'
     metadata:
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
@@ -740,61 +849,41 @@ endpoints:
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      email:
-        name: email
-        description: 'Must be a valid email address.'
-        required: false
-        example: murray.patricia@example.net
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        custom: []
       full_name:
         name: full_name
-        description: 'Must not be greater than 255 characters.'
-        required: false
-        example: zkltl
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: true
+        example: c
         type: string
         enumValues: []
         exampleWasSpecified: false
-        nullable: true
-        custom: []
-      username:
-        name: username
-        description: 'Must not be greater than 255 characters.'
-        required: false
-        example: sbnfqtkaoxlqvnzhgfzwnd
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
+        nullable: false
         custom: []
       nickname:
         name: nickname
-        description: 'Must not be greater than 255 characters.'
-        required: false
-        example: vchvzavmmzw
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: true
+        example: qfqxxyksoiwcexxytzkklg
         type: string
         enumValues: []
         exampleWasSpecified: false
-        nullable: true
+        nullable: false
         custom: []
       phone:
         name: phone
-        description: 'Must not be greater than 15 characters.'
-        required: false
-        example: gaoa
+        description: 'يجب ألا يتجاوز طول النص value 15 حرفًا.'
+        required: true
+        example: fgfq
         type: string
         enumValues: []
         exampleWasSpecified: false
-        nullable: true
+        nullable: false
         custom: []
       password:
         name: password
-        description: 'Must be at least 8 characters.'
+        description: 'يجب أن يكون طول النص value على الأقل 8 حروف.'
         required: false
-        example: "/YB'V;"
+        example: 'i+PN]p".WS80s['
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -802,9 +891,9 @@ endpoints:
         custom: []
       position:
         name: position
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: ml
+        example: iagqlftfrmvzatyqggrpsk
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -812,9 +901,9 @@ endpoints:
         custom: []
       settings:
         name: settings
-        description: 'Must be a valid JSON string.'
+        description: 'يجب أن يكون الحقل value نصًا بتنسيق JSON صحيحًا.'
         required: false
-        example: '["velit","quidem"]'
+        example: '["dolorem","temporibus"]'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -864,7 +953,7 @@ endpoints:
         name: balance
         description: ''
         required: false
-        example: 11762609.43
+        example: 26.2
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -900,16 +989,53 @@ endpoints:
         exampleWasSpecified: false
         nullable: true
         custom: []
+      customer_type:
+        name: customer_type
+        description: ''
+        required: false
+        example: retail
+        type: string
+        enumValues:
+          - retail
+          - wholesale
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      roles:
+        name: roles
+        description: 'The <code>name</code> of an existing record in the roles table.'
+        required: false
+        example:
+          - quaerat
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      permissions:
+        name: permissions
+        description: 'The <code>name</code> of an existing record in the permissions table.'
+        required: false
+        example:
+          - quia
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
     cleanBodyParameters:
-      email: murray.patricia@example.net
-      full_name: zkltl
-      username: sbnfqtkaoxlqvnzhgfzwnd
-      nickname: vchvzavmmzw
-      phone: gaoa
-      password: "/YB'V;"
-      position: ml
-      settings: '["velit","quidem"]'
-      balance: 11762609.43
+      full_name: c
+      nickname: qfqxxyksoiwcexxytzkklg
+      phone: fgfq
+      password: 'i+PN]p".WS80s['
+      position: iagqlftfrmvzatyqggrpsk
+      settings: '["dolorem","temporibus"]'
+      balance: 26.2
+      customer_type: retail
+      roles:
+        - quaerat
+      permissions:
+        - quia
     fileParameters: []
     responses: []
     responseFields: []
@@ -1031,7 +1157,7 @@ endpoints:
   -
     httpMethods:
       - GET
-    uri: api/companys
+    uri: api/companies
     metadata:
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
@@ -1052,14 +1178,14 @@ endpoints:
         name: per_page
         description: 'عدد النتائج.'
         required: false
-        example: 7
+        example: 15
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanQueryParameters:
-      per_page: 7
+      per_page: 15
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -1082,7 +1208,7 @@ endpoints:
   -
     httpMethods:
       - POST
-    uri: api/company
+    uri: api/companies
     metadata:
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
@@ -1115,7 +1241,7 @@ endpoints:
         name: description
         description: ''
         required: false
-        example: 'Enim soluta cumque aut et illo voluptas.'
+        example: 'Doloribus tempore dolorem ratione assumenda rerum eaque eos.'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1123,9 +1249,9 @@ endpoints:
         custom: []
       field:
         name: field
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: fidbvrevgjmwxzquunkeg
+        example: pijdghxetxlterybtcvjywhtw
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1133,9 +1259,9 @@ endpoints:
         custom: []
       owner_name:
         name: owner_name
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: qrdlhwgaovoemdam
+        example: bgsullrhsxjrhdulgp
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1143,9 +1269,9 @@ endpoints:
         custom: []
       address:
         name: address
-        description: 'Must not be greater than 255 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: sfizdqtwrdlbwbhguymvali
+        example: lwvdenazsudykfdacb
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1153,9 +1279,9 @@ endpoints:
         custom: []
       phone:
         name: phone
-        description: 'Must not be greater than 15 characters.'
+        description: 'يجب ألا يتجاوز طول النص value 15 حرفًا.'
         required: false
-        example: zoevenbzb
+        example: lrxwen
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1163,10 +1289,50 @@ endpoints:
         custom: []
       email:
         name: email
-        description: 'Must be a valid email address. Must not be greater than 255 characters.'
+        description: 'يجب أن يكون value عنوان بريد إلكتروني صحيحًا. يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: janick.oberbrunner@example.com
+        example: lisandro.mosciski@example.com
         type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tax_number:
+        name: tax_number
+        description: 'يجب ألا يتجاوز طول النص value 100 حرفًا.'
+        required: false
+        example: sdd
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      website:
+        name: website
+        description: 'Must be a valid URL. يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: false
+        example: gcztofpxghivcrlwbzczdil
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      settings:
+        name: settings
+        description: ''
+        required: false
+        example: null
+        type: object
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      social_links:
+        name: social_links
+        description: ''
+        required: false
+        example: null
+        type: object
         enumValues: []
         exampleWasSpecified: false
         nullable: true
@@ -1175,7 +1341,7 @@ endpoints:
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
-        example: 14
+        example: 12
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -1185,7 +1351,7 @@ endpoints:
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
-        example: 16
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -1196,7 +1362,7 @@ endpoints:
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
         example:
-          - 12
+          - 5
         type: 'integer[]'
         enumValues: []
         exampleWasSpecified: false
@@ -1204,16 +1370,18 @@ endpoints:
         custom: []
     cleanBodyParameters:
       name: 'شركة التقدم'
-      description: 'Enim soluta cumque aut et illo voluptas.'
-      field: fidbvrevgjmwxzquunkeg
-      owner_name: qrdlhwgaovoemdam
-      address: sfizdqtwrdlbwbhguymvali
-      phone: zoevenbzb
-      email: janick.oberbrunner@example.com
-      created_by: 14
-      company_id: 16
+      description: 'Doloribus tempore dolorem ratione assumenda rerum eaque eos.'
+      field: pijdghxetxlterybtcvjywhtw
+      owner_name: bgsullrhsxjrhdulgp
+      address: lwvdenazsudykfdacb
+      phone: lrxwen
+      email: lisandro.mosciski@example.com
+      tax_number: sdd
+      website: gcztofpxghivcrlwbzczdil
+      created_by: 12
+      company_id: 17
       images_ids:
-        - 12
+        - 5
     fileParameters: []
     responses: []
     responseFields: []
@@ -1225,7 +1393,7 @@ endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/company/{company_id}'
+    uri: 'api/companies/{company_id}'
     metadata:
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
@@ -1287,7 +1455,7 @@ endpoints:
   -
     httpMethods:
       - POST
-    uri: api/company/delete
+    uri: api/companies/delete
     metadata:
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
@@ -1311,7 +1479,7 @@ endpoints:
         description: 'مصفوفة المعرفات.'
         required: true
         example:
-          - 16
+          - 5
         type: 'integer[]'
         enumValues: []
         exampleWasSpecified: false
@@ -1319,7 +1487,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       item_ids:
-        - 16
+        - 5
     fileParameters: []
     responses: []
     responseFields: []
@@ -1355,7 +1523,7 @@ endpoints:
         name: created_at_from
         description: 'date التاريخ من.'
         required: false
-        example: veniam
+        example: soluta
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1365,22 +1533,22 @@ endpoints:
         name: created_at_to
         description: 'date التاريخ إلى.'
         required: false
-        example: tenetur
+        example: non
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanQueryParameters:
-      created_at_from: veniam
-      created_at_to: tenetur
+      created_at_from: soluta
+      created_at_to: non
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"action":null,"model":null,"data_old":null,"data_new":null,"description":null,"user_id":null,"created_by":null,"company_id":null,"user_agent":"  ( )","ip_address":null,"url":null,"created_at":null},{"id":null,"action":null,"model":null,"data_old":null,"data_new":null,"description":null,"user_id":null,"created_by":null,"company_id":null,"user_agent":"  ( )","ip_address":null,"url":null,"created_at":null}]}'
+        content: '{"data":[{"id":1,"action":"\u062a\u0639\u062f\u064a\u0644","model":"App\\Models\\User","data_old":"{\"id\":4,\"phone\":\"01070475028\",\"password\":\"$2y$12$Srzws.esmxtE\\\/igqc0BAh.TMIB4lDG7R.IdfwtH2J\\\/8QxGZ\\\/j.lE2\",\"email\":null,\"username\":null,\"nickname\":\"\\u0627\\u0628\\u0648 \\u0646\\u062f\\u064a\",\"full_name\":\"\\u0648\\u0627\\u0626\\u0644 \\u0645\\u062d\\u0645\\u062f \\u0627\\u062d\\u0645\\u062f\",\"position\":null,\"settings\":null,\"last_login_at\":null,\"email_verified_at\":null,\"balance\":\"0.00\",\"status\":\"1\",\"customer_type\":\"retail\",\"created_by\":null,\"company_id\":\"1\",\"remember_token\":null,\"created_at\":\"2025-07-09T06:26:27.000000Z\",\"updated_at\":\"2025-07-09T06:33:51.000000Z\"}","data_new":"{\"password\":\"$2y$12$Srzws.esmxtE\\\/igqc0BAh.TMIB4lDG7R.IdfwtH2J\\\/8QxGZ\\\/j.lE2\",\"updated_at\":\"2025-07-09 06:33:51\"}","description":"\u0642\u0627\u0645 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 System Owner \u0628\u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0627\u0628\u0648 \u0646\u062f\u064a","user_id":1,"created_by":1,"company_id":1,"user_agent":"Chrome 135.0.0.0 (Windows 10.0)","ip_address":"154.190.162.247","url":"\/api\/user\/4","created_at":"2025-07-09 09:33:51"},{"id":1,"action":"\u062a\u0639\u062f\u064a\u0644","model":"App\\Models\\User","data_old":"{\"id\":4,\"phone\":\"01070475028\",\"password\":\"$2y$12$Srzws.esmxtE\\\/igqc0BAh.TMIB4lDG7R.IdfwtH2J\\\/8QxGZ\\\/j.lE2\",\"email\":null,\"username\":null,\"nickname\":\"\\u0627\\u0628\\u0648 \\u0646\\u062f\\u064a\",\"full_name\":\"\\u0648\\u0627\\u0626\\u0644 \\u0645\\u062d\\u0645\\u062f \\u0627\\u062d\\u0645\\u062f\",\"position\":null,\"settings\":null,\"last_login_at\":null,\"email_verified_at\":null,\"balance\":\"0.00\",\"status\":\"1\",\"customer_type\":\"retail\",\"created_by\":null,\"company_id\":\"1\",\"remember_token\":null,\"created_at\":\"2025-07-09T06:26:27.000000Z\",\"updated_at\":\"2025-07-09T06:33:51.000000Z\"}","data_new":"{\"password\":\"$2y$12$Srzws.esmxtE\\\/igqc0BAh.TMIB4lDG7R.IdfwtH2J\\\/8QxGZ\\\/j.lE2\",\"updated_at\":\"2025-07-09 06:33:51\"}","description":"\u0642\u0627\u0645 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 System Owner \u0628\u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0627\u0628\u0648 \u0646\u062f\u064a","user_id":1,"created_by":1,"company_id":1,"user_agent":"Chrome 135.0.0.0 (Windows 10.0)","ip_address":"154.190.162.247","url":"\/api\/user\/4","created_at":"2025-07-09 09:33:51"}]}'
         headers: []
         description: ''
         custom: []
@@ -1415,7 +1583,7 @@ endpoints:
         name: log
         description: 'The log.'
         required: true
-        example: maiores
+        example: est
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1432,7 +1600,7 @@ endpoints:
         nullable: false
         custom: []
     cleanUrlParameters:
-      log: maiores
+      log: est
       logId: '1'
     queryParameters: []
     cleanQueryParameters: []

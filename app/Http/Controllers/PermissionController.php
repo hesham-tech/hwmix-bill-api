@@ -26,8 +26,30 @@ class PermissionController extends Controller
             $permissionsConfig = config('permissions_keys');
 
             $isAdmin = $authUser->hasPermissionTo(perm_key('admin.super')) || $authUser->hasPermissionTo(perm_key('admin.company'));
+            $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
 
-            if (!$isAdmin) {
+            if ($isAdmin) {
+                // For Admins (Super or Company)
+                if (!$isSuperAdmin) {
+                    // If Company Admin but NOT Super Admin: filter out any super admin keys
+                    $permissionsConfig = collect($permissionsConfig)->map(function ($group) {
+                        if (!is_array($group))
+                            return null;
+
+                        $filteredGroup = collect($group)->filter(function ($p, $pKey) {
+                            if ($pKey === 'name')
+                                return true;
+                            if (is_array($p) && isset($p['key'])) {
+                                // Hide anything related to super admin
+                                return !str_contains($p['key'], 'admin.super');
+                            }
+                            return true;
+                        });
+
+                        return $filteredGroup->count() > 1 ? $filteredGroup->all() : null;
+                    })->filter()->all();
+                }
+            } else {
                 // If not admin, only show permissions they actually have
                 $userPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
 
