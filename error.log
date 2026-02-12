@@ -1,1 +1,30 @@
-main.js:18 Property "search" was accessed during render but is not defined on instance. at <VCol>
+[2026-02-12 20:22:20] CONSOLE_ERROR: Error fetching analytics dashboard: target must be an object
+Severity: LOW | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Win32
+URL: http://localhost:5173/app/admin/dashboard
+User: Guest (Guest)
+Payload: {
+    "args": [
+        "Error fetching analytics dashboard:",
+        "Object\/Error"
+    ]
+}
+--------------------------------------------------
+[2026-02-12 20:22:21] CONSOLE_ERROR: Error fetching top products: target must be an object
+Severity: LOW | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Win32
+URL: http://localhost:5173/app/admin/dashboard
+User: Guest (Guest)
+Payload: {
+    "args": [
+        "Error fetching top products:",
+        "Object\/Error"
+    ]
+}
+--------------------------------------------------
+[2026-02-12 20:22:21] API_ERROR: API Error: undefined undefined (Network)
+Severity: MEDIUM | Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 | OS: Win32
+URL: http://localhost:5173/app/admin/dashboard
+User: Guest (Guest)
+Payload: {
+    "config": []
+}
+--------------------------------------------------
