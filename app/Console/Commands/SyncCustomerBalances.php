@@ -171,34 +171,55 @@ class SyncCustomerBalances extends Command
 
     protected function syncUserBalances($dryRun)
     {
-        $users = User::with(['roles', 'permissions'])->get();
+        $users = User::all();
         $synced = 0;
 
         foreach ($users as $user) {
-            // مزامنة الجميع (عملاء وموظفين) لضمان اتساق البيانات المالية الشامل
-
-            $cashBoxes = CashBox::where('user_id', $user->id)
-                ->where('is_default', true)
+            // Get all companies this user is associated with
+            $userCompanies = DB::table('company_user')
+                ->where('user_id', $user->id)
                 ->get();
 
-            foreach ($cashBoxes as $cb) {
+            foreach ($userCompanies as $uc) {
                 $totalRemaining = DB::table('installments')
                     ->where('user_id', $user->id)
-                    ->where('company_id', $cb->company_id)
+                    ->where('company_id', $uc->company_id)
                     ->whereNull('deleted_at')
                     ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
                     ->sum('remaining');
 
                 $newBalance = -abs($totalRemaining);
 
-                if (round($cb->balance, 2) != round($newBalance, 2)) {
+                $updatedAny = false;
+
+                // 1. Update company_user
+                if (round($uc->balance_in_company, 2) != round($newBalance, 2)) {
+                    if (!$dryRun) {
+                        DB::table('company_user')
+                            ->where('id', $uc->id)
+                            ->update(['balance_in_company' => $newBalance]);
+                    }
+                    $updatedAny = true;
+                }
+
+                // 2. Update default CashBox if exists
+                $cb = CashBox::where('user_id', $user->id)
+                    ->where('company_id', $uc->company_id)
+                    ->where('is_default', true)
+                    ->first();
+
+                if ($cb && round($cb->balance, 2) != round($newBalance, 2)) {
                     if (!$dryRun) {
                         $cb->update(['balance' => $newBalance]);
                     }
+                    $updatedAny = true;
+                }
+
+                if ($updatedAny) {
                     $synced++;
                 }
             }
         }
-        $this->line("   - تم تحديث أرصدة {$synced} عميل.");
+        $this->line("   - تم تحديث أرصدة {$synced} سجل علاقة عميل بشركة.");
     }
 }
