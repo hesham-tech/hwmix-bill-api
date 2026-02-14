@@ -10,9 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('invoices', function (Blueprint $table) {
-            $table->boolean('is_aggregated')->default(false)->after('status')->index();
-        });
+        if (!Schema::hasColumn('invoices', 'is_aggregated')) {
+            Schema::table('invoices', function (Blueprint $table) {
+                $table->boolean('is_aggregated')->default(false)->after('status')->index();
+            });
+        }
     }
 
     /**

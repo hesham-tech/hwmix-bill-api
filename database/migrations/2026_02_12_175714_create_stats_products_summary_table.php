@@ -10,23 +10,25 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('stats_products_summary', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('product_id')->unique()->index();
-            $table->unsignedBigInteger('company_id')->index();
+        if (!Schema::hasTable('stats_products_summary')) {
+            Schema::create('stats_products_summary', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('product_id')->unique()->index();
+                $table->unsignedBigInteger('company_id')->index();
 
-            // Aggregated Metrics
-            $table->decimal('total_sold_quantity', 15, 2)->default(0);
-            $table->decimal('total_revenue', 15, 2)->default(0);
-            $table->decimal('total_profit', 15, 2)->default(0);
-            $table->unsignedBigInteger('total_orders_count')->default(0);
+                // Aggregated Metrics
+                $table->decimal('total_sold_quantity', 15, 2)->default(0);
+                $table->decimal('total_revenue', 15, 2)->default(0);
+                $table->decimal('total_profit', 15, 2)->default(0);
+                $table->unsignedBigInteger('total_orders_count')->default(0);
 
-            $table->timestamp('last_sold_at')->nullable();
-            $table->timestamps();
+                $table->timestamp('last_sold_at')->nullable();
+                $table->timestamps();
 
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
-        });
+                $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+                $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+            });
+        }
     }
 
     /**

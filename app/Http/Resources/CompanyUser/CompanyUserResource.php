@@ -80,6 +80,7 @@ class CompanyUserResource extends JsonResource
             'last_login_at' => $this->last_login_at,
             'roles' => $this->whenLoaded('user', fn() => $this->user->roles->pluck('name')),
             'direct_permissions' => $this->whenLoaded('user', fn() => $this->user->getDirectPermissions()->pluck('name')),
+            'companies' => CompanyResource::collection($this->whenLoaded('user', fn() => $this->user->companies, collect())),
             'created_at' => $this->created_at?->format('Y-m-d'),
             'updated_at' => $this->updated_at?->format('Y-m-d'),
         ];

@@ -144,6 +144,7 @@ class UserController extends Controller
                 $query->orderBy('created_at', 'desc');
             }
 
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $data */
             $data = $query->paginate($perPage);
 
             // تحسين النتائج باستخدام التشابه (Similarity Matching) بنسبة 80%
@@ -373,8 +374,12 @@ class UserController extends Controller
             }
 
             // تعيين الأدوار والصلاحيات الأولية
-            if ($activeCompanyId) {
-                $isSystemAdmin = $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')]);
+            // مزامنة الصلاحيات والأدوار (سياق الشركة المعطاة أو النشطة)
+            $targetCompanyId = $request->input('sync_company_id', $activeCompanyId);
+
+            if ($targetCompanyId) {
+                $originalTeamId = getPermissionsTeamId();
+                setPermissionsTeamId($targetCompanyId);
 
                 if ($request->has('roles')) {
                     $requestedRoles = (array) $validatedData['roles'];
@@ -382,6 +387,7 @@ class UserController extends Controller
                         $myRoles = $authUser->getRoleNames()->toArray();
                         $unauthorizedRoles = array_diff($requestedRoles, $myRoles);
                         if (!empty($unauthorizedRoles)) {
+                            setPermissionsTeamId($originalTeamId);
                             return api_forbidden('لا يمكنك منح أدوار لا تملكها: ' . implode(', ', $unauthorizedRoles));
                         }
                     }
@@ -394,11 +400,14 @@ class UserController extends Controller
                         $myPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
                         $unauthorizedPermissions = array_diff($requestedPermissions, $myPermissions);
                         if (!empty($unauthorizedPermissions)) {
+                            setPermissionsTeamId($originalTeamId);
                             return api_forbidden('لا يمكنك منح صلاحيات لا تملكها: ' . implode(', ', $unauthorizedPermissions));
                         }
                     }
                     $user->syncPermissions($requestedPermissions);
                 }
+
+                setPermissionsTeamId($originalTeamId);
             }
 
             DB::commit();
@@ -440,9 +449,14 @@ class UserController extends Controller
             return api_unauthorized('يجب تسجيل الدخول.');
         }
 
-        $activeCompanyId = $authUser->company_id;
+        $syncCompanyId = $request->input('sync_company_id');
+        $activeCompanyId = $syncCompanyId ?? $authUser->company_id;
         $isSuperAdmin = $authUser->can(perm_key('admin.super'));
         $useBasicResource = filter_var($request->input('basic', true), FILTER_VALIDATE_BOOLEAN);
+
+        if ($activeCompanyId) {
+            setPermissionsTeamId($activeCompanyId);
+        }
 
         // 1. [قاعدة الرفاق]: إذا كان المستخدم يطلب بياناته الشخصية (Self) أو كان سوبر أدمن
         if ($authUser->id === $user->id || $isSuperAdmin) {
@@ -570,14 +584,50 @@ class UserController extends Controller
                 $user->syncImages($request->input('images_ids'), 'avatar');
             }
 
-            // 3. تحديث الأدوار والصلاحيات (سياق الشركة الحالية)
-            if ($activeCompanyId && !$isUpdatingSelf) {
+            // 3. مزامنة الشركات (Multi-Company Sync)
+            if ($request->has('company_ids')) {
+                $companyIds = array_filter((array) $request->input('company_ids'));
+
+                if ($isSuperAdmin) {
+                    // السوبر أدمن يمكنه التحكم في كافة الشركات (مزامنة كاملة)
+                    $user->companies()->sync($companyIds);
+                } else {
+                    // مدير الشركة يمكنه فقط التحكم في الشركات التي يديرها هو
+                    $myManagedCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
+
+                    // الشركات الحالية للمستخدم والتي لا يملك المدير سلطة عليها (يجب الحفاظ عليها)
+                    $othersCompanyIds = $user->companies()
+                        ->whereNotIn('companies.id', $myManagedCompanyIds)
+                        ->pluck('companies.id')
+                        ->toArray();
+
+                    // الشركات المختارة والتي يملك المدير سلطة عليها
+                    $allowedSelectedIds = array_intersect($companyIds, $myManagedCompanyIds);
+
+                    // القائمة النهائية = (ما لا يملكه المدير) + (ما اختاره المدير مما يملكه)
+                    $finalSyncIds = array_unique(array_merge($othersCompanyIds, $allowedSelectedIds));
+
+                    $user->companies()->syncWithPivotValues($finalSyncIds, [
+                        'created_by' => $authUser->id,
+                        'status' => 'active'
+                    ]);
+                }
+            }
+
+            // 4. تحديث الأدوار والصلاحيات (سياق الشركة المعطاة أو النشطة)
+            $targetCompanyId = $request->input('sync_company_id', $activeCompanyId);
+
+            if ($targetCompanyId && !$isUpdatingSelf) {
+                $originalTeamId = getPermissionsTeamId();
+                setPermissionsTeamId($targetCompanyId);
+
                 if ($request->has('roles')) {
                     $requestedRoles = $validated['roles'];
                     if (!$isSuperAdmin) {
                         $myRoles = $authUser->getRoleNames()->toArray();
                         $unauthorizedRoles = array_diff($requestedRoles, $myRoles);
                         if (!empty($unauthorizedRoles)) {
+                            setPermissionsTeamId($originalTeamId);
                             return api_forbidden('لا يمكنك منح أدوار لا تملكها: ' . implode(', ', $unauthorizedRoles));
                         }
                     }
@@ -590,11 +640,14 @@ class UserController extends Controller
                         $myPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
                         $unauthorizedPermissions = array_diff($requestedPermissions, $myPermissions);
                         if (!empty($unauthorizedPermissions)) {
+                            setPermissionsTeamId($originalTeamId);
                             return api_forbidden('لا يمكنك منح صلاحيات لا تملكها: ' . implode(', ', $unauthorizedPermissions));
                         }
                     }
                     $user->syncPermissions($requestedPermissions);
                 }
+
+                setPermissionsTeamId($originalTeamId);
             }
 
             DB::commit();
@@ -877,6 +930,7 @@ class UserController extends Controller
                 $baseQuery->orderBy('company_user.id', $sortOrder);
             }
 
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $companyUsers */
             $companyUsers = $baseQuery->paginate($perPage);
 
             // تحسين النتائج باستخدام التشابه (Similarity Matching) بنسبة 80%
