@@ -29,7 +29,7 @@ class ProductVariantResource extends JsonResource
             'purchase_price' => $this->when(auth()->user()?->hasAnyPermission(['products.view_purchase_price', 'admin.super', 'admin.company']), $this->purchase_price),
             'profit_margin' => $this->profit_margin,
             'image' => $this->image?->url,
-            'primary_image_url' => $this->image?->url ?? $this->product?->image?->url,
+            'primary_image_url' => $this->primary_image_url,
             'weight' => $this->weight,
             'dimensions' => $this->dimensions,
             'tax' => $this->tax,

@@ -16,6 +16,22 @@ class ProductVariant extends Model
     use HasFactory, Blameable, Scopes, \App\Traits\LogsActivity, HasImages;
 
     /**
+     * Get the primary image URL for the variant.
+     * Fallback to product primary image if variant has no images.
+     */
+    public function getPrimaryImageUrlAttribute(): ?string
+    {
+        if ($this->relationLoaded('images')) {
+            $url = $this->images->firstWhere('is_primary', true)?->url ?? $this->images->first()?->url;
+            if ($url) {
+                return $url;
+            }
+        }
+
+        return $this->product?->primary_image_url;
+    }
+
+    /**
      * Label for activity logs.
      */
     public function logLabel()

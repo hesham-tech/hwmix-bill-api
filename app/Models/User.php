@@ -144,13 +144,13 @@ class User extends Authenticatable
         // إذا لم يوجد، نقوم بإنشاء واحدة تلقائياً للمستخدم في هذه الشركة لضمان استمرارية العمليات المالية
         if (!$cashBox && $companyId) {
             try {
-                $cashBox = app(\App\Services\CashBoxService::class)->createDefaultCashBoxForUserCompany(
+                $cashBox = app(CashBoxService::class)->createDefaultCashBoxForUserCompany(
                     $this->id,
                     $companyId,
                     Auth::id() ?? $this->id
                 );
             } catch (Exception $e) {
-                \Log::error("فشل إنشاء خزنة تلقائية للمستخدم {$this->id} في الشركة {$companyId}: " . $e->getMessage());
+                Log::error("فشل إنشاء خزنة تلقائية للمستخدم {$this->id} في الشركة {$companyId}: " . $e->getMessage());
             }
         }
 
@@ -573,10 +573,28 @@ class User extends Authenticatable
 
     /**
      * الحصول على الرصيد (المصدر الوحيد: الخزنة)
+     * تم تحسينه ليدعم التحميل المسبق (Eager Loading) وتجنب N+1 queries
      */
     public function getBalanceAttribute()
     {
-        // المصدر الرئيسي والوحيد للرصيد هو الخزنة المرتبطة بالشركة الحالية
+        // إذا كانت العلاقة محملة مسبقاً، نستخدم المجموعة (Collection) لتوفير الاستعلامات
+        if ($this->relationLoaded('cashBoxes')) {
+            $activeCompanyId = Auth::user()->company_id ?? $this->company_id;
+
+            // البحث عن الخزنة الافتراضية أولاً، ثم أي خزنة نشطة في الشركة المحددة
+            $cashBox = $this->cashBoxes
+                ->where('company_id', $activeCompanyId)
+                ->where('is_default', true)
+                ->first()
+                ?? $this->cashBoxes
+                    ->where('company_id', $activeCompanyId)
+                    ->where('is_active', true)
+                    ->first();
+
+            return $cashBox ? (float) $cashBox->balance : 0.0;
+        }
+
+        // في حال لم تكن محملة، نعود للمنطق الافتراضي الذي ينفذ استعلاماً مستقلاً
         return (float) $this->balanceBox();
     }
 

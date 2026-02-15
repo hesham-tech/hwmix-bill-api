@@ -18,6 +18,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\GlobalSearchController;
 
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\WarehouseController;
@@ -459,6 +460,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/testing-checklist', [DevToolController::class, 'getTestingChecklist']);
         Route::post('/testing-checklist', [DevToolController::class, 'saveTestingChecklist']);
     });
+
+    // Global Search
+    Route::get('global-search', 'App\Http\Controllers\GlobalSearchController@search');
 });
 // Artisan commands routes
 Route::controller(ArtisanController::class)->prefix('php')->group(function () {

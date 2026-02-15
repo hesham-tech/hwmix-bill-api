@@ -177,7 +177,24 @@ class ProductController extends Controller
         $query->when($request->filled('category_id'), fn($q) => $q->where('category_id', $request->input('category_id')))
             ->when($request->filled('brand_id'), fn($q) => $q->where('brand_id', $request->input('brand_id')))
             ->when($request->filled('active'), fn($q) => $q->where('active', (bool) $request->input('active')))
-            ->when($request->filled('featured'), fn($q) => $q->where('featured', (bool) $request->input('featured')));
+            ->when($request->filled('product_type'), fn($q) => $q->where('product_type', $request->input('product_type')))
+            ->when($request->filled('featured'), fn($q) => $q->where('featured', (bool) $request->input('featured')))
+            ->when($request->filled('date_from'), fn($q) => $q->whereDate('created_at', '>=', $request->input('date_from')))
+            ->when($request->filled('date_to'), fn($q) => $q->whereDate('created_at', '<=', $request->input('date_to')))
+            ->when($request->filled('min_price'), fn($q) => $q->whereHas('variants', fn($v) => $v->where('retail_price', '>=', $request->input('min_price'))))
+            ->when($request->filled('max_price'), fn($q) => $q->whereHas('variants', fn($v) => $v->where('retail_price', '<=', $request->input('max_price'))))
+            ->when($request->filled('stock_status'), function ($q) use ($request) {
+                $status = $request->input('stock_status');
+                $stockSubquery = "(SELECT IFNULL(SUM(quantity), 0) FROM stocks JOIN product_variants ON stocks.variant_id = product_variants.id WHERE product_variants.product_id = products.id AND stocks.status = 'available')";
+
+                if ($status === 'in_stock') {
+                    $q->whereRaw("$stockSubquery > 0");
+                } elseif ($status === 'out_of_stock') {
+                    $q->whereRaw("$stockSubquery <= 0");
+                } elseif ($status === 'low_stock') {
+                    $q->whereRaw("$stockSubquery <= 10 AND $stockSubquery > 0");
+                }
+            });
     }
 
     /**

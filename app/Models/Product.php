@@ -183,6 +183,18 @@ class Product extends Model
     }
 
     /**
+     * Get the primary image URL.
+     */
+    public function getPrimaryImageUrlAttribute(): ?string
+    {
+        if ($this->relationLoaded('images')) {
+            return $this->images->firstWhere('is_primary', true)?->url ?? $this->images->first()?->url;
+        }
+
+        return $this->image?->url;
+    }
+
+    /**
      * Label for activity logs.
      */
     public function logLabel()
