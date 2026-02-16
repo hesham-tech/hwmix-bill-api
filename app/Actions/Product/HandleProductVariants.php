@@ -71,12 +71,19 @@ class HandleProductVariants
             // Using DTO-like objects if passed, or arrays
             $data = is_array($stockData) ? $stockData : $stockData->toArray();
 
+            // Search for existing stock by ID or by the variant/warehouse combination
+            // to prevent duplicates for the same warehouse
             $variant->stocks()->updateOrCreate(
-                ['id' => $data['id'] ?? null],
-                array_merge($data, [
+                [
+                    'id' => $data['id'] ?? null,
+                ],
+                [
+                    'id' => $data['id'] ?? null, // Explicitly pass id if it exists
+                    'warehouse_id' => $data['warehouse_id'],
+                    'quantity' => $data['quantity'] ?? 0,
                     'company_id' => $companyId,
                     'created_by' => $userId,
-                ])
+                ]
             );
         }
     }
