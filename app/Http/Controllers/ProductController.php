@@ -124,6 +124,43 @@ class ProductController extends Controller
     }
 
     /**
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * تصدير المنتجات إلى إكسيل بالاعتماد على الفلاتر المطبقة.
+     */
+    public function export(Request $request)
+    {
+        try {
+            $authUser = Auth::user();
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+
+            $query = Product::with(['category', 'brand', 'variants']);
+
+            // 1. إضافة الحسابات التجميعية (SQL Aggregates)
+            $this->applyAggregates($query);
+
+            // 2. تصفية الصلاحيات
+            $this->applyPermissionFilters($query, $authUser);
+
+            // 3. التصفية والبحث
+            $this->applyFilters($query, $request);
+
+            // 4. الترتيب
+            $this->applySorting($query, $request);
+
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\ProductsExport($query),
+                'products_export_' . now()->format('Y_m_d_H_i') . '.xlsx'
+            );
+        } catch (Throwable $e) {
+            Log::error("فشل تصدير المنتجات: " . $e->getMessage());
+            return api_exception($e);
+        }
+    }
+
+    /**
      * تطبيق الحسابات التجميعية (SQL Aggregates)
      */
     private function applyAggregates($query): void

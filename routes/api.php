@@ -18,6 +18,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\GlobalSearchController;
 
 use App\Http\Controllers\AttributeController;
@@ -42,8 +43,8 @@ use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\ErrorReportController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SubscriptionController;
-Route::post('products/import', [\App\Http\Controllers\ProductImportController::class, 'import']);
-use App\Http\Controllers\ProductImportController;
+
+
 
 Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceController::class, 'fixMissingCashBoxes'])->name('emergency.fix.cashboxes');
 
@@ -246,6 +247,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->group(function () {
             Route::get('products', 'index');
             Route::post('products', 'store');
+            Route::get('products/export', 'export');
             Route::post('products/import', [ProductImportController::class, 'import']);
             Route::get('products/{product}', 'show');
             Route::put('products/{product}', 'update');
