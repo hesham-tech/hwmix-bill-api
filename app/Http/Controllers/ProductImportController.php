@@ -75,18 +75,27 @@ class ProductImportController extends Controller
                         ]);
 
                         if (!empty($productData['opening_stock'])) {
-                            // Link to first warehouse if not specified
-                            $warehouseId = $productData['warehouse_id'] ?? DB::table('warehouses')
-                                ->where('company_id', $companyId)
+                            // Link to default or first warehouse if not specified
+                            $warehouseId = $productData['warehouse_id'] ?? \App\Models\Warehouse::where('company_id', $companyId)
+                                ->orderBy('is_default', 'desc')
                                 ->value('id');
 
-                            if ($warehouseId) {
-                                $variant->stocks()->create([
+                            if (!$warehouseId) {
+                                // Create default warehouse if none exist
+                                $newWarehouse = \App\Models\Warehouse::create([
                                     'company_id' => $companyId,
-                                    'warehouse_id' => $warehouseId,
-                                    'quantity' => $productData['opening_stock'],
+                                    'name' => 'المخزن الرئيسي',
+                                    'is_default' => true,
+                                    'created_by' => $userId,
                                 ]);
+                                $warehouseId = $newWarehouse->id;
                             }
+
+                            $variant->stocks()->create([
+                                'company_id' => $companyId,
+                                'warehouse_id' => $warehouseId,
+                                'quantity' => $productData['opening_stock'],
+                            ]);
                         }
                     }
 
