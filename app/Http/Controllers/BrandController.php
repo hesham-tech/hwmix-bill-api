@@ -124,8 +124,11 @@ class BrandController extends Controller
                 $name = $validatedData['name'];
                 $slug = \Illuminate\Support\Str::slug($name);
 
-                // 1. الخطة الذكية: البحث عن علامة تجارية عالمية موجودة بنفس الـ slug أو الاسم/المرادفات
-                $existing = Brand::whereNull('company_id')
+                // 1. الخطة الذكية: البحث عن علامة تجارية موجودة بنفس الـ slug أو الاسم/المرادفات (سواء عالمية أو تابعة للشركة)
+                $existing = Brand::where(function ($q) use ($companyId) {
+                    $q->where('company_id', $companyId)
+                        ->orWhereNull('company_id');
+                })
                     ->where(function ($q) use ($name, $slug) {
                         $q->where('slug', $slug)
                             ->orWhere('name', 'LIKE', $name)
@@ -133,9 +136,25 @@ class BrandController extends Controller
                     })->first();
 
                 if ($existing) {
-                    // إذا وجدت علامة تجارية عالمية مطابقة، نستخدمها بدلاً من إنشاء واحدة جديدة
+                    // إذا وجدت علامة تجارية مطابقة، نستخدمها بدلاً من إنشاء واحدة جديدة
                     DB::rollBack();
                     return api_success(new BrandResource($existing), 'تم العثور على علامة تجارية مطابقة موجودة بالفعل.', 200);
+                }
+
+                // 2. فحص التشابه المتقدم (Fuzzy Check): المنع إذا كان هناك اسم شديد التشابه
+                // جلب عينة للمقارنة (عالمي + خاص بالشركة)
+                $allItems = Brand::where(function ($q) use ($companyId) {
+                    $q->where('company_id', $companyId)->orWhereNull('company_id');
+                })
+                    ->select('id', 'name', 'synonyms', 'company_id')
+                    ->limit(500)
+                    ->get();
+
+                $similar = find_highly_similar_item($allItems, $name, ['name', 'synonyms'], 90);
+
+                if ($similar) {
+                    DB::rollBack();
+                    return api_success(new BrandResource($similar), 'يوجد علامة تجارية مشابهة جداً بالفعل باسم "' . $similar->name . '". يرجى استخدامها لتوحيد البيانات.', 200);
                 }
 
                 // إذا لم يوجد، نكمل عملية الإنشاء
@@ -385,5 +404,92 @@ class BrandController extends Controller
         );
 
         return api_success(BrandResource::collection($paginated), 'نتائج ذكية مقترحة.');
+    }
+
+    /**
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * تحويل ماركة خاصة بشركة إلى ماركة عالمية (Super Admin فقط)
+     */
+    public function globalize(string $id): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('brands.globalize'))) {
+                return api_forbidden('ليس لديك صلاحية تحويل العلامات التجارية لنظام عالمي.');
+            }
+
+            $brand = Brand::findOrFail($id);
+            $brand->update([
+                'company_id' => null,
+                'created_by' => null,
+            ]);
+
+            return api_success(new BrandResource($brand), 'تم تحويل العلامة التجارية إلى علامة تجارية عالمية بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * دمج ماركة في ماركة أخرى (Super Admin فقط)
+     */
+    public function merge(Request $request): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('brands.merge'))) {
+                return api_forbidden('ليس لديك صلاحية دمج العلامات التجارية.');
+            }
+
+            $request->validate([
+                'source_id' => 'required|exists:brands,id',
+                'target_id' => 'required|exists:brands,id|different:source_id',
+            ]);
+
+            $sourceId = $request->input('source_id');
+            $targetId = $request->input('target_id');
+
+            $source = Brand::findOrFail($sourceId);
+            $target = Brand::findOrFail($targetId);
+
+            DB::beginTransaction();
+            try {
+                // 1. نقل المنتجات
+                DB::table('products')->where('brand_id', $sourceId)->update(['brand_id' => $targetId]);
+
+                // 2. تحديث المرادفات في الماركة المستهدفة
+                $synonyms = $target->synonyms ?: [];
+                if (!in_array(strtolower($source->name), array_map('strtolower', $synonyms))) {
+                    $synonyms[] = $source->name;
+                }
+                if ($source->synonyms) {
+                    foreach ($source->synonyms as $s) {
+                        if (!in_array(strtolower($s), array_map('strtolower', $synonyms))) {
+                            $synonyms[] = $s;
+                        }
+                    }
+                }
+                $target->update(['synonyms' => $synonyms]);
+
+                // 3. حذف الماركة المصدر
+                $source->delete();
+
+                DB::commit();
+                return api_success(new BrandResource($target), 'تم دمج العلامات التجارية بنجاح.');
+            } catch (Throwable $e) {
+                DB::rollBack();
+                Log::error($e);
+                return api_error('حدث خطأ أثناء دمج العلامات التجارية.', [], 500);
+            }
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
     }
 }

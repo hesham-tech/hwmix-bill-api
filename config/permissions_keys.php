@@ -284,6 +284,8 @@ return [
         'delete_all' => ['key' => 'categories.delete_all', 'label' => 'حذف أي فئة'],
         'delete_children' => ['key' => 'categories.delete_children', 'label' => 'حذف الفئات التي أنشأها التابعون'],
         'delete_self' => ['key' => 'categories.delete_self', 'label' => 'حذف الفئات الخاصة بالمستخدم'],
+        'merge' => ['key' => 'categories.merge', 'label' => 'دمج الفئات'],
+        'globalize' => ['key' => 'categories.globalize', 'label' => 'تحويل الفئة لنظام عالمي'],
     ],
     // => BRANDS
     'brands' => [
@@ -303,6 +305,8 @@ return [
         'delete_all' => ['key' => 'brands.delete_all', 'label' => 'حذف أي علامة تجارية'],
         'delete_children' => ['key' => 'brands.delete_children', 'label' => 'حذف العلامات التجارية التي أنشأها التابعون'],
         'delete_self' => ['key' => 'brands.delete_self', 'label' => 'حذف العلامات التجارية الخاصة بالمستخدم'],
+        'merge' => ['key' => 'brands.merge', 'label' => 'دمج العلامات التجارية'],
+        'globalize' => ['key' => 'brands.globalize', 'label' => 'تحويل العلامة التجارية لنظام عالمي'],
     ],
     // => ATTRIBUTES
     'attributes' => [

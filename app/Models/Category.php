@@ -70,6 +70,22 @@ class Category extends Model
     }
 
     /**
+     * Get the full path of the category (e.g., Electronics > Mobiles).
+     */
+    public function getFullPath()
+    {
+        $path = [$this->name];
+        $parent = $this->parent;
+
+        while ($parent) {
+            array_unshift($path, $parent->name);
+            $parent = $parent->parent;
+        }
+
+        return implode(' > ', $path);
+    }
+
+    /**
      * Label for activity logs.
      */
     public function logLabel()

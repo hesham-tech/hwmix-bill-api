@@ -17,7 +17,8 @@ function smart_search_paginated(Collection $items, string $search, array $fields
         foreach ($fields as $fieldName) {
             $value = data_get($item, $fieldName);
 
-            if (!$value) continue;
+            if (!$value)
+                continue;
 
             $words = preg_split('/\s+/', $value);
 
@@ -50,7 +51,8 @@ function smart_search_paginated(Collection $items, string $search, array $fields
             $max = 0;
             foreach ($fields as $field) {
                 $value = data_get($item, $field);
-                if (!$value) continue;
+                if (!$value)
+                    continue;
 
                 foreach (preg_split('/\s+/', $value) as $word) {
                     similar_text($search, $word, $percent);
@@ -74,4 +76,35 @@ function smart_search_paginated(Collection $items, string $search, array $fields
         $page,
         ['path' => url()->current(), 'query' => $queryParams]
     );
+}
+
+/**
+ * البحث عن عنصر شديد التشابه في مجموعة بيانات
+ */
+function find_highly_similar_item(Collection $items, string $search, array $fields, int $threshold = 90)
+{
+    $search = strtolower(trim($search));
+
+    foreach ($items as $item) {
+        foreach ($fields as $field) {
+            $value = data_get($item, $field);
+            if (!$value)
+                continue;
+
+            // تنظيف القيمة للمقارنة
+            if (is_array($value)) {
+                foreach ($value as $val) {
+                    similar_text($search, strtolower(trim($val)), $percent);
+                    if ($percent >= $threshold)
+                        return $item;
+                }
+            } else {
+                similar_text($search, strtolower(trim($value)), $percent);
+                if ($percent >= $threshold)
+                    return $item;
+            }
+        }
+    }
+
+    return null;
 }

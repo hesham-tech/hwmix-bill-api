@@ -42,6 +42,8 @@ use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\ErrorReportController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SubscriptionController;
+Route::post('products/import', [\App\Http\Controllers\ProductImportController::class, 'import']);
+use App\Http\Controllers\ProductImportController;
 
 Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceController::class, 'fixMissingCashBoxes'])->name('emergency.fix.cashboxes');
 
@@ -244,6 +246,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->group(function () {
             Route::get('products', 'index');
             Route::post('products', 'store');
+            Route::post('products/import', [ProductImportController::class, 'import']);
             Route::get('products/{product}', 'show');
             Route::put('products/{product}', 'update');
             Route::delete('products/{product}', 'destroy');
@@ -309,6 +312,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::patch('categories/{id}/toggle', 'toggle');
             Route::get('categories/{id}/breadcrumbs', 'breadcrumbs');
             Route::delete('categories/{category}', 'destroy');
+
+            // Admin Tools
+            Route::post('categories/{id}/globalize', 'globalize');
+            Route::post('categories/merge', 'merge');
         });
     // Brand Controller
     Route::controller(BrandController::class)
@@ -319,6 +326,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::put('brands/{brand}', 'update');
             Route::patch('brands/{id}/toggle', 'toggle');
             Route::delete('brands/{brand}', 'destroy');
+
+            // Admin Tools
+            Route::post('brands/{id}/globalize', 'globalize');
+            Route::post('brands/merge', 'merge');
         });
     // InvoiceType Controller
     Route::controller(InvoiceTypeController::class)->group(function () {

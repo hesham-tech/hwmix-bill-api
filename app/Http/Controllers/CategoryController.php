@@ -130,8 +130,11 @@ class CategoryController extends Controller
                 $name = $validatedData['name'];
                 $slug = \Illuminate\Support\Str::slug($name);
 
-                // 1. الخطة الذكية: البحث عن فئة عالمية موجودة بنفس الـ slug أو الاسم/المرادفات
-                $existing = Category::whereNull('company_id')
+                // 1. الخطة الذكية: البحث عن فئة موجودة بنفس الـ slug أو الاسم/المرادفات (سواء عالمية أو تابعة للشركة)
+                $existing = Category::where(function ($q) use ($companyId) {
+                    $q->where('company_id', $companyId)
+                        ->orWhereNull('company_id');
+                })
                     ->where(function ($q) use ($name, $slug) {
                         $q->where('slug', $slug)
                             ->orWhere('name', 'LIKE', $name)
@@ -139,9 +142,25 @@ class CategoryController extends Controller
                     })->first();
 
                 if ($existing) {
-                    // إذا وجدنا فئة عالمية مطابقة، نستخدمها بدلاً من إنشاء واحدة جديدة
+                    // إذا وجدنا فئة مطابقة، نستخدمها بدلاً من إنشاء واحدة جديدة
                     DB::rollBack();
                     return api_success(new CategoryResource($existing), 'تم العثور على فئة مطابقة موجودة بالفعل.', 200);
+                }
+
+                // 2. فحص التشابه المتقدم (Fuzzy Check): المنع إذا كان هناك اسم شديد التشابه
+                // جلب عينة للمقارنة (عالمي + خاص بالشركة)
+                $allItems = Category::where(function ($q) use ($companyId) {
+                    $q->where('company_id', $companyId)->orWhereNull('company_id');
+                })
+                    ->select('id', 'name', 'synonyms', 'company_id')
+                    ->limit(500)
+                    ->get();
+
+                $similar = find_highly_similar_item($allItems, $name, ['name', 'synonyms'], 90);
+
+                if ($similar) {
+                    DB::rollBack();
+                    return api_success(new CategoryResource($similar), 'يوجد فئة مشابهة جداً بالفعل باسم "' . $similar->name . '". يرجى استخدامها لتوحيد البيانات.', 200);
                 }
 
                 // إذا لم يوجد، نكمل عملية الإنشاء
@@ -418,5 +437,96 @@ class CategoryController extends Controller
         );
 
         return api_success(CategoryResource::collection($paginated), 'نتائج ذكية مقترحة.');
+    }
+
+    /**
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * تحويل فئة خاصة بشركة إلى فئة عالمية (Super Admin فقط)
+     */
+    public function globalize(string $id): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('categories.globalize'))) {
+                return api_forbidden('ليس لديك صلاحية تحويل الفئات لنظام عالمي.');
+            }
+
+            $category = Category::findOrFail($id);
+            $category->update([
+                'company_id' => null,
+                'created_by' => null, // اختيارياً: جعل السجلات العالمية غير تابعة لمستخدم محدد
+            ]);
+
+            return api_success(new CategoryResource($category), 'تم تحويل الفئة إلى فئة عالمية بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 03. إدارة المنتجات والمخزون
+     * 
+     * دمج فئة في فئة أخرى (Super Admin فقط)
+     */
+    public function merge(Request $request): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('categories.merge'))) {
+                return api_forbidden('ليس لديك صلاحية دمج الفئات.');
+            }
+
+            $request->validate([
+                'source_id' => 'required|exists:categories,id',
+                'target_id' => 'required|exists:categories,id|different:source_id',
+            ]);
+
+            $sourceId = $request->input('source_id');
+            $targetId = $request->input('target_id');
+
+            $source = Category::findOrFail($sourceId);
+            $target = Category::findOrFail($targetId);
+
+            DB::beginTransaction();
+            try {
+                // 1. نقل المنتجات
+                DB::table('products')->where('category_id', $sourceId)->update(['category_id' => $targetId]);
+
+                // 2. نقل الفئات الفرعية
+                Category::where('parent_id', $sourceId)->update(['parent_id' => $targetId]);
+
+                // 3. تحديث المرادفات في الفئة المستهدفة لضمان عدم تكرار الاسم القديم مستقبلاً
+                $synonyms = $target->synonyms ?: [];
+                if (!in_array(strtolower($source->name), array_map('strtolower', $synonyms))) {
+                    $synonyms[] = $source->name;
+                }
+                // إضافة مرادفات المصدر أيضاً
+                if ($source->synonyms) {
+                    foreach ($source->synonyms as $s) {
+                        if (!in_array(strtolower($s), array_map('strtolower', $synonyms))) {
+                            $synonyms[] = $s;
+                        }
+                    }
+                }
+                $target->update(['synonyms' => $synonyms]);
+
+                // 4. حذف الفئة المصدر
+                $source->delete();
+
+                DB::commit();
+                return api_success(new CategoryResource($target), 'تم دمج الفئات بنجاح.');
+            } catch (Throwable $e) {
+                DB::rollBack();
+                Log::error($e);
+                return api_error('حدث خطأ أثناء دمج الفئات.', [], 500);
+            }
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
     }
 }

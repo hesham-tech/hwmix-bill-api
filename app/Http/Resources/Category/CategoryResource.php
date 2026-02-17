@@ -23,6 +23,7 @@ class CategoryResource extends JsonResource
             'children_count' => $this->children_count ?? $this->children()->count(),
             'products_count' => $this->products_count ?? $this->products()->count(),
             'synonyms' => $this->synonyms,
+            'full_path' => $this->getFullPath(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

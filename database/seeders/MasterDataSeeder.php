@@ -24,8 +24,24 @@ class MasterDataSeeder extends Seeder
                 'slug' => 'electronics',
                 'synonyms' => ['electronics', 'اجهزة الكترونية', 'إلكترونيات', 'كهربائيات'],
                 'children' => [
-                    ['name' => 'موبايلات وتابلت', 'slug' => 'mobile-phones', 'synonyms' => ['جوالات', 'موبايلات', 'هواتف ذكية', 'smartphones', 'tablets', 'تابلت', 'محمول']],
-                    ['name' => 'لابتوب وكمبيوتر', 'slug' => 'computers', 'synonyms' => ['لابتوب', 'حاسب آلي', 'كمبيوترات', 'laptops', 'pc', 'desktop']],
+                    [
+                        'name' => 'موبايلات وتابلت',
+                        'slug' => 'mobile-phones',
+                        'synonyms' => ['جوالات', 'موبايلات', 'هواتف ذكية', 'smartphones', 'tablets', 'تابلت', 'محمول'],
+                        'children' => [
+                            ['name' => 'آيفون', 'slug' => 'iphone-phones', 'synonyms' => ['iphone', 'ايفونات']],
+                            ['name' => 'اندرويد', 'slug' => 'android-phones', 'synonyms' => ['android', 'جوالات اندرويد']],
+                        ]
+                    ],
+                    [
+                        'name' => 'لابتوب وكمبيوتر',
+                        'slug' => 'computers',
+                        'synonyms' => ['لابتوب', 'حاسب آلي', 'كمبيوترات', 'laptops', 'pc', 'desktop'],
+                        'children' => [
+                            ['name' => 'لابتوبات ألعاب', 'slug' => 'gaming-laptops', 'synonyms' => ['gaming laptops', 'لابتوب جيمنج']],
+                            ['name' => 'لابتوبات أعمال', 'slug' => 'business-laptops', 'synonyms' => ['business laptops', 'لابتوب شغل']],
+                        ]
+                    ],
                     ['name' => 'تلفزيونات وشاشات', 'slug' => 'tvs', 'synonyms' => ['شاشات', 'تلفزيون', 'led', 'smart tv', 'screens']],
                     ['name' => 'أجهزة منزلية كبيرة', 'slug' => 'large-appliances', 'synonyms' => ['ثلاجات', 'غسالات', 'بوتاجازات', 'تكييفات', 'refrigerators', 'washers']],
                     ['name' => 'أجهزة منزلية صغيرة', 'slug' => 'small-appliances', 'synonyms' => ['خلاطات', 'مكاوى', 'قلايات', 'blenders', 'air fryers']],
@@ -37,7 +53,15 @@ class MasterDataSeeder extends Seeder
                 'slug' => 'automotive',
                 'synonyms' => ['سيارات', 'عربيات', 'automotive', 'cars', 'مركبات'],
                 'children' => [
-                    ['name' => 'سيارات ركوب', 'slug' => 'passenger-cars', 'synonyms' => ['ملاكي', 'عربيات ملاكي']],
+                    [
+                        'name' => 'سيارات ركوب',
+                        'slug' => 'passenger-cars',
+                        'synonyms' => ['ملاكي', 'عربيات ملاكي'],
+                        'children' => [
+                            ['name' => 'سيدان', 'slug' => 'sedan-cars', 'synonyms' => ['sedan', 'صالون']],
+                            ['name' => 'SUV', 'slug' => 'suv-cars', 'synonyms' => ['suv', 'سيارات عائلية', 'جيب']],
+                        ]
+                    ],
                     ['name' => 'قطع غيار', 'slug' => 'spare-parts', 'synonyms' => ['spare parts', 'قطع غيار سيارات']],
                     ['name' => 'كماليات سيارات', 'slug' => 'car-accessories', 'synonyms' => ['اكسسوارات سيارات', 'accessories']],
                     ['name' => 'موتوسيكلات', 'slug' => 'motorcycles', 'synonyms' => ['دراجات نارية', 'موتوسيكلات', 'scooters']],
@@ -111,7 +135,7 @@ class MasterDataSeeder extends Seeder
 
             if (isset($cat['children'])) {
                 foreach ($cat['children'] as $child) {
-                    \App\Models\Category::updateOrCreate(
+                    $childModel = \App\Models\Category::updateOrCreate(
                         ['slug' => $child['slug']],
                         [
                             'name' => $child['name'],
@@ -121,6 +145,21 @@ class MasterDataSeeder extends Seeder
                             'company_id' => null
                         ]
                     );
+
+                    if (isset($child['children'])) {
+                        foreach ($child['children'] as $grandChild) {
+                            \App\Models\Category::updateOrCreate(
+                                ['slug' => $grandChild['slug']],
+                                [
+                                    'name' => $grandChild['name'],
+                                    'synonyms' => $grandChild['synonyms'] ?? [],
+                                    'parent_id' => $childModel->id,
+                                    'active' => true,
+                                    'company_id' => null
+                                ]
+                            );
+                        }
+                    }
                 }
             }
         }
