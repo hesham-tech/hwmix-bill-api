@@ -9,11 +9,18 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\SmartSearch;
+
 class Category extends Model
 {
-    use HasFactory, Scopes, Blameable, LogsActivity, HasImages;
+    use HasFactory, Scopes, Blameable, LogsActivity, HasImages, SmartSearch;
 
-    protected $fillable = ['name', 'slug', 'description', 'active', 'parent_id', 'company_id', 'created_by'];
+    protected $fillable = ['name', 'slug', 'description', 'active', 'parent_id', 'company_id', 'created_by', 'synonyms'];
+
+    protected $casts = [
+        'synonyms' => 'array',
+        'active' => 'boolean',
+    ];
 
     public function products()
     {
@@ -45,6 +52,22 @@ class Category extends Model
         return $this->morphOne(Image::class, 'imageable');
     }
 
+
+    /**
+     * Scope to search by name or synonyms.
+     */
+    public function scopeSearchBySynonym($query, $search)
+    {
+        $search = strtolower(trim($search));
+        $normalized = $this->normalizeArabic($search);
+
+        return $query->where(function ($q) use ($search, $normalized) {
+            $q->where('name', 'LIKE', "%{$search}%")
+                ->orWhere('slug', 'LIKE', "%{$search}%")
+                ->orWhereJsonContains('synonyms', $search)
+                ->orWhereRaw("REPLACE(REPLACE(REPLACE(name, 'أ', 'ا'), 'إ', 'ا'), 'آ', 'ا') LIKE ?", ["%{$normalized}%"]);
+        });
+    }
 
     /**
      * Label for activity logs.

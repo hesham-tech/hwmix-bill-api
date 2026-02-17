@@ -25,6 +25,7 @@ class BrandResource extends JsonResource
             'image_id' => $this->image?->id,
             'products_count' => $this->products_count ?? $this->products()->count(),
             'creator_name' => $this->creator?->name,
+            'synonyms' => $this->synonyms,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

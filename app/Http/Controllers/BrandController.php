@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Services\ImageService;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -55,34 +56,24 @@ class BrandController extends Controller
             $authUser = Auth::user();
             $query = Brand::with($this->relations);
             $companyId = $authUser->company_id ?? null;
-            // تطبيق منطق الصلاحيات
+            // تطبيق منطق الصلاحيات + تضمين العلامات العالمية
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                // المسؤول العام يرى جميع الماركات (لا قيود إضافية)
-            } elseif ($authUser->hasAnyPermission([perm_key('brands.view_all'), perm_key('admin.company')])) {
-                // يرى جميع الماركات الخاصة بالشركة النشطة (بما في ذلك مديرو الشركة)
-                $query->whereCompanyIsCurrent();
-            } elseif ($authUser->hasPermissionTo(perm_key('brands.view_children'))) {
-                // يرى الماركات التي أنشأها المستخدم أو المستخدمون التابعون له، ضمن الشركة النشطة
-                $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('brands.view_self'))) {
-                // يرى الماركات التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
-                $query->whereCompanyIsCurrent()->whereCreatedByUser();
+                // المسؤول العام يرى كل شيء
             } else {
-                return api_forbidden('ليس لديك إذن لعرض العلامات التجارية.');
-            }
-
-            // تطبيق فلاتر البحث
-            if ($request->filled('search')) {
-                $search = $request->input('search');
-                $query->where(function ($q) use ($search) {
-                    $q
-                        ->where('name', 'like', "%$search%")
-                        ->orWhere('description', 'like', "%$search%");
+                // المستخدم العادي يرى ماركات شركته + العلامات العالمية (NULL company_id)
+                $query->where(function ($q) use ($authUser) {
+                    $q->whereCompanyIsCurrent()
+                        ->orWhereNull('company_id');
                 });
             }
-            if ($request->filled('name')) {
-                $query->where('name', 'like', '%' . $request->input('name') . '%');
+
+            // تطبيق فلاتر البحث باستخدام الـ scope الجديد
+            if ($request->filled('search')) {
+                $query->searchBySynonym($request->search);
             }
+
+            // حفظ نسخة للاستخدام في البحث الذكي إذا لزم الأمر
+            $queryWithoutSearch = clone $query;
 
             // الفرز والتصفح
             $sortBy = $request->input('sort_by', 'created_at');
@@ -92,11 +83,12 @@ class BrandController extends Controller
             $perPage = max(1, (int) $request->get('per_page', 12));
             $brands = $query->paginate($perPage);
 
-            if ($brands->isEmpty()) {
-                return api_success($brands, 'لم يتم العثور على علامات تجارية.');
-            } else {
-                return api_success(BrandResource::collection($brands), 'تم استرداد العلامات التجارية بنجاح.');
+            // البحث الذكي (Fallback) عند تمكين البحث وعدم وجود نتائج
+            if ($brands->isEmpty() && $request->filled('search')) {
+                return $this->handleSmartSearch($queryWithoutSearch, $request, $perPage);
             }
+
+            return api_success(BrandResource::collection($brands), 'تم استرداد العلامات التجارية بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
@@ -129,20 +121,31 @@ class BrandController extends Controller
             DB::beginTransaction();
             try {
                 $validatedData = $request->validated();
+                $name = $validatedData['name'];
+                $slug = \Illuminate\Support\Str::slug($name);
 
-                // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمستخدم.
+                // 1. الخطة الذكية: البحث عن علامة تجارية عالمية موجودة بنفس الـ slug أو الاسم/المرادفات
+                $existing = Brand::whereNull('company_id')
+                    ->where(function ($q) use ($name, $slug) {
+                        $q->where('slug', $slug)
+                            ->orWhere('name', 'LIKE', $name)
+                            ->orWhereJsonContains('synonyms', strtolower($name));
+                    })->first();
+
+                if ($existing) {
+                    // إذا وجدت علامة تجارية عالمية مطابقة، نستخدمها بدلاً من إنشاء واحدة جديدة
+                    DB::rollBack();
+                    return api_success(new BrandResource($existing), 'تم العثور على علامة تجارية مطابقة موجودة بالفعل.', 200);
+                }
+
+                // إذا لم يوجد، نكمل عملية الإنشاء
                 $brandCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
                     ? $validatedData['company_id']
                     : $companyId;
 
-                // التأكد من أن المستخدم مصرح له بإنشاء ماركة لهذه الشركة
-                if ($brandCompanyId != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    DB::rollBack();
-                    return api_forbidden('يمكنك فقط إنشاء علامات تجارية لشركتك الحالية ما لم تكن مسؤولاً عامًا.');
-                }
-
                 $validatedData['company_id'] = $brandCompanyId;
                 $validatedData['created_by'] = $authUser->id;
+                $validatedData['slug'] = $slug;
 
                 $brand = Brand::create($validatedData);
 
@@ -158,6 +161,7 @@ class BrandController extends Controller
                 return api_error('فشل التحقق من صحة البيانات أثناء تخزين العلامة التجارية.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
+                Log::error($e);
                 return api_error('حدث خطأ أثناء حفظ العلامة التجارية.', [], 500);
             }
         } catch (Throwable $e) {
@@ -359,5 +363,27 @@ class BrandController extends Controller
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
+    }
+
+    /**
+     * معالجة البحث الذكي عند عدم وجود نتائج للماركات
+     */
+    private function handleSmartSearch($query, $request, $perPage): JsonResponse
+    {
+        $search = $request->input('search');
+        // جلب عينة كبيرة للبحث عن التشابه برمجياً
+        $allBrands = $query->select('id', 'name', 'description', 'synonyms', 'company_id')->limit(300)->get();
+
+        $paginated = smart_search_paginated(
+            $allBrands,
+            $search,
+            ['name', 'synonyms'],
+            $request->query(),
+            null,
+            $perPage,
+            $request->input('page', 1)
+        );
+
+        return api_success(BrandResource::collection($paginated), 'نتائج ذكية مقترحة.');
     }
 }

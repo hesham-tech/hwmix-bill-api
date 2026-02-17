@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Services\ImageService;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class CategoryController extends Controller
@@ -61,27 +62,24 @@ class CategoryController extends Controller
             }
             $companyId = $authUser->company_id ?? null;
 
-            // تطبيق منطق الصلاحيات
+            // تطبيق منطق الصلاحيات + تضمين الفئات العالمية
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                // المسؤول العام يرى جميع الفئات (لا قيود إضافية)
-            } elseif ($authUser->hasAnyPermission([perm_key('categories.view_all'), perm_key('admin.company')])) {
-                // يرى جميع الفئات الخاصة بالشركة النشطة (بما في ذلك مديرو الشركة)
-                $query->whereCompanyIsCurrent();
-            } elseif ($authUser->hasPermissionTo(perm_key('categories.view_children'))) {
-                // يرى الفئات التي أنشأها المستخدم أو المستخدمون التابعون له، ضمن الشركة النشطة
-                $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('categories.view_self'))) {
-                // يرى الفئات التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
-                $query->whereCompanyIsCurrent()->whereCreatedByUser();
+                // المسؤول العام يرى كل شيء
             } else {
-                return api_forbidden('ليس لديك إذن لعرض الفئات.');
+                // المستخدم العادي يرى فئات شركته + الفئات العالمية (NULL company_id)
+                $query->where(function ($q) use ($authUser) {
+                    $q->whereCompanyIsCurrent()
+                        ->orWhereNull('company_id');
+                });
             }
 
-            // التحقق من وجود قيمة البحث
+            // التحقق من وجود قيمة البحث باستخدام الـ scope الجديد
             if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where('name', 'LIKE', "%$search%");
+                $query->searchBySynonym($request->search);
             }
+
+            // حفظ نسخة للاستخدام في البحث الذكي إذا لزم الأمر
+            $queryWithoutSearch = clone $query;
 
             // الفرز والتصفح
             $sortBy = $request->input('sort_by', 'created_at');
@@ -91,11 +89,12 @@ class CategoryController extends Controller
             $perPage = max(1, (int) $request->get('per_page', 12));
             $categories = $query->paginate($perPage);
 
-            if ($categories->isEmpty()) {
-                return api_success($categories, 'لم يتم العثور على فئات.');
-            } else {
-                return api_success(CategoryResource::collection($categories), 'تم استرداد الفئات بنجاح.');
+            // البحث الذكي (Fallback) عند تمكين البحث وعدم وجود نتائج
+            if ($categories->isEmpty() && $request->filled('search')) {
+                return $this->handleSmartSearch($queryWithoutSearch, $request, $perPage);
             }
+
+            return api_success(CategoryResource::collection($categories), 'تم استرداد الفئات بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
@@ -128,20 +127,32 @@ class CategoryController extends Controller
             DB::beginTransaction();
             try {
                 $validatedData = $request->validated();
+                $name = $validatedData['name'];
+                $slug = \Illuminate\Support\Str::slug($name);
 
-                // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمستخدم.
+                // 1. الخطة الذكية: البحث عن فئة عالمية موجودة بنفس الـ slug أو الاسم/المرادفات
+                $existing = Category::whereNull('company_id')
+                    ->where(function ($q) use ($name, $slug) {
+                        $q->where('slug', $slug)
+                            ->orWhere('name', 'LIKE', $name)
+                            ->orWhereJsonContains('synonyms', strtolower($name));
+                    })->first();
+
+                if ($existing) {
+                    // إذا وجدنا فئة عالمية مطابقة، نستخدمها بدلاً من إنشاء واحدة جديدة
+                    DB::rollBack();
+                    return api_success(new CategoryResource($existing), 'تم العثور على فئة مطابقة موجودة بالفعل.', 200);
+                }
+
+                // إذا لم يوجد، نكمل عملية الإنشاء
+                // إذا كان المستخدم super_admin ويحدد company_id، يظل السجل خاصاً بالشركة أو NULL إذا لم يحدد
                 $categoryCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
                     ? $validatedData['company_id']
                     : $companyId;
 
-                // التأكد من أن المستخدم مصرح له بإنشاء فئة لهذه الشركة
-                if ($categoryCompanyId != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    DB::rollBack();
-                    return api_forbidden('يمكنك فقط إنشاء فئات لشركتك الحالية ما لم تكن مسؤولاً عامًا.');
-                }
-
                 $validatedData['company_id'] = $categoryCompanyId;
                 $validatedData['created_by'] = $authUser->id;
+                $validatedData['slug'] = $slug;
 
                 $category = Category::create($validatedData);
 
@@ -149,7 +160,7 @@ class CategoryController extends Controller
                     ImageService::attachImagesToModel([$validatedData['image_id']], $category, 'logo');
                 }
 
-                $category->load($this->relations); // تحميل العلاقات بعد الإنشاء
+                $category->load($this->relations);
                 DB::commit();
                 return api_success(new CategoryResource($category), 'تم إنشاء الفئة بنجاح.', 201);
             } catch (ValidationException $e) {
@@ -157,6 +168,7 @@ class CategoryController extends Controller
                 return api_error('فشل التحقق من صحة البيانات أثناء تخزين الفئة.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
+                Log::error($e);
                 return api_error('حدث خطأ أثناء حفظ الفئة.', [], 500);
             }
         } catch (Throwable $e) {
@@ -384,5 +396,27 @@ class CategoryController extends Controller
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
+    }
+
+    /**
+     * معالجة البحث الذكي عند عدم وجود نتائج للفئات
+     */
+    private function handleSmartSearch($query, $request, $perPage): JsonResponse
+    {
+        $search = $request->input('search');
+        // جلب عينة كبيرة للبحث عن التشابه برمجياً (300 عنصر كحد أقصى)
+        $allCategories = $query->select('id', 'name', 'description', 'synonyms', 'company_id', 'parent_id')->limit(300)->get();
+
+        $paginated = smart_search_paginated(
+            $allCategories,
+            $search,
+            ['name', 'synonyms'],
+            $request->query(),
+            null,
+            $perPage,
+            $request->input('page', 1)
+        );
+
+        return api_success(CategoryResource::collection($paginated), 'نتائج ذكية مقترحة.');
     }
 }
