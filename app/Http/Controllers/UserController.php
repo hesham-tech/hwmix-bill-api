@@ -168,7 +168,7 @@ class UserController extends Controller
                     $refined = (new CompanyUser())->refineSimilarity($items, $search, $fieldsToCompare, 80);
                 }
 
-                if ($refined) {
+                if ($refined instanceof \Illuminate\Support\Collection && !$refined->isEmpty()) {
                     $data->setCollection($refined);
                 }
             }

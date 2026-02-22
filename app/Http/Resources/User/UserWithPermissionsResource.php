@@ -40,8 +40,8 @@ class UserWithPermissionsResource extends JsonResource
             'has_installments' => $this->whenLoaded('installments', fn() => $this->installments()->exists(), false),
             'cashBoxDefault' => new CashBoxResource($this->getDefaultCashBoxForCompany()),
             // الشركات التي يمكن للمستخدم الوصول إليها
-            'companies' => CompanyResource::collection($this->whenLoaded('companies', fn() => $this->getVisibleCompaniesForUser(), collect())),
-            'cashBoxes' => CashBoxResource::collection($this->whenLoaded('cashBoxes')),
+            'companies' => CompanyResource::collection($this->whenLoaded('companies', fn() => $this->getVisibleCompaniesForUser() ?? collect(), collect())),
+            'cashBoxes' => CashBoxResource::collection($this->whenLoaded('cashBoxes', null, collect())),
 
             // الصلاحيات والادوار
             'roles' => $this->getRolesWithPermissions(),

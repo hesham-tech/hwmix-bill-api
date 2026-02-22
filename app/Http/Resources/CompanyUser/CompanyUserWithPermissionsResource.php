@@ -97,13 +97,12 @@ class CompanyUserWithPermissionsResource extends JsonResource
             'companies' => $this->whenLoaded(
                 'user',
                 fn() =>
-                CompanyResource::collection($this->user->getVisibleCompaniesForUser())
+                CompanyResource::collection($this->user->getVisibleCompaniesForUser() ?? collect()),
+                collect()
             ),
 
             // الخزن التابعة للشركة
-            'cashBoxes' => $companyCashBoxes
-                ? CashBoxResource::collection($companyCashBoxes)
-                : [],
+            'cashBoxes' => CashBoxResource::collection($companyCashBoxes ?? collect()),
 
             // أوقات الإنشاء والتحديث
             'created_at' => $this->created_at?->format('Y-m-d'),

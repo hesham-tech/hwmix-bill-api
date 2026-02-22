@@ -70,7 +70,7 @@ trait SmartSearch
      */
     public function refineSimilarity($items, $searchTerm, array $fields, int $threshold = 80)
     {
-        if (empty($searchTerm) || $items->isEmpty()) {
+        if (empty($searchTerm) || !$items || $items->isEmpty()) {
             return $items;
         }
 
