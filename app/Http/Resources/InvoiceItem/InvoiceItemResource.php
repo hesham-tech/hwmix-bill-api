@@ -17,6 +17,7 @@ class InvoiceItemResource extends JsonResource
             'name' => $this->name,
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
+            'cost_price' => $this->when(auth()->user()?->hasAnyPermission([perm_key('products.view_purchase_price'), 'admin.super', 'admin.company']), $this->cost_price),
             'discount' => $this->discount,
             'profit_margin' => $this->profit_margin,
             'total' => $this->total,

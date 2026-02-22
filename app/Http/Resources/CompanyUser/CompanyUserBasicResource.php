@@ -53,7 +53,7 @@ class CompanyUserBasicResource extends JsonResource
             'cash_box_id' => $defaultCashBox instanceof \Illuminate\Http\Resources\MissingValue ? null : $defaultCashBox?->id,
             'roles' => $this->whenLoaded('user', fn() => $this->user->roles->pluck('name')),
             'direct_permissions' => $this->whenLoaded('user', fn() => $this->user->getDirectPermissions()->pluck('name')),
-            'companies' => CompanyResource::collection($this->whenLoaded('user', fn() => $this->user->companies, collect())),
+            'companies' => CompanyResource::collection($this->whenLoaded('user', fn() => $this->user->companies ?? collect(), collect())),
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
         ];

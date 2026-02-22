@@ -52,6 +52,7 @@ class ProductSeeder extends Seeder
                 'sku' => 'SKU-' . (1000 + $index),
                 'wholesale_price' => $pData['wholesale'],
                 'retail_price' => $pData['retail'],
+                'purchase_price' => $pData['cost'],
                 'profit_margin' => ($pData['retail'] - $pData['cost']) / $pData['cost'],
                 'status' => 'active',
                 'company_id' => 1,

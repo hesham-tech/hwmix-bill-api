@@ -24,9 +24,16 @@ class ProductImportController extends Controller
                 'data' => 'required|array',
             ]);
 
+            $userId = Auth::id();
+            $authUser = Auth::user();
+
+            if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('products.import'), perm_key('admin.company')])) {
+                return api_forbidden('ليس لديك صلاحية لاستيراد المنتجات.');
+            }
+
             $mapping = $request->input('mapping');
             $rows = $request->input('data');
-            $companyId = Auth::user()->company_id;
+            $companyId = $authUser->company_id;
             $userId = Auth::id();
 
             $count = 0;
@@ -57,7 +64,6 @@ class ProductImportController extends Controller
                         'company_id' => $companyId,
                         'created_by' => $userId,
                         'name' => $productData['name'],
-                        'name_en' => $productData['name_en'] ?? null,
                         'desc' => $productData['desc'] ?? null,
                         'category_id' => $productData['category_id'] ?? null,
                         'brand_id' => $productData['brand_id'] ?? null,
@@ -66,37 +72,52 @@ class ProductImportController extends Controller
                     ]);
 
                     // 4. Create Default Variant & Stock if prices/quantities are provided
-                    if (isset($productData['sale_price']) || isset($productData['cost_price']) || isset($productData['opening_stock'])) {
-                        $variant = $product->variants()->create([
-                            'company_id' => $companyId,
-                            'sku' => $productData['sku'] ?? null,
-                            'retail_price' => $productData['sale_price'] ?? 0,
-                            'purchase_price' => $productData['cost_price'] ?? 0,
-                        ]);
+                    $variantData = [
+                        'company_id' => $companyId,
+                        'sku' => $productData['sku'] ?? null,
+                    ];
 
-                        if (!empty($productData['opening_stock'])) {
-                            // Link to default or first warehouse if not specified
-                            $warehouseId = $productData['warehouse_id'] ?? \App\Models\Warehouse::where('company_id', $companyId)
-                                ->orderBy('is_default', 'desc')
-                                ->value('id');
+                    // Granular Permission Check for Retail Price
+                    if (isset($productData['retail_price']) && $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('products.create'), perm_key('products.update_all')])) {
+                        $variantData['retail_price'] = $productData['retail_price'];
+                    }
 
-                            if (!$warehouseId) {
-                                // Create default warehouse if none exist
-                                $newWarehouse = \App\Models\Warehouse::create([
-                                    'company_id' => $companyId,
-                                    'name' => 'المخزن الرئيسي',
-                                    'is_default' => true,
-                                    'created_by' => $userId,
-                                ]);
-                                $warehouseId = $newWarehouse->id;
-                            }
+                    // Granular Permission Check for Wholesale Price
+                    if (isset($productData['wholesale_price']) && $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('products.view_wholesale_price')])) {
+                        $variantData['wholesale_price'] = $productData['wholesale_price'];
+                    }
 
-                            $variant->stocks()->create([
+                    // Granular Permission Check for Purchase Price
+                    if (isset($productData['purchase_price']) && $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('products.view_purchase_price')])) {
+                        $variantData['purchase_price'] = $productData['purchase_price'];
+                    }
+
+                    $variant = $product->variants()->create($variantData);
+
+                    // Granular Permission Check for Opening Stock
+                    if (!empty($productData['opening_stock']) && $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('stocks.create'), perm_key('stocks.manual_adjustment')])) {
+                        // Link to default or first warehouse if not specified
+                        $warehouseId = $productData['warehouse_id'] ?? \App\Models\Warehouse::where('company_id', $companyId)
+                            ->orderBy('is_default', 'desc')
+                            ->value('id');
+
+                        if (!$warehouseId) {
+                            // Create default warehouse if none exist
+                            $newWarehouse = \App\Models\Warehouse::create([
                                 'company_id' => $companyId,
-                                'warehouse_id' => $warehouseId,
-                                'quantity' => $productData['opening_stock'],
+                                'name' => 'المخزن الرئيسي',
+                                'is_default' => true,
+                                'created_by' => $userId,
                             ]);
+                            $warehouseId = $newWarehouse->id;
                         }
+
+                        $variant->stocks()->create([
+                            'company_id' => $companyId,
+                            'warehouse_id' => $warehouseId,
+                            'quantity' => $productData['opening_stock'],
+                            'cost' => ($authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('products.view_purchase_price')]) ? ($productData['purchase_price'] ?? 0) : 0),
+                        ]);
                     }
 
                     $count++;

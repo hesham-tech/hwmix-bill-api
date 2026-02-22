@@ -168,7 +168,9 @@ class UserController extends Controller
                     $refined = (new CompanyUser())->refineSimilarity($items, $search, $fieldsToCompare, 80);
                 }
 
-                $data->setCollection($refined);
+                if ($refined) {
+                    $data->setCollection($refined);
+                }
             }
 
             $resourceClass = $isGlobalView ? UserResource::class : CompanyUserBasicResource::class;
@@ -949,7 +951,9 @@ class UserController extends Controller
                 ];
                 $refined = (new CompanyUser())->refineSimilarity($items, $search, $fieldsToCompare, 80);
 
-                $companyUsers->setCollection($refined);
+                if ($refined) {
+                    $companyUsers->setCollection($refined);
+                }
             }
 
             if ($companyUsers->isEmpty()) {

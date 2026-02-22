@@ -40,7 +40,7 @@ class UserResource extends JsonResource
             'created_by' => $this->created_by,
             'roles' => $this->whenLoaded('roles', fn() => $this->roles->pluck('name')),
             'direct_permissions' => $this->whenLoaded('permissions', fn() => $this->getDirectPermissions()->pluck('name')),
-            'companies' => CompanyResource::collection($this->whenLoaded('companies', fn() => $this->getVisibleCompaniesForUser(), collect())),
+            'companies' => CompanyResource::collection($this->whenLoaded('companies', fn() => $this->getVisibleCompaniesForUser() ?? collect(), collect())),
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
         ];
@@ -58,6 +58,6 @@ class UserResource extends JsonResource
         if ($this->hasPermissionTo(perm_key('admin.super'))) {
             return Company::all();
         }
-        return $this->companies;
+        return $this->companies ?? collect();
     }
 }

@@ -136,6 +136,10 @@ class ProductController extends Controller
                 return api_unauthorized('يتطلب المصادقة.');
             }
 
+            if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('products.export'), perm_key('admin.company')])) {
+                return api_forbidden('ليس لديك صلاحية لتصدير المنتجات.');
+            }
+
             $query = Product::with(['category', 'brand', 'variants']);
 
             // 1. إضافة الحسابات التجميعية (SQL Aggregates)
@@ -151,7 +155,7 @@ class ProductController extends Controller
             $this->applySorting($query, $request);
 
             return \Maatwebsite\Excel\Facades\Excel::download(
-                new \App\Exports\ProductsExport($query),
+                new \App\Exports\ProductsExport($query, $authUser),
                 'products_export_' . now()->format('Y_m_d_H_i') . '.xlsx'
             );
         } catch (Throwable $e) {
@@ -304,7 +308,7 @@ class ProductController extends Controller
             $productData = $request->toSimpleProductData();
             $product = $this->productService->createProduct($productData, $authUser, $companyId);
 
-            return api_success(new ProductResource($product->load($this->showRelations)), 'تم إنشاء المنتج بنجاح', 201);
+            return api_success(ProductResource::make($product->load($this->showRelations)), 'تم إنشاء المنتج بنجاح', 201);
         } catch (Throwable $e) {
             return api_exception($e);
         }
@@ -384,7 +388,7 @@ class ProductController extends Controller
             $productData = $request->toSimpleProductData();
             $product = $this->productService->updateProduct($product, $productData, $authUser);
 
-            return api_success(new ProductResource($product->load($this->showRelations)), 'تم تحديث المنتج بنجاح');
+            return api_success(ProductResource::make($product->load($this->showRelations)), 'تم تحديث المنتج بنجاح');
         } catch (Throwable $e) {
             return api_exception($e);
         }
