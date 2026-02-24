@@ -28,7 +28,7 @@ class CompanyUserResource extends JsonResource
          * صورة الأفاتار
          */
         $avatarUrl = $this->whenLoaded('user', function () {
-            return $this->user->images
+            return collect($this->user->images ?? [])
                 ->where('type', 'avatar')
                 ->first()?->url;
         });
@@ -41,7 +41,7 @@ class CompanyUserResource extends JsonResource
                 return null;
             }
 
-            return $this->user->cashBoxes
+            return collect($this->user->cashBoxes ?? [])
                 ->where('is_default', true)
                 ->where('company_id', $this->company_id)
                 ->first();
@@ -55,7 +55,7 @@ class CompanyUserResource extends JsonResource
                 return collect();
             }
 
-            return $this->user->cashBoxes
+            return collect($this->user->cashBoxes ?? [])
                 ->where('company_id', $this->company_id);
         });
 

@@ -18,7 +18,7 @@ class CompanyUserBasicResource extends JsonResource
     {
         // الحصول على صورة الأفاتار للمستخدم من علاقة المستخدم
         $avatarUrl = $this->whenLoaded('user', function () {
-            return $this->user->images->where('type', 'avatar')->first()?->url;
+            return collect($this->user->images ?? [])->where('type', 'avatar')->first()?->url;
         });
 
         // الحصول على الخزنة الافتراضية للشركة الحالية
@@ -27,7 +27,7 @@ class CompanyUserBasicResource extends JsonResource
                 return null;
             }
 
-            return $this->user->cashBoxes
+            return collect($this->user->cashBoxes ?? [])
                 ->where('is_default', true)
                 ->where('company_id', $this->company_id)
                 ->first();

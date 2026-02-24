@@ -168,7 +168,7 @@ class CompanyUser extends Pivot
             return collect();
         }
 
-        return $this->user->cashBoxes
+        return collect($this->user->cashBoxes ?? [])
             ->where('company_id', $this->company_id);
     }
 
@@ -182,7 +182,7 @@ class CompanyUser extends Pivot
             return null;
         }
 
-        return $this->user->cashBoxes
+        return collect($this->user->cashBoxes ?? [])
             ->where('company_id', $this->company_id)
             ->where('is_default', true)
             ->first();

@@ -141,6 +141,14 @@ class User extends Authenticatable
                 ->first();
         }
 
+        // Paranoid Mode: Extra safety if relation was eager loaded but might be null or not a collection
+        if (!$cashBox && $this->relationLoaded('cashBoxes')) {
+            $cashBox = collect($this->cashBoxes)
+                ->where('company_id', $companyId)
+                ->where('is_active', true)
+                ->first();
+        }
+
         // إذا لم يوجد، نقوم بإنشاء واحدة تلقائياً للمستخدم في هذه الشركة لضمان استمرارية العمليات المالية
         if (!$cashBox && $companyId) {
             try {
@@ -578,15 +586,17 @@ class User extends Authenticatable
     public function getBalanceAttribute()
     {
         // إذا كانت العلاقة محملة مسبقاً، نستخدم المجموعة (Collection) لتوفير الاستعلامات
-        if ($this->relationLoaded('cashBoxes')) {
+        if ($this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
             $activeCompanyId = Auth::user()->company_id ?? $this->company_id;
 
             // البحث عن الخزنة الافتراضية أولاً، ثم أي خزنة نشطة في الشركة المحددة
-            $cashBox = $this->cashBoxes
+            $cashBoxes = collect($this->cashBoxes);
+
+            $cashBox = $cashBoxes
                 ->where('company_id', $activeCompanyId)
                 ->where('is_default', true)
                 ->first()
-                ?? $this->cashBoxes
+                ?? $cashBoxes
                     ->where('company_id', $activeCompanyId)
                     ->where('is_active', true)
                     ->first();
