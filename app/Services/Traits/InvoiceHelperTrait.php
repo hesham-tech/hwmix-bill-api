@@ -110,6 +110,12 @@ trait InvoiceHelperTrait
             try {
                 $costPrice = $this->resolveItemCostPrice($invoice->invoice_type_code, $item['variant_id'] ?? null, $item['unit_price']);
 
+                $profitMargin = $item['profit_margin'] ?? null;
+                if (is_null($profitMargin) && !empty($item['variant_id'])) {
+                    $variant = ProductVariant::find($item['variant_id']);
+                    $profitMargin = $variant ? $variant->profit_margin : 0;
+                }
+
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
                     'product_id' => $item['product_id'] ?? null,
@@ -124,7 +130,7 @@ trait InvoiceHelperTrait
                     'tax_amount' => $item['tax_amount'] ?? 0,
                     'subtotal' => $item['subtotal'] ?? 0,
                     'total' => $item['total'],
-                    'profit_margin' => $item['profit_margin'] ?? ($item['variant_id'] ? ProductVariant::find($item['variant_id'])->profit_margin : 0),
+                    'profit_margin' => $profitMargin ?? 0,
                     'service_id' => $item['service_id'] ?? null,
                     'subscription_id' => $item['subscription_id'] ?? null,
                     'company_id' => $companyId,
@@ -169,6 +175,12 @@ trait InvoiceHelperTrait
                         $costPrice = $this->resolveItemCostPrice($invoice->invoice_type_code, $itemData['variant_id'] ?? null, $itemData['unit_price']);
                     }
 
+                    $profitMargin = $itemData['profit_margin'] ?? null;
+                    if (is_null($profitMargin) && !empty($itemData['variant_id'])) {
+                        $variant = ProductVariant::find($itemData['variant_id']);
+                        $profitMargin = $variant ? $variant->profit_margin : 0;
+                    }
+
                     $existingItem->update([
                         'product_id' => $itemData['product_id'] ?? null,
                         'variant_id' => $itemData['variant_id'] ?? null,
@@ -182,7 +194,7 @@ trait InvoiceHelperTrait
                         'tax_amount' => $itemData['tax_amount'] ?? 0,
                         'subtotal' => $itemData['subtotal'] ?? 0,
                         'total' => $itemData['total'],
-                        'profit_margin' => $itemData['profit_margin'] ?? ($itemData['variant_id'] ? ProductVariant::find($itemData['variant_id'])->profit_margin : 0),
+                        'profit_margin' => $profitMargin ?? 0,
                         'service_id' => $itemData['service_id'] ?? null,
                         'subscription_id' => $itemData['subscription_id'] ?? null,
                         'company_id' => $companyId,
@@ -192,6 +204,12 @@ trait InvoiceHelperTrait
                     $costPrice = $this->resolveItemCostPrice($invoice->invoice_type_code, $itemData['variant_id'] ?? null, $itemData['unit_price']);
 
                     // البند جديد: إنشاؤه
+                    $profitMargin = $itemData['profit_margin'] ?? null;
+                    if (is_null($profitMargin) && !empty($itemData['variant_id'])) {
+                        $variant = ProductVariant::find($itemData['variant_id']);
+                        $profitMargin = $variant ? $variant->profit_margin : 0;
+                    }
+
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
                         'product_id' => $itemData['product_id'] ?? null,
@@ -206,7 +224,7 @@ trait InvoiceHelperTrait
                         'tax_amount' => $itemData['tax_amount'] ?? 0,
                         'subtotal' => $itemData['subtotal'] ?? 0,
                         'total' => $itemData['total'],
-                        'profit_margin' => $itemData['profit_margin'] ?? ($itemData['variant_id'] ? ProductVariant::find($itemData['variant_id'])->profit_margin : 0),
+                        'profit_margin' => $profitMargin ?? 0,
                         'service_id' => $itemData['service_id'] ?? null,
                         'subscription_id' => $itemData['subscription_id'] ?? null,
                         'company_id' => $companyId,
@@ -320,6 +338,7 @@ trait InvoiceHelperTrait
                     ->get();
 
                 foreach ($stocks as $stock) {
+                    /** @var \App\Models\Stock $stock */
                     if ($remaining <= 0)
                         break;
 
@@ -368,6 +387,7 @@ trait InvoiceHelperTrait
                     ->first();
 
                 if ($stock) {
+                    /** @var \App\Models\Stock $stock */
                     $stock->quantity += $remaining;
                     $stock->save(); // استخدام save لتشغيل أحداث السجل
                 } else {
@@ -421,6 +441,7 @@ trait InvoiceHelperTrait
                     ->first();
 
                 if ($stock) {
+                    /** @var \App\Models\Stock $stock */
                     $stock->quantity += $item['quantity'];
                     $stock->save(); // استخدام save لتشغيل أحداث السجل
                 } else {
@@ -472,6 +493,7 @@ trait InvoiceHelperTrait
                     ->get();
 
                 foreach ($stocks as $stock) {
+                    /** @var \App\Models\Stock $stock */
                     if ($remainingToDeduct <= 0)
                         break;
 

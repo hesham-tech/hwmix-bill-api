@@ -82,8 +82,14 @@ trait SmartSearch
             foreach ($fields as $field) {
                 // Get value (supports nested relations like 'customer.full_name')
                 $value = data_get($item, $field);
-                if (!$value)
+                if (is_null($value) || is_array($value) || is_object($value)) {
                     continue;
+                }
+
+                $value = (string) $value;
+                if (empty(trim($value))) {
+                    continue;
+                }
 
                 $normalizedValue = $this->normalizeArabic($value);
 

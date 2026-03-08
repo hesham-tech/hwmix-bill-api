@@ -175,6 +175,10 @@ class UserController extends Controller
 
             $resourceClass = $isGlobalView ? UserResource::class : CompanyUserBasicResource::class;
 
+            if (is_null($data)) {
+                return api_success([], 'لا توجد بيانات متاحة.');
+            }
+
             return api_success($resourceClass::collection($data), 'تم جلب البيانات بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e);
@@ -698,6 +702,7 @@ class UserController extends Controller
             }
 
             foreach ($usersToDelete as $user) {
+                /** @var \App\Models\User $user */
                 if ($user->id === $authUser->id) {
                     continue;
                 }
