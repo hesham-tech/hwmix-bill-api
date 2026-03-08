@@ -77,8 +77,10 @@ class TransactionResource extends JsonResource
             'created_by' => $this->created_by,
             'company_id' => $this->company_id,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'transaction_date' => $this->created_at->format('Y-m-d H:i:s'), // الاسم البديل للتوافق
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
-            'customer' => new \App\Http\Resources\User\UserBasicResource($this->customer),
+            'customer' => $customerResource = new \App\Http\Resources\User\UserBasicResource($this->customer),
+            'user' => $customerResource, // الاسم البديل للتوافق مع لوحة الإدارة
             'target_customer' => new \App\Http\Resources\User\UserBasicResource($this->targetCustomer),
             // 'user' => $this->user->cashBoxes,
             // 'targetUser' => $this->targetUser->cashBoxes,

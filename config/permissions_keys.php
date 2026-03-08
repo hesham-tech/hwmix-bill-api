@@ -769,4 +769,13 @@ return [
         'view_all' => ['key' => 'orders.view_all', 'label' => 'عرض جميع الطلبات'],
         'create' => ['key' => 'orders.create', 'label' => 'إنشاء طلب جديد'],
     ],
+    'balance' => [
+        'name' => ['key' => 'balance', 'label' => 'صلاحيات إدارة الأرصدة والماليات'],
+        'deposit_any' => ['key' => 'balance.deposit_any', 'label' => 'إيداع رصيد لأي مستخدم'],
+        'withdraw_any' => ['key' => 'balance.withdraw_any', 'label' => 'سحب رصيد من أي مستخدم'],
+        'transfer_any' => ['key' => 'balance.transfer_any', 'label' => 'تحويل رصيد من أي مستخدم'],
+        'deposit' => ['key' => 'balance.deposit', 'label' => 'إجراء إيداع رصيد (شخصي)'],
+        'withdraw' => ['key' => 'balance.withdraw', 'label' => 'إجراء سحب رصيد (شخصي)'],
+        'transfer' => ['key' => 'balance.transfer', 'label' => 'تحويل رصيد (شخصي)'],
+    ],
 ];

@@ -61,18 +61,25 @@ class TransactionController extends Controller
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
             }
 
-            // صلاحية خاصة لتحويل الأموال (موازية لـ transactions.create)
-            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('transactions.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+            // صلاحية خاصة لتحويل الأموال (موازية لـ balance.transfer)
+            if (
+                !$authUser->hasPermissionTo(perm_key('admin.super')) &&
+                !$authUser->hasPermissionTo(perm_key('balance.transfer')) &&
+                !$authUser->hasPermissionTo(perm_key('admin.company'))
+            ) {
                 return api_forbidden('ليس لديك إذن لتحويل الأموال.');
             }
 
             $validated = $request->validate([
+                'from_user_id' => 'nullable|exists:users,id',
                 'target_user_id' => 'required|exists:users,id',
                 'amount' => 'required|numeric|min:0.01',
                 'from_cash_box_id' => [
-                    'required',
+                    'nullable',
                     'exists:cash_boxes,id',
                     function ($attribute, $value, $fail) use ($authUser, $companyId) {
+                        if (!$value)
+                            return;
                         $cashBox = CashBox::with(['company'])->find($value);
                         if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
                             $fail('صندوق النقد المصدر المحدد غير صالح أو غير متاح.');
@@ -80,10 +87,12 @@ class TransactionController extends Controller
                     }
                 ],
                 'to_cash_box_id' => [
-                    'required',
+                    'nullable',
                     'exists:cash_boxes,id',
                     'different:from_cash_box_id',
                     function ($attribute, $value, $fail) use ($authUser, $companyId) {
+                        if (!$value)
+                            return;
                         $toCashBox = CashBox::with(['company'])->find($value);
                         if (!$toCashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $toCashBox->company_id !== $companyId)) {
                             $fail('صندوق النقد المستهدف المحدد غير صالح أو غير متاح.');
@@ -93,31 +102,51 @@ class TransactionController extends Controller
                 'description' => 'nullable|string',
             ]);
 
-            $targetUser = User::where('id', $validated['target_user_id'])->first();
+            $sourceUserId = $validated['from_user_id'] ?? $authUser->id;
+            $sourceUser = User::findOrFail($sourceUserId);
+            $targetUser = User::findOrFail($validated['target_user_id']);
 
-            if (!$targetUser) {
-                return api_not_found('المستخدم المستهدف غير موجود.');
+            // [جديد]: إذا كان المستخدم يحاول التحويل من حساب شخص آخر، يتطلب صلاحية balance.transfer_any
+            if ($sourceUserId !== $authUser->id && !$authUser->hasPermissionTo(perm_key('balance.transfer_any')) && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                return api_forbidden('ليس لديك إذن للتحويل من حساب مستخدم آخر.');
             }
 
-            $fromCashBox = CashBox::findOrFail($validated['from_cash_box_id']);
-            $toCashBox = CashBox::findOrFail($validated['to_cash_box_id']);
+            // [تحسين]: استخدام الصناديق الافتراضية إذا لم يتم تمرير معرفات محددة
+            $fromCashBoxId = $validated['from_cash_box_id'] ?? $sourceUser->getDefaultCashBoxForCompany($companyId)?->id;
+            $toCashBoxId = $validated['to_cash_box_id'] ?? $targetUser->getDefaultCashBoxForCompany($companyId)?->id;
 
-            // التأكد من أن الصناديق تابعة لشركة المستخدم (أو أن المستخدم super_admin)
+            if (!$fromCashBoxId || !$toCashBoxId) {
+                return api_error('لا يمكن إتمام التحويل لعدم وجود صناديق نقدية افتراضية للمستخدمين.', [], 422);
+            }
+
+            $fromCashBox = CashBox::findOrFail($fromCashBoxId);
+            $toCashBox = CashBox::findOrFail($toCashBoxId);
+
+            // التحقق من أن الصناديق تابعة لشركة المستخدم (أو أن المستخدم super_admin)
             if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                if (!$fromCashBox->belongsToCurrentCompany() || !$toCashBox->belongsToCurrentCompany()) {
+                if ($fromCashBox->company_id !== $companyId || $toCashBox->company_id !== $companyId) {
                     return api_forbidden('يمكنك فقط تحويل الأموال بين الصناديق النقدية داخل شركتك.');
+                }
+
+                // [جديد]: إذا كان المستخدم يملك فقط صلاحية التحويل الشخصي، يجب أن يكون الصندوق المصدر ملكه (أو ملك العميل المختار إذا كان لديه صلاحية any)
+                if (
+                    !$authUser->hasPermissionTo(perm_key('balance.transfer_any')) &&
+                    !$authUser->hasPermissionTo(perm_key('admin.company')) &&
+                    $fromCashBox->user_id !== $authUser->id
+                ) {
+                    return api_forbidden('لا يمكنك التحويل إلا من خزنتك الشخصية.');
                 }
             }
 
             DB::beginTransaction();
             try {
-                // تنفيذ التحويل
-                $authUser->transferTo(
+                // تنفيذ التحويل باسم المستخدم المصدر وليس بالضرورة المستخدم الموثق
+                $sourceUser->transferTo(
                     $targetUser,
                     $validated['amount'],
-                    $validated['from_cash_box_id'],
-                    $validated['to_cash_box_id'],
-                    $validated['description'] ?? null
+                    $fromCashBoxId,
+                    $toCashBoxId,
+                    $validated['description'] ?? "تحويل من {$sourceUser->name} إلى {$targetUser->name}"
                 );
 
                 DB::commit();
@@ -216,31 +245,54 @@ class TransactionController extends Controller
             }
 
             // صلاحية الإيداع (تندرج تحت إنشاء معاملة)
-            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('transactions.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+            if (
+                !$authUser->hasPermissionTo(perm_key('admin.super')) &&
+                !$authUser->hasPermissionTo(perm_key('balance.deposit')) &&
+                !$authUser->hasPermissionTo(perm_key('admin.company'))
+            ) {
                 return api_forbidden('ليس لديك إذن لإجراء إيداع.');
             }
 
             $validated = $request->validate([
+                'user_id' => 'nullable|exists:users,id',
                 'amount' => 'required|numeric|min:0.01',
                 'cash_box_id' => [
-                    'required',
+                    'nullable',
                     'exists:cash_boxes,id',
-                    function ($attribute, $value, $fail) use ($authUser, $companyId) {
-                        $cashBox = CashBox::with(['company'])->find($value);
-                        if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
-                            $fail('صندوق النقد المحدد غير صالح أو غير متاح.');
-                        }
-                    }
                 ],
                 'description' => 'nullable|string',
             ]);
 
+            $targetUserId = $validated['user_id'] ?? $authUser->id;
+            $targetUser = User::findOrFail($targetUserId);
+
+            // التحقق من صلاحية الإيداع لمستخدم آخر
+            if ($targetUserId != $authUser->id && !$authUser->hasPermissionTo(perm_key('balance.deposit_any')) && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                return api_forbidden('ليس لديك إذن للإيداع في حساب مستخدم آخر.');
+            }
+
+            // إذا لم يتم تحديد خزنة، نستخدم الخزنة الافتراضية للمستخدم المستهدف في الشركة الحالية
+            $cashBoxId = $validated['cash_box_id'] ?? null;
+            if (!$cashBoxId) {
+                $cashBox = $targetUser->getDefaultCashBoxForCompany($companyId);
+                if (!$cashBox) {
+                    return api_error('المستخدم المستهدف ليس له خزنة في هذه الشركة.', [], 422);
+                }
+                $cashBoxId = $cashBox->id;
+            } else {
+                // التأكد من أن الخزنة تخص المستخدم المستهدف وأنها تابعة للشركة
+                $cashBox = CashBox::where('id', $cashBoxId)->where('user_id', $targetUserId)->where('company_id', $companyId)->first();
+                if (!$cashBox) {
+                    return api_error('صندوق النقد المحدد غير صالح أو لا يتبع للمستخدم المستهدف في هذه الشركة.', [], 422);
+                }
+            }
+
             DB::beginTransaction();
             try {
-                $authUser->deposit(
+                $targetUser->deposit(
                     $validated['amount'],
-                    $validated['cash_box_id'],
-                    $validated['description'] ?? null
+                    $cashBoxId,
+                    $validated['description'] ?? 'إيداع نقدي خارجي'
                 );
 
                 DB::commit();
@@ -277,38 +329,60 @@ class TransactionController extends Controller
             }
 
             // صلاحية السحب (تندرج تحت إنشاء معاملة)
-            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('transactions.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+            if (
+                !$authUser->hasPermissionTo(perm_key('admin.super')) &&
+                !$authUser->hasPermissionTo(perm_key('balance.withdraw')) &&
+                !$authUser->hasPermissionTo(perm_key('admin.company'))
+            ) {
                 return api_forbidden('ليس لديك إذن لإجراء سحب.');
             }
 
             $validated = $request->validate([
+                'user_id' => 'nullable|exists:users,id',
                 'amount' => 'required|numeric|min:0.01',
                 'cash_box_id' => [
-                    'required',
+                    'nullable',
                     'exists:cash_boxes,id',
-                    function ($attribute, $value, $fail) use ($authUser, $companyId) {
-                        $cashBox = CashBox::with(['company'])->find($value);
-                        if (!$cashBox || (!$authUser->hasPermissionTo(perm_key('admin.super')) && $cashBox->company_id !== $companyId)) {
-                            $fail('صندوق النقد المحدد غير صالح أو غير متاح.');
-                        }
-                    }
                 ],
                 'description' => 'nullable|string',
             ]);
 
+            $targetUserId = $validated['user_id'] ?? $authUser->id;
+            $targetUser = User::findOrFail($targetUserId);
+
+            // التحقق من صلاحية السحب من مستخدم آخر
+            if ($targetUserId != $authUser->id && !$authUser->hasPermissionTo(perm_key('balance.withdraw_any')) && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                return api_forbidden('ليس لديك إذن للسحب من حساب مستخدم آخر.');
+            }
+
+            // إذا لم يتم تحديد خزنة، نستخدم الخزنة الافتراضية
+            $cashBoxId = $validated['cash_box_id'] ?? null;
+            if (!$cashBoxId) {
+                $cashBox = $targetUser->getDefaultCashBoxForCompany($companyId);
+                if (!$cashBox) {
+                    return api_error('المستخدم المستهدف ليس له خزنة في هذه الشركة.', [], 422);
+                }
+                $cashBoxId = $cashBox->id;
+            } else {
+                $cashBox = CashBox::where('id', $cashBoxId)->where('user_id', $targetUserId)->where('company_id', $companyId)->first();
+                if (!$cashBox) {
+                    return api_error('صندوق النقد المحدد غير صالح أو لا يتبع للمستخدم المستهدف في هذه الشركة.', [], 422);
+                }
+            }
+
             DB::beginTransaction();
             try {
                 // تحقق من الرصيد قبل السحب
-                $currentBalance = $authUser->balanceBox($validated['cash_box_id']);
+                $currentBalance = $targetUser->balanceBox($cashBoxId);
                 if ($currentBalance < $validated['amount']) {
                     DB::rollBack();
                     return api_error('الرصيد غير كافٍ في صندوق النقد المحدد.', [], 422);
                 }
 
-                $authUser->withdraw(
+                $targetUser->withdraw(
                     $validated['amount'],
-                    $validated['cash_box_id'],
-                    $validated['description'] ?? null
+                    $cashBoxId,
+                    $validated['description'] ?? 'سحب نقدي خارجي'
                 );
 
                 DB::commit();
@@ -390,7 +464,18 @@ class TransactionController extends Controller
             // تحديد الترتيب
             $sortField = $request->get('sort_by', 'created_at');
             $sortOrder = $request->get('sort_order', 'desc');
-            $query->orderBy($sortField, $sortOrder);
+
+            // الخريطة للأعمدة غير المتطابقة
+            $allowedSortFields = [
+                'id' => 'id',
+                'type' => 'type',
+                'amount' => 'amount',
+                'created_at' => 'created_at',
+                'transaction_date' => 'created_at', // خريطة لـ created_at
+            ];
+
+            $finalSortField = $allowedSortFields[$sortField] ?? 'created_at';
+            $query->orderBy($finalSortField, $sortOrder);
 
             // تقسيم النتائج إلى صفحات
             $perPage = max(1, $request->get('per_page', 10));
