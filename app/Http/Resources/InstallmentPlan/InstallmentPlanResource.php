@@ -72,7 +72,7 @@ class InstallmentPlanResource extends JsonResource
                     return $this->invoice->items;
                 })
             ),
-            'payments' => InstallmentPaymentResource::collection($this->whenLoaded('payments')),
+            'payments' => $this->whenLoaded('payments', fn() => InstallmentPaymentResource::collection($this->payments)),
             'installments' => InstallmentResource::collection(
                 $installments->sortBy('due_date')
             ),

@@ -49,8 +49,8 @@ class ProductResource extends JsonResource
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'brand' => new BrandResource($this->whenLoaded('brand')),
             'category' => new CategoryResource($this->whenLoaded('category')),
-            'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
-            'images' => ImageResource::collection($this->whenLoaded('images')), // Polymorphic images
+            'variants' => $this->whenLoaded('variants', fn() => ProductVariantResource::collection($this->variants)),
+            'images' => $this->whenLoaded('images', fn() => ImageResource::collection($this->images)), // Polymorphic images
             'primary_image_url' => $this->primary_image_url,
             'tags' => $this->tags ?? [],
             'published_at' => $this->whenNotNull($this->published_at ? $this->published_at->format('Y-m-d H:i:s') : null),

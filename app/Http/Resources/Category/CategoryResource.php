@@ -19,7 +19,7 @@ class CategoryResource extends JsonResource
             'image_id' => $this->image?->id,
             'parent_id' => $this->parent_id,
             'parent' => new CategoryResource($this->whenLoaded('parent')),
-            'children' => CategoryResource::collection($this->whenLoaded('children')),
+            'children' => $this->whenLoaded('children', fn() => CategoryResource::collection($this->children)),
             'children_count' => $this->children_count ?? $this->children()->count(),
             'products_count' => $this->products_count ?? $this->products()->count(),
             'synonyms' => $this->synonyms,

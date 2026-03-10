@@ -28,7 +28,7 @@ class WarehouseResource extends JsonResource
             'description' => $this->description, // تم إضافة حقل الوصف
             'company' => new CompanyResource($this->whenLoaded('company')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
-            'stocks' => StockResource::collection($this->whenLoaded('stocks')),
+            'stocks' => $this->whenLoaded('stocks', fn() => StockResource::collection($this->stocks)),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

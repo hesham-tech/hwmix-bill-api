@@ -60,10 +60,10 @@ class ProductVariantResource extends JsonResource
             ]),
 
             // ✅ الخصائص (attributes) + القيم المرتبطة
-            'attributes' => ProductVariantAttributeResource::collection($this->whenLoaded('attributes')),
+            'attributes' => $this->whenLoaded('attributes', fn() => ProductVariantAttributeResource::collection($this->attributes)),
 
             // ✅ الخزن
-            'stocks' => StockResource::collection($this->whenLoaded('stocks')),
+            'stocks' => $this->whenLoaded('stocks', fn() => StockResource::collection($this->stocks)),
 
             // ✅ منشئ المتغير
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
@@ -72,7 +72,7 @@ class ProductVariantResource extends JsonResource
             'company' => new CompanyResource($this->whenLoaded('company')),
 
             // ✅ صور المتغير
-            'images' => ImageResource::collection($this->whenLoaded('images')),
+            'images' => $this->whenLoaded('images', fn() => ImageResource::collection($this->images)),
         ];
     }
 }

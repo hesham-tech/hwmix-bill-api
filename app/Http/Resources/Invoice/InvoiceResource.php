@@ -50,7 +50,7 @@ class InvoiceResource extends JsonResource
             // العلاقات لما تكون محملة فقط
             'customer' => new UserBasicResource($this->whenLoaded('customer')),
             'invoice_type' => new InvoiceTypeResource($this->whenLoaded('invoiceType')),
-            'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
+            'items' => $this->whenLoaded('items', fn() => InvoiceItemResource::collection($this->items)),
             'payments' => $this->whenLoaded('payments', function () {
                 return \App\Http\Resources\Invoice\InvoicePaymentResource::collection($this->payments);
             }),
