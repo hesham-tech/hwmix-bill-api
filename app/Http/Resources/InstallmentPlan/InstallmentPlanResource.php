@@ -74,7 +74,37 @@ class InstallmentPlanResource extends JsonResource
             ),
             'payments' => $this->whenLoaded('payments', fn() => InstallmentPaymentResource::collection($this->payments)),
             'installments' => InstallmentResource::collection(
-                $installments->sortBy('due_date')
+                $installments->sort(function ($a, $b) {
+                    $priority = function ($inst) {
+                        $now = now()->endOfDay();
+                        $status = $inst->status;
+                        $pendingStatuses = ['pending', 'في الانتظار', 'لم يتم الدفع', 'partially_paid', 'مدفوع جزئياً', 'overdue', 'متأخر'];
+                        $paidStatuses = ['paid', 'تم الدفع', 'مدفوع'];
+                        $cancelStatuses = ['canceled', 'cancelled', 'ملغي', 'ملغى'];
+
+                        if ((empty($status) || in_array($status, $pendingStatuses)) && $inst->due_date <= $now) {
+                            return 1;
+                        }
+                        if ((empty($status) || in_array($status, $pendingStatuses)) && $inst->due_date > $now) {
+                            return 2;
+                        }
+                        if (in_array($status, $paidStatuses)) {
+                            return 3;
+                        }
+                        if (in_array($status, $cancelStatuses)) {
+                            return 4;
+                        }
+                        return 5;
+                    };
+
+                    $pa = $priority($a);
+                    $pb = $priority($b);
+
+                    if ($pa !== $pb) {
+                        return $pa - $pb;
+                    }
+                    return strcmp($a->due_date->toDateTimeString(), $b->due_date->toDateTimeString());
+                })
             ),
         ];
     }

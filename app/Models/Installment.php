@@ -129,14 +129,16 @@ class Installment extends Model
      */
     public function scopeOrderByPriority($query)
     {
-        $now = now()->toDateTimeString();
+        $now = now()->endOfDay()->toDateTimeString();
 
         return $query->orderByRaw("
             CASE 
-                WHEN status NOT IN ('paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي') AND due_date <= '{$now}' THEN 1
-                WHEN status NOT IN ('paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي') AND due_date > '{$now}' THEN 2
-                WHEN status IN ('paid', 'تم الدفع') THEN 3
-                WHEN status IN ('canceled', 'cancelled', 'ملغي') THEN 4
+                WHEN (status IS NULL OR status IN ('pending', 'في الانتظار', 'لم يتم الدفع', 'partially_paid', 'مدفوع جزئياً', 'overdue', 'متأخر')) 
+                     AND due_date <= '{$now}' THEN 1
+                WHEN (status IS NULL OR status IN ('pending', 'في الانتظار', 'لم يتم الدفع', 'partially_paid', 'مدفوع جزئياً', 'overdue', 'متأخر')) 
+                     AND due_date > '{$now}' THEN 2
+                WHEN status IN ('paid', 'تم الدفع', 'مدفوع') THEN 3
+                WHEN status IN ('canceled', 'cancelled', 'ملغي', 'ملغى') THEN 4
                 ELSE 5
             END ASC
         ")->orderBy('due_date', 'asc');

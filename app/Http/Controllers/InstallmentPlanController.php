@@ -228,7 +228,16 @@ class InstallmentPlanController extends Controller
             }
 
             // Load relations for the already resolved InstallmentPlan model
-            $installmentPlan->load($this->relations);
+            // Load relations with priority ordering for installments
+            $installmentPlan->load([
+                'customer',
+                'creator',
+                'invoice.items.variant',
+                'installments' => function ($query) {
+                    $query->orderByPriority();
+                },
+                'company',
+            ]);
 
             // التحقق من صلاحيات العرض
             $canView = false;
