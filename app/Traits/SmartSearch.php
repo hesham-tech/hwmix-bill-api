@@ -33,7 +33,10 @@ trait SmartSearch
             // Search in related columns
             foreach ($relationColumns as $relation => $cols) {
                 $q->orWhereHas($relation, function ($relQuery) use ($searchTerm, $normalized, $cols) {
-                    $relQuery->where(function ($subQ) use ($searchTerm, $normalized, $cols) {
+                    // ✅ Bypass global scopes (like company filter) on the related model
+                    // This is safe because the parent model is already filtered by company,
+                    // and we just want to search its relations even if they are cross-company.
+                    $relQuery->withoutGlobalScopes()->where(function ($subQ) use ($searchTerm, $normalized, $cols) {
                         foreach ($cols as $col) {
                             $subQ->orWhere($col, 'LIKE', "%{$searchTerm}%")
                                 ->orWhereRaw("REPLACE(REPLACE(REPLACE({$col}, 'أ', 'ا'), 'إ', 'ا'), 'آ', 'ا') LIKE ?", ["%{$normalized}%"]);

@@ -580,6 +580,34 @@ class User extends Authenticatable
     }
 
     /**
+     * Boot the trait to apply global scope.
+     * تم تعديل المنطق ليشمل المستخدمين المرتبطين بالشركة عبر جدول company_user
+     */
+    public static function bootFilterableByCompany()
+    {
+        static::addGlobalScope('company_filter', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            $user = Auth::user();
+
+            if ($user && !$user->hasPermissionTo(perm_key('admin.super'))) {
+                $activeCompanyId = $user->company_id;
+                if ($activeCompanyId) {
+                    $builder->where(function ($query) use ($activeCompanyId) {
+                        // 1. المستخدم ينتمي مباشرة لهذه الشركة
+                        $query->where('company_id', $activeCompanyId)
+                            // 2. أو المستخدم مرتبط بهذه الشركة عبر الجدول الوسيط
+                            ->orWhereExists(function ($subQuery) use ($activeCompanyId) {
+                                $subQuery->select(\DB::raw(1))
+                                    ->from('company_user')
+                                    ->whereColumn('company_user.user_id', 'users.id')
+                                    ->where('company_user.company_id', $activeCompanyId);
+                            });
+                    });
+                }
+            }
+        });
+    }
+
+    /**
      * الحصول على الرصيد (المصدر الوحيد: الخزنة)
      * تم تحسينه ليدعم التحميل المسبق (Eager Loading) وتجنب N+1 queries
      */

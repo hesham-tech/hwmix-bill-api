@@ -72,9 +72,14 @@ class ErrorReportController extends Controller
                 }
             }
 
+            // محاولة جلب المستخدم الحالي بشكل اختياري عبر Sanctum
+            $user = Auth::guard('sanctum')->user();
+            $userId = $user ? $user->id : null;
+            $companyId = $user ? $user->company_id : null;
+
             $report = ErrorReport::create([
-                'user_id' => Auth::id(),
-                'company_id' => Auth::user()?->company_id,
+                'user_id' => $userId,
+                'company_id' => $companyId,
                 'type' => $validated['type'] ?? 'error',
                 'message' => $validated['message'],
                 'stack_trace' => $validated['stack_trace'] ?? null,
@@ -92,7 +97,6 @@ class ErrorReportController extends Controller
             try {
                 $logPath = base_path('error.log');
                 $timestamp = date('Y-m-d H:i:s');
-                $user = Auth::user();
                 $userName = $user ? ($user->name ?? $user->username ?? 'User') : 'Guest';
 
                 $logMessage = "[$timestamp] " . strtoupper($report->type) . ": " . $report->message . PHP_EOL;
