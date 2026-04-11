@@ -27,7 +27,7 @@ class UserRequest extends FormRequest
             'email' => "nullable|email",
             'full_name' => 'required|string|max:255',
             'nickname' => 'required|string|max:255',
-            'username' => "nullable|string|max:255",
+            'username' => 'nullable|string|max:255|unique:users,username',
             'position' => 'nullable|string|max:255',
             'settings' => 'nullable|json',
             'last_login_at' => 'nullable|date',

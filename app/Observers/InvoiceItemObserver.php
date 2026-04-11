@@ -51,11 +51,11 @@ class InvoiceItemObserver
         $context = $invoiceItem->invoice?->invoiceType?->context;
         if (in_array($context, ['sales', 'services'])) {
             if ($invoiceItem->variant_id) {
-                $invoiceItem->variant()->decrement('sales_count');
+                $invoiceItem->variant()->where('sales_count', '>', 0)->decrement('sales_count');
             }
 
             if ($invoiceItem->product_id) {
-                $invoiceItem->product()->decrement('sales_count');
+                $invoiceItem->product()->where('sales_count', '>', 0)->decrement('sales_count');
             }
         }
     }
