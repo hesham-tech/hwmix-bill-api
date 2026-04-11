@@ -105,13 +105,13 @@ class InvoicePaymentHandler
         if ($supplier && $remainingAmount != 0) {
             if ($remainingAmount > 0) {
                 // دين للمورد على الشركة
-                $result = $supplier->deposit($remainingAmount, $supplierCashBoxId);
-                $logMsg = "InvoicePaymentHandler: إضافة دين {$remainingAmount} لرصيد المورد";
+                $result = $supplier->withdraw($remainingAmount, $supplierCashBoxId);
+                $logMsg = "InvoicePaymentHandler: خصم دين {$remainingAmount} من رصيد المورد ليصبح سالباً";
             } else {
                 // دفع زيادة → يُخصم من رصيد المورد (يصبح مديناً للشركة)
                 $overAmount = abs($remainingAmount);
-                $result = $supplier->withdraw($overAmount, $supplierCashBoxId);
-                $logMsg = "InvoicePaymentHandler: خصم {$overAmount} من رصيد المورد (دفع زيادة)";
+                $result = $supplier->deposit($overAmount, $supplierCashBoxId);
+                $logMsg = "InvoicePaymentHandler: إضافة {$overAmount} إلى رصيد المورد (دفع زيادة)";
             }
 
             if ($result !== true) {
@@ -204,9 +204,9 @@ class InvoicePaymentHandler
             $supplier = User::find($invoice->user_id);
             if ($supplier) {
                 if ($invoice->remaining_amount > 0) {
-                    $result = $supplier->withdraw($invoice->remaining_amount, $supplierCashBoxId);
+                    $result = $supplier->deposit($invoice->remaining_amount, $supplierCashBoxId);
                 } else {
-                    $result = $supplier->deposit(abs($invoice->remaining_amount), $supplierCashBoxId);
+                    $result = $supplier->withdraw(abs($invoice->remaining_amount), $supplierCashBoxId);
                 }
 
                 if ($result !== true) {

@@ -161,16 +161,16 @@ class PurchaseInvoiceService implements DocumentServiceInterface
                 $supplier = User::find($invoice->user_id);
                 if ($supplier) {
                     if ($remainingAmountDifference > 0) {
-                        // زاد المبلغ المتبقي (زاد دين الشركة للمورد)، رصيد المورد يزيد
-                        $depositResult = $supplier->deposit(abs($remainingAmountDifference), $userCashBoxId);
-                        if ($depositResult !== true) {
-                            throw new \Exception('فشل إيداع مبلغ متبقي إضافي في رصيد المورد: ' . json_encode($depositResult));
-                        }
-                    } elseif ($remainingAmountDifference < 0) {
-                        // نقص المبلغ المتبقي (نقص دين الشركة للمورد)، رصيد المورد يقل
+                        // زاد المبلغ المتبقي (زاد دين الشركة للمورد)، رصيد المورد يقل
                         $withdrawResult = $supplier->withdraw(abs($remainingAmountDifference), $userCashBoxId);
                         if ($withdrawResult !== true) {
-                            throw new \Exception('فشل سحب مبلغ سداد دين/فائض من رصيد المورد: ' . json_encode($withdrawResult));
+                            throw new \Exception('فشل سحب مبلغ متبقي إضافي من رصيد المورد: ' . json_encode($withdrawResult));
+                        }
+                    } elseif ($remainingAmountDifference < 0) {
+                        // نقص المبلغ المتبقي (نقص دين الشركة للمورد)، رصيد المورد يزيد
+                        $depositResult = $supplier->deposit(abs($remainingAmountDifference), $userCashBoxId);
+                        if ($depositResult !== true) {
+                            throw new \Exception('فشل إيداع مبلغ سداد دين/فائض في رصيد المورد: ' . json_encode($depositResult));
                         }
                     }
                 } else {
@@ -251,16 +251,16 @@ class PurchaseInvoiceService implements DocumentServiceInterface
                 $supplier = User::find($invoice->user_id);
                 if ($supplier) {
                     if ($invoice->remaining_amount > 0) {
-                        // الشركة كانت مدينة للمورد، الآن يتم إلغاء الدين (سحب من رصيد المورد)
-                        $withdrawResult = $supplier->withdraw($invoice->remaining_amount, $userCashBoxId);
-                        if ($withdrawResult !== true) {
-                            Log::error('PurchaseInvoiceService: فشل سحب مبلغ متبقي من رصيد المورد (إلغاء).', ['result' => $withdrawResult]);
+                        // الشركة كانت مدينة للمورد، الآن يتم إلغاء الدين (إيداع في رصيد المورد)
+                        $depositResult = $supplier->deposit($invoice->remaining_amount, $userCashBoxId);
+                        if ($depositResult !== true) {
+                            Log::error('PurchaseInvoiceService: فشل إيداع مبلغ متبقي في رصيد المورد (إلغاء).', ['result' => $depositResult]);
                         }
                     } elseif ($invoice->remaining_amount < 0) {
-                        // المورد كان مديناً للشركة، الآن يتم إلغاء الدين (إيداع في رصيد المورد)
-                        $depositResult = $supplier->deposit(abs($invoice->remaining_amount), $userCashBoxId);
-                        if ($depositResult !== true) {
-                            Log::error('PurchaseInvoiceService: فشل إيداع مبلغ دين المورد الملغى في رصيد المورد (إلغاء).', ['result' => $depositResult]);
+                        // المورد كان مديناً للشركة، الآن يتم إلغاء الدين (سحب من رصيد المورد)
+                        $withdrawResult = $supplier->withdraw(abs($invoice->remaining_amount), $userCashBoxId);
+                        if ($withdrawResult !== true) {
+                            Log::error('PurchaseInvoiceService: فشل سحب مبلغ دين المورد الملغى من رصيد المورد (إلغاء).', ['result' => $withdrawResult]);
                         }
                     }
                 } else {
