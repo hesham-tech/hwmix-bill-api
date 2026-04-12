@@ -15,6 +15,7 @@ use App\Http\Resources\User\UserResource;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Http\Resources\CompanyUser\CompanyUserResource;
 use App\Http\Resources\CompanyUser\CompanyUserBasicResource;
+use App\Http\Resources\User\UserWithPermissionsResource;
 use App\Models\CashBoxType;
 
 
@@ -455,6 +456,8 @@ class UserController extends Controller
             return api_unauthorized('يجب تسجيل الدخول.');
         }
 
+        // التعرف على البراميترات بأكثر من طريقة لضمان الدقة
+        $withPermissions = $request->has('permissions') && ($request->input('permissions') == 1 || $request->input('permissions') == 'true');
         $syncCompanyId = $request->input('sync_company_id');
         $activeCompanyId = $syncCompanyId ?? $authUser->company_id;
         $isSuperAdmin = $authUser->can(perm_key('admin.super'));
@@ -464,13 +467,32 @@ class UserController extends Controller
             setPermissionsTeamId($activeCompanyId);
         }
 
-        // 1. [قاعدة الرفاق]: إذا كان المستخدم يطلب بياناته الشخصية (Self) أو كان سوبر أدمن
-        if ($authUser->id === $user->id || $isSuperAdmin) {
-            $user->load($this->relations);
-            return api_success(new UserResource($user), 'تم جلب بيانات ملفك الشخصي بنجاح.');
+        // 1. التحقق من صلاحية العرض العامة
+        $canViewAll = $authUser->hasPermissionTo(perm_key('users.view_all'));
+        $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
+        $canViewChildren = $authUser->hasPermissionTo(perm_key('users.view_children'));
+        $isUpdatingSelf = ($authUser->id === $user->id);
+
+        $hasAccess = $isSuperAdmin || $isUpdatingSelf || $isCompanyAdmin || $canViewAll || ($canViewChildren && in_array($user->id, $authUser->getDescendantUserIds()));
+
+        if (!$hasAccess) {
+            return api_forbidden('ليس لديك صلاحية لعرض هذا المستخدم.');
         }
 
-        // 2. [قاعدة الأعضاء]: إذا كان يطلب بيانات مستخدم آخر داخل سياق شركة
+        // 2. إذا كان المطلوب هو ريسورس الصلاحيات التفصيلي (الأولوية القصوى)
+        if ($withPermissions) {
+            // تحميل العلاقات الأساسية + الصلاحيات لضمان عمل الفلترة بشكل صحيح في الواجهة الأمامية
+            $user->load(array_merge($this->relations, ['roles.permissions', 'permissions']));
+            return api_success(new UserWithPermissionsResource($user), 'تم جلب بيانات الصلاحيات بنجاح.');
+        }
+
+        // 3. المسار التقليدي (الملف الشخصي أو سوبر أدمن بدون صلاحيات تفصيلية)
+        if ($isUpdatingSelf || $isSuperAdmin) {
+            $user->load($this->relations);
+            return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح.');
+        }
+
+        // 4. عرض العضو داخل سياق شركة
         if ($activeCompanyId) {
             $companyUser = CompanyUser::where('user_id', $user->id)
                 ->where('company_id', $activeCompanyId)
@@ -483,27 +505,15 @@ class UserController extends Controller
                 ])
                 ->first();
 
-            if (!$companyUser) {
-                // إذا كان سوبر أدمن، نسمح له بالرؤية العالمية كحالة احتياطية
-                if ($isSuperAdmin || $authUser->can(perm_key('users.view_all'))) {
-                    $user->load($this->relations);
-                    return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح (عرض عالمي).');
-                }
-                return api_not_found('المستخدم غير مرتبط بالشركة النشطة.');
-            }
-
-            // التحقق من الصلاحيات داخل الشركة
-            $canViewAll = $authUser->hasPermissionTo(perm_key('users.view_all'));
-            $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
-            $canViewChildren = $authUser->hasPermissionTo(perm_key('users.view_children'));
-
-            if ($isCompanyAdmin || $canViewAll || ($canViewChildren && in_array($user->id, $authUser->getDescendantUserIds()))) {
+            if ($companyUser) {
                 $resourceClass = $useBasicResource ? CompanyUserBasicResource::class : CompanyUserResource::class;
                 return api_success(new $resourceClass($companyUser), 'تم جلب بيانات العضو بنجاح.');
             }
         }
 
-        return api_forbidden('ليس لديك صلاحية لعرض هذا المستخدم.');
+        // Fallback للرؤية العالمية للسوبر أدمن
+        $user->load($this->relations);
+        return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح (عرض عالمي).');
     }
     /**
      * @group 07. الإدارة وسجلات النظام

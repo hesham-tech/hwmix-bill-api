@@ -44,6 +44,9 @@ class ProductResource extends JsonResource
             'total_available_quantity' => (float) ($this->total_available_quantity ?? 0),
             'min_price' => (float) ($this->variants_min_retail_price ?? 0),
             'max_price' => (float) ($this->variants_max_retail_price ?? 0),
+            'price_range' => $this->relationLoaded('variants') 
+                ? (float) ($this->variants->sortByDesc('id')->first()?->retail_price ?? 0)
+                : (float) (\App\Models\ProductVariant::where('product_id', $this->id)->latest('id')->value('retail_price') ?? 0),
             'company' => new CompanyResource($this->whenLoaded('company')),
             'installment_plan' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
