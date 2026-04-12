@@ -27,6 +27,7 @@ class PDFService
             'company' => $invoice->company,
             'customer' => $invoice->customer,
             'items' => $invoice->items,
+            'financials' => $this->prepareFinancialsForInvoice($invoice),
         ]);
 
         // Set paper size and orientation
@@ -51,6 +52,7 @@ class PDFService
             'company' => $invoice->company,
             'customer' => $invoice->customer,
             'items' => $invoice->items,
+            'financials' => $this->prepareFinancialsForInvoice($invoice),
         ]);
 
         return $pdf->output();
@@ -71,11 +73,50 @@ class PDFService
             'invoice' => $payment->invoice,
             'company' => $payment->invoice->company,
             'customer' => $payment->invoice->customer,
+            'financials' => $this->prepareFinancialsForPayment($payment),
         ]);
 
         $pdf->setPaper('a4', 'portrait');
 
         return $pdf->download("receipt_{$payment->id}.pdf");
+    }
+
+    /**
+     * Prepare formal financial data for Invoice PDF
+     */
+    private function prepareFinancialsForInvoice(Invoice $invoice): array
+    {
+        return [
+            'gross_amount' => number_format($invoice->gross_amount, 2),
+            'total_discount' => number_format($invoice->total_discount, 2),
+            'total_tax' => number_format($invoice->total_tax, 2),
+            'net_amount' => number_format($invoice->net_amount, 2),
+            'paid_amount' => number_format($invoice->paid_amount, 2),
+            'remaining_amount' => number_format(abs($invoice->remaining_amount), 2),
+            'remaining_label' => $invoice->remaining_amount >= 0 ? 'المبلغ المتبقي' : 'فائض سداد (رصيد)',
+            
+            // Previous balance integration if applicable
+            'previous_balance' => number_format(abs($invoice->previous_balance), 2),
+            'previous_balance_label' => $invoice->previous_balance >= 0 ? 'مديونية سابقة' : 'رصيد سابق متوفر',
+            
+            'total_account_balance' => number_format(abs($invoice->user_balance_after), 2),
+            'total_account_label' => $invoice->user_balance_after >= 0 ? 'صافي الحساب (مطلوب)' : 'صافي الحساب (فائض)',
+        ];
+    }
+
+    /**
+     * Prepare formal financial data for Payment Receipt PDF
+     */
+    private function prepareFinancialsForPayment(InvoicePayment $payment): array
+    {
+        $invoice = $payment->invoice;
+        return [
+            'payment_amount' => number_format($payment->amount, 2),
+            'invoice_net' => number_format($invoice->net_amount, 2),
+            'invoice_paid' => number_format($invoice->paid_amount, 2),
+            'invoice_remaining' => number_format(abs($invoice->remaining_amount), 2),
+            'invoice_remaining_label' => $invoice->remaining_amount >= 0 ? 'المبلغ المتبقي بعد السداد' : 'رصيد زائد متوفر',
+        ];
     }
 
     /**

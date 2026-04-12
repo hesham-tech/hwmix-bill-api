@@ -7,13 +7,19 @@ use App\Models\Invoice;
 use App\Models\ProductVariant;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use App\Services\DocumentServiceInterface;
-use App\Services\Traits\InvoiceHelperTrait;
+use App\Services\AccountingService;
 use Illuminate\Validation\ValidationException;
 
 class PurchaseInvoiceService implements DocumentServiceInterface
 {
     use InvoiceHelperTrait;
+
+    protected AccountingService $accounting;
+
+    public function __construct(AccountingService $accounting)
+    {
+        $this->accounting = $accounting;
+    }
 
     /**
      * إنشاء فاتورة شراء جديدة.
@@ -63,27 +69,13 @@ class PurchaseInvoiceService implements DocumentServiceInterface
 
             $authUser = Auth::user();
             $cashBoxId = $data['cash_box_id'] ?? null;
-            $userCashBoxId = $data['user_cash_box_id'] ?? null; // user_cash_box_id هنا تخص المورد
+            $userCashBoxId = $data['user_cash_box_id'] ?? null;
 
-            // ✅ استخدام PaymentHandler لمعالجة الدفعات
-            $paymentHandler = app(\App\Services\InvoicePaymentHandler::class);
-
-            if ($invoice->user_id) {
-                $supplier = User::find($invoice->user_id);
-                if ($supplier) {
-                    $paymentHandler->handlePurchasePayment(
-                        $invoice,
-                        $authUser,
-                        $supplier,
-                        $invoice->paid_amount,
-                        $invoice->remaining_amount,
-                        $cashBoxId,
-                        $userCashBoxId
-                    );
-                } else {
-                    Log::warning('PurchaseInvoiceService: لم يتم العثور على المورد (إنشاء).', ['supplier_user_id' => $invoice->user_id]);
-                }
-            }
+            // ✅ تسجيل الأثر المالي الموحد لفاتورة الشراء
+            $this->accounting->recordInvoiceCreation($invoice, [
+                'cash_box_id' => $cashBoxId,
+                'user_cash_box_id' => $userCashBoxId
+            ]);
 
             // تسجيل عملية الإنشاء
 
@@ -122,61 +114,27 @@ class PurchaseInvoiceService implements DocumentServiceInterface
             $oldPaidAmount = $freshInvoice->paid_amount;
             $oldRemainingAmount = $freshInvoice->remaining_amount;
 
+            $authUser = Auth::user();
+            $cashBoxId = $data['cash_box_id'] ?? null;
+            $userCashBoxId = $data['user_cash_box_id'] ?? null;
+
+            // ✅ عكس الأثر المالي القديم قبل التحديث
+            $this->accounting->reverseInvoice($freshInvoice, [
+                'cash_box_id' => $freshInvoice->cash_box_id,
+                'user_cash_box_id' => $freshInvoice->user_cash_box_id
+            ]);
+
             // خصم المخزون للعناصر القديمة (عكس عملية الشراء الأصلية)
             $this->decrementStockForInvoiceItems($invoice);
 
             // تحديث بيانات الفاتورة الرئيسية
             $this->updateInvoice($invoice, $data);
 
-            // حساب الفروقات ومعالجة الأرصدة
-            $newPaidAmount = $data['paid_amount'] ?? 0;
-            $paidAmountDifference = $newPaidAmount - $oldPaidAmount;
-
-            $newRemainingAmount = $invoice->remaining_amount;
-            $remainingAmountDifference = $newRemainingAmount - $oldRemainingAmount;
-
-            $authUser = Auth::user();
-            $cashBoxId = $data['cash_box_id'] ?? null;
-            $userCashBoxId = $data['user_cash_box_id'] ?? null; // user_cash_box_id هنا تخص المورد
-
-            // معالجة رصيد الموظف (الخزنة) - الشركة تدفع للمورد
-            if ($paidAmountDifference !== 0) {
-                if ($paidAmountDifference > 0) {
-                    // تم دفع مبلغ إضافي للمورد، يتم سحبه من خزنة الموظف
-                    $withdrawResult = $authUser->withdraw(abs($paidAmountDifference), $cashBoxId);
-                    if ($withdrawResult !== true) {
-                        throw new \Exception('فشل سحب المبلغ الإضافي من خزنة الموظف: ' . json_encode($withdrawResult));
-                    }
-                } else {
-                    // تم استرجاع مبلغ من المورد، يتم إيداعه في خزنة الموظف
-                    $depositResult = $authUser->deposit(abs($paidAmountDifference), $cashBoxId);
-                    if ($depositResult !== true) {
-                        throw new \Exception('فشل إيداع المبلغ المسترجع في خزنة الموظف: ' . json_encode($depositResult));
-                    }
-                }
-            }
-
-            // معالجة رصيد المورد
-            if ($invoice->user_id) { // user_id في فاتورة الشراء هو معرف المورد
-                $supplier = User::find($invoice->user_id);
-                if ($supplier) {
-                    if ($remainingAmountDifference > 0) {
-                        // زاد المبلغ المتبقي (زاد دين الشركة للمورد)، رصيد المورد يقل
-                        $withdrawResult = $supplier->withdraw(abs($remainingAmountDifference), $userCashBoxId);
-                        if ($withdrawResult !== true) {
-                            throw new \Exception('فشل سحب مبلغ متبقي إضافي من رصيد المورد: ' . json_encode($withdrawResult));
-                        }
-                    } elseif ($remainingAmountDifference < 0) {
-                        // نقص المبلغ المتبقي (نقص دين الشركة للمورد)، رصيد المورد يزيد
-                        $depositResult = $supplier->deposit(abs($remainingAmountDifference), $userCashBoxId);
-                        if ($depositResult !== true) {
-                            throw new \Exception('فشل إيداع مبلغ سداد دين/فائض في رصيد المورد: ' . json_encode($depositResult));
-                        }
-                    }
-                } else {
-                    Log::warning('PurchaseInvoiceService: لم يتم العثور على المورد أثناء تحديث الرصيد.', ['supplier_user_id' => $invoice->user_id]);
-                }
-            }
+            // ✅ تسجيل الأثر المالي الجديد للفاتورة المحدثة
+            $this->accounting->recordInvoiceCreation($invoice, [
+                'cash_box_id' => $cashBoxId,
+                'user_cash_box_id' => $userCashBoxId
+            ]);
 
             // التحقق من المنتجات والمتغيرات الجديدة
             foreach ($data['items'] as $item) {
@@ -232,41 +190,11 @@ class PurchaseInvoiceService implements DocumentServiceInterface
             // حذف البنود
             $this->deleteInvoiceItems($invoice);
 
-            // معالجة الرصيد المالي للموظفين والموردين
-            $authUser = Auth::user();
-            $cashBoxId = null; // قد تحتاج لتمريرها في الـ data أو جلبها بطريقة أخرى
-            $userCashBoxId = null; // قد تحتاج لتمريرها في الـ data أو جلبها بطريقة أخرى
-
-            // عكس المبلغ المدفوع من الشركة للمورد
-            if ($invoice->paid_amount > 0) {
-                // المبلغ الذي دفعته الشركة للمورد يجب أن يعود إلى خزنة الشركة
-                $depositResult = $authUser->deposit($invoice->paid_amount, $cashBoxId);
-                if ($depositResult !== true) {
-                    Log::error('PurchaseInvoiceService: فشل إيداع مبلغ مدفوع مسترجع في رصيد الموظف (إلغاء).', ['result' => $depositResult]);
-                }
-            }
-
-            // عكس المبلغ المتبقي (دين الشركة للمورد)
-            if ($invoice->user_id) { // user_id في فاتورة الشراء هو معرف المورد
-                $supplier = User::find($invoice->user_id);
-                if ($supplier) {
-                    if ($invoice->remaining_amount > 0) {
-                        // الشركة كانت مدينة للمورد، الآن يتم إلغاء الدين (إيداع في رصيد المورد)
-                        $depositResult = $supplier->deposit($invoice->remaining_amount, $userCashBoxId);
-                        if ($depositResult !== true) {
-                            Log::error('PurchaseInvoiceService: فشل إيداع مبلغ متبقي في رصيد المورد (إلغاء).', ['result' => $depositResult]);
-                        }
-                    } elseif ($invoice->remaining_amount < 0) {
-                        // المورد كان مديناً للشركة، الآن يتم إلغاء الدين (سحب من رصيد المورد)
-                        $withdrawResult = $supplier->withdraw(abs($invoice->remaining_amount), $userCashBoxId);
-                        if ($withdrawResult !== true) {
-                            Log::error('PurchaseInvoiceService: فشل سحب مبلغ دين المورد الملغى من رصيد المورد (إلغاء).', ['result' => $withdrawResult]);
-                        }
-                    }
-                } else {
-                    Log::warning('PurchaseInvoiceService: لم يتم العثور على المورد أثناء الإلغاء.', ['supplier_user_id' => $invoice->user_id]);
-                }
-            }
+            // عكس الأثر المالي للفاتورة الملغاة
+            $this->accounting->reverseInvoice($invoice, [
+                'cash_box_id' => $invoice->cash_box_id,
+                'user_cash_box_id' => $invoice->user_cash_box_id
+            ]);
 
 
             return $invoice;

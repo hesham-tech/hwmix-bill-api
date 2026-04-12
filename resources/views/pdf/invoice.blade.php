@@ -260,31 +260,41 @@
             <table>
                 <tr>
                     <td class="label">المجموع الإجمالي:</td>
-                    <td class="value">{{ number_format($invoice->gross_amount, 2) }}</td>
+                    <td class="value">{{ $financials['gross_amount'] }}</td>
                 </tr>
                 @if($invoice->total_discount > 0)
                     <tr>
                         <td class="label">الخصم:</td>
-                        <td class="value">({{ number_format($invoice->total_discount, 2) }})</td>
+                        <td class="value">({{ $financials['total_discount'] }})</td>
                     </tr>
                 @endif
                 @if($invoice->total_tax > 0)
                     <tr>
                         <td class="label">الضريبة:</td>
-                        <td class="value">{{ number_format($invoice->total_tax, 2) }}</td>
+                        <td class="value">{{ $financials['total_tax'] }}</td>
                     </tr>
                 @endif
                 <tr class="grand-total">
                     <td class="label">الصافي:</td>
-                    <td class="value">{{ number_format($invoice->net_amount, 2) }}</td>
+                    <td class="value">{{ $financials['net_amount'] }}</td>
                 </tr>
                 <tr>
                     <td class="label">المدفوع:</td>
-                    <td class="value" style="color: #27ae60;">{{ number_format($invoice->paid_amount, 2) }}</td>
+                    <td class="value" style="color: #27ae60;">{{ $financials['paid_amount'] }}</td>
                 </tr>
                 <tr>
-                    <td class="label">المتبقي:</td>
-                    <td class="value" style="color: #e74c3c;">{{ number_format($invoice->remaining_amount, 2) }}</td>
+                    <td class="label">{{ $financials['remaining_label'] }}:</td>
+                    <td class="value" style="color: #e74c3c;">{{ $financials['remaining_amount'] }}</td>
+                </tr>
+                @if($invoice->previous_balance != 0)
+                    <tr style="border-top: 1px dashed #ccc;">
+                        <td class="label">{{ $financials['previous_balance_label'] }}:</td>
+                        <td class="value">{{ $financials['previous_balance'] }}</td>
+                    </tr>
+                @endif
+                <tr style="border-top: 2px solid #2c3e50; font-weight: bold;">
+                    <td class="label">{{ $financials['total_account_label'] }}:</td>
+                    <td class="value" style="background: #f8f9fa;">{{ $financials['total_account_balance'] }}</td>
                 </tr>
             </table>
         </div>

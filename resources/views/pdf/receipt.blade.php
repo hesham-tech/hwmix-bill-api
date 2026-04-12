@@ -167,23 +167,23 @@
         <!-- Amount -->
         <div class="amount-box">
             <div class="label">المبلغ المدفوع</div>
-            <div class="amount">{{ number_format($payment->amount, 2) }} ج.م</div>
+            <div class="amount">{{ $financials['payment_amount'] }} ج.م</div>
         </div>
 
         <!-- Invoice Status -->
         <div style="background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 5px;">
             <div class="info-row" style="border: none; margin: 5px 0;">
                 <div class="label">صافي الفاتورة:</div>
-                <div class="value">{{ number_format($invoice->net_amount, 2) }}</div>
+                <div class="value">{{ $financials['invoice_net'] }}</div>
             </div>
             <div class="info-row" style="border: none; margin: 5px 0;">
                 <div class="label">المدفوع الكلي:</div>
-                <div class="value" style="color: #27ae60;">{{ number_format($invoice->paid_amount, 2) }}</div>
+                <div class="value" style="color: #27ae60;">{{ $financials['invoice_paid'] }}</div>
             </div>
             <div class="info-row" style="border: none; margin: 5px 0;">
-                <div class="label">المتبقي:</div>
+                <div class="label">{{ $financials['invoice_remaining_label'] }}:</div>
                 <div class="value" style="color: #e74c3c; font-weight: bold;">
-                    {{ number_format($invoice->remaining_amount, 2) }}</div>
+                    {{ $financials['invoice_remaining'] }}</div>
             </div>
         </div>
 

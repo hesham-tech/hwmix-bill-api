@@ -12,6 +12,13 @@ class ReturnService implements DocumentServiceInterface
 {
     use InvoiceHelperTrait;
 
+    protected AccountingService $accounting;
+
+    public function __construct(AccountingService $accounting)
+    {
+        $this->accounting = $accounting;
+    }
+
     /**
      * إنشاء فاتورة مرتجع (بيع أو شراء).
      */
@@ -45,7 +52,13 @@ class ReturnService implements DocumentServiceInterface
                 $this->deductStockForItems($data['items'], $data['warehouse_id'] ?? null);
             }
 
-            // 5. تسجيل النشاط
+            // ✅ 5. تسجيل الأثر المالي للمرتجع
+            $this->accounting->recordInvoiceCreation($invoice, [
+                'cash_box_id' => $data['cash_box_id'] ?? null,
+                'user_cash_box_id' => $data['user_cash_box_id'] ?? null
+            ]);
+
+            // 6. تسجيل النشاط
             $invoice->logCreated('إنشاء فاتورة مرتجع رقم ' . $invoice->invoice_number);
 
             return $invoice;
@@ -63,9 +76,13 @@ class ReturnService implements DocumentServiceInterface
         try {
             Log::info('ReturnService: بدء تحديث فاتورة مرتجع.', ['invoice_id' => $invoice->id]);
 
-            // التحقق من إمكانية التعديل (اختياري)
+            // ✅ عكس الأثر المالي القديم
+            $this->accounting->reverseInvoice($invoice, [
+                'cash_box_id' => $invoice->cash_box_id,
+                'user_cash_box_id' => $invoice->user_cash_box_id
+            ]);
 
-            // عكس الحركات القديمة
+            // عكس حركات المخزون القديمة
             if ($invoice->invoice_type_code === 'sale_return') {
                 $this->decrementStockForInvoiceItems($invoice);
             } elseif ($invoice->invoice_type_code === 'purchase_return') {
@@ -80,7 +97,7 @@ class ReturnService implements DocumentServiceInterface
             $this->updateInvoice($invoice, $data);
             $this->syncInvoiceItems($invoice, $data['items'], $data['company_id'] ?? null, $data['updated_by'] ?? null);
 
-            // تطبيق الحركات الجديدة
+            // تطبيق حركات المخزون الجديدة
             if ($invoice->invoice_type_code === 'sale_return') {
                 $this->incrementStockForItems(
                     $data['items'],
@@ -91,6 +108,12 @@ class ReturnService implements DocumentServiceInterface
             } elseif ($invoice->invoice_type_code === 'purchase_return') {
                 $this->deductStockForItems($data['items'], $data['warehouse_id'] ?? null);
             }
+
+            // ✅ تسجيل الأثر المالي الجديد
+            $this->accounting->recordInvoiceCreation($invoice, [
+                'cash_box_id' => $data['cash_box_id'] ?? null,
+                'user_cash_box_id' => $data['user_cash_box_id'] ?? null
+            ]);
 
             return $invoice;
         } catch (\Throwable $e) {
@@ -106,6 +129,12 @@ class ReturnService implements DocumentServiceInterface
     {
         try {
             Log::info('ReturnService: بدء إلغاء فاتورة مرتجع.', ['invoice_id' => $invoice->id]);
+
+            // ✅ عكس الأثر المالي
+            $this->accounting->reverseInvoice($invoice, [
+                'cash_box_id' => $invoice->cash_box_id,
+                'user_cash_box_id' => $invoice->user_cash_box_id
+            ]);
 
             // عكس حركات المخزون
             if ($invoice->invoice_type_code === 'sale_return') {

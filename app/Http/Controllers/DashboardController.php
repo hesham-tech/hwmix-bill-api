@@ -118,6 +118,17 @@ class DashboardController extends Controller
 
         $totalSales = \App\Models\MonthlySalesSummary::where('company_id', $companyId)->sum('total_revenue');
 
+        // حساب السيولة الصافية (Assets vs Liabilities)
+        $liquidityStats = DB::table('users')
+            ->join('company_user', 'users.id', '=', 'company_user.user_id')
+            ->where('company_user.company_id', $companyId)
+            ->selectRaw("
+                SUM(CASE WHEN users.balance > 0 THEN users.balance ELSE 0 END) as total_assets,
+                SUM(CASE WHEN users.balance < 0 THEN users.balance ELSE 0 END) as total_liabilities,
+                SUM(users.balance) as net_liquidity
+            ")
+            ->first();
+
         $stats = [
             'total_sales' => (float) $totalSales,
             'monthly_sales' => (float) ($monthlyStats?->total_revenue ?? 0),
@@ -129,6 +140,11 @@ class DashboardController extends Controller
                 ->where('role', 'customer')
                 ->count(),
             'total_products' => Product::where('company_id', $companyId)->count(),
+            'liquidity' => [
+                'total_assets' => (float) ($liquidityStats->total_assets ?? 0),
+                'total_liabilities' => (float) abs($liquidityStats->total_liabilities ?? 0),
+                'net_position' => (float) ($liquidityStats->net_liquidity ?? 0),
+            ]
         ];
 
         $salesTrend = \App\Models\DailySalesSummary::where('company_id', $companyId)

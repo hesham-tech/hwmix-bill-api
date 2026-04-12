@@ -372,11 +372,14 @@ class TransactionController extends Controller
 
             DB::beginTransaction();
             try {
-                // تحقق من الرصيد قبل السحب
-                $currentBalance = $targetUser->balanceBox($cashBoxId);
-                if ($currentBalance < $validated['amount']) {
-                    DB::rollBack();
-                    return api_error('الرصيد غير كافٍ في صندوق النقد المحدد.', [], 422);
+                // تحقق من الرصيد في حالة الصناديق النقدية الحقيقية فقط (عهدة الموظف)
+                // أما أرصدة العملاء والموردين فيمكن أن تكون سالبة (ديون) أو موجبة (أمانات)
+                if ($cashBox->user_id === $targetUserId && $targetUser->isStaffOrAdmin()) {
+                    $currentBalance = $targetUser->balanceBox($cashBoxId);
+                    if ($currentBalance < $validated['amount']) {
+                        DB::rollBack();
+                        return api_error('الرصيد غير كافٍ في عهدة الموظف.', [], 422);
+                    }
                 }
 
                 $targetUser->withdraw(

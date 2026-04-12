@@ -140,17 +140,12 @@ class InstallmentPaymentService
                 'cash_box_id' => $cashBoxId,
             ]);
 
-            // إيداع المبلغ في خزنة الموظف
-            $depositResultStaff = $authUser->deposit($totalAmountSuccessfullyPaid, $cashBoxId, "تحصيل أقساط - دفعة #{$installmentPayment->id}");
-            if ($depositResultStaff !== true) {
-                throw new Exception('InstallmentPaymentService: فشل إيداع المبلغ في خزنة الموظف: ' . json_encode($depositResultStaff));
-            }
-
-            // تحديث مديونية العميل (إيداع وهمي لتقليل الدين)
-            $depositResultClient = $clientUser->deposit($totalAmountSuccessfullyPaid, $clientCashBoxId, "سداد أقساط - دفعة #{$installmentPayment->id}");
-            if ($depositResultClient !== true) {
-                throw new Exception('InstallmentPaymentService: فشل تحديث رصيد العميل (تقليل الدين): ' . json_encode($depositResultClient));
-            }
+            $accounting = app(\App\Services\AccountingService::class);
+            $accounting->recordPayment($installmentPlan->company_id, $authUser, $clientUser, $totalAmountSuccessfullyPaid, 'in', [
+                'cash_box_id' => $cashBoxId,
+                'party_cash_box_id' => $clientCashBoxId,
+                'description' => "سداد أقساط - دفعة #{$installmentPayment->id}"
+            ]);
 
             // تحديث الفاتورة الأم (داخل الـ Transaction لضمان الكل أو لا شيء)
             if ($parentInvoice) {
