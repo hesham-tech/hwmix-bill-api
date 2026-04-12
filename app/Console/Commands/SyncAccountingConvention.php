@@ -57,13 +57,19 @@ class SyncAccountingConvention extends Command
                 $this->info("تحويل {$user->name}: {$oldBalance} -> {$newBalance}");
 
                 if (!$dryRun) {
-                    $user->balance = $newBalance;
-                    $user->save();
+                    // 1. تحديث الصناديق التابعة له (المصدر الرئيسي للرصيد)
+                    CashBox::withoutGlobalScopes()
+                        ->where('user_id', $user->id)
+                        ->update([
+                            'balance' => DB::raw("balance * -1")
+                        ]);
                     
-                    // تحديث الصناديق التابعة له أيضاً
-                    CashBox::where('user_id', $user->id)->update([
-                        'balance' => DB::raw("balance * -1")
-                    ]);
+                    // 2. تحديث الرصيد المخزن في الجدول الوسيط (Cache column)
+                    DB::table('company_user')
+                        ->where('user_id', $user->id)
+                        ->update([
+                            'balance_in_company' => DB::raw("balance_in_company * -1")
+                        ]);
                 }
             }
 
