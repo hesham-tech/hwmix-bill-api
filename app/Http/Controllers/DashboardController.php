@@ -123,9 +123,9 @@ class DashboardController extends Controller
             ->join('company_user', 'users.id', '=', 'company_user.user_id')
             ->where('company_user.company_id', $companyId)
             ->selectRaw("
-                SUM(CASE WHEN users.balance > 0 THEN users.balance ELSE 0 END) as total_assets,
-                SUM(CASE WHEN users.balance < 0 THEN users.balance ELSE 0 END) as total_liabilities,
-                SUM(users.balance) as net_liquidity
+                SUM(CASE WHEN company_user.balance_in_company > 0 THEN company_user.balance_in_company ELSE 0 END) as total_assets,
+                SUM(CASE WHEN company_user.balance_in_company < 0 THEN company_user.balance_in_company ELSE 0 END) as total_liabilities,
+                SUM(company_user.balance_in_company) as net_liquidity
             ")
             ->first();
 
