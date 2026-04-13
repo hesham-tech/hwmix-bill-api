@@ -8,6 +8,7 @@ use App\Models\ProductVariant;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Services\AccountingService;
+use App\Services\Traits\InvoiceHelperTrait;
 use Illuminate\Validation\ValidationException;
 
 class PurchaseInvoiceService implements DocumentServiceInterface
