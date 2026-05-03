@@ -136,6 +136,9 @@ class DashboardController extends Controller
                 ->where('remaining_amount', '>', 0)
                 ->whereIn('status', ['confirmed', 'partial'])
                 ->sum('remaining_amount'),
+            'unpaid_installments' => (float) Installment::where('company_id', $companyId)
+                ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي', 'ملغى'])
+                ->sum('remaining'),
             'total_customers' => CompanyUser::where('company_id', $companyId)
                 ->where('role', 'customer')
                 ->count(),
