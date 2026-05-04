@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class InstallmentPlanController extends Controller
@@ -368,21 +369,27 @@ class InstallmentPlanController extends Controller
 
             DB::beginTransaction();
             try {
-                // تحقق مما إذا كانت خطة التقسيط مرتبطة بأي أقساط
-                if ($plan->installments()->exists()) {
-                    DB::rollBack();
-                    return api_error('لا يمكن حذف خطة التقسيط. إنها مرتبطة بأقساط موجودة.', [], 409);
+                $invoice = $plan->invoice;
+
+                if ($invoice) {
+                    // إذا كانت الخطة مرتبطة بفاتورة، نستخدم نظام الخدمات لضمان الإلغاء الكامل
+                    $service = \App\Services\ServiceResolver::resolve($invoice->invoice_type_code);
+                    $service->cancel($invoice);
+                    
+                    $message = 'تم حذف خطة التقسيط والفاتورة المرتبطة بها بنجاح.';
+                } else {
+                    // في حال كانت الخطة "يتيمة" (حالة نادرة)، نحذف الأقساط والخطة فقط
+                    $plan->installments()->delete();
+                    $plan->delete();
+                    $message = 'تم حذف خطة التقسيط بنجاح.';
                 }
 
-                $deletedPlan = $plan->replicate(); // نسخ الكائن قبل الحذف
-                $deletedPlan->setRelations($plan->getRelations()); // نسخ العلاقات المحملة
-
-                $plan->delete();
                 DB::commit();
-                return api_success(new InstallmentPlanResource($deletedPlan), 'تم حذف خطة التقسيط بنجاح.');
+                return api_success(null, $message);
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء حذف خطة التقسيط.', [], 500);
+                Log::error('InstallmentPlanController: فشل حذف الخطة', ['error' => $e->getMessage()]);
+                return api_error('حدث خطأ أثناء حذف خطة التقسيط: ' . $e->getMessage(), [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e, 500);

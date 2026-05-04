@@ -110,6 +110,14 @@ class InstallmentSaleInvoiceService implements DocumentServiceInterface
     public function cancel(Invoice $invoice): Invoice
     {
         try {
+            // ✅ 1. إعادة الكمية إلى المخزون
+            $this->returnStockForItems($invoice);
+
+            // ✅ 2. إلغاء الأقساط المرتبطة (إن وجدت)
+            if ($invoice->installmentPlan) {
+                app(InstallmentService::class)->cancelInstallments($invoice);
+            }
+
             // ✅ 3. عكس الأثر المالي بالكامل عبر AccountingService
             // سيعالج عكس مديونية الفاتورة كاملة + رد جميع المبالغ المحصلة (دفعة مقدمة + أقساط مسددة)
             $this->accounting->reverseInvoice($invoice, [
@@ -121,10 +129,8 @@ class InstallmentSaleInvoiceService implements DocumentServiceInterface
             // تغيير حالة الفاتورة إلى ملغاة
             $invoice->update(['status' => 'canceled']);
 
-            // حذف بنود الفاتورة (اختياري ولكن شائع بعد الإلغاء)
+            // حذف بنود الفاتورة
             $this->deleteInvoiceItems($invoice);
-
-            // تسجيل عملية الإلغاء
 
             return $invoice;
         } catch (\Throwable $e) {

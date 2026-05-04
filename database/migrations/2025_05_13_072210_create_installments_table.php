@@ -13,38 +13,19 @@ return new class extends Migration {
     {
         Schema::create('installments', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('installment_plan_id')
-                ->constrained('installment_plans')
-                ->onDelete('cascade');
-
-            $table->foreignId('user_id')
-                ->constrained('users')
-                ->onDelete('cascade'); // العميل
-
-            $table->foreignId('created_by')
-                ->constrained('users')
-                ->onDelete('cascade'); // أنشئ بواسطة
-
-            $table->foreignId('company_id')
-                ->constrained('companies') // ✅ تم تصحيحه من Company إلى companies
-                ->onDelete('cascade');     // الشركة
-
-            $table->foreignId('invoice_id')
-                ->nullable()
-                ->constrained('invoices')
-                ->onDelete('cascade');
-
+            $table->foreignId('installment_plan_id')->constrained('installment_plans')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // العميل
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // أنشئ بواسطة
+            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade'); // ✅ تم تصحيحه من Company إلى companies
+            $table->foreignId('invoice_id')->nullable()->constrained('invoices')->onDelete('cascade');
             $table->string('installment_number')->nullable();
-
             $table->date('due_date');
-            $table->decimal('amount', 15, 2);
+            $table->decimal('amount', 15, 2)->default(0);
             $table->decimal('remaining', 15, 2)->default(0);
-            $table->string('status'); // لم يتم الدفع، تم الدفع، متأخر، ملغي، وهكذا
+            $table->string('status')->default('unpaid'); // unpaid, paid, overdue, canceled, etc.
             $table->timestamp('paid_at')->nullable();
-
+            $table->softDeletes();
             $table->timestamps();
-            $table->softDeletes(); // ✅ دعم soft delete
         });
     }
 

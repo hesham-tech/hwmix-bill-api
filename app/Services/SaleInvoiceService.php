@@ -221,9 +221,9 @@ class SaleInvoiceService implements DocumentServiceInterface
             $invoice->update(['status' => 'canceled']);
             $this->deleteInvoiceItems($invoice);
 
-            // if ($invoice->installmentPlan) {
-            //     app(InstallmentService::class)->cancelInstallments($invoice);
-            // }
+            if ($invoice->installmentPlan) {
+                app(InstallmentService::class)->cancelInstallments($invoice);
+            }
 
             $this->accounting->reverseInvoice($invoice, [
                 'cash_box_id' => $invoice->cash_box_id,
