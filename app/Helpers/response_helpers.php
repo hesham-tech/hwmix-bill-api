@@ -20,6 +20,16 @@ if (!function_exists('api_success')) {
             'data' => [],
         ];
 
+        // ✅ إضافة سياق المستخدم الموثق (الرصيد المحدث للشركة النشطة)
+        if (auth()->check()) {
+            $response['auth'] = [
+                'user' => [
+                    'id' => auth()->id(),
+                    'balance' => (float) auth()->user()->balance,
+                ]
+            ];
+        }
+
         // ✅ إذا كانت البيانات Paginator عادي (للبجينيشن)
         if ($data instanceof AbstractPaginator) {
             $response['data'] = $data->items();
