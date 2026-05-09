@@ -42,6 +42,7 @@ class UserWithPermissionsResource extends JsonResource
             // الشركات التي يمكن للمستخدم الوصول إليها
             'companies' => $this->whenLoaded('companies', fn() => CompanyResource::collection($this->getVisibleCompaniesForUser() ?? collect())),
             'cashBoxes' => $this->whenLoaded('cashBoxes', fn() => CashBoxResource::collection($this->cashBoxes ?? collect())),
+            'branches' => $this->whenLoaded('branches', fn() => $this->branches ?? collect()),
 
             // الصلاحيات والادوار
             'roles' => $this->getRolesWithPermissions(),

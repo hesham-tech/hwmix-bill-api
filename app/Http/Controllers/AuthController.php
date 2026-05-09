@@ -73,6 +73,8 @@ class AuthController extends Controller
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
+            $user->load(['roles.permissions', 'permissions', 'branches', 'company.logo']);
+
             return api_success([
                 'user' => new UserWithPermissionsResource($user),
                 'token' => $token,
@@ -140,6 +142,8 @@ class AuthController extends Controller
 
             $token = $user->createToken($deviceName, ['*'], $expiresAt)->plainTextToken;
 
+            $user->load(['roles.permissions', 'permissions', 'branches', 'company.logo']);
+
             return api_success([
                 'user' => new UserWithPermissionsResource($user),
                 'token' => $token,
@@ -196,7 +200,7 @@ class AuthController extends Controller
                 return api_unauthorized('المستخدم غير مصادق عليه.');
             }
 
-            $user->load(['company.logo', 'companies.logo', 'roles.permissions', 'permissions']);
+            $user->load(['company.logo', 'companies.logo', 'roles.permissions', 'permissions', 'branches']);
 
             return api_success(new UserWithPermissionsResource($user), 'تم استرداد بيانات المستخدم بنجاح.');
         } catch (Throwable $e) {

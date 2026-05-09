@@ -12,10 +12,21 @@ use App\Models\CashBoxType;
 use Illuminate\Support\Facades\DB;
 
 /**
- * @hideFromApiDocs
+ * كلاس للتحكم في أوامر Artisan وعمليات النظام الحساسة.
  */
 class ArtisanController extends Controller
 {
+    /**
+     * ميثود خاصة للتحقق من أن المستخدم هو مدير النظام.
+     */
+    private function authorizeAdmin()
+    {
+        if (auth()->user()?->email !== 'admin@admin.com') {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * تشغيل أمر composer dump-autoload.
      * @return \Illuminate\Http\JsonResponse
@@ -23,6 +34,10 @@ class ArtisanController extends Controller
      */
     public function runComposerDump(): JsonResponse
     {
+        if (!$this->authorizeAdmin()) {
+            return api_forbidden('غير مصرح لك بالوصول إلى أدوات النظام الحساسة.');
+        }
+
         try {
             $output = shell_exec('composer2 dump-autoload 2>&1');
             // $output = shell_exec('composer dump-autoload 2>&1');
@@ -38,6 +53,10 @@ class ArtisanController extends Controller
      */
     public function migrate(): JsonResponse
     {
+        if (!$this->authorizeAdmin()) {
+            return api_forbidden('غير مصرح لك بالوصول إلى أدوات النظام الحساسة.');
+        }
+
         try {
             Artisan::call('migrate', ['--force' => true]);
             $output = Artisan::output();
@@ -53,6 +72,10 @@ class ArtisanController extends Controller
      */
     public function migrateAndSeed(): JsonResponse
     {
+        if (!$this->authorizeAdmin()) {
+            return api_forbidden('غير مصرح لك بالوصول إلى أدوات النظام الحساسة.');
+        }
+
         try {
             Artisan::call('migrate:fresh', ['--force' => true]);
             $migrateOutput = Artisan::output(); // التقاط مخرجات الهجرة
@@ -74,6 +97,10 @@ class ArtisanController extends Controller
      */
     public function seedRolesAndPermissions(): JsonResponse
     {
+        if (!$this->authorizeAdmin()) {
+            return api_forbidden('غير مصرح لك بالوصول إلى أدوات النظام الحساسة.');
+        }
+
         try {
             Artisan::call('db:seed', [
                 '--class' => 'Database\Seeders\RolesAndPermissionsSeeder',
@@ -91,6 +118,10 @@ class ArtisanController extends Controller
      */
     public function PermissionsSeeder(): JsonResponse
     {
+        if (!$this->authorizeAdmin()) {
+            return api_forbidden('غير مصرح لك بالوصول إلى أدوات النظام الحساسة.');
+        }
+
         try {
             Artisan::call('db:seed', [
                 '--class' => 'Database\Seeders\PermissionsSeeder',
@@ -103,6 +134,10 @@ class ArtisanController extends Controller
     }
     public function DatabaseSeeder(): JsonResponse
     {
+        if (!$this->authorizeAdmin()) {
+            return api_forbidden('غير مصرح لك بالوصول إلى أدوات النظام الحساسة.');
+        }
+
         try {
             Artisan::call('db:seed', [
                 '--class' => 'Database\Seeders\DatabaseSeeder',
@@ -120,6 +155,10 @@ class ArtisanController extends Controller
      */
     public function clearAllCache(): JsonResponse
     {
+        if (!$this->authorizeAdmin()) {
+            return api_forbidden('غير مصرح لك بالوصول إلى أدوات النظام الحساسة.');
+        }
+
         try {
             // تنظيف الكاشات
             Artisan::call('cache:clear');
@@ -155,6 +194,10 @@ class ArtisanController extends Controller
      */
     public function generateBackup(): JsonResponse
     {
+        if (!$this->authorizeAdmin()) {
+            return api_forbidden('غير مصرح لك بالوصول إلى أدوات النظام الحساسة.');
+        }
+
         try {
             $service = new DatabaseBackupService();
             $report = $service->exportDataAndGenerateSeeders();
@@ -173,6 +216,10 @@ class ArtisanController extends Controller
      */
     public function applyBackup(): JsonResponse
     {
+        if (!$this->authorizeAdmin()) {
+            return api_forbidden('غير مصرح لك بالوصول إلى أدوات النظام الحساسة.');
+        }
+
         try {
             $service = new DatabaseBackupService();
             $service->runBackupSeeders();

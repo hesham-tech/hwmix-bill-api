@@ -49,12 +49,14 @@ use App\Http\Controllers\SubscriptionController;
 Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceController::class, 'fixMissingCashBoxes'])->name('emergency.fix.cashboxes');
 
 
-Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
+Route::middleware('throttle:auth')->group(function () {
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+});
 Route::post('error-reports', [ErrorReportController::class, 'store']);
 Route::get('media/view/{path}', [ImageController::class, 'serve'])->where('path', '.*')->name('media.serve');
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:api'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('/auth/check', [AuthController::class, 'checkLogin']);
 
@@ -178,13 +180,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Transaction Controller
     Route::controller(TransactionController::class)
+        ->prefix('transactions')
         ->group(function () {
-            Route::post('/transfer', 'transfer');
-            Route::post('/deposit', 'deposit');
-            Route::post('/withdraw', 'withdraw');
-            Route::get('/transactions', 'transactions');
-            Route::get('transactions/user/{cashBoxId?}', 'userTransactions');
-            Route::post('/transactions/{transaction}/reverse', 'reverseTransaction');
+            Route::post('transfer', 'transfer');
+            Route::post('deposit', 'deposit');
+            Route::post('withdraw', 'withdraw');
+            Route::get('/', 'transactions');
+            Route::get('user/{cashBoxId?}', 'userTransactions');
+            Route::post('{transaction}/reverse', 'reverseTransaction');
         });
     // Invoice Controller
     Route::controller(InvoiceController::class)
@@ -476,16 +479,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Global Search
     Route::get('global-search', 'App\Http\Controllers\GlobalSearchController@search');
-});
-// Artisan commands routes
-Route::controller(ArtisanController::class)->prefix('php')->group(function () {
-    Route::get('runComposerDump', 'runComposerDump'); // عمل اوتو لود للملفات 
-    Route::get('generateBackup', 'generateBackup'); //  توليد السيدرز الاحتياطية
-    Route::get('migrate', 'migrate'); // تحديث الجداول
-    Route::get('migrateAndSeed', 'migrateAndSeed'); // ميجريشن ريفرش وعمل سيدرنج لقاعدة البيانات من جديد
-    Route::get('applyBackup', 'applyBackup');     //  تطبيق السيدرز الاحتياطية
-    Route::get('PermissionsSeeder', 'PermissionsSeeder'); // تشغيل PermissionsSeeder
-    Route::get('DatabaseSeeder', 'DatabaseSeeder'); // تشغيل DatabaseSeeder
-    Route::get('seedRolesAndPermissions', 'seedRolesAndPermissions'); // تشغيل RolesAndPermissionsSeeder
-    Route::get('clear', 'clearAllCache'); // مسح جميع الكاشات وإعادة بنائها
+
+    // Branches
+    Route::apiResource('branches', \App\Http\Controllers\Api\V1\BranchController::class);
+
+    // Artisan commands routes (Secured)
+    Route::controller(ArtisanController::class)->prefix('php')->group(function () {
+        Route::get('runComposerDump', 'runComposerDump'); 
+        Route::get('generateBackup', 'generateBackup'); 
+        Route::get('migrate', 'migrate'); 
+        Route::get('migrateAndSeed', 'migrateAndSeed'); 
+        Route::get('applyBackup', 'applyBackup');     
+        Route::get('PermissionsSeeder', 'PermissionsSeeder'); 
+        Route::get('DatabaseSeeder', 'DatabaseSeeder'); 
+        Route::get('seedRolesAndPermissions', 'seedRolesAndPermissions'); 
+        Route::get('clear', 'clearAllCache'); 
+    });
 });

@@ -21,6 +21,17 @@ if (!function_exists('perm_key')) {
     }
 }
 
+if (!function_exists('safeHasPermission')) {
+    function safeHasPermission($user, $permission)
+    {
+        try {
+            return $user->hasPermissionTo($permission);
+        } catch (\Spatie\Permission\Exceptions\PermissionDoesNotExist $e) {
+            return false;
+        }
+    }
+}
+
 class TransactionController extends Controller
 {
     protected array $relations;
@@ -63,9 +74,9 @@ class TransactionController extends Controller
 
             // صلاحية خاصة لتحويل الأموال (موازية لـ balance.transfer)
             if (
-                !$authUser->hasPermissionTo(perm_key('admin.super')) &&
-                !$authUser->hasPermissionTo(perm_key('balance.transfer')) &&
-                !$authUser->hasPermissionTo(perm_key('admin.company'))
+                !safeHasPermission($authUser, perm_key('admin.super')) &&
+                !safeHasPermission($authUser, perm_key('balance.transfer')) &&
+                !safeHasPermission($authUser, perm_key('admin.company'))
             ) {
                 return api_forbidden('ليس لديك إذن لتحويل الأموال.');
             }
@@ -107,7 +118,7 @@ class TransactionController extends Controller
             $targetUser = User::findOrFail($validated['target_user_id']);
 
             // [جديد]: إذا كان المستخدم يحاول التحويل من حساب شخص آخر، يتطلب صلاحية balance.transfer_any
-            if ($sourceUserId !== $authUser->id && !$authUser->hasPermissionTo(perm_key('balance.transfer_any')) && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+            if ($sourceUserId != $authUser->id && !safeHasPermission($authUser, perm_key('balance.transfer_any')) && !safeHasPermission($authUser, perm_key('admin.super'))) {
                 return api_forbidden('ليس لديك إذن للتحويل من حساب مستخدم آخر.');
             }
 
@@ -123,15 +134,15 @@ class TransactionController extends Controller
             $toCashBox = CashBox::findOrFail($toCashBoxId);
 
             // التحقق من أن الصناديق تابعة لشركة المستخدم (أو أن المستخدم super_admin)
-            if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
+            if (!safeHasPermission($authUser, perm_key('admin.super'))) {
                 if ($fromCashBox->company_id !== $companyId || $toCashBox->company_id !== $companyId) {
                     return api_forbidden('يمكنك فقط تحويل الأموال بين الصناديق النقدية داخل شركتك.');
                 }
 
                 // [جديد]: إذا كان المستخدم يملك فقط صلاحية التحويل الشخصي، يجب أن يكون الصندوق المصدر ملكه (أو ملك العميل المختار إذا كان لديه صلاحية any)
                 if (
-                    !$authUser->hasPermissionTo(perm_key('balance.transfer_any')) &&
-                    !$authUser->hasPermissionTo(perm_key('admin.company')) &&
+                    !safeHasPermission($authUser, perm_key('balance.transfer_any')) &&
+                    !safeHasPermission($authUser, perm_key('admin.company')) &&
                     $fromCashBox->user_id !== $authUser->id
                 ) {
                     return api_forbidden('لا يمكنك التحويل إلا من خزنتك الشخصية.');
@@ -246,9 +257,9 @@ class TransactionController extends Controller
 
             // صلاحية الإيداع (تندرج تحت إنشاء معاملة)
             if (
-                !$authUser->hasPermissionTo(perm_key('admin.super')) &&
-                !$authUser->hasPermissionTo(perm_key('balance.deposit')) &&
-                !$authUser->hasPermissionTo(perm_key('admin.company'))
+                !safeHasPermission($authUser, perm_key('admin.super')) &&
+                !safeHasPermission($authUser, perm_key('balance.deposit')) &&
+                !safeHasPermission($authUser, perm_key('admin.company'))
             ) {
                 return api_forbidden('ليس لديك إذن لإجراء إيداع.');
             }
@@ -267,7 +278,7 @@ class TransactionController extends Controller
             $targetUser = User::findOrFail($targetUserId);
 
             // التحقق من صلاحية الإيداع لمستخدم آخر
-            if ($targetUserId != $authUser->id && !$authUser->hasPermissionTo(perm_key('balance.deposit_any')) && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+            if ($targetUserId != $authUser->id && !safeHasPermission($authUser, perm_key('balance.deposit_any')) && !safeHasPermission($authUser, perm_key('admin.super'))) {
                 return api_forbidden('ليس لديك إذن للإيداع في حساب مستخدم آخر.');
             }
 
@@ -330,9 +341,9 @@ class TransactionController extends Controller
 
             // صلاحية السحب (تندرج تحت إنشاء معاملة)
             if (
-                !$authUser->hasPermissionTo(perm_key('admin.super')) &&
-                !$authUser->hasPermissionTo(perm_key('balance.withdraw')) &&
-                !$authUser->hasPermissionTo(perm_key('admin.company'))
+                !safeHasPermission($authUser, perm_key('admin.super')) &&
+                !safeHasPermission($authUser, perm_key('balance.withdraw')) &&
+                !safeHasPermission($authUser, perm_key('admin.company'))
             ) {
                 return api_forbidden('ليس لديك إذن لإجراء سحب.');
             }
@@ -351,7 +362,7 @@ class TransactionController extends Controller
             $targetUser = User::findOrFail($targetUserId);
 
             // التحقق من صلاحية السحب من مستخدم آخر
-            if ($targetUserId != $authUser->id && !$authUser->hasPermissionTo(perm_key('balance.withdraw_any')) && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+            if ($targetUserId != $authUser->id && !safeHasPermission($authUser, perm_key('balance.withdraw_any')) && !safeHasPermission($authUser, perm_key('admin.super'))) {
                 return api_forbidden('ليس لديك إذن للسحب من حساب مستخدم آخر.');
             }
 
@@ -425,15 +436,15 @@ class TransactionController extends Controller
             $query = Transaction::with($this->relations);
 
             // تطبيق شروط الصلاحيات
-            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+            if (safeHasPermission($authUser, perm_key('admin.super'))) {
                 // استرجاع جميع المعاملات (لا قيود إضافية)
             } elseif ($authUser->hasAnyPermission([perm_key('transactions.view_all'), perm_key('admin.company')])) {
                 // يرى جميع المعاملات ضمن الشركة
                 $query->whereCompanyIsCurrent();
-            } elseif ($authUser->hasPermissionTo(perm_key('transactions.view_children'))) {
+            } elseif (safeHasPermission($authUser, perm_key('transactions.view_children'))) {
                 // يرى المعاملات التي أنشأها هو أو المستخدمون التابعون له، ضمن الشركة
                 $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
-            } elseif ($authUser->hasPermissionTo(perm_key('transactions.view_self'))) {
+            } elseif (safeHasPermission($authUser, perm_key('transactions.view_self'))) {
                 // يرى المعاملات التي أنشأها المستخدم فقط، ومرتبطة بالشركة
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
@@ -519,13 +530,13 @@ class TransactionController extends Controller
 
                 // التحقق من الصلاحيات بناءً على الأذونات
                 $canReverse = false;
-                if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                if (safeHasPermission($authUser, perm_key('admin.super'))) {
                     $canReverse = true;
-                } elseif ($authUser->hasAnyPermission([perm_key('transactions.update_all'), perm_key('admin.company')])) {
+                } elseif (safeHasPermission($authUser, perm_key('transactions.update_all')) || safeHasPermission($authUser, perm_key('admin.super'))) {
                     $canReverse = $transaction->belongsToCurrentCompany();
-                } elseif ($authUser->hasPermissionTo(perm_key('transactions.update_children'))) {
+                } elseif (safeHasPermission($authUser, perm_key('transactions.update_children'))) {
                     $canReverse = $transaction->belongsToCurrentCompany() && $transaction->createdByUserOrChildren();
-                } elseif ($authUser->hasPermissionTo(perm_key('transactions.update_self'))) {
+                } elseif (safeHasPermission($authUser, perm_key('transactions.update_self'))) {
                     $canReverse = $transaction->belongsToCurrentCompany() && $transaction->createdByCurrentUser();
                 } else {
                     return api_forbidden('ليس لديك إذن لعكس هذه المعاملة.');
@@ -537,12 +548,15 @@ class TransactionController extends Controller
 
                 // التحقق من نوع المعاملة
                 switch ($transaction->type) {
+                    case 'transfer_out':
                     case 'تحويل_صادر':
                         $transaction->reverseTransfer();
                         break;
+                    case 'withdraw':
                     case 'سحب':
                         $transaction->reverseWithdraw();
                         break;
+                    case 'deposit':
                     case 'إيداع':
                         $transaction->reverseDeposit();
                         break;
@@ -555,27 +569,27 @@ class TransactionController extends Controller
                     'created_by' => $authUser->id,
                     'company_id' => $companyId,
                     'amount' => $transaction->amount,
-                    'balance_before' => $transaction->cashbox?->balance + ($transaction->type === 'إيداع' ? $transaction->amount : -$transaction->amount),
+                    'balance_before' => $transaction->cashbox?->balance + (in_array($transaction->type, ['إيداع', 'deposit']) ? $transaction->amount : -$transaction->amount),
                     'balance_after' => $transaction->cashbox?->balance,
                     'description' => 'عكس المعاملة الأصلية رقم: ' . $transaction->id,
                     'original_transaction_id' => $transaction->id,
                 ];
 
-                if ($transaction->type === 'تحويل_صادر') {
+                if (in_array($transaction->type, ['transfer_out', 'تحويل_صادر'])) {
                     $reverseData['user_id'] = $transaction->target_user_id;
                     $reverseData['cashbox_id'] = $transaction->target_cashbox_id;
                     $reverseData['target_user_id'] = $transaction->user_id;
                     $reverseData['target_cashbox_id'] = $transaction->cashbox_id;
-                    $reverseData['type'] = 'عكس_تحويل';
-                } elseif ($transaction->type === 'إيداع') {
+                    $reverseData['type'] = 'reverse_transfer';
+                } elseif (in_array($transaction->type, ['deposit', 'إيداع'])) {
                     $reverseData['user_id'] = $transaction->user_id;
                     $reverseData['cashbox_id'] = $transaction->cashbox_id;
-                    $reverseData['type'] = 'عكس_إيداع';
+                    $reverseData['type'] = 'reverse_deposit';
                     $reverseData['amount'] = -$transaction->amount;
-                } elseif ($transaction->type === 'سحب') {
+                } elseif (in_array($transaction->type, ['withdraw', 'سحب'])) {
                     $reverseData['user_id'] = $transaction->user_id;
                     $reverseData['cashbox_id'] = $transaction->cashbox_id;
-                    $reverseData['type'] = 'عكس_سحب';
+                    $reverseData['type'] = 'reverse_withdraw';
                     $reverseData['amount'] = $transaction->amount;
                 }
 

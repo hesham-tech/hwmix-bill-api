@@ -13,7 +13,7 @@ use App\Traits\LogsActivity;
  */
 class Warehouse extends Model
 {
-    use HasFactory, Blameable, Scopes, LogsActivity;
+    use HasFactory, Blameable, Scopes, LogsActivity, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
 
     /**
      * Label for activity logs.
@@ -35,15 +35,20 @@ class Warehouse extends Model
      */
     protected static function booted()
     {
+        static::creating(function ($warehouse) {
+            $warehouse->company_id = $warehouse->company_id ?? auth()->user()->company_id ?? null;
+            $warehouse->branch_id = $warehouse->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
+        });
+
         static::saving(function ($warehouse) {
-            // If this is the first warehouse for the company, make it default
-            if (static::where('company_id', $warehouse->company_id)->count() === 0) {
+            // If this is the first warehouse for the branch, make it default
+            if ($warehouse->branch_id && static::where('branch_id', $warehouse->branch_id)->count() === 0) {
                 $warehouse->is_default = true;
             }
 
-            if ($warehouse->is_default) {
-                // Set other warehouses for this company to NOT default
-                static::where('company_id', $warehouse->company_id)
+            if ($warehouse->is_default && $warehouse->branch_id) {
+                // Set other warehouses for this branch to NOT default
+                static::where('branch_id', $warehouse->branch_id)
                     ->where('id', '!=', $warehouse->id)
                     ->update(['is_default' => false]);
             }

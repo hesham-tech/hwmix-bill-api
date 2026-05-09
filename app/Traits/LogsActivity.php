@@ -101,6 +101,7 @@ trait LogsActivity
             'user_id' => $user->id,
             'created_by' => $user->id,
             'company_id' => $user->company_id,
+            'branch_id' => config('app.active_branch_id') ?? $user->branch_id,
             'ip_address' => request()->ip(),
             'user_agent' => request()->header('User-Agent'),
             'url' => request()->getRequestUri(),

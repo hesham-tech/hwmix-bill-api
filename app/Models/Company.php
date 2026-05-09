@@ -92,6 +92,14 @@ class Company extends Model
             ->withPivot('cash_box_id', 'created_by');  // أضف الحقول الإضافية التي تريد الوصول إليها
     }
 
+    /**
+     * علاقة الشركة بالفروع
+     */
+    public function branches()
+    {
+        return $this->hasMany(Branch::class);
+    }
+
     public function images()
     {
         return $this->morphMany(Image::class, 'imageable');

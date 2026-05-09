@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Revenue extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory, Scopes, Blameable, \App\Traits\LogsActivity;
+    use \Illuminate\Database\Eloquent\Factories\HasFactory, Scopes, Blameable, \App\Traits\LogsActivity, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
 
     /**
      * Label for activity logs.
@@ -32,7 +32,16 @@ class Revenue extends Model
         'payment_method',
         'note',
         'revenue_date',
+        'branch_id',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($revenue) {
+            $revenue->company_id = $revenue->company_id ?? auth()->user()->company_id ?? null;
+            $revenue->branch_id = $revenue->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
+        });
+    }
 
     public function customer()
     {

@@ -3,6 +3,7 @@
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\AuthServiceProvider::class,
-    Spatie\Permission\PermissionServiceProvider::class,
+    App\Providers\HorizonServiceProvider::class,
     Spatie\Backup\BackupServiceProvider::class,
+    Spatie\Permission\PermissionServiceProvider::class,
 ];

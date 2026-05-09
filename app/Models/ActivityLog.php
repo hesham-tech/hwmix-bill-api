@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ActivityLog extends Model
 {
-    use HasFactory, Scopes;
+    use HasFactory, Scopes, \App\Traits\FilterableByBranch;
 
     protected $table = 'activity_logs';
 
@@ -30,6 +30,7 @@ class ActivityLog extends Model
         'user_agent',
         'ip_address',
         'url',
+        'branch_id',
     ];
 
     protected $casts = [
@@ -59,5 +60,10 @@ class ActivityLog extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

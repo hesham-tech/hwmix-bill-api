@@ -18,7 +18,7 @@ use App\Traits\SmartSearch;
 #[ObservedBy([InstallmentObserver::class])]
 class Installment extends Model
 {
-    use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes, SmartSearch;
+    use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes, SmartSearch, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
 
     /**
      * Label for activity logs.
@@ -40,7 +40,16 @@ class Installment extends Model
         'user_id',
         'company_id',
         'invoice_id',
+        'branch_id',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($installment) {
+            $installment->company_id = $installment->company_id ?? auth()->user()->company_id ?? null;
+            $installment->branch_id = $installment->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
+        });
+    }
 
     protected $casts = [
         'due_date' => 'datetime', // أضف هذا السطر

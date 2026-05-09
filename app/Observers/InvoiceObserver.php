@@ -32,6 +32,8 @@ class InvoiceObserver
         }
 
         $this->clearDashboardCache($invoice);
+
+        event(new \App\Events\InvoiceCreated($invoice));
     }
     public function updated(Invoice $invoice): void
     {

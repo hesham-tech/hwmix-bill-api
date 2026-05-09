@@ -14,7 +14,7 @@ use App\Traits\SmartSearch;
  */
 class InstallmentPayment extends Model
 {
-    use HasFactory, Scopes, Blameable, \App\Traits\LogsActivity, SmartSearch;
+    use HasFactory, Scopes, Blameable, \App\Traits\LogsActivity, SmartSearch, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
 
     /**
      * Label for activity logs.
@@ -34,7 +34,16 @@ class InstallmentPayment extends Model
         'notes',
         'cash_box_id',
         'reference_number',
+        'branch_id',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($payment) {
+            $payment->company_id = $payment->company_id ?? auth()->user()->company_id ?? null;
+            $payment->branch_id = $payment->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
+        });
+    }
 
     // Customer is retrieved via plan
     public function getCustomerAttribute()

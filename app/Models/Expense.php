@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([ExpenseObserver::class])]
 class Expense extends Model
 {
-    use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes;
+    use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
 
     protected $fillable = [
         'expense_category_id',
@@ -26,8 +26,17 @@ class Expense extends Model
         'notes',
         'company_id',
         'created_by',
-        'updated_by'
+        'updated_by',
+        'branch_id',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($expense) {
+            $expense->company_id = $expense->company_id ?? auth()->user()->company_id ?? null;
+            $expense->branch_id = $expense->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
+        });
+    }
 
     protected $casts = [
         'amount' => 'decimal:2',

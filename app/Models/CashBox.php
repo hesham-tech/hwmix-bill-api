@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class CashBox extends Model
 {
-    use HasFactory, Scopes, LogsActivity, RolePermissions, Blameable;
+    use HasFactory, Scopes, LogsActivity, RolePermissions, Blameable, \App\Traits\FilterableByBranch;
 
     protected static function booted()
     {

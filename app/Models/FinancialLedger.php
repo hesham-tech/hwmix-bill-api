@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class FinancialLedger extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Blameable, Scopes, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
 
     protected $table = 'financial_ledger';
 
@@ -23,8 +23,17 @@ class FinancialLedger extends Model
         'account_type',
         'company_id',
         'created_by',
-        'updated_by'
+        'updated_by',
+        'branch_id',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($ledger) {
+            $ledger->company_id = $ledger->company_id ?? auth()->user()->company_id ?? null;
+            $ledger->branch_id = $ledger->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
+        });
+    }
 
     protected $casts = [
         'entry_date' => 'datetime',

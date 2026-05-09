@@ -7,10 +7,14 @@ use App\Traits\Scopes;
 use App\Traits\Blameable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Observers\TransactionObserver;
 
+#[ObservedBy([TransactionObserver::class])]
 class Transaction extends Model
 {
-    use Blameable, Scopes, \App\Traits\LogsActivity;
+    use Blameable, Scopes, \App\Traits\LogsActivity, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
     protected $fillable = [
         'user_id',
         'cashbox_id',
@@ -24,7 +28,16 @@ class Transaction extends Model
         'balance_after',
         'description',
         'original_transaction_id', // تمت إضافته
+        'branch_id',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($transaction) {
+            $transaction->company_id = $transaction->company_id ?? Auth::user()->company_id;
+            $transaction->branch_id = $transaction->branch_id ?? config('app.active_branch_id') ?? Auth::user()->branch_id;
+        });
+    }
 
     public function creator(): BelongsTo
     {

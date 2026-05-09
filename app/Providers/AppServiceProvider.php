@@ -6,6 +6,9 @@ namespace App\Providers;
 use App\Observers\RoleObserver;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Enforce Arabic locale for all requests
         app()->setLocale(config('app.locale', 'ar'));
+
+        // Define Rate Limiters
+        $this->configureRateLimiting();
 
         // Register Observers (Most are registered via #[ObservedBy] attribute in Models)
         Role::observe(RoleObserver::class);
@@ -51,6 +57,20 @@ class AppServiceProvider extends ServiceProvider
             if ($isSuperAdmin[$user->id]) {
                 return true;
             }
+        });
+    }
+
+    /**
+     * Configure the rate limiters for the application.
+     */
+    protected function configureRateLimiting(): void
+    {
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
         });
     }
 }

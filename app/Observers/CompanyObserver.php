@@ -13,6 +13,14 @@ class CompanyObserver
     {
         $creatorId = $company->created_by ?? \Auth::id();
 
+        // 0️⃣ إنشاء الفرع الرئيسي للشركة
+        $branch = \App\Models\Branch::create([
+            'name' => 'الفرع الرئيسي',
+            'company_id' => $company->id,
+            'is_default' => true,
+            'created_by' => $creatorId,
+        ]);
+
         // 1️⃣ ربط كل أنواع الفواتير الموجودة بالشركة الجديدة تلقائياً
         $invoiceTypes = \App\Models\InvoiceType::all();
         $syncData = [];
@@ -40,10 +48,11 @@ class CompanyObserver
             }
         }
 
-        // 3️⃣ 📦 إنشاء المخزن الرئيسي
+        // 3️⃣ 📦 إنشاء المخزن الرئيسي وربطه بالفرع
         \App\Models\Warehouse::create([
             'name' => 'المخزن الرئيسي',
             'company_id' => $company->id,
+            'branch_id' => $branch->id,
             'created_by' => $creatorId,
             'status' => 'active',
         ]);

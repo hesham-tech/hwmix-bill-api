@@ -835,7 +835,15 @@ class UserController extends Controller
                 return api_error('المستخدم غير مرتبط بالشركة المحددة.', [], 400);
             }
 
-            $user->update(['company_id' => $newCompanyId]);
+            // جلب الفرع الافتراضي للشركة الجديدة
+            $defaultBranch = \App\Models\Branch::where('company_id', $newCompanyId)
+                ->where('is_default', true)
+                ->first();
+
+            $user->update([
+                'company_id' => $newCompanyId,
+                'branch_id' => $defaultBranch ? $defaultBranch->id : null
+            ]);
 
             $user->load('activeCompanyUser.company');
             DB::commit();

@@ -22,8 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'scope_company' => \App\Http\Middleware\ScopePermissionsByCompany::class,
+            'branch_context' => \App\Http\Middleware\BranchContextMiddleware::class,
+            'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
         ]);
         $middleware->appendToGroup('api', \App\Http\Middleware\ScopePermissionsByCompany::class);
+        $middleware->appendToGroup('api', \App\Http\Middleware\BranchContextMiddleware::class);
+        $middleware->appendToGroup('api', \App\Http\Middleware\IdempotencyMiddleware::class);
     })
     ->withSchedule(function (Schedule $schedule) {
         $schedule->call(function () {

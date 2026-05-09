@@ -62,13 +62,18 @@ class RolesAndPermissionsSeeder extends Seeder
         // مزامنة المستخدم مع جميع الشركات
         $companyIds = Company::pluck('id')->toArray();
         $pivotData = [];
+        $hasNickname = \Illuminate\Support\Facades\Schema::hasColumn('company_user', 'nickname_in_company');
+        $hasFullName = \Illuminate\Support\Facades\Schema::hasColumn('company_user', 'full_name_in_company');
+
         foreach ($companyIds as $companyId) {
-            $pivotData[$companyId] = [
+            $data = [
                 'created_by' => $user->id,
-                'nickname_in_company' => $user->nickname,
-                'full_name_in_company' => $user->full_name,
                 'status' => 'active',
             ];
+            if ($hasNickname) $data['nickname_in_company'] = $user->nickname;
+            if ($hasFullName) $data['full_name_in_company'] = $user->full_name;
+            
+            $pivotData[$companyId] = $data;
         }
         $user->companies()->sync($pivotData);
         // إنشاء صناديق المستخدم الافتراضية لكل شركة

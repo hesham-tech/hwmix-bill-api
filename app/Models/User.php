@@ -45,7 +45,7 @@ use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, Translatable, HasApiTokens, Filterable, Scopes, LogsActivity, HasImages, ManagesBalance, \App\Traits\FilterableByCompany, \App\Traits\SmartSearch;
+    use HasFactory, Notifiable, Translatable, HasApiTokens, Filterable, Scopes, LogsActivity, HasImages, ManagesBalance, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch, \App\Traits\SmartSearch;
     use HasRoles, HasPermissions {
         HasPermissions::hasPermissionTo insteadof HasRoles;
         HasPermissions::hasPermissionTo as traitHasPermissionTo;
@@ -372,6 +372,14 @@ class User extends Authenticatable
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * علاقة الحصول على فروع الشركة المرتبط بها المستخدم
+     */
+    public function branches(): HasMany
+    {
+        return $this->hasMany(Branch::class, 'company_id', 'company_id');
     }
 
     /**

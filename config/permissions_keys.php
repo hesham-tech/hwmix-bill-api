@@ -778,4 +778,13 @@ return [
         'withdraw' => ['key' => 'balance.withdraw', 'label' => 'إجراء سحب رصيد (شخصي)'],
         'transfer' => ['key' => 'balance.transfer', 'label' => 'تحويل رصيد (شخصي)'],
     ],
+    // => BRANCHES
+    'branches' => [
+        'name' => ['key' => 'branches', 'label' => 'صلاحيات إدارة الفروع'],
+        'page' => ['key' => 'branches.page', 'label' => 'صفحة الفروع'],
+        'view_all' => ['key' => 'branches.view_all', 'label' => 'عرض كل الفروع'],
+        'create' => ['key' => 'branches.create', 'label' => 'إنشاء فرع جديد'],
+        'update_all' => ['key' => 'branches.update_all', 'label' => 'تعديل بيانات أي فرع'],
+        'delete_all' => ['key' => 'branches.delete_all', 'label' => 'حذف أي فرع'],
+    ],
 ];

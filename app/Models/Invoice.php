@@ -17,7 +17,7 @@ use App\Traits\SmartSearch;
 #[ObservedBy([InvoiceObserver::class])]
 class Invoice extends Model
 {
-    use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes, SmartSearch;
+    use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes, SmartSearch, \App\Traits\FilterableByBranch;
 
     protected $guarded = [];
 
@@ -77,6 +77,7 @@ class Invoice extends Model
             }
 
             $invoice->company_id = $invoice->company_id ?? Auth::user()->company_id;
+            $invoice->branch_id = $invoice->branch_id ?? config('app.active_branch_id') ?? Auth::user()->branch_id;
             $invoice->created_by = $invoice->created_by ?? Auth::id();
 
             // تعيين تاريخ الإصدار إذا لم يحدد

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Stock extends Model
 {
-    use HasFactory, Scopes, LogsActivity, RolePermissions, Blameable;
+    use HasFactory, Scopes, LogsActivity, RolePermissions, Blameable, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
 
     protected $fillable = [
         'quantity',
@@ -28,7 +28,8 @@ class Stock extends Model
         'warehouse_id',
         'company_id',
         'created_by',
-        'updated_by'
+        'updated_by',
+        'branch_id',
     ];
 
     /**
@@ -53,6 +54,9 @@ class Stock extends Model
             if (empty($stock->batch)) {
                 $stock->batch = 'B-' . now()->format('Ymd') . '-' . rand(1000, 9999);
             }
+
+            $stock->company_id = $stock->company_id ?? auth()->user()->company_id ?? null;
+            $stock->branch_id = $stock->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
         });
     }
 

@@ -48,11 +48,18 @@ class TransactionResource extends JsonResource
         $targetCashboxName = $this->getTargetCashboxName();
 
         $operationTexts = [
-            'تحويل' => "تم تحويل مبلغ {$this->amount} من {$cashboxName} الخاصه ب {$user} إلى {$targetCashboxName} الخاصه ب {$targetUser}",
-            'إيداع' => "تم إيداع مبلغ {$this->amount} في {$cashboxName} الخاصه ب {$user} من {$targetCashboxName} الخاصه ب {$targetUser}",
-            'سحب' => "تم سحب مبلغ {$this->amount} من {$cashboxName} الخاصه ب {$user} إلى {$targetCashboxName} الخاصه ب {$targetUser}",
-            'دفع' => "تم دفع مبلغ {$this->amount} من {$cashboxName} الخاصه ب {$user} إلى {$targetCashboxName} الخاصه ب {$targetUser}",
-            'استلام' => "تم استلام مبلغ {$this->amount} من {$cashboxName} الخاصه ب {$user} إلى {$targetCashboxName} الخاصه ب {$targetUser}",
+            'تحويل' => "تم تحويل مبلغ {$this->amount} من {$cashboxName} الخاصة بـ {$user} إلى {$targetCashboxName} الخاصة بـ {$targetUser}",
+            'transfer_out' => "تم تحويل مبلغ {$this->amount} من {$cashboxName} الخاصة بـ {$user} إلى {$targetCashboxName} الخاصة بـ {$targetUser}",
+            'transfer_in' => "تم استلام تحويل بمبلغ {$this->amount} في {$cashboxName} الخاصة بـ {$user} من {$targetCashboxName} الخاصة بـ {$targetUser}",
+            'إيداع' => "تم إيداع مبلغ {$this->amount} في {$cashboxName} الخاصة بـ {$user} من {$targetCashboxName} الخاصة بـ {$targetUser}",
+            'deposit' => "تم إيداع مبلغ {$this->amount} في {$cashboxName} الخاصة بـ {$user} من {$targetCashboxName} الخاصة بـ {$targetUser}",
+            'سحب' => "تم سحب مبلغ {$this->amount} من {$cashboxName} الخاصة بـ {$user} إلى {$targetCashboxName} الخاصة بـ {$targetUser}",
+            'withdraw' => "تم سحب مبلغ {$this->amount} من {$cashboxName} الخاصة بـ {$user} إلى {$targetCashboxName} الخاصة بـ {$targetUser}",
+            'reverse_transfer' => "عكس عملية تحويل بمبلغ {$this->amount}",
+            'reverse_deposit' => "عكس عملية إيداع بمبلغ {$this->amount}",
+            'reverse_withdraw' => "عكس عملية سحب بمبلغ {$this->amount}",
+            'دفع' => "تم دفع مبلغ {$this->amount} من {$cashboxName} الخاصة بـ {$user} إلى {$targetCashboxName} الخاصة بـ {$targetUser}",
+            'استلام' => "تم استلام مبلغ {$this->amount} من {$cashboxName} الخاصة بـ {$user} إلى {$targetCashboxName} الخاصة بـ {$targetUser}",
         ];
 
         // إرجاع النص حسب نوع العملية أو النص الافتراضي إذا لم يكن النوع موجود
