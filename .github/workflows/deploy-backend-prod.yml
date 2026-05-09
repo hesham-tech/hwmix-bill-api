@@ -50,6 +50,8 @@ jobs:
           --exclude='.env' \
           --exclude='phpunit.xml' \
           --exclude='README.md' \
+          --exclude='*.sql' \
+          --exclude='*.log' \
           ./ u715355537@212.107.17.234:/home/u715355537/domains/hwnix.com/public_html/bill-api/
 
       - name: Run Database Migrations
