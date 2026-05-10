@@ -94,8 +94,8 @@ trait LogsActivity
 
         \App\Jobs\LogActivityJob::dispatch([
             'action' => $action,
-            'subject_type' => get_class($this),
-            'subject_id' => $this->id,
+            'model' => get_class($this),
+            'row_id' => $this->id,
             'old_values' => $filter($oldValues),
             'new_values' => $filter($newValues),
             'user_id' => $user->id,

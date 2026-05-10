@@ -58,6 +58,14 @@ jobs:
         run: |
           ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan migrate --force"
 
+      - name: Seed Permissions
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan db:seed --class=PermissionsSeeder --force"
+
+      - name: Reset Permissions Cache
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan permission:cache-reset"
+
       - name: Clear All Caches
         run: |
           ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan cache:clear && php artisan permission:cache-reset && php artisan config:clear && php artisan route:clear && php artisan event:clear"

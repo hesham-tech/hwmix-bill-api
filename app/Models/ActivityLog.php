@@ -19,8 +19,10 @@ class ActivityLog extends Model
 
     protected $fillable = [
         'action',
-        'subject_type',
-        'subject_id',
+        'model',
+        'row_id',
+        'data_old',
+        'data_new',
         'old_values',
         'new_values',
         'description',
@@ -54,7 +56,7 @@ class ActivityLog extends Model
 
     public function subject()
     {
-        return $this->morphTo();
+        return $this->morphTo(__FUNCTION__, 'model', 'row_id');
     }
 
     public function creator()

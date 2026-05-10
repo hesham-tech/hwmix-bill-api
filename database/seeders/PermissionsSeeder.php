@@ -25,8 +25,8 @@ class PermissionsSeeder extends Seeder
         \Artisan::call('clear-compiled');
 
 
-        // مسح الصلاحيات الموجودة مسبقًا لتجنب التكرار في كل مرة يتم تشغيل Seeder
-        Permission::query()->delete();
+        // تم إزالة السطر التالي للحفاظ على الصلاحيات الحالية في بيئة الإنتاج
+        // Permission::query()->delete();
 
         // ✅ تنظيف كاش الصلاحيات الخاص بـ Spatie
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -54,9 +54,13 @@ class PermissionsSeeder extends Seeder
             }
         }
 
-        // إدراج جميع الصلاحيات دفعة واحدة في جدول الصلاحيات
-        // هذا الأسلوب أسرع بكثير من الإدراج في حلقة
-        Permission::insert($permissionsToSeed);
+        // إدراج الصلاحيات بأمان باستخدام firstOrCreate لتجنب مسح القديم
+        foreach ($permissionsToSeed as $perm) {
+            Permission::firstOrCreate(
+                ['name' => $perm['name']],
+                ['guard_name' => $perm['guard_name']]
+            );
+        }
 
         // تشغيل Seeder الخاص بالمستخدمين أولاً إذا كان ينشئ المستخدمين
         $this->call(RolesAndPermissionsSeeder::class);
@@ -147,30 +151,37 @@ class PermissionsSeeder extends Seeder
                     }
                 }
             }
-            $role->syncPermissions($permissions);
+            // بدلاً من syncPermissions الذي يحذف الصلاحيات المخصصة الأخرى، نستخدم givePermissionTo لإضافة النواقص فقط
+            $role->givePermissionTo($permissions);
+
         }
 
-        // ربط كل شركة بكل الأدوار الأربعة في جدول الشركة-الدور
+        // ربط كل شركة بكل الأدوار الأربعة بأمان (دون استخدام truncate الذي يمسح كل شيء)
         $companyRoleTable = 'role_company';
         $companies = $companyModel::all();
         $roleIds = $roleModel::whereIn('name', array_column($roles, 'name'))->pluck('id', 'name');
         $now = now();
-        $pivotRows = [];
+        
         foreach ($companies as $company) {
             foreach ($roles as $roleData) {
-                $pivotRows[] = [
-                    'company_id' => $company->id,
-                    'role_id' => $roleIds[$roleData['name']],
-                    'created_by' => $userId,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
+                $roleId = $roleIds[$roleData['name']];
+                
+                // التأكد من عدم وجود الربط مسبقاً قبل الإضافة
+                $exists = \DB::table($companyRoleTable)
+                    ->where('company_id', $company->id)
+                    ->where('role_id', $roleId)
+                    ->exists();
+                    
+                if (!$exists) {
+                    \DB::table($companyRoleTable)->insert([
+                        'company_id' => $company->id,
+                        'role_id' => $roleId,
+                        'created_by' => $userId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
             }
-        }
-        // حذف جميع البيانات من جدول الربط قبل الإدراج لضمان عدم وجود بيانات سابقة بقيم null
-        \DB::table($companyRoleTable)->truncate();
-        if (!empty($pivotRows)) {
-            \DB::table($companyRoleTable)->insert($pivotRows);
         }
         $this->command->info('Roles and company-role relations seeded successfully!');
     }

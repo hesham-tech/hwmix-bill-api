@@ -601,7 +601,7 @@ class User extends Authenticatable
                 if ($activeCompanyId) {
                     $builder->where(function ($query) use ($activeCompanyId) {
                         // 1. المستخدم ينتمي مباشرة لهذه الشركة
-                        $query->where('company_id', $activeCompanyId)
+                        $query->where('users.company_id', $activeCompanyId)
                             // 2. أو المستخدم مرتبط بهذه الشركة عبر الجدول الوسيط
                             ->orWhereExists(function ($subQuery) use ($activeCompanyId) {
                                 $subQuery->select(\DB::raw(1))

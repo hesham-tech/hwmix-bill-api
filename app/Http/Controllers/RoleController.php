@@ -239,7 +239,8 @@ class RoleController extends Controller
                 return api_success(new RoleResource($role->load($this->relations)), 'تم إنشاء الدور بنجاح.', 201);
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء إنشاء الدور.', [], 500);
+                \Log::error('Role creation error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+                return api_error('حدث خطأ أثناء إنشاء الدور: ' . $e->getMessage(), [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -344,7 +345,8 @@ class RoleController extends Controller
                 return api_success(new RoleResource($role->load($this->relations)), 'تم تحديث الدور بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء تحديث الدور.', [], 500);
+                \Log::error('Role update error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+                return api_error('حدث خطأ أثناء تحديث الدور: ' . $e->getMessage(), [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -467,7 +469,8 @@ class RoleController extends Controller
                 return api_success(null, 'تم حذف الأدوار المحددة بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء حذف الأدوار.', [], 500);
+                \Log::error('Role delete error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+                return api_error('حدث خطأ أثناء حذف الأدوار: ' . $e->getMessage(), [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -542,7 +545,8 @@ class RoleController extends Controller
                 return api_success([], 'تم تعيين الأدوار للمستخدم بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء تعيين الأدوار للمستخدم.', [], 500);
+                \Log::error('Role assign error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+                return api_error('حدث خطأ أثناء تعيين الأدوار للمستخدم: ' . $e->getMessage(), [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
