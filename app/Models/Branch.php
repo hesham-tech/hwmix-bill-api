@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Blameable;
+use App\Traits\FilterableByCompany;
 use App\Traits\LogsActivity;
 use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Branch extends Model
 {
-    use HasFactory, SoftDeletes, Blameable, LogsActivity, Scopes;
+    use HasFactory, SoftDeletes, Blameable, LogsActivity, Scopes, FilterableByCompany;
 
     protected $guarded = [];
 

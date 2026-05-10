@@ -100,6 +100,26 @@ return [
         'delete_children' => ['key' => 'companies.delete_children', 'label' => 'حذف الشركات التابعة'],
         'delete_self' => ['key' => 'companies.delete_self', 'label' => 'حذف الشركة الحالية'],
     ],
+
+    // => BRANCHES
+    'branches' => [
+        'name' => ['key' => 'branches', 'label' => 'صلاحيات إدارة الفروع'],
+        'page' => ['key' => 'branches.page', 'label' => 'صفحة الفروع'],
+
+        'view_all' => ['key' => 'branches.view_all', 'label' => 'عرض كل الفروع'],
+        'view_children' => ['key' => 'branches.view_children', 'label' => 'عرض الفروع التابعة'],
+        'view_self' => ['key' => 'branches.view_self', 'label' => 'عرض الفرع النشط'],
+        
+        'create' => ['key' => 'branches.create', 'label' => 'إنشاء فرع'],
+        
+        'update_all' => ['key' => 'branches.update_all', 'label' => 'تعديل أي فرع'],
+        'update_children' => ['key' => 'branches.update_children', 'label' => 'تعديل الفروع التابعة'],
+        'update_self' => ['key' => 'branches.update_self', 'label' => 'تعديل الفرع النشط'],
+        
+        'delete_all' => ['key' => 'branches.delete_all', 'label' => 'حذف أي فرع'],
+        'delete_children' => ['key' => 'branches.delete_children', 'label' => 'حذف الفروع التابعة'],
+        'delete_self' => ['key' => 'branches.delete_self', 'label' => 'حذف الفرع النشط'],
+    ],
     // => USERS
     'users' => [
         'name' => ['key' => 'users', 'label' => 'صلاحيات إدارة المستخدمين'],
@@ -777,14 +797,5 @@ return [
         'deposit' => ['key' => 'balance.deposit', 'label' => 'إجراء إيداع رصيد (شخصي)'],
         'withdraw' => ['key' => 'balance.withdraw', 'label' => 'إجراء سحب رصيد (شخصي)'],
         'transfer' => ['key' => 'balance.transfer', 'label' => 'تحويل رصيد (شخصي)'],
-    ],
-    // => BRANCHES
-    'branches' => [
-        'name' => ['key' => 'branches', 'label' => 'صلاحيات إدارة الفروع'],
-        'page' => ['key' => 'branches.page', 'label' => 'صفحة الفروع'],
-        'view_all' => ['key' => 'branches.view_all', 'label' => 'عرض كل الفروع'],
-        'create' => ['key' => 'branches.create', 'label' => 'إنشاء فرع جديد'],
-        'update_all' => ['key' => 'branches.update_all', 'label' => 'تعديل بيانات أي فرع'],
-        'delete_all' => ['key' => 'branches.delete_all', 'label' => 'حذف أي فرع'],
     ],
 ];

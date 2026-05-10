@@ -44,6 +44,14 @@ class UserWithPermissionsResource extends JsonResource
             'cashBoxes' => $this->whenLoaded('cashBoxes', fn() => CashBoxResource::collection($this->cashBoxes ?? collect())),
             'branches' => $this->whenLoaded('branches', fn() => $this->branches ?? collect()),
 
+            // التأكد من تحديد شركة المستخدم قبل جلب الصلاحيات (مهم لمسارات تسجيل الدخول)
+            $this->merge(function () {
+                if (config('permission.teams') && $this->company_id) {
+                    setPermissionsTeamId($this->company_id);
+                }
+                return [];
+            }),
+
             // الصلاحيات والادوار
             'roles' => $this->getRolesWithPermissions(),
             'permissions' => $this->resource->hasPermissionTo(perm_key('admin.super'))
