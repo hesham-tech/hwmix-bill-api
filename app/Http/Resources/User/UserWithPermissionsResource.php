@@ -47,7 +47,20 @@ class UserWithPermissionsResource extends JsonResource
             // الشركات التي يمكن للمستخدم الوصول إليها
             'companies' => $this->whenLoaded('companies', fn() => CompanyResource::collection($this->getVisibleCompaniesForUser() ?? collect())),
             'cashBoxes' => $this->whenLoaded('cashBoxes', fn() => CashBoxResource::collection($this->cashBoxes ?? collect())),
-            'branches' => $this->whenLoaded('branches', fn() => $this->branches ?? collect()),
+            'branches' => $this->whenLoaded('branches', function () {
+                if ($this->hasPermissionTo(perm_key('admin.company')) || $this->hasPermissionTo(perm_key('admin.super'))) {
+                    return \App\Models\Branch::where('company_id', $this->company_id)->get();
+                }
+                // إضافة الفرع الافتراضي إذا لم يكن ضمن الفروع المحملة
+                $branches = $this->branches;
+                if ($this->branch_id && !$branches->contains('id', $this->branch_id)) {
+                    $defaultBranch = \App\Models\Branch::find($this->branch_id);
+                    if ($defaultBranch) {
+                        $branches->push($defaultBranch);
+                    }
+                }
+                return $branches;
+            }),
 
             // الصلاحيات والادوار
             'roles' => $this->getRolesWithPermissions(),

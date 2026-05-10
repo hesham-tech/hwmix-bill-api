@@ -481,6 +481,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     Route::get('global-search', 'App\Http\Controllers\GlobalSearchController@search');
 
     // Branches
+    Route::get('branches/my-branches', [\App\Http\Controllers\Api\V1\BranchController::class, 'myBranches']);
     Route::apiResource('branches', \App\Http\Controllers\Api\V1\BranchController::class);
 
     // Artisan commands routes (Secured)

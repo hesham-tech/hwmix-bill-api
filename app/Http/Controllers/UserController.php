@@ -31,6 +31,7 @@ class UserController extends Controller
             'creator',
             'companies',
             'activeCompanyUser.company',
+            'branches',
         ];
     }
 
@@ -373,6 +374,22 @@ class UserController extends Controller
                 }
             }
 
+            // مزامنة الفروع (Multi-Branch Sync)
+            if ($request->has('branch_ids')) {
+                $branchIds = array_filter((array) $request->input('branch_ids'));
+                $defaultBranchId = $user->branch_id ?? config('app.active_branch_id');
+                if ($defaultBranchId && !in_array($defaultBranchId, $branchIds)) {
+                    $branchIds[] = $defaultBranchId;
+                }
+                
+                // التحقق من أن الفروع تنتمي لشركة المستخدم لمنع تعيين فروع لشركات أخرى
+                $validBranchIds = \App\Models\Branch::whereIn('id', $branchIds)
+                                        ->where('company_id', $activeCompanyId)
+                                        ->pluck('id')->toArray();
+                                        
+                $user->branches()->sync($validBranchIds);
+            }
+
             // [تمت الإزالة]: ضمان وجود الخزنة يتم الآن عبر CompanyUserObserver و lazy-loading في الموديل
 
 
@@ -628,6 +645,17 @@ class UserController extends Controller
                         'status' => 'active'
                     ]);
                 }
+            }
+
+            // مزامنة الفروع (Multi-Branch Sync)
+            if ($request->has('branch_ids')) {
+                $branchIds = array_filter((array) $request->input('branch_ids'));
+                
+                $validBranchIds = \App\Models\Branch::whereIn('id', $branchIds)
+                                        ->where('company_id', $activeCompanyId)
+                                        ->pluck('id')->toArray();
+                                        
+                $user->branches()->sync($validBranchIds);
             }
 
             // 4. تحديث الأدوار والصلاحيات (سياق الشركة المعطاة أو النشطة)

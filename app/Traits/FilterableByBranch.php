@@ -16,21 +16,48 @@ trait FilterableByBranch
     public static function bootFilterableByBranch()
     {
         static::addGlobalScope('branch_filter', function (Builder $builder) {
-            // 1. الأولوية للفرع المحدد في الكونتكست (X-Branch-Id header)
-            $activeBranchId = config('app.active_branch_id');
-
-            if ($activeBranchId) {
-                $builder->where($builder->getQuery()->from . '.branch_id', $activeBranchId);
+            $user = Auth::user();
+            
+            if (!$user) {
                 return;
             }
 
-            // 2. إذا لم يوجد كونتكست، نستخدم فرع المستخدم الموثق (إذا لم يكن سوبر أدمن)
-            $user = Auth::user();
-            if ($user && !$user->hasPermissionTo(perm_key('admin.super'))) {
-                $branchId = $user->branch_id;
-                if ($branchId) {
-                    $builder->where($builder->getQuery()->from . '.branch_id', $branchId);
+            // سوبر أدمن يرى كل شيء إذا لم يحدد فرعاً معيناً
+            if ($user->hasPermissionTo(perm_key('admin.super')) && !config('app.active_branch_id')) {
+                return;
+            }
+
+            $activeBranchId = config('app.active_branch_id');
+            $allowedBranchIds = $user->getAllowedBranchIds();
+
+            if ($activeBranchId === 'all') {
+                // إذا اختار عرض كل الفروع
+                if ($user->hasPermissionTo(perm_key('admin.company'))) {
+                    // مدير الشركة يرى كل فروع شركته، لا حاجة لفلتر الفرع لأن فلتر الشركة يعمل
+                    return;
+                } else {
+                    // الموظف العادي يرى الفروع المخصصة له فقط
+                    $builder->whereIn($builder->getQuery()->from . '.branch_id', $allowedBranchIds);
+                    return;
                 }
+            } elseif ($activeBranchId) {
+                // إذا اختار فرعاً محدداً، يجب التأكد أنه ضمن فنياته المسموحة أو أنه مدير شركة
+                if ($user->hasPermissionTo(perm_key('admin.company')) || in_array($activeBranchId, $allowedBranchIds)) {
+                    $builder->where($builder->getQuery()->from . '.branch_id', $activeBranchId);
+                } else {
+                    // محاولة وصول لفرع غير مصرح به
+                    $builder->whereRaw('1 = 0');
+                }
+                return;
+            }
+
+            // إذا لم يتم تمرير هيدر، نستخدم الفرع الافتراضي للمستخدم أو أول فرع في القائمة
+            if ($user->branch_id) {
+                $builder->where($builder->getQuery()->from . '.branch_id', $user->branch_id);
+            } elseif (!empty($allowedBranchIds)) {
+                $builder->where($builder->getQuery()->from . '.branch_id', $allowedBranchIds[0]);
+            } else {
+                $builder->whereRaw('1 = 0'); // لا يوجد فروع
             }
         });
     }

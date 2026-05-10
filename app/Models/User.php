@@ -375,11 +375,32 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة الحصول على فروع الشركة المرتبط بها المستخدم
+     * علاقة الحصول على جميع فروع الشركة المرتبط بها المستخدم
      */
-    public function branches(): HasMany
+    public function companyBranches(): HasMany
     {
         return $this->hasMany(Branch::class, 'company_id', 'company_id');
+    }
+
+    /**
+     * علاقة الفروع المخصصة للمستخدم عبر الجدول الوسيط branch_user
+     */
+    public function branches(): BelongsToMany
+    {
+        return $this->belongsToMany(Branch::class, 'branch_user', 'user_id', 'branch_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * الحصول على جميع معرفات الفروع المسموح للموظف رؤيتها
+     */
+    public function getAllowedBranchIds(): array
+    {
+        $branchIds = $this->branches()->pluck('branches.id')->toArray();
+        if ($this->branch_id && !in_array($this->branch_id, $branchIds)) {
+            $branchIds[] = $this->branch_id; // إضافة الفرع الافتراضي إن لم يكن في الجدول الوسيط
+        }
+        return $branchIds;
     }
 
     /**

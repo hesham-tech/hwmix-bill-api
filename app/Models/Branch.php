@@ -35,9 +35,13 @@ class Branch extends Model
     /**
      * علاقة الفرع بالمستخدمين (الموظفين).
      */
+    /**
+     * علاقة الفرع بالمستخدمين (الموظفين) عبر الجدول الوسيط.
+     */
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class, 'branch_user', 'branch_id', 'user_id')
+                    ->withTimestamps();
     }
 
     /**

@@ -26,6 +26,27 @@ class BranchController extends Controller
     }
 
     /**
+     * عرض الفروع المسموح للمستخدم الحالي رؤيتها
+     */
+    public function myBranches()
+    {
+        $user = auth()->user();
+        if ($user->hasPermissionTo(perm_key('admin.company'))) {
+            // مدير الشركة يرى جميع فروع شركته
+            $branches = Branch::all();
+        } else {
+            // الموظف العادي يرى الفروع المخصصة له فقط
+            $allowedIds = $user->getAllowedBranchIds();
+            $branches = Branch::whereIn('id', $allowedIds)->get();
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $branches
+        ]);
+    }
+
+    /**
      * إنشاء فرع جديد
      */
     public function store(Request $request)
