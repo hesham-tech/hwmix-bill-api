@@ -435,6 +435,10 @@ class UserController extends Controller
             }
 
             DB::commit();
+            
+            // إطلاق حدث النظام لإنشاء المستخدم
+            event(new \App\Events\UserCreated($user));
+            
             Log::info('=== USER CREATION SUCCESS ===', ['user_id' => $user->id]);
 
             return api_success(new CompanyUserResource($companyUser->load('user', 'company')), 'تمت إضافة المستخدم بنجاح.');

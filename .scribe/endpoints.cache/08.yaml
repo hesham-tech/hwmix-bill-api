@@ -4,10 +4,12 @@ name: '09. الأذونات والأمن'
 description: ''
 endpoints:
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/roles
+    uri: api/v1/roles
     metadata:
+      custom: []
       groupName: '09. الأذونات والأمن'
       groupDescription: ''
       subgroup: ''
@@ -17,16 +19,17 @@ endpoints:
 
         استرجاع كافة المجموعات (Roles) المعرفة في النظام (مثل: مدير، بائع، أمين مخزن).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       company_id:
+        custom: []
         name: company_id
         description: 'فلترة حسب الشركة.'
         required: false
@@ -35,8 +38,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       name:
+        custom: []
         name: name
         description: 'البحث باسم الدور.'
         required: false
@@ -45,8 +49,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'عدد العناصر. Default: 10.'
         required: false
@@ -55,7 +60,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       company_id: 1
       name: admin
@@ -65,22 +70,26 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":1,"name":"\u0645\u062f\u064a\u0631 \u0634\u0631\u0643\u0629","label":null,"description":null,"guard_name":"web","permissions_count":329,"users_count":3,"created_at":"2025-07-09 09:15:49","updated_at":"2025-07-09 09:15:49"},{"id":1,"name":"\u0645\u062f\u064a\u0631 \u0634\u0631\u0643\u0629","label":null,"description":null,"guard_name":"web","permissions_count":329,"users_count":3,"created_at":"2025-07-09 09:15:49","updated_at":"2025-07-09 09:15:49"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer VaZce6a5gDdPb8kfE14h6v3'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/permissions
+    uri: api/v1/permissions
     metadata:
+      custom: []
       groupName: '09. الأذونات والأمن'
       groupDescription: ''
       subgroup: ''
@@ -90,10 +99,10 @@ endpoints:
 
         جلب جميع تعريفات الصلاحيات المتاحة في النظام من ملف الإعدادات.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -105,6 +114,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -112,10 +122,11 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 4vfPhZag8VkD5b1dEa6c6e3'
     controller: null
     method: null
     route: null
-    custom: []

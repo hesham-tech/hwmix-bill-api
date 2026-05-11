@@ -4,10 +4,12 @@ name: '01. إدارة المصادقة'
 description: ''
 endpoints:
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/register
+    uri: api/v1/register
     metadata:
+      custom: []
       groupName: '01. إدارة المصادقة'
       groupDescription: ''
       subgroup: ''
@@ -17,10 +19,10 @@ endpoints:
 
         إنشاء حساب مستخدم جديد وربطه بالشركة الافتراضية.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -29,6 +31,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       full_name:
+        custom: []
         name: full_name
         description: 'الاسم الكامل للمستخدم.'
         required: false
@@ -37,8 +40,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       nickname:
+        custom: []
         name: nickname
         description: 'الاسم الحركي أو اللقب.'
         required: false
@@ -47,8 +51,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       phone:
+        custom: []
         name: phone
         description: 'رقم الهاتف (يجب أن يكون فريداً).'
         required: true
@@ -57,8 +62,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       password:
+        custom: []
         name: password
         description: 'كلمة المرور (8 أحرف على الأقل).'
         required: true
@@ -67,8 +73,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       email:
+        custom: []
         name: email
         description: 'البريد الإلكتروني (اختياري وفريد).'
         required: false
@@ -77,7 +84,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       full_name: 'هشام محمد'
       nickname: 'أبو هيبة'
@@ -87,6 +94,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 201
         content: |-
           {
@@ -96,18 +104,21 @@ endpoints:
           }
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 5DZevVhb638cE1dfkP46aag'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/login
+    uri: api/v1/login
     metadata:
+      custom: []
       groupName: '01. إدارة المصادقة'
       groupDescription: ''
       subgroup: ''
@@ -117,10 +128,10 @@ endpoints:
 
         الحصول على رمز الوصول (Access Token) باستخدام الهاتف أو البريد الإلكتروني.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -129,6 +140,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       login:
+        custom: []
         name: login
         description: 'الهاتف أو البريد الإلكتروني.'
         required: true
@@ -137,8 +149,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       password:
+        custom: []
         name: password
         description: 'كلمة المرور.'
         required: true
@@ -147,13 +160,14 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       login: '01099223344'
       password: password123
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: |-
           {
@@ -163,18 +177,21 @@ endpoints:
           }
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer f46Vaag5hk1Zv8dDbPe6c3E'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/logout
+    uri: api/v1/logout
     metadata:
+      custom: []
       groupName: '01. إدارة المصادقة'
       groupDescription: ''
       subgroup: ''
@@ -184,10 +201,10 @@ endpoints:
 
         إبطال رمز الوصول الحالي للمستخدم.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -199,26 +216,30 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 1Z4gkaDc86e5EVhdvP6fa3b'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/auth/check
+    uri: api/v1/auth/check
     metadata:
+      custom: []
       groupName: '01. إدارة المصادقة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'فحص حالة تسجيل الدخول'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -230,6 +251,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -237,18 +259,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 65Z3EbadvPcf14k8ahe6DVg'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/auth/sessions
+    uri: api/v1/auth/sessions
     metadata:
+      custom: []
       groupName: '01. إدارة المصادقة'
       groupDescription: ''
       subgroup: ''
@@ -258,10 +283,10 @@ endpoints:
 
         استرجاع جميع الأجهزة المسجل الدخول منها حالياً.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -273,6 +298,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -280,28 +306,31 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer gvZacb1ek3PVdD54E6h6f8a'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: api/auth/sessions-others
+    uri: api/v1/auth/sessions-others
     metadata:
+      custom: []
       groupName: '01. إدارة المصادقة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تسجيل الخروج من جميع الأجهزة الأخرى'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -313,16 +342,20 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 56gkaaZ6VvPbd4cDEhfe318'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/auth/sessions/{id}'
+    uri: 'api/v1/auth/sessions/{id}'
     metadata:
+      custom: []
       groupName: '01. إدارة المصادقة'
       groupDescription: ''
       subgroup: ''
@@ -332,25 +365,26 @@ endpoints:
 
         تسجيل الخروج من جهاز معين.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       id:
+        custom: []
         name: id
         description: 'The ID of the session.'
         required: true
-        example: voluptatem
+        example: dolorum
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      id: voluptatem
+      id: dolorum
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -358,16 +392,20 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer adEV6PhegD16cvbfk485aZ3'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/me
+    uri: api/v1/me
     metadata:
+      custom: []
       groupName: '01. إدارة المصادقة'
       groupDescription: ''
       subgroup: ''
@@ -377,10 +415,10 @@ endpoints:
 
         استعادة بيانات المستخدم المصادق عليه حالياً.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -392,6 +430,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -399,10 +438,11 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Pe5Vavh146gdfa8ZbkDE63c'
     controller: null
     method: null
     route: null
-    custom: []

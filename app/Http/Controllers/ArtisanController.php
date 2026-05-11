@@ -21,7 +21,8 @@ class ArtisanController extends Controller
      */
     private function authorizeAdmin()
     {
-        if (auth()->user()?->email !== 'admin@admin.com') {
+        $user = auth()->user();
+        if (!$user || !$user->hasPermissionTo(perm_key('admin.super'))) {
             return false;
         }
         return true;

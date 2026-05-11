@@ -2,20 +2,22 @@ name: '05. إدراة المستخدمين'
 description: ''
 endpoints:
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/roles
+    uri: api/v1/roles
     metadata:
+      custom: []
       groupName: '05. إدراة المستخدمين'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إنشاء دور جديد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -24,6 +26,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم الدور الفريد.'
         required: true
@@ -32,8 +35,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       company_ids:
+        custom: []
         name: company_ids
         description: 'مصفوفة الشركات المرتبطة.'
         required: false
@@ -43,8 +47,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       permissions:
+        custom: []
         name: permissions
         description: 'مصفوفة مسميات الصلاحيات.'
         required: false
@@ -55,7 +60,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: Accountant
       company_ids:
@@ -66,30 +71,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer VEg568kbvPa6Dhc43e1daZf'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/roles/{role_id}'
+    uri: 'api/v1/roles/{role_id}'
     metadata:
+      custom: []
       groupName: '05. إدراة المستخدمين'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل دور'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       role_id:
+        custom: []
         name: role_id
         description: 'The ID of the role.'
         required: true
@@ -98,8 +108,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       role:
+        custom: []
         name: role
         description: 'معرف الدور.'
         required: true
@@ -108,7 +119,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       role_id: 1
       role: '1'
@@ -119,6 +130,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -126,32 +138,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 16fhaZkd4c35v6aVbe8PEDg'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/roles/{role_id}'
+    uri: 'api/v1/roles/{role_id}'
     metadata:
+      custom: []
       groupName: '05. إدراة المستخدمين'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث بيانات دور'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       role_id:
+        custom: []
         name: role_id
         description: 'The ID of the role.'
         required: true
@@ -160,8 +176,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       role:
+        custom: []
         name: role
         description: 'معرف الدور.'
         required: true
@@ -170,7 +187,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       role_id: 1
       role: '1'
@@ -178,6 +195,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم الدور.'
         required: false
@@ -186,8 +204,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       permissions:
+        custom: []
         name: permissions
         description: 'تحديث قائمة الصلاحيات.'
         required: false
@@ -197,7 +216,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: 'Senior Accountant'
       permissions:
@@ -205,30 +224,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer VZg4e3cbf58EdhP1Dva66ka'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/roles/{role_id}'
+    uri: 'api/v1/roles/{role_id}'
     metadata:
+      custom: []
       groupName: '05. إدراة المستخدمين'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف دور واحد أو عدة أدوار (Single/Batch Delete)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       role_id:
+        custom: []
         name: role_id
         description: 'The ID of the role.'
         required: true
@@ -237,8 +261,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       role:
+        custom: []
         name: role
         description: 'معرف الدور للحذف المفرد.'
         required: false
@@ -247,7 +272,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       role_id: 1
       role: 1
@@ -255,6 +280,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       item_ids:
+        custom: []
         name: item_ids
         description: 'مصفوفة معرفات الأدوار للحذف الجماعي.'
         required: false
@@ -265,7 +291,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       item_ids:
         - 2
@@ -273,30 +299,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer kDdPfga1c8Vb53vEhea466Z'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/roles/batch-delete
+    uri: api/v1/roles/batch-delete
     metadata:
+      custom: []
       groupName: '05. إدراة المستخدمين'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف دور واحد أو عدة أدوار (Single/Batch Delete)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       role:
+        custom: []
         name: role
         description: 'معرف الدور للحذف المفرد.'
         required: false
@@ -305,13 +336,14 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       role: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       item_ids:
+        custom: []
         name: item_ids
         description: 'مصفوفة معرفات الأدوار للحذف الجماعي.'
         required: false
@@ -322,7 +354,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       item_ids:
         - 2
@@ -330,26 +362,30 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer e5EdvV8kagD6Z6fhc3b4Pa1'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/roles/assign
+    uri: api/v1/roles/assign
     metadata:
+      custom: []
       groupName: '05. إدراة المستخدمين'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تعيين أدوار لمستخدم'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -358,6 +394,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'معرف المستخدم.'
         required: true
@@ -366,8 +403,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       roles:
+        custom: []
         name: roles
         description: 'مصفوفة مسميات الأدوار.'
         required: true
@@ -378,7 +416,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       user_id: 1
       roles:
@@ -387,8 +425,10 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 4ak1EVPh386d5begafvcDZ6'
     controller: null
     method: null
     route: null
-    custom: []

@@ -2,10 +2,12 @@ name: '06. العمليات المالية والخزينة'
 description: ''
 endpoints:
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/transfer
+    uri: api/v1/transactions/transfer
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
@@ -15,10 +17,10 @@ endpoints:
 
         إجراء عملية تحويل رصيد من صندوق مستخدم إلى صندوق مستخدم آخر أو لنفس المستخدم في صندوق آخر.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -27,6 +29,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       target_user_id:
+        custom: []
         name: target_user_id
         description: 'معرف المستخدم المستهدف.'
         required: true
@@ -35,8 +38,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       amount:
+        custom: []
         name: amount
         description: المبلغ.
         required: true
@@ -45,8 +49,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       from_cash_box_id:
+        custom: []
         name: from_cash_box_id
         description: 'معرف صندوق الصادر.'
         required: true
@@ -55,8 +60,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       to_cash_box_id:
+        custom: []
         name: to_cash_box_id
         description: 'معرف صندوق الوارد.'
         required: true
@@ -65,8 +71,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: 'وصف المعاملة.'
         required: false
@@ -75,7 +82,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       target_user_id: 2
       amount: 100.0
@@ -85,26 +92,30 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer V4dc8gebk6f5PD13haa6vZE'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/deposit
+    uri: api/v1/transactions/deposit
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إيداع نقدي (Deposit)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -113,6 +124,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       amount:
+        custom: []
         name: amount
         description: 'المبلغ المودع.'
         required: true
@@ -121,8 +133,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       cash_box_id:
+        custom: []
         name: cash_box_id
         description: 'معرف الخزنة.'
         required: true
@@ -131,8 +144,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: 'وصف الإيداع.'
         required: false
@@ -141,7 +155,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       amount: 1000.0
       cash_box_id: 1
@@ -149,26 +163,30 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Eab5ZafP6cD8hg41e6k3dvV'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/withdraw
+    uri: api/v1/transactions/withdraw
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'سحب نقدي (Withdraw)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -177,6 +195,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       amount:
+        custom: []
         name: amount
         description: 'المبلغ المسحوب.'
         required: true
@@ -185,8 +204,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       cash_box_id:
+        custom: []
         name: cash_box_id
         description: 'معرف الخزنة.'
         required: true
@@ -195,8 +215,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: 'وصف السحب.'
         required: false
@@ -205,7 +226,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       amount: 200.0
       cash_box_id: 1
@@ -213,32 +234,37 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Pgd1b3af4ekhVacZv6E6D85'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/transactions
+    uri: api/v1/transactions
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض جميع المعاملات (للمدراء)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       type:
+        custom: []
         name: type
         description: 'نوع المعاملة.'
         required: false
@@ -247,8 +273,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'معرف المستخدم.'
         required: false
@@ -257,8 +284,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       cashbox_id:
+        custom: []
         name: cashbox_id
         description: 'معرف الخزنة.'
         required: false
@@ -267,8 +295,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_at_from:
+        custom: []
         name: created_at_from
         description: 'date تاريخ من.'
         required: false
@@ -277,7 +306,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       type: سحب
       user_id: 1
@@ -288,6 +317,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -295,32 +325,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer k6PEdcf1v65eh4VgDb83aZa'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/transactions/user/{cashBoxId?}'
+    uri: 'api/v1/transactions/user/{cashBoxId?}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'سجل عمليات المستخدم في خزنة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       cashBoxId:
+        custom: []
         name: cashBoxId
         description: 'معرف الخزنة.'
         required: true
@@ -329,11 +363,12 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       cashBoxId: '1'
     queryParameters:
       type:
+        custom: []
         name: type
         description: 'نوع العملية (إيداع، سحب، تحويل).'
         required: false
@@ -342,8 +377,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_at_from:
+        custom: []
         name: created_at_from
         description: 'date تاريخ من.'
         required: false
@@ -352,26 +388,28 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'عدد النتائج. Default: 20'
         required: false
-        example: 15
+        example: 7
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       type: إيداع
       created_at_from: '2023-01-01'
-      per_page: 15
+      per_page: 7
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -379,18 +417,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer e8ca51DgZkfa6EP3hbvdV64'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: 'api/transactions/{transaction}/reverse'
+    uri: 'api/v1/transactions/{transaction}/reverse'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
@@ -400,24 +441,26 @@ endpoints:
 
         إلغاء معاملة سابقة وإرجاع الحالة كما كانت.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       transaction:
+        custom: []
         name: transaction
         description: 'The transaction.'
         required: true
-        example: nam
+        example: quam
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       transactionId:
+        custom: []
         name: transactionId
         description: 'المعرف الفريد للمعاملة (UUID).'
         required: true
@@ -426,9 +469,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      transaction: nam
+      transaction: quam
       transactionId: 9abc-123...
     queryParameters: []
     cleanQueryParameters: []
@@ -437,16 +480,20 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer fvdZaD5ae4P6h6bkEcV13g8'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/cash-box-types
+    uri: api/v1/cash-box-types
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
@@ -456,16 +503,17 @@ endpoints:
 
         استرجاع أنواع الصناديق المالية (مثل: خزنة فرعية، حساب بنكي، عهدة موظف).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       description:
+        custom: []
         name: description
         description: 'البحث بالوصف.'
         required: false
@@ -474,8 +522,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       is_default:
+        custom: []
         name: is_default
         description: 'تصفية حسب الافتراضي.'
         required: false
@@ -484,7 +533,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       description: بنك
       is_default: true
@@ -493,32 +542,36 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":[{"id":1,"name":"\u0646\u0642\u062f\u064a","description":"\u062e\u0632\u0646\u0629 \u0645\u062e\u0635\u0635\u0629 \u0644\u0644\u062f\u0641\u0639 \u0627\u0644\u0646\u0642\u062f\u064a","is_default":false,"is_system":false,"is_active":true,"image_url":null,"image_id":null,"company_id":null,"created_by":null,"creator_name":null,"cash_boxes_count":94,"created_at":"2025-07-09 09:15:49","updated_at":"2025-07-09 09:15:49"},{"id":1,"name":"\u0646\u0642\u062f\u064a","description":"\u062e\u0632\u0646\u0629 \u0645\u062e\u0635\u0635\u0629 \u0644\u0644\u062f\u0641\u0639 \u0627\u0644\u0646\u0642\u062f\u064a","is_default":false,"is_system":false,"is_active":true,"image_url":null,"image_id":null,"company_id":null,"created_by":null,"creator_name":null,"cash_boxes_count":94,"created_at":"2025-07-09 09:15:49","updated_at":"2025-07-09 09:15:49"}]}'
+        content: '{"data":[{"id":1,"name":"\u0646\u0642\u062f\u064a","description":"\u0635\u0646\u062f\u0648\u0642 \u0646\u0642\u062f\u064a - \u0644\u0644\u0627\u062d\u062a\u0641\u0627\u0638 \u0628\u0627\u0644\u0646\u0642\u0648\u062f \u0627\u0644\u0633\u0627\u0626\u0644\u0629","is_default":false,"is_system":true,"is_active":true,"image_url":null,"image_id":null,"company_id":null,"created_by":null,"creator_name":null,"cash_boxes_count":89,"created_at":"2025-07-09 09:15:49","updated_at":"2026-02-07 11:58:18"},{"id":1,"name":"\u0646\u0642\u062f\u064a","description":"\u0635\u0646\u062f\u0648\u0642 \u0646\u0642\u062f\u064a - \u0644\u0644\u0627\u062d\u062a\u0641\u0627\u0638 \u0628\u0627\u0644\u0646\u0642\u0648\u062f \u0627\u0644\u0633\u0627\u0626\u0644\u0629","is_default":false,"is_system":true,"is_active":true,"image_url":null,"image_id":null,"company_id":null,"created_by":null,"creator_name":null,"cash_boxes_count":89,"created_at":"2025-07-09 09:15:49","updated_at":"2026-02-07 11:58:18"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 63e5VEDb6P1gd8Zcfka4hva'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/cash-box-types
+    uri: api/v1/cash-box-types
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إضافة نوع خزنة جديد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -527,6 +580,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       description:
+        custom: []
         name: description
         description: 'وصف النوع.'
         required: true
@@ -535,8 +589,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       is_default:
+        custom: []
         name: is_default
         description: 'هل هو النوع الافتراضي.'
         required: false
@@ -545,37 +600,42 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       description: نقدي
       is_default: false
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer avhc5b4kfd8gZ6ea6EDV31P'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/cash-box-types/{cashBoxType}'
+    uri: 'api/v1/cash-box-types/{cashBoxType}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل نوع خزنة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       cashBoxType:
+        custom: []
         name: cashBoxType
         description: 'معرف النوع.'
         required: true
@@ -584,7 +644,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       cashBoxType: '1'
     queryParameters: []
@@ -594,6 +654,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -601,32 +662,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6cbv1Z84eVfg5adhPk3ED6a'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/cash-box-types/{cashBoxType}'
+    uri: 'api/v1/cash-box-types/{cashBoxType}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث نوع خزنة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       cashBoxType:
+        custom: []
         name: cashBoxType
         description: 'معرف النوع.'
         required: true
@@ -635,13 +700,14 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       cashBoxType: '1'
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       description:
+        custom: []
         name: description
         description: 'وصف النوع المحدث.'
         required: false
@@ -650,36 +716,41 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       description: 'عهدة شخصية'
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer DV4hgkeb5PE83dva1cfaZ66'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PATCH
-    uri: 'api/cash-box-types/{id}/toggle'
+    uri: 'api/v1/cash-box-types/{id}/toggle'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تفعيل/تعطيل نوع الخزنة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       id:
+        custom: []
         name: id
         description: 'معرف النوع.'
         required: true
@@ -688,7 +759,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       id: '1'
     queryParameters: []
@@ -698,30 +769,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer eghE45bDc6k8Vav16adPfZ3'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/cash-box-types/{cashBoxType}'
+    uri: 'api/v1/cash-box-types/{cashBoxType}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف أنواع خزن (Batch Delete)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       cashBoxType:
+        custom: []
         name: cashBoxType
         description: ''
         required: true
@@ -730,13 +806,14 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       cashBoxType: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       item_ids:
+        custom: []
         name: item_ids
         description: 'مصفوفة المعرفات.'
         required: true
@@ -747,7 +824,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       item_ids:
         - 2
@@ -755,32 +832,37 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer d3EcVahvfP6bg6e8Z41aDk5'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/cash-boxes
+    uri: api/v1/cash-boxes
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض قائمة الخزن'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       current_user:
+        custom: []
         name: current_user
         description: 'عرض الخزن المرتبطة بالمستخدم الحالي فقط.'
         required: false
@@ -789,8 +871,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       name:
+        custom: []
         name: name
         description: 'البحث باسم الخزنة.'
         required: false
@@ -799,8 +882,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       account_number:
+        custom: []
         name: account_number
         description: 'رقم الحساب.'
         required: false
@@ -809,8 +893,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_at_from:
+        custom: []
         name: created_at_from
         description: 'date تاريخ الإنشاء من.'
         required: false
@@ -819,8 +904,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'فلترة لصالح مستخدم معين.'
         required: false
@@ -829,55 +915,60 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'عدد النتائج. Default: 10'
         required: false
-        example: 9
+        example: 20
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       current_user: true
       name: 'الخزنة الرئيسية'
       account_number: '123456'
       created_at_from: '2023-01-01'
       user_id: 2
-      per_page: 9
+      per_page: 20
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":[{"id":1,"name":"\u0627\u0644\u062e\u0632\u0646\u0629 \u0627\u0644\u0646\u0642\u062f\u064a\u0629","balance":"0.00","cash_type":"\u0646\u0642\u062f\u064a","cash_box_type_id":1,"user_id":1,"created_by":1,"company_id":1,"is_default":1,"is_active":true,"created_at":"2025-07-09","updated_at":"2025-07-09"},{"id":1,"name":"\u0627\u0644\u062e\u0632\u0646\u0629 \u0627\u0644\u0646\u0642\u062f\u064a\u0629","balance":"0.00","cash_type":"\u0646\u0642\u062f\u064a","cash_box_type_id":1,"user_id":1,"created_by":1,"company_id":1,"is_default":1,"is_active":true,"created_at":"2025-07-09","updated_at":"2025-07-09"}]}'
+        content: '{"data":[{"id":1,"name":"\u0627\u0644\u062e\u0632\u0646\u0629 \u0627\u0644\u0646\u0642\u062f\u064a\u0629","balance":"0.00","cash_type":"\u0646\u0642\u062f\u064a","cash_box_type_id":1,"user_id":1,"created_by":1,"company_id":1,"is_default":0,"is_active":true,"created_at":"2025-07-09","updated_at":"2026-02-07"},{"id":1,"name":"\u0627\u0644\u062e\u0632\u0646\u0629 \u0627\u0644\u0646\u0642\u062f\u064a\u0629","balance":"0.00","cash_type":"\u0646\u0642\u062f\u064a","cash_box_type_id":1,"user_id":1,"created_by":1,"company_id":1,"is_default":0,"is_active":true,"created_at":"2025-07-09","updated_at":"2026-02-07"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer ebED8g3h1PVd46kvaZcaf56'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/cash-boxes
+    uri: api/v1/cash-boxes
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إنشاء خزنة جديدة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -886,6 +977,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم الخزنة.'
         required: true
@@ -894,18 +986,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       balance:
+        custom: []
         name: balance
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 85
+        example: 69
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       cash_box_type_id:
+        custom: []
         name: cash_box_type_id
         description: 'معرف نوع الصندوق.'
         required: true
@@ -914,8 +1008,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       is_default:
+        custom: []
         name: is_default
         description: ''
         required: false
@@ -924,8 +1019,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'معرف المستخدم المسؤول عن الخزنة.'
         required: false
@@ -934,8 +1030,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'معرف الشركة (للمسؤول فقط).'
         required: false
@@ -944,8 +1041,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -954,18 +1052,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: ''
         required: false
-        example: 'Assumenda dolorum est in maiores.'
+        example: 'Temporibus sed placeat quis quia aperiam.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       account_number:
+        custom: []
         name: account_number
         description: 'رقم الحساب المرتبط.'
         required: false
@@ -974,43 +1074,48 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: 'مكتب القاهرة'
-      balance: 85
+      balance: 69
       cash_box_type_id: 1
       is_default: true
       user_id: 1
       company_id: 1
-      description: 'Assumenda dolorum est in maiores.'
+      description: 'Temporibus sed placeat quis quia aperiam.'
       account_number: ACC-001
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer kg6Z5c3P8faVaehbE1Dd46v'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/cash-boxes/{cashBox_id}'
+    uri: 'api/v1/cash-boxes/{cashBox_id}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل خزنة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       cashBox_id:
+        custom: []
         name: cashBox_id
         description: 'The ID of the cashBox.'
         required: true
@@ -1019,8 +1124,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       cashBox:
+        custom: []
         name: cashBox
         description: 'معرف الخزنة.'
         required: true
@@ -1029,7 +1135,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       cashBox_id: 1
       cashBox: '1'
@@ -1040,36 +1146,41 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":{"id":1,"name":"\u0627\u0644\u062e\u0632\u0646\u0629 \u0627\u0644\u0646\u0642\u062f\u064a\u0629","balance":"0.00","cash_type":"\u0646\u0642\u062f\u064a","cash_box_type_id":1,"user_id":1,"created_by":1,"company_id":1,"is_default":1,"is_active":true,"created_at":"2025-07-09","updated_at":"2025-07-09"}}'
+        content: '{"data":{"id":1,"name":"\u0627\u0644\u062e\u0632\u0646\u0629 \u0627\u0644\u0646\u0642\u062f\u064a\u0629","balance":"0.00","cash_type":"\u0646\u0642\u062f\u064a","cash_box_type_id":1,"user_id":1,"created_by":1,"company_id":1,"is_default":0,"is_active":true,"created_at":"2025-07-09","updated_at":"2026-02-07"}}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer gEdbv5ka6ca1fh6VDP384Ze'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/cash-boxes/{cashBox_id}'
+    uri: 'api/v1/cash-boxes/{cashBox_id}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث بيانات خزنة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       cashBox_id:
+        custom: []
         name: cashBox_id
         description: 'The ID of the cashBox.'
         required: true
@@ -1078,8 +1189,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       cashBox:
+        custom: []
         name: cashBox
         description: 'معرف الخزنة.'
         required: true
@@ -1088,7 +1200,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       cashBox_id: 1
       cashBox: '1'
@@ -1096,6 +1208,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم الخزنة المحدث.'
         required: false
@@ -1104,18 +1217,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       balance:
+        custom: []
         name: balance
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 75
+        example: 77
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       cash_box_type_id:
+        custom: []
         name: cash_box_type_id
         description: 'The <code>id</code> of an existing record in the cash_box_types table.'
         required: false
@@ -1124,8 +1239,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       is_default:
+        custom: []
         name: is_default
         description: ''
         required: false
@@ -1134,8 +1250,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -1144,8 +1261,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -1154,8 +1272,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -1164,60 +1283,67 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: 'Dolorem sunt ipsa itaque aut.'
+        example: 'Et quos qui et at.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       account_number:
+        custom: []
         name: account_number
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: ron
+        example: mgutdxpdqm
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: 'الخزنة الفرعية'
-      balance: 75
+      balance: 77
       is_default: true
-      description: 'Dolorem sunt ipsa itaque aut.'
-      account_number: ron
+      description: 'Et quos qui et at.'
+      account_number: mgutdxpdqm
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer a3P4DbV5dveE6g6Zkc8af1h'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/cash-boxes/{cashBox_id}'
+    uri: 'api/v1/cash-boxes/{cashBox_id}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف خزنة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       cashBox_id:
+        custom: []
         name: cashBox_id
         description: 'The ID of the cashBox.'
         required: true
@@ -1226,8 +1352,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       cashBox:
+        custom: []
         name: cashBox
         description: 'معرف الخزنة.'
         required: true
@@ -1236,7 +1363,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       cashBox_id: 1
       cashBox: '1'
@@ -1247,26 +1374,30 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6ZVav51fEk8Ddah43Pc6gbe'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/cash-boxes/transfer
+    uri: api/v1/cash-boxes/transfer
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحويل أرصدة بين الخزن'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -1275,6 +1406,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       amount:
+        custom: []
         name: amount
         description: 'المبلغ المراد تحويله.'
         required: true
@@ -1283,8 +1415,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       cash_box_id:
+        custom: []
         name: cash_box_id
         description: 'معرف الخزنة المصدر.'
         required: true
@@ -1293,8 +1426,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       to_cash_box_id:
+        custom: []
         name: to_cash_box_id
         description: 'معرف الخزنة الهدف.'
         required: true
@@ -1303,8 +1437,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       to_user_id:
+        custom: []
         name: to_user_id
         description: 'معرف المستخدم المستلم (يمكن أن يكون نفس المحول).'
         required: true
@@ -1313,8 +1448,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: 'وصف التحويل.'
         required: false
@@ -1323,7 +1459,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       amount: 500.5
       cash_box_id: 1
@@ -1333,32 +1469,37 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer kEVav1fab45c3hgDe6P86Zd'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/payments
+    uri: api/v1/payments
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض قائمة المدفوعات'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'فلترة حسب المستخدم.'
         required: false
@@ -1367,8 +1508,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       payment_method_id:
+        custom: []
         name: payment_method_id
         description: 'فلترة حسب طريقة الدفع.'
         required: false
@@ -1377,8 +1519,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       cash_box_id:
+        custom: []
         name: cash_box_id
         description: 'فلترة حسب الخزنة.'
         required: false
@@ -1387,8 +1530,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       amount_from:
+        custom: []
         name: amount_from
         description: 'المبلغ من.'
         required: false
@@ -1397,8 +1541,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       amount_to:
+        custom: []
         name: amount_to
         description: 'المبلغ إلى.'
         required: false
@@ -1407,8 +1552,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       paid_at_from:
+        custom: []
         name: paid_at_from
         description: 'date تاريخ الدفع من.'
         required: false
@@ -1417,17 +1563,18 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'عدد النتائج. Default: 20'
         required: false
-        example: 12
+        example: 7
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       user_id: 1
       payment_method_id: 1
@@ -1435,38 +1582,42 @@ endpoints:
       amount_from: 100.0
       amount_to: 1000.0
       paid_at_from: '2023-01-01'
-      per_page: 12
+      per_page: 7
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":[{"id":null,"user_id":null,"payment_date":null,"amount":null,"method":null,"notes":null,"is_split":null,"created_at":null,"updated_at":null},{"id":null,"user_id":null,"payment_date":null,"amount":null,"method":null,"notes":null,"is_split":null,"created_at":null,"updated_at":null}]}'
+        content: '{"data":[{"id":1,"user_id":86,"payment_date":"2026-02-12","amount":"150.00","method":"\u0646\u0642\u062f\u064a","notes":"\u0633\u062f\u0627\u062f \u0623\u0642\u0633\u0627\u0637 - \u0641\u0627\u062a\u0648\u0631\u0629 #INS_SAL-260106-2-000046 - \u062f\u0641\u0639\u0629 #225","is_split":0,"created_at":"2026-02-12 10:31:14","updated_at":"2026-02-12 10:31:14"},{"id":1,"user_id":86,"payment_date":"2026-02-12","amount":"150.00","method":"\u0646\u0642\u062f\u064a","notes":"\u0633\u062f\u0627\u062f \u0623\u0642\u0633\u0627\u0637 - \u0641\u0627\u062a\u0648\u0631\u0629 #INS_SAL-260106-2-000046 - \u062f\u0641\u0639\u0629 #225","is_split":0,"created_at":"2026-02-12 10:31:14","updated_at":"2026-02-12 10:31:14"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer k54b6c8PaVav61Zge3EfhDd'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/payments
+    uri: api/v1/payments
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تسجيل دفعة جديدة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -1475,6 +1626,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'معرف العميل/المورد.'
         required: true
@@ -1483,18 +1635,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       payment_date:
+        custom: []
         name: payment_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: true
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       amount:
+        custom: []
         name: amount
         description: 'المبلغ المالي.'
         required: true
@@ -1503,38 +1657,42 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       cash_amount:
+        custom: []
         name: cash_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: true
-        example: 69
+        example: 6
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       credit_amount:
+        custom: []
         name: credit_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: true
-        example: 0
+        example: 11
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       method:
+        custom: []
         name: method
         description: ''
         required: false
-        example: alias
+        example: placeat
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       notes:
+        custom: []
         name: notes
         description: 'ملاحظات إضافية.'
         required: false
@@ -1543,8 +1701,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       is_split:
+        custom: []
         name: is_split
         description: ''
         required: false
@@ -1553,8 +1712,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       payment_method_id:
+        custom: []
         name: payment_method_id
         description: 'معرف طريقة الدفع.'
         required: true
@@ -1563,8 +1723,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       cash_box_id:
+        custom: []
         name: cash_box_id
         description: 'معرف الخزنة المستلمة/الصادرة.'
         required: true
@@ -1573,8 +1734,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       invoice_id:
+        custom: []
         name: invoice_id
         description: 'The <code>id</code> of an existing record in the invoices table.'
         required: false
@@ -1583,8 +1745,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       use_credit:
+        custom: []
         name: use_credit
         description: ''
         required: false
@@ -1593,8 +1756,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       paid_at:
+        custom: []
         name: paid_at
         description: 'تاريخ وتوقيت الدفع.'
         required: false
@@ -1603,14 +1767,14 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       user_id: 1
-      payment_date: '2026-02-12T18:00:50'
+      payment_date: '2026-05-10T23:48:01'
       amount: 1500.75
-      cash_amount: 69
-      credit_amount: 0
-      method: alias
+      cash_amount: 6
+      credit_amount: 11
+      method: placeat
       notes: 'دفعة مقدمة من الحساب'
       is_split: true
       payment_method_id: 1
@@ -1620,92 +1784,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6PcvbkEde518aD3gVa4hfZ6'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/payments/{payment}'
+    uri: 'api/v1/payments/{payment}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض دفعة محددة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       payment:
-        name: payment
-        description: 'The payment.'
-        required: true
-        example: 8
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
         custom: []
-      id:
-        name: id
-        description: 'معرف الدفعة.'
-        required: true
-        example: '1'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      payment: 8
-      id: '1'
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 401
-        content: '{"message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
-        custom: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - PUT
-    uri: 'api/payments/{payment}'
-    metadata:
-      groupName: '06. العمليات المالية والخزينة'
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'تحديث دفعة'
-      description: ''
-      authenticated: false
-      deprecated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      payment:
         name: payment
         description: 'The payment.'
         required: true
@@ -1714,8 +1821,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       id:
+        custom: []
         name: id
         description: 'معرف الدفعة.'
         required: true
@@ -1724,7 +1832,75 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      payment: 1
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
         custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer v6cah54a1D8ZPegVk3dEbf6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: 'api/v1/payments/{payment}'
+    metadata:
+      custom: []
+      groupName: '06. العمليات المالية والخزينة'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحديث دفعة'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      payment:
+        custom: []
+        name: payment
+        description: 'The payment.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      id:
+        custom: []
+        name: id
+        description: 'معرف الدفعة.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
     cleanUrlParameters:
       payment: 1
       id: '1'
@@ -1732,6 +1908,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -1740,18 +1917,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       payment_date:
+        custom: []
         name: payment_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       amount:
+        custom: []
         name: amount
         description: 'المبلغ الجديد.'
         required: false
@@ -1760,28 +1939,31 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       method:
+        custom: []
         name: method
         description: ''
         required: false
-        example: laborum
+        example: molestiae
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       notes:
+        custom: []
         name: notes
         description: ''
         required: false
-        example: dolores
+        example: inventore
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       is_split:
+        custom: []
         name: is_split
         description: ''
         required: false
@@ -1790,8 +1972,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       payment_method_id:
+        custom: []
         name: payment_method_id
         description: 'The <code>id</code> of an existing record in the payment_methods table.'
         required: false
@@ -1800,8 +1983,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       cash_box_id:
+        custom: []
         name: cash_box_id
         description: 'The <code>id</code> of an existing record in the cash_boxes table.'
         required: false
@@ -1810,50 +1994,56 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      payment_date: '2026-02-12T18:00:50'
+      payment_date: '2026-05-10T23:48:01'
       amount: 2000.0
-      method: laborum
-      notes: dolores
+      method: molestiae
+      notes: inventore
       is_split: true
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer eZa6gPbk3c6E1fd8Dah4v5V'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/payments/{payment}'
+    uri: 'api/v1/payments/{payment}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف دفعة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       payment:
+        custom: []
         name: payment
         description: 'The payment.'
         required: true
-        example: 8
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       id:
+        custom: []
         name: id
         description: 'معرف الدفعة.'
         required: true
@@ -1862,9 +2052,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      payment: 8
+      payment: 1
       id: '1'
     queryParameters: []
     cleanQueryParameters: []
@@ -1873,16 +2063,20 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer hakv1eg45E6Dc3f8adbPZV6'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/payment-methods
+    uri: api/v1/payment-methods
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
@@ -1892,16 +2086,17 @@ endpoints:
 
         استرجاع كافة الوسائل المالية المقبولة في النظام (كاش، تحويل بنكي، محفظة إلكترونية).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       active:
+        custom: []
         name: active
         description: 'فلترة حسب النشط فقط.'
         required: false
@@ -1910,7 +2105,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       active: true
     bodyParameters: []
@@ -1918,36 +2113,41 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":[{"id":1,"name":"\u0646\u0642\u062f\u064a","code":"cash","active":true,"is_active":true,"is_system":true,"company_id":null,"image_id":null,"image_url":null,"created_at":"2025-07-09 09:15:50","updated_at":"2026-02-03 22:58:03"},{"id":1,"name":"\u0646\u0642\u062f\u064a","code":"cash","active":true,"is_active":true,"is_system":true,"company_id":null,"image_id":null,"image_url":null,"created_at":"2025-07-09 09:15:50","updated_at":"2026-02-03 22:58:03"}]}'
+        content: '{"data":[{"id":1,"name":"\u0646\u0642\u062f\u064a","code":"cash","active":true,"is_active":true,"is_system":true,"company_id":null,"image_id":26,"image_url":"http:\/\/localhost\/api\/v1\/media\/view\/seeders\/payment-methods\/cash.png","created_at":"2025-07-09 09:15:50","updated_at":"2026-02-07 11:58:18"},{"id":1,"name":"\u0646\u0642\u062f\u064a","code":"cash","active":true,"is_active":true,"is_system":true,"company_id":null,"image_id":26,"image_url":"http:\/\/localhost\/api\/v1\/media\/view\/seeders\/payment-methods\/cash.png","created_at":"2025-07-09 09:15:50","updated_at":"2026-02-07 11:58:18"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer DZVb5eadv8Pa631fhkcgE64'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/payment-methods/{paymentMethod}'
+    uri: 'api/v1/payment-methods/{paymentMethod}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل طريقة دفع'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       paymentMethod:
+        custom: []
         name: paymentMethod
         description: ''
         required: true
@@ -1956,8 +2156,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       id:
+        custom: []
         name: id
         description: 'معرف الطريقة.'
         required: true
@@ -1966,7 +2167,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       paymentMethod: 1
       id: '1'
@@ -1977,6 +2178,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -1984,32 +2186,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer V1eEDvb58P66chg3akad4Zf'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PATCH
-    uri: 'api/payment-methods/{id}/toggle'
+    uri: 'api/v1/payment-methods/{id}/toggle'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تفعيل/تعطيل طريقة دفع'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       id:
+        custom: []
         name: id
         description: 'معرف الطريقة.'
         required: true
@@ -2018,7 +2224,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       id: '1'
     queryParameters: []
@@ -2028,30 +2234,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 65816aVk34cePbghdvaEZDf'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/payment-methods/{paymentMethod}'
+    uri: 'api/v1/payment-methods/{paymentMethod}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف طريقة دفع'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       paymentMethod:
+        custom: []
         name: paymentMethod
         description: ''
         required: true
@@ -2060,8 +2271,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       id:
+        custom: []
         name: id
         description: 'معرف الطريقة.'
         required: true
@@ -2070,7 +2282,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       paymentMethod: 1
       id: '1'
@@ -2081,32 +2293,37 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer a51hkbd4PvfD6E36eaZV8cg'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/revenues
+    uri: api/v1/revenues
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض قائمة الإيرادات'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       amount_from:
+        custom: []
         name: amount_from
         description: 'المبلغ من.'
         required: false
@@ -2115,8 +2332,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       amount_to:
+        custom: []
         name: amount_to
         description: 'المبلغ إلى.'
         required: false
@@ -2125,8 +2343,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_at_from:
+        custom: []
         name: created_at_from
         description: 'date التاريخ من.'
         required: false
@@ -2135,53 +2354,58 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'عدد النتائج. Default: 15'
         required: false
-        example: 19
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       amount_from: 100.0
       amount_to: 1000.0
       created_at_from: '2023-01-01'
-      per_page: 19
+      per_page: 8
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":null,"source_type":null,"source_id":null,"user_id":null,"created_by":null,"wallet_id":null,"company_id":null,"amount":null,"paid_amount":null,"remaining_amount":null,"payment_method":null,"note":null,"revenue_date":null,"created_at":null,"updated_at":null},{"id":null,"source_type":null,"source_id":null,"user_id":null,"created_by":null,"wallet_id":null,"company_id":null,"amount":null,"paid_amount":null,"remaining_amount":null,"payment_method":null,"note":null,"revenue_date":null,"created_at":null,"updated_at":null}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 153cg8VhkZ6f6DvdPa4eaEb'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/revenues
+    uri: api/v1/revenues
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تسجيل إيراد جديد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -2190,26 +2414,29 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       source_type:
+        custom: []
         name: source_type
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: true
-        example: usqcdtjr
+        example: pqrpkgvduxfbsqacukgyg
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       source_id:
+        custom: []
         name: source_id
         description: ''
         required: true
-        example: 12
+        example: 20
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -2218,8 +2445,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -2228,8 +2456,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       wallet_id:
+        custom: []
         name: wallet_id
         description: 'The <code>id</code> of an existing record in the cash_boxes table.'
         required: false
@@ -2238,8 +2467,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'معرف الشركة (للمدراء).'
         required: false
@@ -2248,8 +2478,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       amount:
+        custom: []
         name: amount
         description: المبلغ.
         required: true
@@ -2258,58 +2489,64 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       paid_amount:
+        custom: []
         name: paid_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 10
+        example: 69
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       remaining_amount:
+        custom: []
         name: remaining_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 3
+        example: 29
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       payment_method:
+        custom: []
         name: payment_method
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: zxgymcbxfzgntlw
+        example: zvlgdyuztk
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       note:
+        custom: []
         name: note
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: elqkjjubqmwwarzzitbdhojoj
+        example: lejcbzzvgslgitkkdfve
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       revenue_date:
+        custom: []
         name: revenue_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: true
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: 'وصف الإيراد.'
         required: true
@@ -2318,55 +2555,61 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      source_type: usqcdtjr
-      source_id: 12
+      source_type: pqrpkgvduxfbsqacukgyg
+      source_id: 20
       company_id: 1
       amount: 500.0
-      paid_amount: 10
-      remaining_amount: 3
-      payment_method: zxgymcbxfzgntlw
-      note: elqkjjubqmwwarzzitbdhojoj
-      revenue_date: '2026-02-12T18:00:50'
+      paid_amount: 69
+      remaining_amount: 29
+      payment_method: zvlgdyuztk
+      note: lejcbzzvgslgitkkdfve
+      revenue_date: '2026-05-10T23:48:01'
       description: 'مبيعات خدمات فرعية'
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer PvkEd64h8Z5Dfbaag136cVe'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/revenues/{revenue_id}'
+    uri: 'api/v1/revenues/{revenue_id}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل إيراد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       revenue_id:
+        custom: []
         name: revenue_id
         description: 'The ID of the revenue.'
         required: true
-        example: 14
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       revenue:
+        custom: []
         name: revenue
         description: 'معرف الإيراد.'
         required: true
@@ -2375,9 +2618,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      revenue_id: 14
+      revenue_id: 3
       revenue: '1'
     queryParameters: []
     cleanQueryParameters: []
@@ -2386,46 +2629,52 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":{"id":null,"source_type":null,"source_id":null,"user_id":null,"created_by":null,"wallet_id":null,"company_id":null,"amount":null,"paid_amount":null,"remaining_amount":null,"payment_method":null,"note":null,"revenue_date":null,"created_at":null,"updated_at":null}}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6ZV3EPbeaa6gdfD5v8c1h4k'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/revenues/{revenue_id}'
+    uri: 'api/v1/revenues/{revenue_id}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث إيراد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       revenue_id:
+        custom: []
         name: revenue_id
         description: 'The ID of the revenue.'
         required: true
-        example: 17
+        example: 12
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       revenue:
+        custom: []
         name: revenue
         description: 'معرف الإيراد.'
         required: true
@@ -2434,34 +2683,37 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      revenue_id: 17
+      revenue_id: 12
       revenue: '1'
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       source_type:
+        custom: []
         name: source_type
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
-        required: true
-        example: yerzgxglxnajvowrdu
+        required: false
+        example: rsdifgtmzlyugqr
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       source_id:
+        custom: []
         name: source_id
         description: ''
-        required: true
+        required: false
         example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -2470,8 +2722,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -2480,8 +2733,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       wallet_id:
+        custom: []
         name: wallet_id
         description: 'The <code>id</code> of an existing record in the cash_boxes table.'
         required: false
@@ -2490,18 +2744,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
-        required: true
-        example: qui
+        required: false
+        example: null
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       amount:
+        custom: []
         name: amount
         description: 'المبلغ المحدث.'
         required: false
@@ -2510,104 +2766,114 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       paid_amount:
+        custom: []
         name: paid_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 6
+        example: 2
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       remaining_amount:
+        custom: []
         name: remaining_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 47
+        example: 42
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       payment_method:
+        custom: []
         name: payment_method
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: tluykiecve
+        example: kvaityc
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       note:
+        custom: []
         name: note
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: mhxqigvksodcvgorhzqgwblx
+        example: dbabwwxzmqkgaksqgaswbd
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       revenue_date:
+        custom: []
         name: revenue_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
-        required: true
-        example: '2026-02-12T18:00:50'
+        required: false
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      source_type: yerzgxglxnajvowrdu
+      source_type: rsdifgtmzlyugqr
       source_id: 1
-      company_id: qui
       amount: 600.0
-      paid_amount: 6
-      remaining_amount: 47
-      payment_method: tluykiecve
-      note: mhxqigvksodcvgorhzqgwblx
-      revenue_date: '2026-02-12T18:00:50'
+      paid_amount: 2
+      remaining_amount: 42
+      payment_method: kvaityc
+      note: dbabwwxzmqkgaksqgaswbd
+      revenue_date: '2026-05-10T23:48:01'
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 1V6cgZva63h4bEkdaPD5fe8'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/revenues/{revenue_id}'
+    uri: 'api/v1/revenues/{revenue_id}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف إيراد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       revenue_id:
+        custom: []
         name: revenue_id
         description: 'The ID of the revenue.'
         required: true
-        example: 1
+        example: 20
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       revenue:
+        custom: []
         name: revenue
         description: 'معرف الإيراد.'
         required: true
@@ -2616,9 +2882,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      revenue_id: 1
+      revenue_id: 20
       revenue: '1'
     queryParameters: []
     cleanQueryParameters: []
@@ -2627,32 +2893,37 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 4e6gEk8cabZhPdfv61V5Da3'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/profits
+    uri: api/v1/profits
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض قائمة الأرباح'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       amount_from:
+        custom: []
         name: amount_from
         description: 'المبلغ من.'
         required: false
@@ -2661,8 +2932,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       amount_to:
+        custom: []
         name: amount_to
         description: 'المبلغ إلى.'
         required: false
@@ -2671,8 +2943,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_at_from:
+        custom: []
         name: created_at_from
         description: 'date التاريخ من.'
         required: false
@@ -2681,53 +2954,58 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'عدد النتائج. Default: 15'
         required: false
-        example: 13
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       amount_from: 50.0
       amount_to: 500.0
       created_at_from: '2023-01-01'
-      per_page: 13
+      per_page: 3
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":null,"source_type":null,"source_id":null,"created_by":null,"user_id":null,"company_id":null,"revenue_amount":null,"cost_amount":null,"profit_amount":null,"note":null,"profit_date":null,"created_at":null,"updated_at":null},{"id":null,"source_type":null,"source_id":null,"created_by":null,"user_id":null,"company_id":null,"revenue_amount":null,"cost_amount":null,"profit_amount":null,"note":null,"profit_date":null,"created_at":null,"updated_at":null}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer DheckgdZVa56bPv8631fE4a'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/profits
+    uri: api/v1/profits
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تسجيل ربح جديد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -2736,26 +3014,29 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       source_type:
+        custom: []
         name: source_type
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: true
-        example: gxrnwgcychxix
+        example: jtrih
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       source_id:
+        custom: []
         name: source_id
         description: ''
         required: true
-        example: 8
+        example: 14
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -2764,8 +3045,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'معرف الشركة (للمدراء).'
         required: false
@@ -2774,58 +3056,64 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       revenue_amount:
+        custom: []
         name: revenue_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: true
-        example: 43
+        example: 25
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       cost_amount:
+        custom: []
         name: cost_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: true
-        example: 18
+        example: 28
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       profit_amount:
+        custom: []
         name: profit_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: true
-        example: 85
+        example: 28
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       note:
+        custom: []
         name: note
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: bvgtaqoozecsgwceh
+        example: fnoxoahjngtwcqwaimetlqu
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       profit_date:
+        custom: []
         name: profit_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: true
-        example: '2026-02-12T18:00:51'
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       amount:
+        custom: []
         name: amount
         description: المبلغ.
         required: true
@@ -2834,8 +3122,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: 'وصف الربح.'
         required: true
@@ -2844,55 +3133,61 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      source_type: gxrnwgcychxix
-      source_id: 8
+      source_type: jtrih
+      source_id: 14
       company_id: 1
-      revenue_amount: 43
-      cost_amount: 18
-      profit_amount: 85
-      note: bvgtaqoozecsgwceh
-      profit_date: '2026-02-12T18:00:51'
+      revenue_amount: 25
+      cost_amount: 28
+      profit_amount: 28
+      note: fnoxoahjngtwcqwaimetlqu
+      profit_date: '2026-05-10T23:48:01'
       amount: 150.0
       description: 'عمولة مبيعات'
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer V153g6cbedZhvEka6a4fPD8'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/profits/{profit_id}'
+    uri: 'api/v1/profits/{profit_id}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل ربح'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       profit_id:
+        custom: []
         name: profit_id
         description: 'The ID of the profit.'
         required: true
-        example: 5
+        example: 13
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       profit:
+        custom: []
         name: profit
         description: 'معرف الربح.'
         required: true
@@ -2901,9 +3196,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      profit_id: 5
+      profit_id: 13
       profit: '1'
     queryParameters: []
     cleanQueryParameters: []
@@ -2912,46 +3207,52 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":{"id":null,"source_type":null,"source_id":null,"created_by":null,"user_id":null,"company_id":null,"revenue_amount":null,"cost_amount":null,"profit_amount":null,"note":null,"profit_date":null,"created_at":null,"updated_at":null}}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer gZ8kbdcfVPe64vD1a5a6h3E'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/profits/{profit_id}'
+    uri: 'api/v1/profits/{profit_id}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث ربح'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       profit_id:
+        custom: []
         name: profit_id
         description: 'The ID of the profit.'
         required: true
-        example: 5
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       profit:
+        custom: []
         name: profit
         description: 'معرف الربح.'
         required: true
@@ -2960,34 +3261,37 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      profit_id: 5
+      profit_id: 8
       profit: '1'
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       source_type:
+        custom: []
         name: source_type
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
-        required: true
-        example: rkjlzh
+        required: false
+        example: qdlzye
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       source_id:
+        custom: []
         name: source_id
         description: ''
-        required: true
-        example: 9
+        required: false
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -2996,68 +3300,75 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
-        required: true
-        example: ut
+        required: false
+        example: null
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       revenue_amount:
+        custom: []
         name: revenue_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
-        required: true
-        example: 74
+        required: false
+        example: 11
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       cost_amount:
+        custom: []
         name: cost_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
-        required: true
-        example: 40
+        required: false
+        example: 83
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       profit_amount:
+        custom: []
         name: profit_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
-        required: true
-        example: 75
+        required: false
+        example: 68
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       note:
+        custom: []
         name: note
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: xcrcaesfxfakbkmcjp
+        example: pyvtjlomtsbvoxp
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       profit_date:
+        custom: []
         name: profit_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
-        required: true
-        example: '2026-02-12T18:00:51'
+        required: false
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       amount:
+        custom: []
         name: amount
         description: 'المبلغ المحدث.'
         required: false
@@ -3066,54 +3377,59 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      source_type: rkjlzh
-      source_id: 9
-      company_id: ut
-      revenue_amount: 74
-      cost_amount: 40
-      profit_amount: 75
-      note: xcrcaesfxfakbkmcjp
-      profit_date: '2026-02-12T18:00:51'
+      source_type: qdlzye
+      source_id: 17
+      revenue_amount: 11
+      cost_amount: 83
+      profit_amount: 68
+      note: pyvtjlomtsbvoxp
+      profit_date: '2026-05-10T23:48:01'
       amount: 200.0
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 5dvg6b8Vh1a3P6EZcDak4ef'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/profits/{profit_id}'
+    uri: 'api/v1/profits/{profit_id}'
     metadata:
+      custom: []
       groupName: '06. العمليات المالية والخزينة'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف ربح'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       profit_id:
+        custom: []
         name: profit_id
         description: 'The ID of the profit.'
         required: true
-        example: 10
+        example: 13
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       profit:
+        custom: []
         name: profit
         description: 'معرف الربح.'
         required: true
@@ -3122,9 +3438,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      profit_id: 10
+      profit_id: 13
       profit: '1'
     queryParameters: []
     cleanQueryParameters: []
@@ -3133,8 +3449,10 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer kac6561feVZD3gvhE4adb8P'
     controller: null
     method: null
     route: null
-    custom: []

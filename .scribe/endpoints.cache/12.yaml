@@ -4,10 +4,12 @@ name: '08. إعدادات النظام وتفضيلاته'
 description: ''
 endpoints:
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/invoice-types
+    uri: api/v1/invoice-types
     metadata:
+      custom: []
       groupName: '08. إعدادات النظام وتفضيلاته'
       groupDescription: ''
       subgroup: ''
@@ -17,58 +19,63 @@ endpoints:
 
         استرجاع أنواع المعاملات المالية المتاحة (فواتير مبيعات، مشتريات، مرتجعات، سندات قبص).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       context:
+        custom: []
         name: context
         description: 'سياق النوع (sale, purchase).'
         required: false
-        example: ut
+        example: nesciunt
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
-      context: ut
+      context: nesciunt
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":1,"name":"\u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u0628\u0627\u0644\u062a\u0642\u0633\u064a\u0637","type":null,"description":"\u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u0628\u0627\u0644\u062a\u0642\u0633\u064a\u0637 (\u062a\u0633\u062a\u062e\u062f\u0645 \u0644\u0628\u064a\u0639 \u0627\u0644\u0645\u0646\u062a\u062c\u0627\u062a \u0623\u0648 \u0627\u0644\u062e\u062f\u0645\u0627\u062a \u0645\u0639 \u062c\u062f\u0648\u0644 \u0623\u0642\u0633\u0627\u0637 \u0645\u062d\u062f\u062f\u060c \u0648\u062a\u0648\u0644\u064a\u062f \u0633\u0646\u062f\u0627\u062a \u0642\u0628\u0636\/\u0635\u0631\u0641 \u0645\u0631\u062a\u0628\u0637\u0629 \u0628\u0627\u0644\u0623\u0642\u0633\u0627\u0637\u060c \u0645\u0639 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0645\u062e\u0632\u0648\u0646 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b).","code":"installment_sale","context":"sales","is_active":1,"created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50"},{"id":1,"name":"\u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u0628\u0627\u0644\u062a\u0642\u0633\u064a\u0637","type":null,"description":"\u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u0628\u0627\u0644\u062a\u0642\u0633\u064a\u0637 (\u062a\u0633\u062a\u062e\u062f\u0645 \u0644\u0628\u064a\u0639 \u0627\u0644\u0645\u0646\u062a\u062c\u0627\u062a \u0623\u0648 \u0627\u0644\u062e\u062f\u0645\u0627\u062a \u0645\u0639 \u062c\u062f\u0648\u0644 \u0623\u0642\u0633\u0627\u0637 \u0645\u062d\u062f\u062f\u060c \u0648\u062a\u0648\u0644\u064a\u062f \u0633\u0646\u062f\u0627\u062a \u0642\u0628\u0636\/\u0635\u0631\u0641 \u0645\u0631\u062a\u0628\u0637\u0629 \u0628\u0627\u0644\u0623\u0642\u0633\u0627\u0637\u060c \u0645\u0639 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0645\u062e\u0632\u0648\u0646 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b).","code":"installment_sale","context":"sales","is_active":1,"created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer D6fEa1345h6a8eVvbcPkZdg'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/invoice-types
+    uri: api/v1/invoice-types
     metadata:
+      custom: []
       groupName: '08. إعدادات النظام وتفضيلاته'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إضافة نوع مستند جديد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -77,6 +84,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'الاسم بالعربية.'
         required: true
@@ -85,18 +93,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: ''
         required: false
-        example: 'Asperiores corrupti qui distinctio perspiciatis ratione suscipit.'
+        example: 'Sed et officiis vitae ab.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       code:
+        custom: []
         name: code
         description: 'كود فريد للنوع.'
         required: true
@@ -105,8 +115,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       context:
+        custom: []
         name: context
         description: 'السياق (sale/purchase).'
         required: true
@@ -115,25 +126,29 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: 'فاتورة مبيعات ضريبية'
-      description: 'Asperiores corrupti qui distinctio perspiciatis ratione suscipit.'
+      description: 'Sed et officiis vitae ab.'
       code: SALE_TAX
       context: sale
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6v54dkgahZVPEaf6cb3De81'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/services
+    uri: api/v1/services
     metadata:
+      custom: []
       groupName: '08. إعدادات النظام وتفضيلاته'
       groupDescription: ''
       subgroup: ''
@@ -143,48 +158,53 @@ endpoints:
 
         استرجاع الخدمات غير المادية التي تقدمها الشركة (مثل: خدمات الشحن، الصيانة، التركيب).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       name:
+        custom: []
         name: name
         description: 'البحث باسم الخدمة.'
         required: false
-        example: ut
+        example: non
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
-      name: ut
+      name: non
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":null,"name":null,"description":null,"default_price":null,"period_unit":null,"period_value":null,"created_at":null,"updated_at":null,"company_id":null,"created_by":null},{"id":null,"name":null,"description":null,"default_price":null,"period_unit":null,"period_value":null,"created_at":null,"updated_at":null,"company_id":null,"created_by":null}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer v851khbeE3ZDdgafcVaP646'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/subscriptions
+    uri: api/v1/subscriptions
     metadata:
+      custom: []
       groupName: '08. إعدادات النظام وتفضيلاته'
       groupDescription: ''
       subgroup: ''
@@ -194,80 +214,87 @@ endpoints:
 
         استرجاع سجلات اشتراك الشركات في باقات النظام المختلفة.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'فلترة حسب المستخدم.'
         required: false
-        example: 1
+        example: 18
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       plan_id:
+        custom: []
         name: plan_id
         description: 'فلترة حسب الخطة.'
         required: false
-        example: 16
+        example: 20
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: 'الحالة (active, expired).'
         required: false
-        example: quia
+        example: aliquid
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
-      user_id: 1
-      plan_id: 16
-      status: quia
+      user_id: 18
+      plan_id: 20
+      status: aliquid
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":null,"user_id":null,"service_id":null,"plan_id":null,"unique_identifier":null,"start_date":null,"starts_at":null,"next_billing_date":null,"ends_at":null,"billing_cycle":null,"price":null,"partial_payment":null,"status":null,"auto_renew":null,"renewal_type":null,"notes":null,"created_at":null,"updated_at":null},{"id":null,"user_id":null,"service_id":null,"plan_id":null,"unique_identifier":null,"start_date":null,"starts_at":null,"next_billing_date":null,"ends_at":null,"billing_cycle":null,"price":null,"partial_payment":null,"status":null,"auto_renew":null,"renewal_type":null,"notes":null,"created_at":null,"updated_at":null}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer fEPakZ6a1DVeb4hc368vd5g'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/subscriptions
+    uri: api/v1/subscriptions
     metadata:
+      custom: []
       groupName: '08. إعدادات النظام وتفضيلاته'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تسجيل اشتراك جديد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -276,26 +303,29 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'The <code>id</code> of an existing record in the users table.'
         required: true
-        example: qui
+        example: temporibus
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       service_id:
+        custom: []
         name: service_id
         description: 'The <code>id</code> of an existing record in the services table.'
         required: true
-        example: enim
+        example: est
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       plan_id:
+        custom: []
         name: plan_id
         description: 'The <code>id</code> of an existing record in the plans table.'
         required: false
@@ -304,155 +334,171 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       start_date:
+        custom: []
         name: start_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:00'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       starts_at:
+        custom: []
         name: starts_at
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: true
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:00'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       next_billing_date:
+        custom: []
         name: next_billing_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:00'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       ends_at:
+        custom: []
         name: ends_at
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:00'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       billing_cycle:
+        custom: []
         name: billing_cycle
         description: ''
         required: true
-        example: veniam
+        example: soluta
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       price:
+        custom: []
         name: price
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: true
-        example: 60
+        example: 8
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       partial_payment:
+        custom: []
         name: partial_payment
         description: ''
         required: false
-        example: 20211.177
+        example: 79.89040746
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: ''
         required: true
-        example: rerum
+        example: consectetur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       unique_identifier:
+        custom: []
         name: unique_identifier
         description: ''
         required: false
-        example: tenetur
+        example: reprehenderit
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       auto_renew:
+        custom: []
         name: auto_renew
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       renewal_type:
+        custom: []
         name: renewal_type
         description: ''
         required: false
-        example: fugiat
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       notes:
+        custom: []
         name: notes
         description: ''
         required: false
-        example: quo
+        example: placeat
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      user_id: qui
-      service_id: enim
-      start_date: '2026-02-12T18:00:50'
-      starts_at: '2026-02-12T18:00:50'
-      next_billing_date: '2026-02-12T18:00:50'
-      ends_at: '2026-02-12T18:00:50'
-      billing_cycle: veniam
-      price: 60
-      partial_payment: 20211.177
-      status: rerum
-      unique_identifier: tenetur
-      auto_renew: false
-      renewal_type: fugiat
-      notes: quo
+      user_id: temporibus
+      service_id: est
+      start_date: '2026-05-10T23:48:00'
+      starts_at: '2026-05-10T23:48:00'
+      next_billing_date: '2026-05-10T23:48:00'
+      ends_at: '2026-05-10T23:48:00'
+      billing_cycle: soluta
+      price: 8
+      partial_payment: 79.89040746
+      status: consectetur
+      unique_identifier: reprehenderit
+      auto_renew: true
+      renewal_type: qui
+      notes: placeat
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 8P645kD3f6Vvchd1baeEgaZ'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/plans
+    uri: api/v1/plans
     metadata:
+      custom: []
       groupName: '08. إعدادات النظام وتفضيلاته'
       groupDescription: ''
       subgroup: ''
@@ -462,10 +508,10 @@ endpoints:
 
         استرجاع الباقات والخطط المتاحة للاشتراك في النظام.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -477,47 +523,52 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":null,"name":null,"code":null,"description":null,"company_id":null,"price":null,"currency":null,"duration":null,"duration_unit":null,"trial_days":null,"is_active":null,"features":null,"max_users":null,"max_projects":null,"max_storage_mb":null,"type":null,"icon":null,"created_by":null,"updated_by":null,"created_at":null,"updated_at":null},{"id":null,"name":null,"code":null,"description":null,"company_id":null,"price":null,"currency":null,"duration":null,"duration_unit":null,"trial_days":null,"is_active":null,"features":null,"max_users":null,"max_projects":null,"max_storage_mb":null,"type":null,"icon":null,"created_by":null,"updated_by":null,"created_at":null,"updated_at":null}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 15dP6ZEDgVacbe4ak8f36vh'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/plans/{id}'
+    uri: 'api/v1/plans/{id}'
     metadata:
+      custom: []
       groupName: '08. إعدادات النظام وتفضيلاته'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تفاصيل خطة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       id:
+        custom: []
         name: id
         description: 'The ID of the plan.'
         required: true
-        example: 13
+        example: 6
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      id: 13
+      id: 6
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -525,6 +576,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -532,28 +584,31 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer EPfe6VhZ5akc3d6gab18D4v'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/invoice-type
+    uri: api/v1/invoice-type
     metadata:
+      custom: []
       groupName: '08. إعدادات النظام وتفضيلاته'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إضافة نوع مستند جديد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -562,6 +617,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'الاسم بالعربية.'
         required: true
@@ -570,18 +626,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: ''
         required: false
-        example: 'Asperiores sunt laborum corporis pariatur voluptatem assumenda nihil.'
+        example: 'Dolor quidem ipsum amet nulla numquam.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       code:
+        custom: []
         name: code
         description: 'كود فريد للنوع.'
         required: true
@@ -590,8 +648,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       context:
+        custom: []
         name: context
         description: 'السياق (sale/purchase).'
         required: true
@@ -600,17 +659,19 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: 'فاتورة مبيعات ضريبية'
-      description: 'Asperiores sunt laborum corporis pariatur voluptatem assumenda nihil.'
+      description: 'Dolor quidem ipsum amet nulla numquam.'
       code: SALE_TAX
       context: sale
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 13VevafgcZdbkEa84P6D56h'
     controller: null
     method: null
     route: null
-    custom: []

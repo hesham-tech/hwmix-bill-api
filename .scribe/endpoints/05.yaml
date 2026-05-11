@@ -4,10 +4,12 @@ description: |-
   APIs لوحة التحكم والإحصائيات المتقدمة للمنتجات والعملاء.
 endpoints:
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/analytics/dashboard
+    uri: api/v1/analytics/dashboard
     metadata:
+      custom: []
       groupName: '09. الإحصائيات والتقارير'
       groupDescription: |-
 
@@ -18,8 +20,8 @@ endpoints:
       description: 'جلب أرقام الأداء الرئيسية (إجمالي الإيرادات، الأرباح، عدد الطلبات) لليوم وللشهر الحالي.'
       authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -31,6 +33,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -38,18 +41,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer g58cd6va463DhkZPebE1fVa'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/analytics/top-products
+    uri: api/v1/analytics/top-products
     metadata:
+      custom: []
       groupName: '09. الإحصائيات والتقارير'
       groupDescription: |-
 
@@ -60,41 +66,44 @@ endpoints:
       description: 'جلب قائمة بالمنتجات الأعلى أداءً بناءً على الكمية المباعة أو الأرباح المحققة.'
       authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       sort_by:
+        custom: []
         name: sort_by
         description: 'الحقل المراد الترتيب بناءً عليه (total_sold_quantity, total_profit, total_revenue). Default: total_sold_quantity.'
         required: false
-        example: distinctio
+        example: rem
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       limit:
+        custom: []
         name: limit
         description: 'عدد النتائج المطلوبة. Default: 10.'
         required: false
-        example: 6
+        example: 15
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
-      sort_by: distinctio
-      limit: 6
+      sort_by: rem
+      limit: 15
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -102,18 +111,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 5EhZV3aDc6d4g1ve6fkab8P'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/analytics/user-history/{userId}'
+    uri: 'api/v1/analytics/user-history/{userId}'
     metadata:
+      custom: []
       groupName: '09. الإحصائيات والتقارير'
       groupDescription: |-
 
@@ -124,34 +136,36 @@ endpoints:
       description: 'جلب تفاصيل كافة المنتجات التي اشتراها مستخدم معين وإجمالي إنفاقه على كل منها.'
       authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       userId:
+        custom: []
         name: userId
         description: ''
         required: true
-        example: voluptatem
+        example: facilis
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'معرف المستخدم.'
         required: true
-        example: 18
+        example: 7
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
-      userId: voluptatem
-      user_id: 18
+      userId: facilis
+      user_id: 7
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -159,6 +173,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -166,10 +181,11 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer aD3ve6dh86PcbZVfE514agk'
     controller: null
     method: null
     route: null
-    custom: []

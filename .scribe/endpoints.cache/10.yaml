@@ -4,10 +4,12 @@ name: '03. إدارة المنتجات والمخزون'
 description: ''
 endpoints:
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/products
+    uri: api/v1/products
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
@@ -17,16 +19,17 @@ endpoints:
 
         استرجاع قائمة شاملة بالمنتجات مع دعم البحث الذكي والتصفية المتقدمة حسب القسم، الماركة، أو الحالة.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       search:
+        custom: []
         name: search
         description: 'نص البحث (يتم البحث في الاسم، الوصف، الصنف، والماركة).'
         required: false
@@ -35,28 +38,31 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       category_id:
+        custom: []
         name: category_id
         description: 'فلترة حسب القسم.'
         required: false
-        example: 17
+        example: 11
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       brand_id:
+        custom: []
         name: brand_id
         description: 'فلترة حسب الماركة.'
         required: false
-        example: 2
+        example: 4
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       active:
+        custom: []
         name: active
         description: 'فلترة حسب الحالة (نشط/غير نشط).'
         required: false
@@ -65,8 +71,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'عدد النتائج في الصفحة.'
         required: false
@@ -75,11 +82,11 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       search: هاتف
-      category_id: 17
-      brand_id: 2
+      category_id: 11
+      brand_id: 4
       active: true
       per_page: 15
     bodyParameters: []
@@ -87,22 +94,70 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":[{"id":1,"name":"\u0645\u0646\u062a\u062c 1","slug":"product-1","active":true,"featured":false,"returnable":true,"desc":"\u0648\u0635\u0641 \u0627\u0644\u0645\u0646\u062a\u062c 1","desc_long":"\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_type":"physical","require_stock":true,"is_downloadable":false,"download_url":null,"download_limit":null,"license_keys":null,"available_keys_count":0,"validity_days":null,"expires_at":null,"delivery_instructions":null,"category_id":1,"brand_id":1,"company_id":1,"total_available_quantity":0,"min_price":0,"max_price":0,"tags":[],"published_at":"2025-07-09 09:15:50","created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50"},{"id":1,"name":"\u0645\u0646\u062a\u062c 1","slug":"product-1","active":true,"featured":false,"returnable":true,"desc":"\u0648\u0635\u0641 \u0627\u0644\u0645\u0646\u062a\u062c 1","desc_long":"\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_type":"physical","require_stock":true,"is_downloadable":false,"download_url":null,"download_limit":null,"license_keys":null,"available_keys_count":0,"validity_days":null,"expires_at":null,"delivery_instructions":null,"category_id":1,"brand_id":1,"company_id":1,"total_available_quantity":0,"min_price":0,"max_price":0,"tags":[],"published_at":"2025-07-09 09:15:50","created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50"}]}'
+        content: '{"data":[{"id":1,"name":"\u0645\u0646\u062a\u062c 1","slug":"product-1","active":true,"featured":false,"returnable":true,"desc":"\u0648\u0635\u0641 \u0627\u0644\u0645\u0646\u062a\u062c 1","desc_long":"\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_type":"physical","require_stock":true,"is_downloadable":false,"download_url":null,"download_limit":null,"license_keys":null,"available_keys_count":0,"validity_days":null,"expires_at":null,"delivery_instructions":null,"category_id":1,"brand_id":1,"company_id":1,"total_available_quantity":0,"min_price":0,"max_price":0,"price_range":75,"primary_image_url":null,"tags":[],"published_at":"2025-07-09 09:15:50","created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50"},{"id":1,"name":"\u0645\u0646\u062a\u062c 1","slug":"product-1","active":true,"featured":false,"returnable":true,"desc":"\u0648\u0635\u0641 \u0627\u0644\u0645\u0646\u062a\u062c 1","desc_long":"\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_type":"physical","require_stock":true,"is_downloadable":false,"download_url":null,"download_limit":null,"license_keys":null,"available_keys_count":0,"validity_days":null,"expires_at":null,"delivery_instructions":null,"category_id":1,"brand_id":1,"company_id":1,"total_available_quantity":0,"min_price":0,"max_price":0,"price_range":75,"primary_image_url":null,"tags":[],"published_at":"2025-07-09 09:15:50","created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 5P4f8cVvhgekab3E6dZaD16'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/attributes
+    uri: api/v1/products/export
     metadata:
+      custom: []
+      groupName: '03. إدارة المنتجات والمخزون'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تصدير المنتجات إلى إكسيل بالاعتماد على الفلاتر المطبقة.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer De65kfd6ZVa3hg4vP1bca8E'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/attributes
+    metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
@@ -112,16 +167,17 @@ endpoints:
 
         استرجاع قائمة بخصائص المنتجات (مثل اللون، المقاس، الخامة) التي تتيح إنشاء تنوعات للمنتجات.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       search:
+        custom: []
         name: search
         description: 'البحث في اسم السمة أو قيمها.'
         required: false
@@ -130,7 +186,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       search: اللون
     bodyParameters: []
@@ -138,22 +194,26 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":1,"name":"\u0644\u0648\u0646","active":true,"company_id":1,"created_by":1,"created_at":"2025-06-10 02:43:56","updated_at":"2025-06-10 02:43:56"},{"id":1,"name":"\u0644\u0648\u0646","active":true,"company_id":1,"created_by":1,"created_at":"2025-06-10 02:43:56","updated_at":"2025-06-10 02:43:56"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer akdEbDZe35cPv68fg1V6h4a'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/attributes
+    uri: api/v1/attributes
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
@@ -163,10 +223,10 @@ endpoints:
 
         إنشاء سمة جديدة (مثل: هاتف) مع إمكانية إضافة قيم أولية لها في نفس الطلب.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -175,6 +235,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم السمة.'
         required: true
@@ -183,8 +244,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -193,8 +255,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -203,29 +266,32 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       value:
+        custom: []
         name: value
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: rnvtgslweeqdvlunvkbsh
+        example: h
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       values:
+        custom: []
         name: values
         description: 'قائمة القيم.'
         required: true
         example:
-          - sit
+          - soluta
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'values[].name':
+        custom: []
         name: 'values[].name'
         description: 'اسم القيمة (مثل: أحمر).'
         required: true
@@ -234,18 +300,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       'values[].color':
+        custom: []
         name: 'values[].color'
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: vmvwlwoxzuchoiugrc
+        example: cwzmspp
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'values[].value':
+        custom: []
         name: 'values[].value'
         description: 'القيمة التقنية (مثل كود اللون Hex).'
         required: false
@@ -254,8 +322,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       attribute_id:
+        custom: []
         name: attribute_id
         description: 'معرف السمة (في حال الإضافة لسمة موجودة).'
         required: false
@@ -264,40 +333,45 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: اللون
-      value: rnvtgslweeqdvlunvkbsh
+      value: h
       values:
-        - sit
+        - soluta
       attribute_id: 1
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 1aa5hPkcg34eb8VdfvZ6E6D'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PATCH
-    uri: 'api/attributes/{id}/toggle'
+    uri: 'api/v1/attributes/{id}/toggle'
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تغيير حالة السمة (تفعيل/تعطيل)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       id:
+        custom: []
         name: id
         description: 'The ID of the attribute.'
         required: true
@@ -306,7 +380,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       id: 1
     queryParameters: []
@@ -316,16 +390,20 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer b6gc6eEafhPdZD4138kavV5'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/attribute-values
+    uri: api/v1/attribute-values
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
@@ -335,69 +413,75 @@ endpoints:
 
         استرجاع كافة القيم المسجلة للسمات المختلفة (مثل: أحمر، XL، قطن).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       attribute_id:
+        custom: []
         name: attribute_id
         description: 'فلترة حسب السمة الأم.'
         required: false
-        example: 15
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       search:
+        custom: []
         name: search
         description: 'البحث في الاسم أو القيمة.'
         required: false
-        example: aut
+        example: accusamus
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
-      attribute_id: 15
-      search: aut
+      attribute_id: 5
+      search: accusamus
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":1,"attribute_id":1,"created_by":1,"name":"\u0627\u062d\u0645\u0631","color":"#F44336","created_at":"2025-06-10 02:44:08","updated_at":"2025-06-10 02:44:08"},{"id":1,"attribute_id":1,"created_by":1,"name":"\u0627\u062d\u0645\u0631","color":"#F44336","created_at":"2025-06-10 02:44:08","updated_at":"2025-06-10 02:44:08"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6ah3ake5gcb8fZv4EPVD61d'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/attribute-values
+    uri: api/v1/attribute-values
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إضافة قيمة لسمة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -406,6 +490,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم القيمة (للمطور).'
         required: true
@@ -414,18 +499,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       color:
+        custom: []
         name: color
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: ysdbbu
+        example: gophsygmbcdzaofxjfgnsomq
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       attribute_id:
+        custom: []
         name: attribute_id
         description: 'معرف السمة الأم.'
         required: true
@@ -434,8 +521,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -444,8 +532,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       value:
+        custom: []
         name: value
         description: 'القيمة المعروضة (للمستخدم).'
         required: true
@@ -454,25 +543,29 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: Red
-      color: ysdbbu
+      color: gophsygmbcdzaofxjfgnsomq
       attribute_id: 1
       value: أحمر
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 8gfVecah6b346vEZ1k5DaPd'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/product-variants
+    uri: api/v1/product-variants
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
@@ -482,16 +575,17 @@ endpoints:
 
         استرجاع كافة التشكيلات (Variants) المتوفرة للمنتجات (مثل: آيفون 15 برو - أسود - 256 جيجا).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       search:
+        custom: []
         name: search
         description: 'البحث برمز SKU أو الباركود.'
         required: false
@@ -500,68 +594,75 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       product_id:
+        custom: []
         name: product_id
         description: 'فلترة حسب المنتج الأم.'
         required: false
-        example: 19
+        example: 14
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: 'فلترة حسب الحالة (active, inactive).'
         required: false
-        example: reiciendis
+        example: ducimus
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       search: SKU123
-      product_id: 19
-      status: reiciendis
+      product_id: 14
+      status: ducimus
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":[{"id":1,"barcode":"1000000000","sku":"SKU-FKL2LLVO","retail_price":"75.00","profit_margin":"0.25","image":null,"primary_image_url":null,"weight":"1.50","dimensions":"20x30x10","tax":"5.00","cost":"50.00","quantity":100,"min_quantity":null,"discount":"0.00","status":"active","created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50","product_id":1,"product_name":"\u0645\u0646\u062a\u062c 1","product_slug":"product-1","product_active":true,"product_featured":false,"product_returnable":true,"product_desc":"\u0648\u0635\u0641 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_desc_long":"\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_published_at":"2025-07-09 09:15:50","category_id":1,"brand_id":1,"company_id":1,"product_type":"physical","requires_stock":true,"stocks":[{"id":1,"warehouse_id":1,"quantity":100,"reserved":5,"min_quantity":10,"cost":"50.00","batch":"BATCH-686E0916271BD","expiry":"2026-01-09T00:00:00.000000Z","loc":"\u0631\u0641-\u0623","status":"available","created_at":"2025-07-09 09:15:50","updated_at":"2025-09-15 15:03:00"}]},{"id":1,"barcode":"1000000000","sku":"SKU-FKL2LLVO","retail_price":"75.00","profit_margin":"0.25","image":null,"primary_image_url":null,"weight":"1.50","dimensions":"20x30x10","tax":"5.00","cost":"50.00","quantity":100,"min_quantity":null,"discount":"0.00","status":"active","created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50","product_id":1,"product_name":"\u0645\u0646\u062a\u062c 1","product_slug":"product-1","product_active":true,"product_featured":false,"product_returnable":true,"product_desc":"\u0648\u0635\u0641 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_desc_long":"\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_published_at":"2025-07-09 09:15:50","category_id":1,"brand_id":1,"company_id":1,"product_type":"physical","requires_stock":true,"stocks":[{"id":1,"warehouse_id":1,"quantity":100,"reserved":5,"min_quantity":10,"cost":"50.00","batch":"BATCH-686E0916271BD","expiry":"2026-01-09T00:00:00.000000Z","loc":"\u0631\u0641-\u0623","status":"available","created_at":"2025-07-09 09:15:50","updated_at":"2025-09-15 15:03:00"}]}]}'
+        content: '{"data":[{"id":1,"barcode":"1000000000","sku":"SKU-FKL2LLVO","retail_price":"75.00","image":null,"primary_image_url":null,"weight":"1.50","dimensions":"20x30x10","tax":"5.00","quantity":100,"min_quantity":null,"discount":"0.00","status":"active","created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50","product_id":1,"product_name":"\u0645\u0646\u062a\u062c 1","product_slug":"product-1","product_active":true,"product_featured":false,"product_returnable":true,"product_desc":"\u0648\u0635\u0641 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_desc_long":"\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_published_at":"2025-07-09 09:15:50","category_id":1,"brand_id":1,"company_id":1,"product_type":"physical","requires_stock":true,"stocks":[{"id":1,"warehouse_id":1,"quantity":100,"reserved":5,"min_quantity":10,"cost":"50.00","batch":"BATCH-686E0916271BD","expiry":"2026-01-09T00:00:00.000000Z","loc":"\u0631\u0641-\u0623","status":"available","created_at":"2025-07-09 09:15:50","updated_at":"2025-09-15 15:03:00"}]},{"id":1,"barcode":"1000000000","sku":"SKU-FKL2LLVO","retail_price":"75.00","image":null,"primary_image_url":null,"weight":"1.50","dimensions":"20x30x10","tax":"5.00","quantity":100,"min_quantity":null,"discount":"0.00","status":"active","created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50","product_id":1,"product_name":"\u0645\u0646\u062a\u062c 1","product_slug":"product-1","product_active":true,"product_featured":false,"product_returnable":true,"product_desc":"\u0648\u0635\u0641 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_desc_long":"\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0645\u0646\u062a\u062c 1","product_published_at":"2025-07-09 09:15:50","category_id":1,"brand_id":1,"company_id":1,"product_type":"physical","requires_stock":true,"stocks":[{"id":1,"warehouse_id":1,"quantity":100,"reserved":5,"min_quantity":10,"cost":"50.00","batch":"BATCH-686E0916271BD","expiry":"2026-01-09T00:00:00.000000Z","loc":"\u0631\u0641-\u0623","status":"available","created_at":"2025-07-09 09:15:50","updated_at":"2025-09-15 15:03:00"}]}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer P8gVhfdv5Eabc661aD3e4Zk'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/warehouses
+    uri: api/v1/warehouses
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض قائمة المستودعات'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       active:
+        custom: []
         name: active
         description: 'فلترة حسب النشط/غير النشط.'
         required: false
@@ -570,8 +671,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       name:
+        custom: []
         name: name
         description: 'البحث باسم المستودع.'
         required: false
@@ -580,8 +682,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'فلترة حسب الشركة (للمسؤول العام فقط).'
         required: false
@@ -590,8 +693,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_at_from:
+        custom: []
         name: created_at_from
         description: 'date تاريخ الإنشاء من.'
         required: false
@@ -600,8 +704,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_at_to:
+        custom: []
         name: created_at_to
         description: 'date تاريخ الإنشاء إلى.'
         required: false
@@ -610,8 +715,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       sort_by:
+        custom: []
         name: sort_by
         description: 'حقل الفرز. Default: id.'
         required: false
@@ -620,8 +726,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       sort_order:
+        custom: []
         name: sort_order
         description: 'ترتيب الفرز (asc/desc). Default: desc.'
         required: false
@@ -630,8 +737,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'عدد العناصر في الصفحة. Default: 20.'
         required: false
@@ -640,7 +748,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       active: true
       name: 'المستودع الرئيسي'
@@ -655,22 +763,26 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":1,"name":"\u0627\u0644\u0645\u062e\u0632\u0646 \u0627\u0644\u0631\u0626\u064a\u0633\u064a","location":"\u0627\u0644\u0645\u0648\u0642\u0639 \u0627\u0644\u0631\u0626\u064a\u0633\u064a","manager":"\u0645\u062f\u064a\u0631 \u0627\u0644\u0645\u062e\u0632\u0646","capacity":1000,"status":"active","is_default":false,"description":null,"created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50"},{"id":1,"name":"\u0627\u0644\u0645\u062e\u0632\u0646 \u0627\u0644\u0631\u0626\u064a\u0633\u064a","location":"\u0627\u0644\u0645\u0648\u0642\u0639 \u0627\u0644\u0631\u0626\u064a\u0633\u064a","manager":"\u0645\u062f\u064a\u0631 \u0627\u0644\u0645\u062e\u0632\u0646","capacity":1000,"status":"active","is_default":false,"description":null,"created_at":"2025-07-09 09:15:50","updated_at":"2025-07-09 09:15:50"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer kgb38dDa6heEf46vcVP1Za5'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/stocks
+    uri: api/v1/stocks
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
@@ -680,16 +792,17 @@ endpoints:
 
         تتبع حركة المخزن الواردة والصادرة (رصيد افتتاحي، مبيعات، مشتريات، تسويات).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       variant_id:
+        custom: []
         name: variant_id
         description: 'فلترة حسب متغير المنتج.'
         required: false
@@ -698,8 +811,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       warehouse_id:
+        custom: []
         name: warehouse_id
         description: 'فلترة حسب المستودع.'
         required: false
@@ -708,8 +822,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: 'حالة الحركة (in, out, adjustment).'
         required: false
@@ -718,8 +833,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       quantity_from:
+        custom: []
         name: quantity_from
         description: 'الحد الأدنى للكمية.'
         required: false
@@ -728,8 +844,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       quantity_to:
+        custom: []
         name: quantity_to
         description: 'الحد الأقصى للكمية.'
         required: false
@@ -738,8 +855,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_at_from:
+        custom: []
         name: created_at_from
         description: 'date تاريخ الإنشاء من.'
         required: false
@@ -748,8 +866,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_at_to:
+        custom: []
         name: created_at_to
         description: 'date تاريخ الإنشاء إلى.'
         required: false
@@ -758,8 +877,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       sort_by:
+        custom: []
         name: sort_by
         description: 'حقل الفرز. Default: id.'
         required: false
@@ -768,8 +888,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       sort_order:
+        custom: []
         name: sort_order
         description: 'ترتيب الفرز (asc/desc). Default: desc.'
         required: false
@@ -778,8 +899,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'عدد العناصر في الصفحة. Default: 20.'
         required: false
@@ -788,7 +910,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       variant_id: 1
       warehouse_id: 1
@@ -805,22 +927,26 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":1,"warehouse_id":1,"quantity":100,"reserved":5,"min_quantity":10,"cost":"50.00","batch":"BATCH-686E0916271BD","expiry":"2026-01-09T00:00:00.000000Z","loc":"\u0631\u0641-\u0623","status":"available","created_at":"2025-07-09 09:15:50","updated_at":"2025-09-15 15:03:00"},{"id":1,"warehouse_id":1,"quantity":100,"reserved":5,"min_quantity":10,"cost":"50.00","batch":"BATCH-686E0916271BD","expiry":"2026-01-09T00:00:00.000000Z","loc":"\u0631\u0641-\u0623","status":"available","created_at":"2025-07-09 09:15:50","updated_at":"2025-09-15 15:03:00"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 658vba6DgPdVE4e1ak3fhZc'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/categories
+    uri: api/v1/categories
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
@@ -830,16 +956,17 @@ endpoints:
 
         استرجاع شجرة الأقسام بالكامل (الأقسام الرئيسية والفرعية) مع دعم البحث والفلترة.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       search:
+        custom: []
         name: search
         description: 'البحث باسم القسم.'
         required: false
@@ -848,7 +975,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       search: هواتف
     bodyParameters: []
@@ -856,32 +983,36 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":[{"id":1,"company_id":1,"created_by":1,"name":" \u0627\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","description":" \u0642\u0633\u0645 \u0627\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","active":true,"image_url":null,"image_id":null,"parent_id":null,"children_count":0,"products_count":2,"created_at":"2025-07-09T09:15:50.000000Z","updated_at":"2025-07-09T09:15:50.000000Z"},{"id":1,"company_id":1,"created_by":1,"name":" \u0627\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","description":" \u0642\u0633\u0645 \u0627\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","active":true,"image_url":null,"image_id":null,"parent_id":null,"children_count":0,"products_count":2,"created_at":"2025-07-09T09:15:50.000000Z","updated_at":"2025-07-09T09:15:50.000000Z"}]}'
+        content: '{"data":[{"id":1,"company_id":1,"created_by":1,"name":" \u0627\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","description":" \u0642\u0633\u0645 \u0627\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","active":true,"image_url":null,"image_id":null,"parent_id":null,"children_count":0,"products_count":2,"synonyms":null,"full_path":" \u0627\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","created_at":"2025-07-09T09:15:50.000000Z","updated_at":"2025-07-09T09:15:50.000000Z"},{"id":1,"company_id":1,"created_by":1,"name":" \u0627\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","description":" \u0642\u0633\u0645 \u0627\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","active":true,"image_url":null,"image_id":null,"parent_id":null,"children_count":0,"products_count":2,"synonyms":null,"full_path":" \u0627\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","created_at":"2025-07-09T09:15:50.000000Z","updated_at":"2025-07-09T09:15:50.000000Z"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6V56aZ8PDgEevd3ab14cfhk'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/categories
+    uri: api/v1/categories
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إضافة قسم جديد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -890,6 +1021,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم القسم.'
         required: true
@@ -898,18 +1030,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: ''
         required: false
-        example: 'Commodi voluptates soluta voluptate dicta facilis.'
+        example: 'Placeat quae quo odio quaerat omnis adipisci ipsum.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       parent_id:
+        custom: []
         name: parent_id
         description: 'معرف القسم الأب (اختياري).'
         required: false
@@ -918,8 +1052,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -928,8 +1063,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -938,8 +1074,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       active:
+        custom: []
         name: active
         description: ''
         required: false
@@ -948,8 +1085,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       image_id:
+        custom: []
         name: image_id
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
@@ -958,39 +1096,44 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: إلكترونيات
-      description: 'Commodi voluptates soluta voluptate dicta facilis.'
+      description: 'Placeat quae quo odio quaerat omnis adipisci ipsum.'
       parent_id: 1
       active: false
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer c46P63b5dfghV8a1DaEZvke'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PATCH
-    uri: 'api/categories/{id}/toggle'
+    uri: 'api/v1/categories/{id}/toggle'
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تغيير حالة الفئة (تفعيل/تعطيل)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       id:
+        custom: []
         name: id
         description: 'The ID of the category.'
         required: true
@@ -999,7 +1142,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       id: 1
     queryParameters: []
@@ -1009,30 +1152,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer ba684gfV61ahcv3P5DkedZE'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/categories/{id}/breadcrumbs'
+    uri: 'api/v1/categories/{id}/breadcrumbs'
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'استرجاع مسار الفئة (Breadcrumbs)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       id:
+        custom: []
         name: id
         description: 'The ID of the category.'
         required: true
@@ -1041,7 +1189,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       id: 1
     queryParameters: []
@@ -1051,6 +1199,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -1058,18 +1207,103 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer e431haEbcVkdPv6658afgZD'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/categories/{id}/globalize'
+    metadata:
+      custom: []
+      groupName: '03. إدارة المنتجات والمخزون'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحويل فئة خاصة بشركة إلى فئة عالمية (Super Admin فقط)'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the category.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer kdagcv6eDZh51Pfab8VE436'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/categories/merge
+    metadata:
+      custom: []
+      groupName: '03. إدارة المنتجات والمخزون'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'دمج فئة في فئة أخرى (Super Admin فقط)'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 8aDPbe6EVvg1aZ46fdk5c3h'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
     httpMethods:
       - GET
-    uri: api/brands
+    uri: api/v1/brands
     metadata:
+      custom: []
       groupName: '03. إدارة المنتجات والمخزون'
       groupDescription: ''
       subgroup: ''
@@ -1079,16 +1313,17 @@ endpoints:
 
         استرجاع قائمة العلامات التجارية المسجلة في النظام.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       search:
+        custom: []
         name: search
         description: 'البحث باسم الماركة أو وصفها.'
         required: false
@@ -1097,7 +1332,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       search: سامسونج
     bodyParameters: []
@@ -1105,14 +1340,98 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":[{"id":1,"name":"\u0627\u0644\u0637\u0648\u062e\u064a","company_id":1,"created_by":1,"description":" \u0645\u0627\u0631\u0643\u0629 \u0627\u0644\u0637\u0648\u062e\u064a \u0644\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","active":true,"image_url":null,"image_id":null,"products_count":2,"creator_name":"System Owner","created_at":"2025-07-09T09:15:50.000000Z","updated_at":"2025-07-09T09:15:50.000000Z"},{"id":1,"name":"\u0627\u0644\u0637\u0648\u062e\u064a","company_id":1,"created_by":1,"description":" \u0645\u0627\u0631\u0643\u0629 \u0627\u0644\u0637\u0648\u062e\u064a \u0644\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","active":true,"image_url":null,"image_id":null,"products_count":2,"creator_name":"System Owner","created_at":"2025-07-09T09:15:50.000000Z","updated_at":"2025-07-09T09:15:50.000000Z"}]}'
+        content: '{"data":[{"id":1,"name":"\u0627\u0644\u0637\u0648\u062e\u064a","company_id":1,"created_by":1,"description":" \u0645\u0627\u0631\u0643\u0629 \u0627\u0644\u0637\u0648\u062e\u064a \u0644\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","active":true,"image_url":null,"image_id":null,"products_count":2,"creator_name":"System Owner","synonyms":null,"created_at":"2025-07-09T09:15:50.000000Z","updated_at":"2025-07-09T09:15:50.000000Z"},{"id":1,"name":"\u0627\u0644\u0637\u0648\u062e\u064a","company_id":1,"created_by":1,"description":" \u0645\u0627\u0631\u0643\u0629 \u0627\u0644\u0637\u0648\u062e\u064a \u0644\u0644\u0645\u0644\u0627\u0628\u0633 \u0627\u0644\u062c\u0627\u0647\u0632\u0629","active":true,"image_url":null,"image_id":null,"products_count":2,"creator_name":"System Owner","synonyms":null,"created_at":"2025-07-09T09:15:50.000000Z","updated_at":"2025-07-09T09:15:50.000000Z"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer dVeha138kZfEg4bPD6a5cv6'
     controller: null
     method: null
     route: null
+  -
     custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/brands/{id}/globalize'
+    metadata:
+      custom: []
+      groupName: '03. إدارة المنتجات والمخزون'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحويل ماركة خاصة بشركة إلى ماركة عالمية (Super Admin فقط)'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the brand.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer ZEvha4DbVfP681e6ack35dg'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/brands/merge
+    metadata:
+      custom: []
+      groupName: '03. إدارة المنتجات والمخزون'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'دمج ماركة في ماركة أخرى (Super Admin فقط)'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3g16Db58EvZf4P6Vkeahdac'
+    controller: null
+    method: null
+    route: null

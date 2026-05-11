@@ -4,10 +4,12 @@ name: '05. التقارير والتحليلات'
 description: ''
 endpoints:
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/sales
+    uri: api/v1/reports/sales
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -17,16 +19,17 @@ endpoints:
 
         توليد تقرير شامل للمبيعات مع إمكانية التجميع حسب (اليوم، الشهر، العميل، أو المنتج).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       date_from:
+        custom: []
         name: date_from
         description: 'date تاريخ البداية.'
         required: false
@@ -35,18 +38,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       date_to:
+        custom: []
         name: date_to
         description: 'date تاريخ النهاية.'
         required: false
-        example: voluptas
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       group_by:
+        custom: []
         name: group_by
         description: 'التجميع حسب (day, month, product, customer).'
         required: false
@@ -55,27 +60,29 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       export:
+        custom: []
         name: export
         description: 'تصدير التقرير (excel, csv).'
         required: false
-        example: qui
+        example: doloremque
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       date_from: '2024-01-01'
-      date_to: voluptas
+      date_to: qui
       group_by: month
-      export: qui
+      export: doloremque
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -83,18 +90,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6P8cv651aDheaEgb34kVdfZ'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/sales/top-products
+    uri: api/v1/reports/sales/top-products
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -104,16 +114,17 @@ endpoints:
 
         عرض قائمة بالمنتجات الأعلى مبيعاً خلال فترة محددة.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       limit:
+        custom: []
         name: limit
         description: 'عدد النتائج.'
         required: false
@@ -122,7 +133,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       limit: 10
     bodyParameters: []
@@ -130,6 +141,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -137,18 +149,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer adZh38e6b1VEPkcagv6f5D4'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/sales/top-customers
+    uri: api/v1/reports/sales/top-customers
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -158,10 +173,10 @@ endpoints:
 
         عرض قائمة بالعملاء الأكثر شراءً.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -173,6 +188,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -180,18 +196,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3Vdkfe68hZc1vPa6Db54agE'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/sales/trend
+    uri: api/v1/reports/sales/trend
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -201,16 +220,17 @@ endpoints:
 
         تحليل حركة المبيعات بمرور الوقت (يومياً، أسبوعياً، أو شهرياً).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       period:
+        custom: []
         name: period
         description: 'نوع الفترة (day, week, month).'
         required: false
@@ -219,7 +239,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       period: week
     bodyParameters: []
@@ -227,6 +247,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -234,18 +255,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3k8c4gZaVdP5a1fbeh6EvD6'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/stock
+    uri: api/v1/reports/stock
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -255,43 +279,46 @@ endpoints:
 
         تقرير مفصل عن عمليات الوارد والمنصرف لكل منتج ومستودع.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       product_id:
+        custom: []
         name: product_id
         description: 'فلترة حسب المنتج.'
         required: false
-        example: 2
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       date_from:
+        custom: []
         name: date_from
         description: 'date تاريخ البداية.'
         required: false
-        example: sapiente
+        example: mollitia
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
-      product_id: 2
-      date_from: sapiente
+      product_id: 3
+      date_from: mollitia
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -299,18 +326,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer gv46Vfbd1DZackaP68Ehe53'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/stock/valuation
+    uri: api/v1/reports/stock/valuation
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -320,10 +350,10 @@ endpoints:
 
         حساب القيمة المالية للمخزون الحالي بناءً على سعر التكلفة وسعر البيع.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -335,6 +365,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -342,18 +373,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer de68fak4ZPDaghv63cV1Eb5'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/stock/low-stock
+    uri: api/v1/reports/stock/low-stock
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -363,16 +397,17 @@ endpoints:
 
         عرض المنتجات التي وصلت كميتها إلى حد أقل من القيمة المحددة.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       threshold:
+        custom: []
         name: threshold
         description: 'الحد الأدنى للكمية.'
         required: false
@@ -381,7 +416,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       threshold: 10
     bodyParameters: []
@@ -389,6 +424,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -396,18 +432,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 8vedZk65PD64ah1Vgacb3Ef'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/stock/inactive
+    uri: api/v1/reports/stock/inactive
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -417,16 +456,17 @@ endpoints:
 
         المنتجات التي لم يتم عليها أي حركة خلال فترة طويلة.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       days:
+        custom: []
         name: days
         description: 'عدد الأيام.'
         required: false
@@ -435,7 +475,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       days: 90
     bodyParameters: []
@@ -443,6 +483,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -450,18 +491,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer EZk6f3Vb8P4ehcd651aagvD'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/tax
+    uri: api/v1/reports/tax
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -471,16 +515,17 @@ endpoints:
 
         ملخص للضرائب المحصلة والمدفوعة وصافي الالتزام الضريبي.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       date_from:
+        custom: []
         name: date_from
         description: 'date تاريخ البداية.'
         required: false
@@ -489,25 +534,27 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       date_to:
+        custom: []
         name: date_to
         description: 'date تاريخ النهاية.'
         required: false
-        example: id
+        example: tenetur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       date_from: '2023-10-01'
-      date_to: id
+      date_to: tenetur
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -515,18 +562,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 56va4cPhb1Zda8fDe6VgkE3'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/tax/collected
+    uri: api/v1/reports/tax/collected
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -536,10 +586,10 @@ endpoints:
 
         عرض الفواتير التي تم تحصيل ضريبة منها.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -551,6 +601,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -558,18 +609,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer DEkbd1gV4Ph6a6f3ac85eZv'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/tax/paid
+    uri: api/v1/reports/tax/paid
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -579,10 +633,10 @@ endpoints:
 
         عرض الفواتير التي تم دفع ضريبة فيها.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -594,6 +648,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -601,18 +656,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer ek8DPach41v65gf3E6dZVab'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/reports/tax/net
+    uri: api/v1/reports/tax/net
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -622,10 +680,10 @@ endpoints:
 
         حساب الفرق بين الضريبة المحصلة والمدفوعة.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -637,6 +695,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -644,18 +703,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6136hk8fDPe5bVa4cgEvadZ'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/dashboard/summary
+    uri: api/v1/dashboard/summary
     metadata:
+      custom: []
       groupName: '05. التقارير والتحليلات'
       groupDescription: ''
       subgroup: ''
@@ -665,10 +727,10 @@ endpoints:
 
         جلب الإحصائيات الحيوية للنظام (إجمالي المبيعات، نمو العملاء، المنتجات الأعلى مبيعاً) لعرضها في الشاشة الرئيسية.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -680,6 +742,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -687,10 +750,11 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer vfD458cgdVah3EakbZ61e6P'
     controller: null
     method: null
     route: null
-    custom: []

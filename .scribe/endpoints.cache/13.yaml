@@ -4,26 +4,29 @@ name: '04. نظام الأقساط'
 description: ''
 endpoints:
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/installment-plans
+    uri: api/v1/installment-plans
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض قائمة خطط التقسيط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       status:
+        custom: []
         name: status
         description: 'الحالة (active, completed, canceled).'
         required: false
@@ -32,8 +35,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       search:
+        custom: []
         name: search
         description: 'البحث بالاسم أو الهاتف.'
         required: false
@@ -42,26 +46,28 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'عدد النتائج. Default: 20'
         required: false
-        example: 17
+        example: 2
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       status: active
       search: محمد
-      per_page: 17
+      per_page: 2
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -69,28 +75,31 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 1k4Pf65he3abd6EDZvcagV8'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/installment-plans
+    uri: api/v1/installment-plans
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إنشاء خطة تقسيط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -99,6 +108,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'معرف العميل.'
         required: true
@@ -107,18 +117,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       invoice_id:
+        custom: []
         name: invoice_id
         description: 'The <code>id</code> of an existing record in the invoices table.'
         required: true
-        example: iure
+        example: quia
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       total_amount:
+        custom: []
         name: total_amount
         description: 'إجمالي المبلغ.'
         required: true
@@ -127,18 +139,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       down_payment:
+        custom: []
         name: down_payment
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 78
+        example: 33
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       installment_count:
+        custom: []
         name: installment_count
         description: 'عدد الأقساط.'
         required: true
@@ -147,84 +161,93 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       installment_amount:
+        custom: []
         name: installment_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: true
-        example: 19
+        example: 26
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       start_date:
+        custom: []
         name: start_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: true
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       due_day:
+        custom: []
         name: due_day
         description: 'يجب أن تكون قيمة value على الأقل 1. يجب ألا تكون قيمة value أكبر من 31.'
         required: true
-        example: 6
+        example: 13
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       notes:
+        custom: []
         name: notes
         description: ''
         required: false
-        example: optio
+        example: distinctio
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       user_id: 1
-      invoice_id: iure
+      invoice_id: quia
       total_amount: 5000.0
-      down_payment: 78
+      down_payment: 33
       installment_count: 10
-      installment_amount: 19
-      start_date: '2026-02-12T18:00:50'
-      due_day: 6
-      notes: optio
+      installment_amount: 26
+      start_date: '2026-05-10T23:48:01'
+      due_day: 13
+      notes: distinctio
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer db4PfagV5e6EcZ3akD81hv6'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/installment-plans/{installmentPlan_id}'
+    uri: 'api/v1/installment-plans/{installmentPlan_id}'
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تفاصيل خطة تقسيط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       installmentPlan_id:
+        custom: []
         name: installmentPlan_id
         description: 'The ID of the installmentPlan.'
         required: true
@@ -233,8 +256,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       installmentPlan:
+        custom: []
         name: installmentPlan
         description: 'معرف الخطة.'
         required: true
@@ -243,7 +267,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       installmentPlan_id: 1
       installmentPlan: '1'
@@ -254,36 +278,41 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":{"id":1,"user_id":7,"invoice_id":1,"name":null,"description":null,"status":"paid","status_label":"\u0645\u062f\u0641\u0648\u0639\u0629 \u0628\u0627\u0644\u0643\u0627\u0645\u0644","round_step":"10","total_amount":"3819.00","down_payment":"270.00","total_pay":"3819.00","remaining_amount":"0.00","payment_progress":100,"number_of_installments":12,"installment_count":null,"installment_amount":"300.00","interest_rate":"0.00","interest_amount":"0.00","total_installments_remaining":"0.00","total_installments_amount":"0.00","total_installments_pay":"0.00","start_date":"2024-10-05 00:00:00","due_day":null,"notes":null,"created_at":"2025-07-10 21:04:10","updated_at":"2026-02-11 11:30:11","installments":[]}}'
+        content: '{"data":{"id":1,"user_id":7,"invoice_id":1,"name":null,"description":null,"status":"paid","status_label":"\u0645\u062f\u0641\u0648\u0639\u0629 \u0628\u0627\u0644\u0643\u0627\u0645\u0644","round_step":"10","total_amount":"3819.00","down_payment":"270.00","total_pay":"3819.00","remaining_amount":"0.00","payment_progress":100,"number_of_installments":12,"installment_count":null,"installment_amount":"300.00","interest_rate":"0.00","interest_amount":"0.00","total_installments_remaining":"0.00","total_installments_amount":"0.00","total_installments_pay":"0.00","start_date":"2024-10-05 00:00:00","due_day":null,"notes":null,"created_at":"2025-07-10 21:04:10","updated_at":"2026-02-10 15:43:43","installments":[]}}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer g3a615Vf8EvhDakbcZ4Pd6e'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/installment-plans/{installmentPlan}'
+    uri: 'api/v1/installment-plans/{installmentPlan}'
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث خطة تقسيط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       installmentPlan:
+        custom: []
         name: installmentPlan
         description: ''
         required: true
@@ -292,8 +321,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       id:
+        custom: []
         name: id
         description: 'معرف الخطة.'
         required: true
@@ -302,7 +332,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       installmentPlan: 1
       id: '1'
@@ -310,6 +340,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -318,8 +349,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       invoice_id:
+        custom: []
         name: invoice_id
         description: 'The <code>id</code> of an existing record in the invoices table.'
         required: false
@@ -328,38 +360,42 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       total_amount:
+        custom: []
         name: total_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 68
+        example: 27
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       down_payment:
+        custom: []
         name: down_payment
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 19
+        example: 76
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       installment_count:
+        custom: []
         name: installment_count
         description: 'يجب أن تكون قيمة value على الأقل 1.'
         required: false
-        example: 74
+        example: 52
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       installment_amount:
+        custom: []
         name: installment_amount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
@@ -368,83 +404,92 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       start_date:
+        custom: []
         name: start_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       due_day:
+        custom: []
         name: due_day
         description: 'يجب أن تكون قيمة value على الأقل 1. يجب ألا تكون قيمة value أكبر من 31.'
         required: false
-        example: 1
+        example: 22
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       notes:
+        custom: []
         name: notes
         description: ''
         required: false
-        example: quod
+        example: impedit
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: 'الحالة الجديدة.'
         required: false
-        example: aut
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      total_amount: 68
-      down_payment: 19
-      installment_count: 74
+      total_amount: 27
+      down_payment: 76
+      installment_count: 52
       installment_amount: 28
-      start_date: '2026-02-12T18:00:50'
-      due_day: 1
-      notes: quod
-      status: aut
+      start_date: '2026-05-10T23:48:01'
+      due_day: 22
+      notes: impedit
+      status: ut
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer hf34DdbZc86gEaPvkeaV156'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/installment-plans/{installmentPlan}'
+    uri: 'api/v1/installment-plans/{installmentPlan}'
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف خطة تقسيط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       installmentPlan:
+        custom: []
         name: installmentPlan
         description: ''
         required: true
@@ -453,8 +498,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       id:
+        custom: []
         name: id
         description: 'معرف الخطة.'
         required: true
@@ -463,7 +509,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       installmentPlan: 1
       id: '1'
@@ -474,32 +520,37 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer aVvkE6f5ag4bDZec13hP6d8'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/installments
+    uri: api/v1/installments
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض قائمة الأقساط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       status:
+        custom: []
         name: status
         description: 'الحالة (pending, paid, late).'
         required: false
@@ -508,8 +559,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       due_date_from:
+        custom: []
         name: due_date_from
         description: 'date تاريخ الاستحقاق من.'
         required: false
@@ -518,52 +570,57 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'فلترة حسب المستخدم.'
         required: false
-        example: 15
+        example: 4
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       status: pending
       due_date_from: '2023-01-01'
-      user_id: 15
+      user_id: 4
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":[{"id":1,"installment_plan_id":1,"installment_number":"1","due_date":"2024-11-05","amount":"300.00","status":"paid","status_label":"\u0645\u062f\u0641\u0648\u0639","paid_at":"2025-07-10 03:00:00","remaining":"0.00","created_by":5,"company_id":2,"user_id":7,"commitment_days":247,"commitment_label":"\u062a\u0623\u062e\u064a\u0631 247 \u064a\u0648\u0645","created_at":"2025-07-10 21:04:10","updated_at":"2026-02-11 11:30:09"},{"id":1,"installment_plan_id":1,"installment_number":"1","due_date":"2024-11-05","amount":"300.00","status":"paid","status_label":"\u0645\u062f\u0641\u0648\u0639","paid_at":"2025-07-10 03:00:00","remaining":"0.00","created_by":5,"company_id":2,"user_id":7,"commitment_days":247,"commitment_label":"\u062a\u0623\u062e\u064a\u0631 247 \u064a\u0648\u0645","created_at":"2025-07-10 21:04:10","updated_at":"2026-02-11 11:30:09"}]}'
+        content: '{"data":[{"id":1,"installment_plan_id":1,"installment_number":"1","due_date":"2024-11-05","amount":"300.00","status":"paid","status_label":"\u0645\u062f\u0641\u0648\u0639","paid_at":"2025-07-10 03:00:00","remaining":"0.00","created_by":5,"company_id":2,"user_id":7,"commitment_days":247,"commitment_label":"\u062a\u0623\u062e\u064a\u0631 247 \u064a\u0648\u0645","created_at":"2025-07-10 21:04:10","updated_at":"2026-02-10 15:43:43"},{"id":1,"installment_plan_id":1,"installment_number":"1","due_date":"2024-11-05","amount":"300.00","status":"paid","status_label":"\u0645\u062f\u0641\u0648\u0639","paid_at":"2025-07-10 03:00:00","remaining":"0.00","created_by":5,"company_id":2,"user_id":7,"commitment_days":247,"commitment_label":"\u062a\u0623\u062e\u064a\u0631 247 \u064a\u0648\u0645","created_at":"2025-07-10 21:04:10","updated_at":"2026-02-10 15:43:43"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer v8f3D6h5P6ackda4geVEZb1'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/installments
+    uri: api/v1/installments
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إنشاء قسط يدوي'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -572,16 +629,18 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       installment_plan_id:
+        custom: []
         name: installment_plan_id
         description: 'The <code>id</code> of an existing record in the installment_plans table.'
         required: true
-        example: accusantium
+        example: distinctio
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       due_date:
+        custom: []
         name: due_date
         description: 'تاريخ الاستحقاق.'
         required: true
@@ -590,8 +649,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       amount:
+        custom: []
         name: amount
         description: 'مبلغ القسط.'
         required: true
@@ -600,38 +660,42 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: ''
         required: true
-        example: tempora
+        example: nesciunt
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       paid_at:
+        custom: []
         name: paid_at
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       remaining:
+        custom: []
         name: remaining
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 41
+        example: 16
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'معرف العميل.'
         required: true
@@ -640,8 +704,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       invoice_id:
+        custom: []
         name: invoice_id
         description: 'The <code>id</code> of an existing record in the invoices table.'
         required: false
@@ -650,18 +715,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       installment_number:
+        custom: []
         name: installment_number
         description: ''
         required: false
-        example: blanditiis
+        example: sed
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: 'وصف إضافي.'
         required: false
@@ -670,44 +737,49 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      installment_plan_id: accusantium
+      installment_plan_id: distinctio
       due_date: '2023-06-01'
       amount: 500.0
-      status: tempora
-      paid_at: '2026-02-12T18:00:50'
-      remaining: 41
+      status: nesciunt
+      paid_at: '2026-05-10T23:48:01'
+      remaining: 16
       user_id: 1
-      installment_number: blanditiis
+      installment_number: sed
       description: 'قسط شهر يونيو'
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer g6eDkaEavP65V83cd4fb1hZ'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/installments/{installment}'
+    uri: 'api/v1/installments/{installment}'
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل قسط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       installment:
+        custom: []
         name: installment
         description: 'The installment.'
         required: true
@@ -716,8 +788,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       id:
+        custom: []
         name: id
         description: 'معرف القسط.'
         required: true
@@ -726,7 +799,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       installment: 1
       id: '1'
@@ -737,6 +810,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -744,32 +818,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer d8VEPa4Zab636vgDc1h5ekf'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/installments/{installment}'
+    uri: 'api/v1/installments/{installment}'
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث بيانات قسط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       installment:
+        custom: []
         name: installment
         description: 'The installment.'
         required: true
@@ -778,8 +856,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       id:
+        custom: []
         name: id
         description: 'معرف القسط.'
         required: true
@@ -788,7 +867,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       installment: 1
       id: '1'
@@ -796,6 +875,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       installment_plan_id:
+        custom: []
         name: installment_plan_id
         description: 'The <code>id</code> of an existing record in the installment_plans table.'
         required: false
@@ -804,18 +884,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       due_date:
+        custom: []
         name: due_date
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       amount:
+        custom: []
         name: amount
         description: 'المبلغ الجديد.'
         required: false
@@ -824,70 +906,78 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: ''
         required: false
-        example: id
+        example: similique
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       paid_at:
+        custom: []
         name: paid_at
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:01'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       remaining:
+        custom: []
         name: remaining
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 47
+        example: 56
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      due_date: '2026-02-12T18:00:50'
+      due_date: '2026-05-10T23:48:01'
       amount: 550.0
-      status: id
-      paid_at: '2026-02-12T18:00:50'
-      remaining: 47
+      status: similique
+      paid_at: '2026-05-10T23:48:01'
+      remaining: 56
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer eE5VZ1gfvd6aDPb6k38a4ch'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/installments/{installment}'
+    uri: 'api/v1/installments/{installment}'
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف قسط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       installment:
+        custom: []
         name: installment
         description: 'The installment.'
         required: true
@@ -896,8 +986,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       id:
+        custom: []
         name: id
         description: 'معرف القسط.'
         required: true
@@ -906,7 +997,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       installment: 1
       id: '1'
@@ -917,16 +1008,20 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer aP61f4k5gd3hEeDcb6vaVZ8'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/installment-payments/pay
+    uri: api/v1/installment-payments/pay
     metadata:
+      custom: []
       groupName: '04. نظام الأقساط'
       groupDescription: ''
       subgroup: ''
@@ -936,10 +1031,10 @@ endpoints:
 
         عملية سداد مبلغ للأقساط المحددة، يتم توزيع المبلغ تلقائياً على الأقساط المختارة.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -948,6 +1043,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       installment_ids:
+        custom: []
         name: installment_ids
         description: 'معرفات الأقساط المراد دفعها.'
         required: true
@@ -958,8 +1054,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       amount:
+        custom: []
         name: amount
         description: 'المبلغ المدفوع إجمالاً.'
         required: true
@@ -968,8 +1065,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       payment_method_id:
+        custom: []
         name: payment_method_id
         description: 'معرف طريقة الدفع.'
         required: true
@@ -978,8 +1076,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       cash_box_id:
+        custom: []
         name: cash_box_id
         description: 'معرف الخزنة (اختياري، يستخدم الافتراضي إذا لم يحدد).'
         required: false
@@ -988,18 +1087,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       installment_plan_id:
+        custom: []
         name: installment_plan_id
         description: 'The <code>id</code> of an existing record in the installment_plans table.'
         required: true
-        example: quis
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       user_id:
+        custom: []
         name: user_id
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -1008,18 +1109,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       notes:
+        custom: []
         name: notes
         description: ''
         required: false
-        example: et
+        example: eum
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       paid_at:
+        custom: []
         name: paid_at
         description: 'تاريخ الدفع.'
         required: false
@@ -1028,17 +1131,18 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       reference_number:
+        custom: []
         name: reference_number
         description: ''
         required: false
-        example: exercitationem
+        example: quibusdam
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       installment_ids:
         - 1
@@ -1046,15 +1150,17 @@ endpoints:
       amount: 1000.0
       payment_method_id: 1
       cash_box_id: 1
-      installment_plan_id: quis
-      notes: et
+      installment_plan_id: et
+      notes: eum
       paid_at: '2023-10-25 14:00:00'
-      reference_number: exercitationem
+      reference_number: quibusdam
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer cDh3V4EaPZebdvk15f66ga8'
     controller: null
     method: null
     route: null
-    custom: []

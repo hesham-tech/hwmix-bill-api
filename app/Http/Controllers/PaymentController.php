@@ -188,6 +188,10 @@ class PaymentController extends Controller
 
                 $payment->load($this->showRelations);
                 DB::commit();
+                
+                // إطلاق حدث النظام لاستلام دفعة مالية
+                event(new \App\Events\PaymentReceived($payment));
+                
                 return api_success(new PaymentResource($payment), 'تم إنشاء الدفعة بنجاح.', 201);
             } catch (ValidationException $e) {
                 DB::rollBack();

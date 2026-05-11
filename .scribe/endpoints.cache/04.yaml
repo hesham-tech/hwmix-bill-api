@@ -4,10 +4,12 @@ name: '07. الإدارة وسجلات النظام'
 description: ''
 endpoints:
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/activity-logs
+    uri: api/v1/activity-logs
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
@@ -17,16 +19,17 @@ endpoints:
 
         تتبع عمليات الإنشاء والتعديل والحذف التي يقوم بها المستخدمون على النماذج المختلفة في النظام.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'فلترة حسب المستخدم.'
         required: false
@@ -35,44 +38,48 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       subject_type:
+        custom: []
         name: subject_type
         description: 'نوع النموذج (مثل Product, Invoice).'
         required: false
-        example: molestias
+        example: nostrum
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       action:
+        custom: []
         name: action
         description: 'نوع العملية (created, updated, deleted).'
         required: false
-        example: qui
+        example: quod
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       date_from:
+        custom: []
         name: date_from
         description: 'date تاريخ البداية.'
         required: false
-        example: laudantium
+        example: id
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
       user_id: 18
-      subject_type: molestias
-      action: qui
-      date_from: laudantium
+      subject_type: nostrum
+      action: quod
+      date_from: id
     bodyParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -81,88 +88,96 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       subject_type:
+        custom: []
         name: subject_type
         description: ''
         required: false
-        example: omnis
+        example: aspernatur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       subject_id:
+        custom: []
         name: subject_id
         description: ''
         required: false
-        example: 19
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       action:
+        custom: []
         name: action
         description: ''
         required: false
-        example: aliquam
+        example: rerum
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       date_from:
+        custom: []
         name: date_from
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:48'
+        example: '2026-05-10T23:47:58'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       date_to:
+        custom: []
         name: date_to
         description: 'الحقل value ليس تاريخًا صحيحًا. يجب أن يكون value تاريخًا مطابقًا لـ <code>date_from</code> أو بعده.'
         required: false
-        example: '2078-03-09'
+        example: '2096-03-10'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       per_page:
+        custom: []
         name: per_page
         description: 'يجب أن تكون قيمة value على الأقل 10. يجب ألا تكون قيمة value أكبر من 100.'
         required: false
-        example: 14
+        example: 2
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       search:
+        custom: []
         name: search
         description: ''
         required: false
-        example: voluptas
+        example: doloribus
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      subject_type: omnis
-      subject_id: 19
-      action: aliquam
-      date_from: '2026-02-12T18:00:48'
-      date_to: '2078-03-09'
-      per_page: 14
-      search: voluptas
+      subject_type: aspernatur
+      subject_id: 1
+      action: rerum
+      date_from: '2026-05-10T23:47:58'
+      date_to: '2096-03-10'
+      per_page: 2
+      search: doloribus
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -170,32 +185,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer E1Vekb6h6P3ZDa5f8gcadv4'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/activity-logs/{id}'
+    uri: 'api/v1/activity-logs/{id}'
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل سجل نشاط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       id:
+        custom: []
         name: id
         description: 'معرف السجل.'
         required: true
@@ -204,7 +223,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       id: '1'
     queryParameters: []
@@ -214,6 +233,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -221,32 +241,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer ak61vPeVd4hcfg36DEZ8ab5'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/activity-logs/invoice/{invoiceId}'
+    uri: 'api/v1/activity-logs/invoice/{invoiceId}'
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'سجلات نشاط فاتورة محددة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       invoiceId:
+        custom: []
         name: invoiceId
         description: 'معرف الفاتورة.'
         required: true
@@ -255,7 +279,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       invoiceId: '1'
     queryParameters: []
@@ -265,6 +289,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -272,28 +297,31 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer vk646DhgE38b5feaaPdZV1c'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/activity-logs/export
+    uri: api/v1/activity-logs/export
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تصدير سجلات النشاط'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -302,26 +330,29 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       date_from:
+        custom: []
         name: date_from
         description: 'تاريخ البداية.'
         required: true
-        example: ea
+        example: fugiat
         type: date
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       date_to:
+        custom: []
         name: date_to
         description: 'تاريخ النهاية.'
         required: true
-        example: quaerat
+        example: et
         type: date
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       format:
+        custom: []
         name: format
         description: 'تنسيق الملف (csv, excel).'
         required: false
@@ -330,34 +361,38 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      date_from: ea
-      date_to: quaerat
+      date_from: fugiat
+      date_to: et
       format: excel
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Z8d3EP6bva5fkce4V1g6Dha'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/users
+    uri: api/v1/users
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض قائمة المستخدمين (عالمياً للسوبر أدمن، أو حسب الشركة للمديرين)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -369,6 +404,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -376,61 +412,67 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer v58136hakcVa6EZePdDgfb4'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/users/lookup
+    uri: api/v1/users/lookup
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'البحث عن مستخدم موجود مسبقاً في النظام (بناءً على الهاتف أو الإيميل)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       phone:
+        custom: []
         name: phone
         description: 'رقم الهاتف للبحث.'
         required: false
-        example: voluptatum
+        example: culpa
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       email:
+        custom: []
         name: email
         description: 'البريد الإلكتروني للبحث.'
         required: false
-        example: ghilpert@example.net
+        example: merlin.graham@example.net
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
-      phone: voluptatum
-      email: ghilpert@example.net
+      phone: culpa
+      email: merlin.graham@example.net
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -438,28 +480,31 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 4avDgbfEV1ake866hdZcP53'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/users/stats
+    uri: api/v1/users/stats
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إحصائيات المستخدمين'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -471,6 +516,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -478,28 +524,31 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 4DbZ6Pa8hVaeE5c13gkdfv6'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/users
+    uri: api/v1/users
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إضافة مستخدم جديد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -508,110 +557,121 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       phone:
+        custom: []
         name: phone
         description: 'رقم الهاتف.'
         required: true
-        example: hic
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       password:
+        custom: []
         name: password
         description: 'يجب أن يكون طول النص value على الأقل 8 حروف.'
         required: false
-        example: '^kuoOP''`T>ZJ`#j"`'
+        example: CBAeXQe-@9drYi+@
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       email:
+        custom: []
         name: email
         description: 'يجب أن يكون value عنوان بريد إلكتروني صحيحًا.'
         required: false
-        example: duncan.thiel@example.com
+        example: allene.torphy@example.net
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       full_name:
+        custom: []
         name: full_name
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: true
-        example: memnfnwmjevydzmucvhdvyxvj
+        example: zbifyckqoysajqjsugobt
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       nickname:
+        custom: []
         name: nickname
         description: اللقب.
         required: false
-        example: deleniti
+        example: reiciendis
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       username:
+        custom: []
         name: username
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: llzniydunzsi
+        example: hoywz
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       position:
+        custom: []
         name: position
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: zorlqwnwshotksrnulustqkif
+        example: ud
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       settings:
+        custom: []
         name: settings
         description: 'يجب أن يكون الحقل value نصًا بتنسيق JSON صحيحًا.'
         required: false
-        example: '["consequuntur","repellendus"]'
+        example: '["et","in"]'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       last_login_at:
+        custom: []
         name: last_login_at
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:48'
+        example: '2026-05-10T23:47:58'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       email_verified_at:
+        custom: []
         name: email_verified_at
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:48'
+        example: '2026-05-10T23:47:58'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       type:
+        custom: []
         name: type
         description: ''
         required: false
-        example: client
+        example: accounting
         type: string
         enumValues:
           - system_owner
@@ -622,18 +682,20 @@ endpoints:
           - user
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       balance:
+        custom: []
         name: balance
         description: ''
         required: false
-        example: 5665.52965
+        example: 2463474.0344892
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       images_ids:
+        custom: []
         name: images_ids
         description: ''
         required: false
@@ -642,20 +704,22 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: ''
         required: false
-        example: active
+        example: inactive
         type: string
         enumValues:
           - active
           - inactive
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -664,8 +728,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_ids:
+        custom: []
         name: company_ids
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -674,8 +739,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -684,8 +750,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       customer_type:
+        custom: []
         name: customer_type
         description: ''
         required: false
@@ -696,75 +763,82 @@ endpoints:
           - wholesale
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       roles:
+        custom: []
         name: roles
         description: 'The <code>name</code> of an existing record in the roles table.'
         required: false
         example:
-          - perspiciatis
+          - amet
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       permissions:
+        custom: []
         name: permissions
         description: 'The <code>name</code> of an existing record in the permissions table.'
         required: false
         example:
-          - facilis
+          - voluptas
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      phone: hic
-      password: '^kuoOP''`T>ZJ`#j"`'
-      email: duncan.thiel@example.com
-      full_name: memnfnwmjevydzmucvhdvyxvj
-      nickname: deleniti
-      username: llzniydunzsi
-      position: zorlqwnwshotksrnulustqkif
-      settings: '["consequuntur","repellendus"]'
-      last_login_at: '2026-02-12T18:00:48'
-      email_verified_at: '2026-02-12T18:00:48'
-      type: client
-      balance: 5665.52965
-      status: active
+      phone: qui
+      password: CBAeXQe-@9drYi+@
+      email: allene.torphy@example.net
+      full_name: zbifyckqoysajqjsugobt
+      nickname: reiciendis
+      username: hoywz
+      position: ud
+      settings: '["et","in"]'
+      last_login_at: '2026-05-10T23:47:58'
+      email_verified_at: '2026-05-10T23:47:58'
+      type: accounting
+      balance: 2463474.0344892
+      status: inactive
       customer_type: wholesale
       roles:
-        - perspiciatis
+        - amet
       permissions:
-        - facilis
+        - voluptas
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer a1D5ba846VvkZ3eEd6Pcghf'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/users/{user_id}'
+    uri: 'api/v1/users/{user_id}'
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل مستخدم'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'The ID of the user.'
         required: true
@@ -773,8 +847,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       user:
+        custom: []
         name: user
         description: 'معرف المستخدم.'
         required: true
@@ -783,7 +858,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       user_id: 1
       user: '1'
@@ -794,36 +869,41 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
-        content: '{"data":{"id":1,"name":"System Owner","nickname":"System Owner","full_name":"Admin","username":"system_owner","email":"admin@admin.com","phone":"1234567890","balance":0,"customer_type":null,"position":null,"status":"1","avatar_url":null,"company_id":2,"cash_box_id":834,"last_login_at":null,"email_verified_at":null,"created_by":null,"companies":[],"created_at":"2025-07-09","updated_at":"2026-02-09"}}'
+        content: '{"data":{"id":1,"name":"System Owner","nickname":"System Owner","full_name":"Admin","username":"system_owner","email":"admin@admin.com","phone":"1234567890","balance":0,"customer_type":null,"position":null,"status":"1","avatar_url":null,"company_id":2,"cash_box_id":953,"last_login_at":null,"email_verified_at":null,"created_by":null,"created_at":"2025-07-09","updated_at":"2026-05-03"}}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer che4vad6bD35VaZkP81g6fE'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/users/{user_id}'
+    uri: 'api/v1/users/{user_id}'
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث بيانات مستخدم'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'The ID of the user.'
         required: true
@@ -832,8 +912,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       user:
+        custom: []
         name: user
         description: 'معرف المستخدم.'
         required: true
@@ -842,7 +923,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       user_id: 1
       user: '1'
@@ -850,66 +931,84 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       full_name:
+        custom: []
         name: full_name
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
-        required: true
-        example: c
+        required: false
+        example: z
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       nickname:
+        custom: []
         name: nickname
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
-        required: true
-        example: qfqxxyksoiwcexxytzkklg
+        required: false
+        example: dzq
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
+        deprecated: false
+      username:
         custom: []
+        name: username
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: false
+        example: ntqzprbencpvknsbvmobukzin
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
       phone:
+        custom: []
         name: phone
         description: 'يجب ألا يتجاوز طول النص value 15 حرفًا.'
-        required: true
-        example: fgfq
+        required: false
+        example: hvm
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       password:
+        custom: []
         name: password
         description: 'يجب أن يكون طول النص value على الأقل 8 حروف.'
         required: false
-        example: 'i+PN]p".WS80s['
+        example: ':U8O?vO'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       position:
+        custom: []
         name: position
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: iagqlftfrmvzatyqggrpsk
+        example: km
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       settings:
+        custom: []
         name: settings
         description: 'يجب أن يكون الحقل value نصًا بتنسيق JSON صحيحًا.'
         required: false
-        example: '["dolorem","temporibus"]'
+        example: '["quidem","quos"]'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       last_login_at:
+        custom: []
         name: last_login_at
         description: ''
         required: false
@@ -918,8 +1017,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       email_verified_at:
+        custom: []
         name: email_verified_at
         description: ''
         required: false
@@ -928,8 +1028,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -938,8 +1039,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       images_ids:
+        custom: []
         name: images_ids
         description: ''
         required: false
@@ -948,18 +1050,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       balance:
+        custom: []
         name: balance
         description: ''
         required: false
-        example: 26.2
+        example: 173.593836
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: ''
         required: false
@@ -968,8 +1072,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -978,8 +1083,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_ids:
+        custom: []
         name: company_ids
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -988,8 +1094,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       customer_type:
+        custom: []
         name: customer_type
         description: ''
         required: false
@@ -1000,69 +1107,77 @@ endpoints:
           - wholesale
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       roles:
+        custom: []
         name: roles
         description: 'The <code>name</code> of an existing record in the roles table.'
         required: false
         example:
-          - quaerat
+          - repellat
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       permissions:
+        custom: []
         name: permissions
         description: 'The <code>name</code> of an existing record in the permissions table.'
         required: false
         example:
-          - quia
+          - aut
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      full_name: c
-      nickname: qfqxxyksoiwcexxytzkklg
-      phone: fgfq
-      password: 'i+PN]p".WS80s['
-      position: iagqlftfrmvzatyqggrpsk
-      settings: '["dolorem","temporibus"]'
-      balance: 26.2
+      full_name: z
+      nickname: dzq
+      username: ntqzprbencpvknsbvmobukzin
+      phone: hvm
+      password: ':U8O?vO'
+      position: km
+      settings: '["quidem","quos"]'
+      balance: 173.593836
       customer_type: retail
       roles:
-        - quaerat
+        - repellat
       permissions:
-        - quia
+        - aut
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 5k4hvcadaVb1f6DegZP68E3'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/change-company/{user_id}'
+    uri: 'api/v1/change-company/{user_id}'
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تغيير الشركة النشطة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       user_id:
+        custom: []
         name: user_id
         description: 'The ID of the user.'
         required: true
@@ -1071,8 +1186,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       user:
+        custom: []
         name: user
         description: 'معرف المستخدم.'
         required: true
@@ -1081,7 +1197,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       user_id: 1
       user: '1'
@@ -1089,6 +1205,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       company_id:
+        custom: []
         name: company_id
         description: 'معرف الشركة.'
         required: true
@@ -1097,32 +1214,36 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       company_id: 2
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer b6a5a613keh8DVZdEg4fvcP'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/users/delete
+    uri: api/v1/users/delete
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف مستخدمين (Batch)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -1131,6 +1252,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       item_ids:
+        custom: []
         name: item_ids
         description: 'مصفوفة المعرفات.'
         required: true
@@ -1141,7 +1263,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       item_ids:
         - 2
@@ -1149,48 +1271,54 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer bdc66eavhV4Za8fg1DEP5k3'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/companies
+    uri: api/v1/companies
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض قائمة الشركات'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       per_page:
+        custom: []
         name: per_page
         description: 'عدد النتائج.'
         required: false
-        example: 15
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
-      per_page: 15
+      per_page: 8
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -1198,28 +1326,31 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer g641EZe8ck5Vh3baaPvfd6D'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/companies
+    uri: api/v1/companies
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إضافة شركة جديدة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -1228,6 +1359,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم الشركة.'
         required: true
@@ -1236,88 +1368,97 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: ''
         required: false
-        example: 'Doloribus tempore dolorem ratione assumenda rerum eaque eos.'
+        example: 'Reprehenderit provident quaerat sunt aspernatur.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       field:
+        custom: []
         name: field
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: pijdghxetxlterybtcvjywhtw
+        example: slkfuvziircbvfpdsxpiixkp
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       owner_name:
+        custom: []
         name: owner_name
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: bgsullrhsxjrhdulgp
+        example: hfycfmjfvgmftnaceusomlr
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       address:
+        custom: []
         name: address
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: lwvdenazsudykfdacb
+        example: ldgeotqfcyk
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       phone:
+        custom: []
         name: phone
         description: 'يجب ألا يتجاوز طول النص value 15 حرفًا.'
         required: false
-        example: lrxwen
+        example: qrdtq
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       email:
+        custom: []
         name: email
         description: 'يجب أن يكون value عنوان بريد إلكتروني صحيحًا. يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: lisandro.mosciski@example.com
+        example: natalie19@example.org
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       tax_number:
+        custom: []
         name: tax_number
         description: 'يجب ألا يتجاوز طول النص value 100 حرفًا.'
         required: false
-        example: sdd
+        example: qrqg
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       website:
+        custom: []
         name: website
         description: 'Must be a valid URL. يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: gcztofpxghivcrlwbzczdil
+        example: ckqblczemciigmedru
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       settings:
+        custom: []
         name: settings
         description: ''
         required: false
@@ -1326,8 +1467,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       social_links:
+        custom: []
         name: social_links
         description: ''
         required: false
@@ -1336,79 +1478,87 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
-        example: 12
+        example: 13
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
-        example: 17
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       images_ids:
+        custom: []
         name: images_ids
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
         example:
-          - 5
+          - 20
         type: 'integer[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: 'شركة التقدم'
-      description: 'Doloribus tempore dolorem ratione assumenda rerum eaque eos.'
-      field: pijdghxetxlterybtcvjywhtw
-      owner_name: bgsullrhsxjrhdulgp
-      address: lwvdenazsudykfdacb
-      phone: lrxwen
-      email: lisandro.mosciski@example.com
-      tax_number: sdd
-      website: gcztofpxghivcrlwbzczdil
-      created_by: 12
-      company_id: 17
+      description: 'Reprehenderit provident quaerat sunt aspernatur.'
+      field: slkfuvziircbvfpdsxpiixkp
+      owner_name: hfycfmjfvgmftnaceusomlr
+      address: ldgeotqfcyk
+      phone: qrdtq
+      email: natalie19@example.org
+      tax_number: qrqg
+      website: ckqblczemciigmedru
+      created_by: 13
+      company_id: 3
       images_ids:
-        - 5
+        - 20
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer hdf66PvcbE31aZ48e5VkDag'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/companies/{company_id}'
+    uri: 'api/v1/companies/{company_id}'
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل شركة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       company_id:
+        custom: []
         name: company_id
         description: 'The ID of the company.'
         required: true
@@ -1417,8 +1567,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       company:
+        custom: []
         name: company
         description: 'معرف الشركة.'
         required: true
@@ -1427,7 +1578,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       company_id: 1
       company: '1'
@@ -1438,6 +1589,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -1445,28 +1597,31 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Ddv65ePZgck3E146hVaa8fb'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/companies/delete
+    uri: api/v1/companies/delete
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف شركات (Batch)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -1475,32 +1630,37 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       item_ids:
+        custom: []
         name: item_ids
         description: 'مصفوفة المعرفات.'
         required: true
         example:
-          - 5
+          - 9
         type: 'integer[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       item_ids:
-        - 5
+        - 9
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer aEgZ3bP58f64Vda6cevk1hD'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/logs
+    uri: api/v1/logs
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
@@ -1510,59 +1670,65 @@ endpoints:
 
         استرجاع سجلات العمليات المالية والإدارية الحساسة لغرض التدقيق والمراجعة.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       created_at_from:
+        custom: []
         name: created_at_from
         description: 'date التاريخ من.'
         required: false
-        example: soluta
+        example: sit
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       created_at_to:
+        custom: []
         name: created_at_to
         description: 'date التاريخ إلى.'
         required: false
-        example: non
+        example: illum
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
-      created_at_from: soluta
-      created_at_to: non
+      created_at_from: sit
+      created_at_to: illum
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: '{"data":[{"id":1,"action":"\u062a\u0639\u062f\u064a\u0644","model":"App\\Models\\User","data_old":"{\"id\":4,\"phone\":\"01070475028\",\"password\":\"$2y$12$Srzws.esmxtE\\\/igqc0BAh.TMIB4lDG7R.IdfwtH2J\\\/8QxGZ\\\/j.lE2\",\"email\":null,\"username\":null,\"nickname\":\"\\u0627\\u0628\\u0648 \\u0646\\u062f\\u064a\",\"full_name\":\"\\u0648\\u0627\\u0626\\u0644 \\u0645\\u062d\\u0645\\u062f \\u0627\\u062d\\u0645\\u062f\",\"position\":null,\"settings\":null,\"last_login_at\":null,\"email_verified_at\":null,\"balance\":\"0.00\",\"status\":\"1\",\"customer_type\":\"retail\",\"created_by\":null,\"company_id\":\"1\",\"remember_token\":null,\"created_at\":\"2025-07-09T06:26:27.000000Z\",\"updated_at\":\"2025-07-09T06:33:51.000000Z\"}","data_new":"{\"password\":\"$2y$12$Srzws.esmxtE\\\/igqc0BAh.TMIB4lDG7R.IdfwtH2J\\\/8QxGZ\\\/j.lE2\",\"updated_at\":\"2025-07-09 06:33:51\"}","description":"\u0642\u0627\u0645 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 System Owner \u0628\u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0627\u0628\u0648 \u0646\u062f\u064a","user_id":1,"created_by":1,"company_id":1,"user_agent":"Chrome 135.0.0.0 (Windows 10.0)","ip_address":"154.190.162.247","url":"\/api\/user\/4","created_at":"2025-07-09 09:33:51"},{"id":1,"action":"\u062a\u0639\u062f\u064a\u0644","model":"App\\Models\\User","data_old":"{\"id\":4,\"phone\":\"01070475028\",\"password\":\"$2y$12$Srzws.esmxtE\\\/igqc0BAh.TMIB4lDG7R.IdfwtH2J\\\/8QxGZ\\\/j.lE2\",\"email\":null,\"username\":null,\"nickname\":\"\\u0627\\u0628\\u0648 \\u0646\\u062f\\u064a\",\"full_name\":\"\\u0648\\u0627\\u0626\\u0644 \\u0645\\u062d\\u0645\\u062f \\u0627\\u062d\\u0645\\u062f\",\"position\":null,\"settings\":null,\"last_login_at\":null,\"email_verified_at\":null,\"balance\":\"0.00\",\"status\":\"1\",\"customer_type\":\"retail\",\"created_by\":null,\"company_id\":\"1\",\"remember_token\":null,\"created_at\":\"2025-07-09T06:26:27.000000Z\",\"updated_at\":\"2025-07-09T06:33:51.000000Z\"}","data_new":"{\"password\":\"$2y$12$Srzws.esmxtE\\\/igqc0BAh.TMIB4lDG7R.IdfwtH2J\\\/8QxGZ\\\/j.lE2\",\"updated_at\":\"2025-07-09 06:33:51\"}","description":"\u0642\u0627\u0645 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 System Owner \u0628\u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0627\u0628\u0648 \u0646\u062f\u064a","user_id":1,"created_by":1,"company_id":1,"user_agent":"Chrome 135.0.0.0 (Windows 10.0)","ip_address":"154.190.162.247","url":"\/api\/user\/4","created_at":"2025-07-09 09:33:51"}]}'
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer vfPaVag18465dcD3e6hbkZE'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: 'api/logs/{log}/undo'
+    uri: 'api/v1/logs/{log}/undo'
     metadata:
+      custom: []
       groupName: '07. الإدارة وسجلات النظام'
       groupDescription: ''
       subgroup: ''
@@ -1572,14 +1738,15 @@ endpoints:
 
         إمكانية التراجع عن عملية حذف أو تعديل أو إضافة تمت من خلال سجل النشاط لاستعادة الحالة السابقة للبيانات.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       log:
+        custom: []
         name: log
         description: 'The log.'
         required: true
@@ -1588,8 +1755,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       logId:
+        custom: []
         name: logId
         description: 'معرف سجل النشاط المراد التراجع عنه.'
         required: true
@@ -1598,7 +1766,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       log: est
       logId: '1'
@@ -1609,8 +1777,10 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer gav3DVEPZea1c5hb64dfk68'
     controller: null
     method: null
     route: null
-    custom: []

@@ -4,10 +4,12 @@ name: '04. نظام المنتجات'
 description: ''
 endpoints:
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/products
+    uri: api/v1/products
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
@@ -17,10 +19,10 @@ endpoints:
 
         يسمح بإنشاء سجل المنتج الأساسي مع متغيراته (Variants) وسجلات المخزون الأولية في طلب واحد.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -29,6 +31,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم المنتج.'
         required: true
@@ -37,11 +40,12 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       product_type:
+        custom: []
         name: product_type
         description: ''
-        required: true
+        required: false
         example: service
         type: string
         enumValues:
@@ -51,48 +55,53 @@ endpoints:
           - subscription
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       require_stock:
+        custom: []
         name: require_stock
         description: ''
-        required: true
+        required: false
         example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       is_downloadable:
+        custom: []
         name: is_downloadable
-        description: 'This field is required when <code>product_type</code> is <code>digital</code>.'
+        description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       download_url:
+        custom: []
         name: download_url
         description: ''
         required: false
-        example: 'http://www.hudson.com/quia-laudantium-odit-quo-ut'
+        example: 'http://ritchie.com/ratione-doloribus-et-voluptas-enim-porro-ipsum-dolor-et'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       download_limit:
+        custom: []
         name: download_limit
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 15
+        example: 87
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       license_keys:
+        custom: []
         name: license_keys
         description: ''
         required: false
@@ -101,89 +110,98 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       validity_days:
+        custom: []
         name: validity_days
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 58
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       expires_at:
+        custom: []
         name: expires_at
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:49'
+        example: '2026-05-10T23:47:59'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       delivery_instructions:
+        custom: []
         name: delivery_instructions
         description: ''
         required: false
-        example: beatae
+        example: deserunt
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       image_ids:
+        custom: []
         name: image_ids
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
         example:
-          - 11
+          - 15
         type: 'integer[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       primary_image_id:
+        custom: []
         name: primary_image_id
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
-        example: 6
+        example: 10
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       published_at:
+        custom: []
         name: published_at
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:49'
+        example: '2026-05-10T23:47:59'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       desc:
+        custom: []
         name: desc
         description: ''
         required: false
-        example: eos
+        example: porro
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       desc_long:
+        custom: []
         name: desc_long
         description: ''
         required: false
-        example: eum
+        example: eligendi
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       category_id:
+        custom: []
         name: category_id
         description: 'معرف القسم.'
         required: true
@@ -191,9 +209,10 @@ endpoints:
         type: integer
         enumValues: []
         exampleWasSpecified: true
-        nullable: false
-        custom: []
+        nullable: true
+        deprecated: false
       brand_id:
+        custom: []
         name: brand_id
         description: 'The <code>id</code> of an existing record in the brands table.'
         required: false
@@ -202,8 +221,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       active:
+        custom: []
         name: active
         description: ''
         required: false
@@ -212,8 +232,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       featured:
+        custom: []
         name: featured
         description: ''
         required: false
@@ -222,18 +243,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       returnable:
+        custom: []
         name: returnable
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       variants:
+        custom: []
         name: variants
         description: 'مصفوفة المتغيرات (الأحجام، الألوان، إلخ).'
         required: true
@@ -243,139 +266,153 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'variants[].id':
+        custom: []
         name: 'variants[].id'
         description: 'The <code>id</code> of an existing record in the product_variants table.'
         required: false
-        example: 7
+        example: 9
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].retail_price':
+        custom: []
         name: 'variants[].retail_price'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
-        required: true
-        example: 14
+        required: false
+        example: 46
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'variants[].wholesale_price':
+        custom: []
         name: 'variants[].wholesale_price'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 27
+        example: 36
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].purchase_price':
+        custom: []
         name: 'variants[].purchase_price'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 41
+        example: 59
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].profit_margin':
+        custom: []
         name: 'variants[].profit_margin'
         description: ''
         required: false
-        example: 1.0
+        example: 80405.6
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].tax':
+        custom: []
         name: 'variants[].tax'
         description: 'يجب أن تكون قيمة value على الأقل 0. يجب ألا تكون قيمة value أكبر من 100.'
         required: false
-        example: 10
+        example: 21
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].discount':
+        custom: []
         name: 'variants[].discount'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 13
+        example: 40
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks':
+        custom: []
         name: 'variants[].stocks'
-        description: 'This field is required when <code>require_stock</code> is <code>true</code>.'
+        description: ''
         required: false
         example: null
         type: 'object[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'variants[].stocks[].id':
+        custom: []
         name: 'variants[].stocks[].id'
         description: 'The <code>id</code> of an existing record in the stocks table.'
         required: false
-        example: 19
+        example: 11
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].quantity':
+        custom: []
         name: 'variants[].stocks[].quantity'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
-        required: true
-        example: 53
+        required: false
+        example: 72
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'variants[].stocks[].warehouse_id':
+        custom: []
         name: 'variants[].stocks[].warehouse_id'
         description: 'The <code>id</code> of an existing record in the warehouses table.'
-        required: true
-        example: dolorem
+        required: false
+        example: null
         type: string
         enumValues: []
         exampleWasSpecified: false
-        nullable: false
-        custom: []
+        nullable: true
+        deprecated: false
       'variants[].image_ids':
+        custom: []
         name: 'variants[].image_ids'
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
         example:
-          - 3
+          - 6
         type: 'integer[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'variants[].primary_image_id':
+        custom: []
         name: 'variants[].primary_image_id'
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
-        example: 6
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants.*.retail_price':
+        custom: []
         name: 'variants.*.retail_price'
         description: 'سعر البيع القطاعي.'
         required: false
@@ -384,8 +421,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       'variants.*.wholesale_price':
+        custom: []
         name: 'variants.*.wholesale_price'
         description: 'سعر الجملة.'
         required: false
@@ -394,19 +432,21 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       'variants.*.stocks':
+        custom: []
         name: 'variants.*.stocks'
         description: 'مصفوفة المخزون لكل مخزن.'
         required: false
         example:
-          - animi
+          - distinctio
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'variants.*.stocks.*.quantity':
+        custom: []
         name: 'variants.*.stocks.*.quantity'
         description: 'الكمية الأولية.'
         required: false
@@ -415,8 +455,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       'variants.*.stocks.*.warehouse_id':
+        custom: []
         name: 'variants.*.stocks.*.warehouse_id'
         description: 'معرف المستودع.'
         required: false
@@ -425,47 +466,50 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: 'آيفون 15 بروميجا'
       product_type: service
       require_stock: false
-      is_downloadable: true
-      download_url: 'http://www.hudson.com/quia-laudantium-odit-quo-ut'
-      download_limit: 15
-      validity_days: 58
-      expires_at: '2026-02-12T18:00:49'
-      delivery_instructions: beatae
+      is_downloadable: false
+      download_url: 'http://ritchie.com/ratione-doloribus-et-voluptas-enim-porro-ipsum-dolor-et'
+      download_limit: 87
+      validity_days: 3
+      expires_at: '2026-05-10T23:47:59'
+      delivery_instructions: deserunt
       image_ids:
-        - 11
-      primary_image_id: 6
-      published_at: '2026-02-12T18:00:49'
-      desc: eos
-      desc_long: eum
+        - 15
+      primary_image_id: 10
+      published_at: '2026-05-10T23:47:59'
+      desc: porro
+      desc_long: eligendi
       category_id: 3
       active: true
       featured: true
-      returnable: true
+      returnable: false
       variants:
         -
           stocks:
             -
-              id: 19
-              quantity: 53
-              warehouse_id: dolorem
+              id: 11
+              quantity: 72
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer gahD1d6kePv6cVaZf3b854E'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/products/{product_id}'
+    uri: 'api/v1/products/{product_id}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
@@ -475,14 +519,15 @@ endpoints:
 
         جلب بيانات المنتج بالكامل (الاسم، الوصف، المتغيرات، والمخزون المتاح بكل مستودع).
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       product_id:
+        custom: []
         name: product_id
         description: 'The ID of the product.'
         required: true
@@ -491,7 +536,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       product_id: 1
     queryParameters: []
@@ -501,6 +546,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 200
         content: |-
           {
@@ -510,18 +556,21 @@ endpoints:
           }
         headers: []
         description: ''
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer cP51a3faehD6Ebdgv84ZVk6'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/products/{product_id}'
+    uri: 'api/v1/products/{product_id}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
@@ -531,14 +580,15 @@ endpoints:
 
         تعديل بيانات المنتج الأساسية أو تحديث المتغيرات والمخزون المرتبط بها.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       product_id:
+        custom: []
         name: product_id
         description: 'The ID of the product.'
         required: true
@@ -547,23 +597,25 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       product_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: tptbyzyuubofo
+        example: jjreweekvjiumvtq
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       product_type:
+        custom: []
         name: product_type
         description: ''
         required: false
@@ -576,18 +628,20 @@ endpoints:
           - subscription
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       require_stock:
+        custom: []
         name: require_stock
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       is_downloadable:
+        custom: []
         name: is_downloadable
         description: ''
         required: false
@@ -596,28 +650,31 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       download_url:
+        custom: []
         name: download_url
         description: ''
         required: false
-        example: 'http://erdman.biz/omnis-optio-est-quis-ratione-harum-quia-culpa.html'
+        example: 'http://www.feest.info/veniam-voluptatem-itaque-aut-excepturi-ut-vero'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       download_limit:
+        custom: []
         name: download_limit
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 45
+        example: 72
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       license_keys:
+        custom: []
         name: license_keys
         description: ''
         required: false
@@ -626,99 +683,109 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       validity_days:
+        custom: []
         name: validity_days
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 8
+        example: 49
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       expires_at:
+        custom: []
         name: expires_at
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:49'
+        example: '2026-05-10T23:47:59'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       delivery_instructions:
+        custom: []
         name: delivery_instructions
         description: ''
         required: false
-        example: sit
+        example: beatae
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       image_ids:
+        custom: []
         name: image_ids
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
         example:
-          - 3
+          - 8
         type: 'integer[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       primary_image_id:
+        custom: []
         name: primary_image_id
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
-        example: 3
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       slug:
+        custom: []
         name: slug
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: dhoy
+        example: zqgsqcrtbf
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       published_at:
+        custom: []
         name: published_at
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:49'
+        example: '2026-05-10T23:47:59'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       desc:
+        custom: []
         name: desc
         description: ''
         required: false
-        example: culpa
+        example: veniam
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       desc_long:
+        custom: []
         name: desc_long
         description: ''
         required: false
-        example: nesciunt
+        example: porro
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       category_id:
+        custom: []
         name: category_id
         description: 'The <code>id</code> of an existing record in the categories table.'
         required: false
@@ -727,8 +794,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       brand_id:
+        custom: []
         name: brand_id
         description: 'The <code>id</code> of an existing record in the brands table.'
         required: false
@@ -737,8 +805,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -747,8 +816,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -757,19 +827,10 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       active:
-        name: active
-        description: ''
-        required: false
-        example: true
-        type: boolean
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
         custom: []
-      featured:
-        name: featured
+        name: active
         description: ''
         required: false
         example: false
@@ -777,8 +838,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
+        deprecated: false
+      featured:
         custom: []
+        name: featured
+        description: ''
+        required: false
+        example: true
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
       returnable:
+        custom: []
         name: returnable
         description: ''
         required: false
@@ -787,8 +860,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       variants:
+        custom: []
         name: variants
         description: 'يجب أن يحتوي الحقل value على الأقل على 1 عناصر.'
         required: false
@@ -797,8 +871,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'variants[].id':
+        custom: []
         name: 'variants[].id'
         description: 'The <code>id</code> of an existing record in the product_variants table.'
         required: false
@@ -807,112 +882,123 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].retail_price':
+        custom: []
         name: 'variants[].retail_price'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 83
+        example: 73
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'variants[].wholesale_price':
+        custom: []
         name: 'variants[].wholesale_price'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 70
+        example: 80
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].purchase_price':
+        custom: []
         name: 'variants[].purchase_price'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 53
+        example: 88
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].profit_margin':
+        custom: []
         name: 'variants[].profit_margin'
         description: ''
         required: false
-        example: 0.0
+        example: 912411.09984
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].image':
+        custom: []
         name: 'variants[].image'
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: yfpxrunln
+        example: srsmjsqooufedyvwdcc
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].weight':
+        custom: []
         name: 'variants[].weight'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 70
+        example: 24
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].dimensions':
+        custom: []
         name: 'variants[].dimensions'
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: gujgsvjqhzcps
+        example: gbujhibyg
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].tax':
+        custom: []
         name: 'variants[].tax'
         description: 'يجب أن تكون قيمة value على الأقل 0. يجب ألا تكون قيمة value أكبر من 100.'
         required: false
-        example: 16
+        example: 13
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].discount':
+        custom: []
         name: 'variants[].discount'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 20
+        example: 42
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].min_quantity':
+        custom: []
         name: 'variants[].min_quantity'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 41
+        example: 21
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].status':
+        custom: []
         name: 'variants[].status'
         description: ''
         required: false
-        example: inactive
+        example: discontinued
         type: string
         enumValues:
           - active
@@ -920,8 +1006,9 @@ endpoints:
           - discontinued
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].created_by':
+        custom: []
         name: 'variants[].created_by'
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -930,8 +1017,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].company_id':
+        custom: []
         name: 'variants[].company_id'
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -940,29 +1028,32 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].image_ids':
+        custom: []
         name: 'variants[].image_ids'
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
         example:
-          - 10
+          - 2
         type: 'integer[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'variants[].primary_image_id':
+        custom: []
         name: 'variants[].primary_image_id'
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
-        example: 19
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].attributes':
+        custom: []
         name: 'variants[].attributes'
         description: ''
         required: false
@@ -971,8 +1062,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].attributes[].attribute_id':
+        custom: []
         name: 'variants[].attributes[].attribute_id'
         description: 'The <code>id</code> of an existing record in the attributes table.'
         required: false
@@ -981,8 +1073,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].attributes[].attribute_value_id':
+        custom: []
         name: 'variants[].attributes[].attribute_value_id'
         description: 'The <code>id</code> of an existing record in the attribute_values table.'
         required: false
@@ -991,8 +1084,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks':
+        custom: []
         name: 'variants[].stocks'
         description: 'يجب أن يحتوي الحقل value على الأقل على 1 عناصر.'
         required: true
@@ -1002,8 +1096,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'variants[].stocks[].id':
+        custom: []
         name: 'variants[].stocks[].id'
         description: 'The <code>id</code> of an existing record in the stocks table.'
         required: false
@@ -1012,42 +1107,46 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].quantity':
+        custom: []
         name: 'variants[].stocks[].quantity'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 32
+        example: 76
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].reserved':
+        custom: []
         name: 'variants[].stocks[].reserved'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 67
+        example: 79
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].expiry':
+        custom: []
         name: 'variants[].stocks[].expiry'
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:49'
+        example: '2026-05-10T23:47:59'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].status':
+        custom: []
         name: 'variants[].stocks[].status'
         description: ''
         required: false
-        example: available
+        example: expired
         type: string
         enumValues:
           - available
@@ -1055,38 +1154,42 @@ endpoints:
           - expired
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].batch':
+        custom: []
         name: 'variants[].stocks[].batch'
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: eiyewequnmltkh
+        example: mul
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].cost':
+        custom: []
         name: 'variants[].stocks[].cost'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 11
+        example: 90
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].loc':
+        custom: []
         name: 'variants[].stocks[].loc'
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: izljnhqnrjoodcojppjq
+        example: sj
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].warehouse_id':
+        custom: []
         name: 'variants[].stocks[].warehouse_id'
         description: 'The <code>id</code> of an existing record in the warehouses table.'
         required: false
@@ -1095,8 +1198,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].company_id':
+        custom: []
         name: 'variants[].stocks[].company_id'
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -1105,8 +1209,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].created_by':
+        custom: []
         name: 'variants[].stocks[].created_by'
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -1115,8 +1220,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'variants[].stocks[].updated_by':
+        custom: []
         name: 'variants[].stocks[].updated_by'
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -1125,66 +1231,70 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      name: tptbyzyuubofo
+      name: jjreweekvjiumvtq
       product_type: service
-      require_stock: false
+      require_stock: true
       is_downloadable: true
-      download_url: 'http://erdman.biz/omnis-optio-est-quis-ratione-harum-quia-culpa.html'
-      download_limit: 45
-      validity_days: 8
-      expires_at: '2026-02-12T18:00:49'
-      delivery_instructions: sit
+      download_url: 'http://www.feest.info/veniam-voluptatem-itaque-aut-excepturi-ut-vero'
+      download_limit: 72
+      validity_days: 49
+      expires_at: '2026-05-10T23:47:59'
+      delivery_instructions: beatae
       image_ids:
-        - 3
-      primary_image_id: 3
-      slug: dhoy
-      published_at: '2026-02-12T18:00:49'
-      desc: culpa
-      desc_long: nesciunt
-      active: true
-      featured: false
+        - 8
+      primary_image_id: 17
+      slug: zqgsqcrtbf
+      published_at: '2026-05-10T23:47:59'
+      desc: veniam
+      desc_long: porro
+      active: false
+      featured: true
       returnable: true
       variants:
         -
           id: 5
-          retail_price: 83
-          wholesale_price: 70
-          purchase_price: 53
-          profit_margin: 0.0
-          image: yfpxrunln
-          weight: 70
-          dimensions: gujgsvjqhzcps
-          tax: 16
-          discount: 20
-          min_quantity: 41
-          status: inactive
+          retail_price: 73
+          wholesale_price: 80
+          purchase_price: 88
+          profit_margin: 912411.09984
+          image: srsmjsqooufedyvwdcc
+          weight: 24
+          dimensions: gbujhibyg
+          tax: 13
+          discount: 42
+          min_quantity: 21
+          status: discontinued
           image_ids:
-            - 10
-          primary_image_id: 19
+            - 2
+          primary_image_id: 3
           stocks:
             -
-              quantity: 32
-              reserved: 67
-              expiry: '2026-02-12T18:00:49'
-              status: available
-              batch: eiyewequnmltkh
-              cost: 11
-              loc: izljnhqnrjoodcojppjq
+              quantity: 76
+              reserved: 79
+              expiry: '2026-05-10T23:47:59'
+              status: expired
+              batch: mul
+              cost: 90
+              loc: sj
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer DfZ5P63v6e4gEVcabhdka81'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/products/{product_id}'
+    uri: 'api/v1/products/{product_id}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
@@ -1194,14 +1304,15 @@ endpoints:
 
         حذف المنتج وكافة المتغيرات وسجلات المخزون المرتبطة به بشكل نهائي.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       product_id:
+        custom: []
         name: product_id
         description: 'The ID of the product.'
         required: true
@@ -1210,7 +1321,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       product_id: 1
     queryParameters: []
@@ -1220,30 +1331,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer bkfcP35a6adDZ8h4ve1EVg6'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/attributes/{attribute}'
+    uri: 'api/v1/attributes/{attribute}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل سمة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       attribute:
+        custom: []
         name: attribute
         description: 'The attribute.'
         required: true
@@ -1252,7 +1368,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       attribute: 1
     queryParameters: []
@@ -1262,6 +1378,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -1269,32 +1386,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6hkad8VPfD65bg3ce1EZ4va'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/attributes/{attribute}'
+    uri: 'api/v1/attributes/{attribute}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث بيانات وقيم سمة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       attribute:
+        custom: []
         name: attribute
         description: 'The attribute.'
         required: true
@@ -1303,53 +1424,58 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       attribute: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
-        required: true
-        example: mtnqnohodmztryq
+        required: false
+        example: cuqovcfvuhuf
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       value:
+        custom: []
         name: value
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: tnonxback
+        example: f
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
-        required: true
-        example: adipisci
+        required: false
+        example: null
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
-        required: true
-        example: id
+        required: false
+        example: null
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       values:
+        custom: []
         name: values
         description: ''
         required: false
@@ -1358,8 +1484,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'values[].id':
+        custom: []
         name: 'values[].id'
         description: 'The <code>id</code> of an existing record in the attribute_values table.'
         required: false
@@ -1368,63 +1495,68 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'values[].name':
+        custom: []
         name: 'values[].name'
         description: 'This field is required when <code>values</code> is present. يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: nwxbsafvqhxqxqmiglujwvkfn
+        example: rfwdmysoikczfds
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'values[].color':
+        custom: []
         name: 'values[].color'
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: bjscdbq
+        example: ssjirncbiedsmcxcpq
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      name: mtnqnohodmztryq
-      value: tnonxback
-      company_id: adipisci
-      created_by: id
+      name: cuqovcfvuhuf
+      value: f
       values:
         -
-          name: nwxbsafvqhxqxqmiglujwvkfn
-          color: bjscdbq
+          name: rfwdmysoikczfds
+          color: ssjirncbiedsmcxcpq
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer cd16agZ8bh6P53f4vkeDVaE'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/attributes/{attribute}'
+    uri: 'api/v1/attributes/{attribute}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف سمة بالكامل'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       attribute:
+        custom: []
         name: attribute
         description: 'The attribute.'
         required: true
@@ -1433,7 +1565,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       attribute: 1
     queryParameters: []
@@ -1443,16 +1575,20 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Evae365VgP6h1fcZa8kd4Db'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/product-variants
+    uri: api/v1/product-variants
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
@@ -1462,10 +1598,10 @@ endpoints:
 
         إنشاء تشكيلة جديدة (مثلاً لون أو مقاس معين) لمنتج موجود مسبقاً.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -1474,16 +1610,18 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       barcode:
+        custom: []
         name: barcode
         description: ''
         required: false
-        example: autem
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       sku:
+        custom: []
         name: sku
         description: 'رمز SKU الفريد.'
         required: false
@@ -1492,8 +1630,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       retail_price:
+        custom: []
         name: retail_price
         description: 'سعر البيع.'
         required: false
@@ -1502,78 +1641,86 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       wholesale_price:
+        custom: []
         name: wholesale_price
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 6
+        example: 76
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       profit_margin:
+        custom: []
         name: profit_margin
         description: 'يجب أن تكون قيمة value على الأقل 0. يجب ألا تكون قيمة value أكبر من 100.'
         required: false
-        example: 11
+        example: 15
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       image:
+        custom: []
         name: image
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: k
+        example: vbxwfqprvwuwrzyiysudmvcx
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       weight:
+        custom: []
         name: weight
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 16
+        example: 25
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       dimensions:
+        custom: []
         name: dimensions
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: gffw
+        example: qotmxlxbnmcnkeybep
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       tax:
+        custom: []
         name: tax
         description: 'يجب أن تكون قيمة value على الأقل 0. يجب ألا تكون قيمة value أكبر من 100.'
         required: false
-        example: 3
+        example: 7
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       discount:
+        custom: []
         name: discount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 33
+        example: 8
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: ''
         required: true
@@ -1585,8 +1732,9 @@ endpoints:
           - discontinued
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       product_id:
+        custom: []
         name: product_id
         description: 'معرف المنتج الأم.'
         required: true
@@ -1595,28 +1743,31 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: true
-        example: dolores
+        example: eaque
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: true
-        example: dolore
+        example: aspernatur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       attributes:
+        custom: []
         name: attributes
         description: ''
         required: false
@@ -1625,8 +1776,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       stocks:
+        custom: []
         name: stocks
         description: ''
         required: false
@@ -1635,137 +1787,149 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'attributes[].attribute_id':
+        custom: []
         name: 'attributes[].attribute_id'
         description: 'The <code>id</code> of an existing record in the attributes table.'
         required: true
-        example: voluptas
+        example: similique
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'attributes[].attribute_value_id':
+        custom: []
         name: 'attributes[].attribute_value_id'
         description: 'The <code>id</code> of an existing record in the attribute_values table.'
+        required: true
+        example: perferendis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'stocks[].warehouse_id':
+        custom: []
+        name: 'stocks[].warehouse_id'
+        description: 'The <code>id</code> of an existing record in the warehouses table.'
         required: true
         example: aut
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
-      'stocks[].warehouse_id':
-        name: 'stocks[].warehouse_id'
-        description: 'The <code>id</code> of an existing record in the warehouses table.'
-        required: true
-        example: voluptatem
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
+        deprecated: false
       'stocks[].quantity':
+        custom: []
         name: 'stocks[].quantity'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 54
+        example: 85
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'stocks[].min_quantity':
+        custom: []
         name: 'stocks[].min_quantity'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 59
+        example: 48
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'stocks[].cost':
+        custom: []
         name: 'stocks[].cost'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 28
+        example: 26
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      barcode: autem
+      barcode: ut
       sku: APP-IPHN15-RED
       retail_price: 1200.0
-      wholesale_price: 6
-      profit_margin: 11
-      image: k
-      weight: 16
-      dimensions: gffw
-      tax: 3
-      discount: 33
+      wholesale_price: 76
+      profit_margin: 15
+      image: vbxwfqprvwuwrzyiysudmvcx
+      weight: 25
+      dimensions: qotmxlxbnmcnkeybep
+      tax: 7
+      discount: 8
       status: discontinued
       product_id: 1
-      company_id: dolores
-      created_by: dolore
+      company_id: eaque
+      created_by: aspernatur
       attributes:
         -
-          attribute_id: voluptas
-          attribute_value_id: aut
+          attribute_id: similique
+          attribute_value_id: perferendis
       stocks:
         -
-          warehouse_id: voluptatem
-          quantity: 54
-          min_quantity: 59
-          cost: 28
+          warehouse_id: aut
+          quantity: 85
+          min_quantity: 48
+          cost: 26
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer kbda35PV8eZ16a64cvEDgfh'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: api/product-variants/search-by-product
+    uri: api/v1/product-variants/search-by-product
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'بحث متقدم في التشكيلات'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
     queryParameters:
       search:
+        custom: []
         name: search
         description: 'نص البحث.'
         required: false
-        example: ipsa
+        example: suscipit
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanQueryParameters:
-      search: ipsa
+      search: suscipit
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -1773,18 +1937,21 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 358kchgdeZ4D1a6EfV6Pbav'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/product-variants/{productVariant}'
+    uri: 'api/v1/product-variants/{productVariant}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
@@ -1794,14 +1961,15 @@ endpoints:
 
         جلب تفاصيل تشكيلة معينة شاملة المخزون والخصائص الفنية.
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       productVariant:
+        custom: []
         name: productVariant
         description: ''
         required: true
@@ -1810,7 +1978,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       productVariant: 1
     queryParameters: []
@@ -1820,6 +1988,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -1827,32 +1996,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6Zkd61835Dfe4PEVabhgacv'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/product-variants/{productVariant}'
+    uri: 'api/v1/product-variants/{productVariant}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث متغير'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       productVariant:
+        custom: []
         name: productVariant
         description: ''
         required: true
@@ -1861,23 +2034,25 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       productVariant: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       product_id:
+        custom: []
         name: product_id
         description: 'The <code>id</code> of an existing record in the products table.'
-        required: true
-        example: omnis
+        required: false
+        example: null
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -1886,8 +2061,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -1896,112 +2072,123 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       barcode:
+        custom: []
         name: barcode
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: zj
+        example: xrrzvklpbfukjhkc
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       sku:
+        custom: []
         name: sku
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: hvoyhel
+        example: uhiecebvmejjvgvwcuoelbldv
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       retail_price:
+        custom: []
         name: retail_price
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 60
+        example: 58
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       wholesale_price:
+        custom: []
         name: wholesale_price
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 6
+        example: 86
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       profit_margin:
+        custom: []
         name: profit_margin
         description: 'يجب أن تكون قيمة value على الأقل 0. يجب ألا تكون قيمة value أكبر من 100.'
         required: false
-        example: 7
+        example: 12
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       image:
+        custom: []
         name: image
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: lotdhskljfikuavh
+        example: yoxmmhssxj
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       weight:
+        custom: []
         name: weight
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 66
+        example: 67
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       dimensions:
+        custom: []
         name: dimensions
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: dsyuwkqgrgzhjubahgdrnpz
+        example: qbnpcuvprbevqcisyfkybwb
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       tax:
+        custom: []
         name: tax
         description: 'يجب أن تكون قيمة value على الأقل 0. يجب ألا تكون قيمة value أكبر من 100.'
         required: false
-        example: 19
+        example: 1
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       discount:
+        custom: []
         name: discount
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 79
+        example: 26
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: ''
         required: false
-        example: inactive
+        example: active
         type: string
         enumValues:
           - active
@@ -2009,8 +2196,9 @@ endpoints:
           - discontinued
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       attributes:
+        custom: []
         name: attributes
         description: ''
         required: false
@@ -2019,8 +2207,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       stocks:
+        custom: []
         name: stocks
         description: ''
         required: false
@@ -2029,18 +2218,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'attributes[].id':
+        custom: []
         name: 'attributes[].id'
         description: 'The <code>id</code> of an existing record in the product_variant_attributes table.'
         required: false
-        example: 12
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'attributes[].attribute_id':
+        custom: []
         name: 'attributes[].attribute_id'
         description: 'This field is required when <code>attributes</code> is present. The <code>id</code> of an existing record in the attributes table.'
         required: false
@@ -2049,8 +2240,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'attributes[].attribute_value_id':
+        custom: []
         name: 'attributes[].attribute_value_id'
         description: 'This field is required when <code>attributes</code> is present. The <code>id</code> of an existing record in the attribute_values table.'
         required: false
@@ -2059,18 +2251,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'stocks[].id':
+        custom: []
         name: 'stocks[].id'
         description: 'The <code>id</code> of an existing record in the stocks table.'
         required: false
-        example: 14
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'stocks[].warehouse_id':
+        custom: []
         name: 'stocks[].warehouse_id'
         description: 'This field is required when <code>stocks</code> is present. The <code>id</code> of an existing record in the warehouses table.'
         required: false
@@ -2079,86 +2273,93 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       'stocks[].quantity':
+        custom: []
         name: 'stocks[].quantity'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 76
+        example: 67
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'stocks[].min_quantity':
+        custom: []
         name: 'stocks[].min_quantity'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 3
+        example: 81
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       'stocks[].cost':
+        custom: []
         name: 'stocks[].cost'
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 65
+        example: 49
         type: number
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      product_id: omnis
-      barcode: zj
-      sku: hvoyhel
-      retail_price: 60
-      wholesale_price: 6
-      profit_margin: 7
-      image: lotdhskljfikuavh
-      weight: 66
-      dimensions: dsyuwkqgrgzhjubahgdrnpz
-      tax: 19
-      discount: 79
-      status: inactive
+      barcode: xrrzvklpbfukjhkc
+      sku: uhiecebvmejjvgvwcuoelbldv
+      retail_price: 58
+      wholesale_price: 86
+      profit_margin: 12
+      image: yoxmmhssxj
+      weight: 67
+      dimensions: qbnpcuvprbevqcisyfkybwb
+      tax: 1
+      discount: 26
+      status: active
       attributes:
         -
-          id: 12
+          id: 1
       stocks:
         -
-          id: 14
-          quantity: 76
-          min_quantity: 3
-          cost: 65
+          id: 5
+          quantity: 67
+          min_quantity: 81
+          cost: 49
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer aaVvh1f5eDck3ZP66dbE84g'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/product-variants/{productVariant}'
+    uri: 'api/v1/product-variants/{productVariant}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف متغير'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       productVariant:
+        custom: []
         name: productVariant
         description: ''
         required: true
@@ -2167,7 +2368,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       productVariant: 1
     queryParameters: []
@@ -2177,26 +2378,30 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Eh6dgfa8DbPkVa3cevZ1564'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/product-variants/delete
+    uri: api/v1/product-variants/delete
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف متغيرات متعددة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -2205,6 +2410,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       ids:
+        custom: []
         name: ids
         description: 'مصفوفة المعرفات المطلوب حذفها.'
         required: true
@@ -2216,7 +2422,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       ids:
         - 1
@@ -2225,26 +2431,30 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 5e4fcEd6haZ381gDPabv6Vk'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/warehouses
+    uri: api/v1/warehouses
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إنشاء مستودع جديد'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -2253,6 +2463,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم المستودع.'
         required: true
@@ -2261,48 +2472,53 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       location:
+        custom: []
         name: location
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: xmljpgpakxzyfgfuxu
+        example: aw
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: ''
         required: false
-        example: 'Et consequuntur autem quae.'
+        example: 'Maiores fuga neque dignissimos voluptatum consequatur non.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       manager:
+        custom: []
         name: manager
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: krjgirxwigcdyrhdyzypq
+        example: siemszgqde
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       capacity:
+        custom: []
         name: capacity
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 79
+        example: 69
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: ''
         required: false
@@ -2313,8 +2529,9 @@ endpoints:
           - inactive
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       is_default:
+        custom: []
         name: is_default
         description: ''
         required: false
@@ -2323,8 +2540,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'معرف الشركة (للمسؤول العام فقط).'
         required: false
@@ -2333,8 +2551,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -2343,8 +2562,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       address:
+        custom: []
         name: address
         description: 'عنوان المستودع.'
         required: false
@@ -2353,8 +2573,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       active:
+        custom: []
         name: active
         description: 'حالة المستودع.'
         required: false
@@ -2363,13 +2584,13 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: 'مستودع جدة'
-      location: xmljpgpakxzyfgfuxu
-      description: 'Et consequuntur autem quae.'
-      manager: krjgirxwigcdyrhdyzypq
-      capacity: 79
+      location: aw
+      description: 'Maiores fuga neque dignissimos voluptatum consequatur non.'
+      manager: siemszgqde
+      capacity: 69
       status: inactive
       is_default: true
       company_id: 1
@@ -2378,30 +2599,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer gb6Vc14Eva8f6khZ3dDaeP5'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/warehouses/{warehouse_id}'
+    uri: 'api/v1/warehouses/{warehouse_id}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل مستودع'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       warehouse_id:
+        custom: []
         name: warehouse_id
         description: 'The ID of the warehouse.'
         required: true
@@ -2410,8 +2636,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       warehouse:
+        custom: []
         name: warehouse
         description: 'معرف المستودع.'
         required: true
@@ -2420,7 +2647,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       warehouse_id: 1
       warehouse: '1'
@@ -2431,6 +2658,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -2438,32 +2666,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 34dPh1Vefgkaa8D56cvZb6E'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/warehouses/{warehouse_id}'
+    uri: 'api/v1/warehouses/{warehouse_id}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث بيانات مستودع'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       warehouse_id:
+        custom: []
         name: warehouse_id
         description: 'The ID of the warehouse.'
         required: true
@@ -2472,8 +2704,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       warehouse:
+        custom: []
         name: warehouse
         description: 'معرف المستودع.'
         required: true
@@ -2482,7 +2715,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       warehouse_id: 1
       warehouse: '1'
@@ -2490,6 +2723,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم المستودع.'
         required: false
@@ -2498,51 +2732,56 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       location:
+        custom: []
         name: location
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: ejgkclel
+        example: ntmpdatgiukhtdmca
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: ''
         required: false
-        example: 'Et totam necessitatibus quis perferendis provident necessitatibus occaecati.'
+        example: 'Sapiente asperiores aut nulla possimus id autem alias.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       manager:
+        custom: []
         name: manager
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: cbwmjoswimltd
+        example: uppcl
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       capacity:
+        custom: []
         name: capacity
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 18
+        example: 24
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: ''
-        required: true
+        required: false
         example: inactive
         type: string
         enumValues:
@@ -2550,8 +2789,9 @@ endpoints:
           - inactive
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       is_default:
+        custom: []
         name: is_default
         description: ''
         required: false
@@ -2560,8 +2800,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'معرف الشركة (للمسؤول العام فقط).'
         required: false
@@ -2570,18 +2811,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
-        required: true
-        example: in
+        required: false
+        example: null
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       address:
+        custom: []
         name: address
         description: 'عنوان المستودع.'
         required: false
@@ -2590,8 +2833,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       active:
+        custom: []
         name: active
         description: 'حالة المستودع.'
         required: false
@@ -2600,46 +2844,50 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: 'مستودع جدة الجديد'
-      location: ejgkclel
-      description: 'Et totam necessitatibus quis perferendis provident necessitatibus occaecati.'
-      manager: cbwmjoswimltd
-      capacity: 18
+      location: ntmpdatgiukhtdmca
+      description: 'Sapiente asperiores aut nulla possimus id autem alias.'
+      manager: uppcl
+      capacity: 24
       status: inactive
       is_default: false
       company_id: 2
-      created_by: in
       address: 'شارع فلسطين، حي الجامعة'
       active: false
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 34Zad5g6chEfvPDe8ba1Vk6'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/warehouses/{warehouse_id}'
+    uri: 'api/v1/warehouses/{warehouse_id}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف مستودع'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       warehouse_id:
+        custom: []
         name: warehouse_id
         description: 'The ID of the warehouse.'
         required: true
@@ -2648,8 +2896,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       warehouse:
+        custom: []
         name: warehouse
         description: 'معرف المستودع.'
         required: true
@@ -2658,7 +2907,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       warehouse_id: 1
       warehouse: '1'
@@ -2669,30 +2918,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 8akV4dgZ3Pah1fvcb6D65Ee'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PATCH
-    uri: 'api/warehouses/{warehouse_id}/set-default'
+    uri: 'api/v1/warehouses/{warehouse_id}/set-default'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تعيين المستودع كافتراضي'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       warehouse_id:
+        custom: []
         name: warehouse_id
         description: 'The ID of the warehouse.'
         required: true
@@ -2701,8 +2955,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       warehouse:
+        custom: []
         name: warehouse
         description: 'معرف المستودع.'
         required: true
@@ -2711,7 +2966,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       warehouse_id: 1
       warehouse: '1'
@@ -2722,26 +2977,30 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer d5h6cvf6EkVa14e8b3PZagD'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/stock
+    uri: api/v1/stock
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إضافة حركة مخزون يدوية'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -2750,6 +3009,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       quantity:
+        custom: []
         name: quantity
         description: الكمية.
         required: true
@@ -2758,286 +3018,31 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       reserved:
+        custom: []
         name: reserved
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 84
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       min_quantity:
+        custom: []
         name: min_quantity
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
-        example: 13
+        example: 76
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       cost:
-        name: cost
-        description: 'يجب أن تكون قيمة value على الأقل 0.'
-        required: false
-        example: 68
-        type: number
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
         custom: []
-      batch:
-        name: batch
-        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
-        required: false
-        example: mqkdxhdkaxdpicdc
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        custom: []
-      expiry:
-        name: expiry
-        description: 'الحقل value ليس تاريخًا صحيحًا.'
-        required: false
-        example: '2026-02-12T18:00:50'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        custom: []
-      loc:
-        name: loc
-        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
-        required: false
-        example: mgjrpnlvr
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        custom: []
-      status:
-        name: status
-        description: 'الحالة (in/out).'
-        required: true
-        example: in
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      variant_id:
-        name: variant_id
-        description: 'معرف متغير المنتج.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      warehouse_id:
-        name: warehouse_id
-        description: 'معرف المستودع.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      company_id:
-        name: company_id
-        description: 'The <code>id</code> of an existing record in the companies table.'
-        required: true
-        example: eaque
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      created_by:
-        name: created_by
-        description: 'The <code>id</code> of an existing record in the users table.'
-        required: true
-        example: esse
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      notes:
-        name: notes
-        description: 'ملاحظات إضافية.'
-        required: false
-        example: 'رصيد افتتاحي'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanBodyParameters:
-      quantity: 50.0
-      reserved: 84
-      min_quantity: 13
-      cost: 68
-      batch: mqkdxhdkaxdpicdc
-      expiry: '2026-02-12T18:00:50'
-      loc: mgjrpnlvr
-      status: in
-      variant_id: 1
-      warehouse_id: 1
-      company_id: eaque
-      created_by: esse
-      notes: 'رصيد افتتاحي'
-    fileParameters: []
-    responses: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - GET
-    uri: 'api/stock/{stock}'
-    metadata:
-      groupName: '04. نظام المنتجات'
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'عرض تفاصيل حركة مخزون'
-      description: ''
-      authenticated: false
-      deprecated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      stock:
-        name: stock
-        description: 'The stock.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      id:
-        name: id
-        description: 'معرف حركة المخزون.'
-        required: true
-        example: '1'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      stock: 1
-      id: '1'
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 401
-        content: '{"message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
-        custom: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - PUT
-    uri: 'api/stock/{stock}'
-    metadata:
-      groupName: '04. نظام المنتجات'
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'تحديث حركة مخزون'
-      description: ''
-      authenticated: false
-      deprecated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      stock:
-        name: stock
-        description: 'The stock.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      id:
-        name: id
-        description: 'معرف حركة المخزون.'
-        required: true
-        example: '1'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      stock: 1
-      id: '1'
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      quantity:
-        name: quantity
-        description: الكمية.
-        required: false
-        example: 50.0
-        type: number
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      reserved:
-        name: reserved
-        description: 'يجب أن تكون قيمة value على الأقل 0.'
-        required: false
-        example: 81
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        custom: []
-      min_quantity:
-        name: min_quantity
-        description: 'يجب أن تكون قيمة value على الأقل 0.'
-        required: false
-        example: 83
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        custom: []
-      cost:
         name: cost
         description: 'يجب أن تكون قيمة value على الأقل 0.'
         required: false
@@ -3046,138 +3051,152 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       batch:
+        custom: []
         name: batch
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: jiwaghftebaxqludoavxl
+        example: zfojywgjlspe
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       expiry:
+        custom: []
         name: expiry
         description: 'الحقل value ليس تاريخًا صحيحًا.'
         required: false
-        example: '2026-02-12T18:00:50'
+        example: '2026-05-10T23:48:00'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       loc:
+        custom: []
         name: loc
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: gyiyeqwkl
+        example: dptr
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       status:
+        custom: []
         name: status
         description: 'الحالة (in/out).'
-        required: false
+        required: true
         example: in
         type: string
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       variant_id:
+        custom: []
         name: variant_id
         description: 'معرف متغير المنتج.'
-        required: false
+        required: true
         example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       warehouse_id:
+        custom: []
         name: warehouse_id
         description: 'معرف المستودع.'
-        required: false
+        required: true
         example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: true
-        example: et
+        example: laudantium
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
+        deprecated: false
+      created_by:
         custom: []
-      updated_by:
-        name: updated_by
+        name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: true
-        example: dolore
+        example: sed
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       notes:
+        custom: []
         name: notes
         description: 'ملاحظات إضافية.'
         required: false
-        example: 'تحديث الرصيد'
+        example: 'رصيد افتتاحي'
         type: string
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       quantity: 50.0
-      reserved: 81
-      min_quantity: 83
+      reserved: 17
+      min_quantity: 76
       cost: 82
-      batch: jiwaghftebaxqludoavxl
-      expiry: '2026-02-12T18:00:50'
-      loc: gyiyeqwkl
+      batch: zfojywgjlspe
+      expiry: '2026-05-10T23:48:00'
+      loc: dptr
       status: in
       variant_id: 1
       warehouse_id: 1
-      company_id: et
-      updated_by: dolore
-      notes: 'تحديث الرصيد'
+      company_id: laudantium
+      created_by: sed
+      notes: 'رصيد افتتاحي'
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer chdPaV8e6af3E6v5bgkD4Z1'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
-      - DELETE
-    uri: 'api/stock/{stock}'
+      - GET
+    uri: 'api/v1/stock/{stock}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'حذف حركة مخزون'
+      title: 'عرض تفاصيل حركة مخزون'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       stock:
+        custom: []
         name: stock
         description: 'The stock.'
         required: true
@@ -3186,8 +3205,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       id:
+        custom: []
         name: id
         description: 'معرف حركة المخزون.'
         required: true
@@ -3196,7 +3216,289 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      stock: 1
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
         custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 1aDV4k8h3a5d6vPfEZcegb6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: 'api/v1/stock/{stock}'
+    metadata:
+      custom: []
+      groupName: '04. نظام المنتجات'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'تحديث حركة مخزون'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      stock:
+        custom: []
+        name: stock
+        description: 'The stock.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      id:
+        custom: []
+        name: id
+        description: 'معرف حركة المخزون.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      stock: 1
+      id: '1'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      quantity:
+        custom: []
+        name: quantity
+        description: الكمية.
+        required: false
+        example: 50.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      reserved:
+        custom: []
+        name: reserved
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: false
+        example: 80
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      min_quantity:
+        custom: []
+        name: min_quantity
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: false
+        example: 39
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      cost:
+        custom: []
+        name: cost
+        description: 'يجب أن تكون قيمة value على الأقل 0.'
+        required: false
+        example: 27
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      batch:
+        custom: []
+        name: batch
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: false
+        example: crxeyhuikemxzznxqrsncv
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      expiry:
+        custom: []
+        name: expiry
+        description: 'الحقل value ليس تاريخًا صحيحًا.'
+        required: false
+        example: '2026-05-10T23:48:00'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      loc:
+        custom: []
+        name: loc
+        description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
+        required: false
+        example: lwuvplyfcqigu
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      status:
+        custom: []
+        name: status
+        description: 'الحالة (in/out).'
+        required: false
+        example: in
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      variant_id:
+        custom: []
+        name: variant_id
+        description: 'معرف متغير المنتج.'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      warehouse_id:
+        custom: []
+        name: warehouse_id
+        description: 'معرف المستودع.'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      company_id:
+        custom: []
+        name: company_id
+        description: 'The <code>id</code> of an existing record in the companies table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      updated_by:
+        custom: []
+        name: updated_by
+        description: 'The <code>id</code> of an existing record in the users table.'
+        required: true
+        example: rem
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      notes:
+        custom: []
+        name: notes
+        description: 'ملاحظات إضافية.'
+        required: false
+        example: 'تحديث الرصيد'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      quantity: 50.0
+      reserved: 80
+      min_quantity: 39
+      cost: 27
+      batch: crxeyhuikemxzznxqrsncv
+      expiry: '2026-05-10T23:48:00'
+      loc: lwuvplyfcqigu
+      status: in
+      variant_id: 1
+      warehouse_id: 1
+      updated_by: rem
+      notes: 'تحديث الرصيد'
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer cka4PDVdfeb6hv1Z6gaE385'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/v1/stock/{stock}'
+    metadata:
+      custom: []
+      groupName: '04. نظام المنتجات'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'حذف حركة مخزون'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      stock:
+        custom: []
+        name: stock
+        description: 'The stock.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      id:
+        custom: []
+        name: id
+        description: 'معرف حركة المخزون.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
     cleanUrlParameters:
       stock: 1
       id: '1'
@@ -3207,30 +3509,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer h5fd8caEaV631Zbk6gvPeD4'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/categories/{category}'
+    uri: 'api/v1/categories/{category}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض تفاصيل قسم'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       category:
+        custom: []
         name: category
         description: 'The category.'
         required: true
@@ -3239,7 +3546,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       category: 1
     queryParameters: []
@@ -3249,6 +3556,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -3256,32 +3564,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 4fhkdD51eVE6v63abcPg8aZ'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/categories/{category}'
+    uri: 'api/v1/categories/{category}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث بيانات قسم'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       category:
+        custom: []
         name: category
         description: 'The category.'
         required: true
@@ -3290,33 +3602,36 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       category: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
-        required: true
-        example: qjkzijfonpyjkujdjfhv
+        required: false
+        example: twduzlzfeujoodejjlhaofqgm
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: ''
         required: false
-        example: 'Consequatur odit explicabo voluptas consequuntur quaerat et.'
+        example: 'Quas aspernatur vero blanditiis et.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       parent_id:
+        custom: []
         name: parent_id
         description: 'The <code>id</code> of an existing record in the categories table.'
         required: false
@@ -3325,8 +3640,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -3335,8 +3651,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -3345,8 +3662,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       active:
+        custom: []
         name: active
         description: ''
         required: false
@@ -3355,8 +3673,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       image_id:
+        custom: []
         name: image_id
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
@@ -3365,38 +3684,43 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      name: qjkzijfonpyjkujdjfhv
-      description: 'Consequatur odit explicabo voluptas consequuntur quaerat et.'
+      name: twduzlzfeujoodejjlhaofqgm
+      description: 'Quas aspernatur vero blanditiis et.'
       active: true
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer d6a1h53EDfbva48cZVkgP6e'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/categories/{category}'
+    uri: 'api/v1/categories/{category}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف قسم'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       category:
+        custom: []
         name: category
         description: 'The category.'
         required: true
@@ -3405,7 +3729,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       category: 1
     queryParameters: []
@@ -3415,26 +3739,30 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer k4bv866aDEZcPehf3agV5d1'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - POST
-    uri: api/brands
+    uri: api/v1/brands
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'إضافة ماركة جديدة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -3443,6 +3771,7 @@ endpoints:
     cleanQueryParameters: []
     bodyParameters:
       name:
+        custom: []
         name: name
         description: 'اسم العلامة التجارية.'
         required: true
@@ -3451,8 +3780,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -3461,8 +3791,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -3471,18 +3802,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: ''
         required: false
-        example: 'Soluta minus aut explicabo autem omnis cupiditate ipsa dolorem.'
+        example: 'Voluptatem deleniti repudiandae earum sit.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       image_id:
+        custom: []
         name: image_id
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
@@ -3491,18 +3824,20 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       active:
+        custom: []
         name: active
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       desc:
+        custom: []
         name: desc
         description: 'وصف الماركة.'
         required: false
@@ -3511,39 +3846,44 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
-        custom: []
+        deprecated: false
     cleanBodyParameters:
       name: آبل
-      description: 'Soluta minus aut explicabo autem omnis cupiditate ipsa dolorem.'
-      active: true
+      description: 'Voluptatem deleniti repudiandae earum sit.'
+      active: false
       desc: 'شركة تقنية عالمية'
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer a64PVc6Ev3bh1eZd8kDag5f'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - GET
-    uri: 'api/brands/{brand}'
+    uri: 'api/v1/brands/{brand}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'عرض ماركة محددة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       brand:
+        custom: []
         name: brand
         description: 'The brand.'
         required: true
@@ -3552,7 +3892,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       brand: 1
     queryParameters: []
@@ -3562,6 +3902,7 @@ endpoints:
     fileParameters: []
     responses:
       -
+        custom: []
         status: 401
         content: '{"message":"Unauthenticated."}'
         headers:
@@ -3569,32 +3910,36 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-        custom: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Vk365a16PD4gvedfa8bchZE'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PUT
-    uri: 'api/brands/{brand}'
+    uri: 'api/v1/brands/{brand}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تحديث بيانات ماركة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       brand:
+        custom: []
         name: brand
         description: 'The brand.'
         required: true
@@ -3603,13 +3948,14 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       brand: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       company_id:
+        custom: []
         name: company_id
         description: 'The <code>id</code> of an existing record in the companies table.'
         required: false
@@ -3618,8 +3964,9 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       created_by:
+        custom: []
         name: created_by
         description: 'The <code>id</code> of an existing record in the users table.'
         required: false
@@ -3628,28 +3975,31 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       name:
+        custom: []
         name: name
         description: 'يجب ألا يتجاوز طول النص value 255 حرفًا.'
         required: false
-        example: fhj
+        example: bfmhoqgss
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
       description:
+        custom: []
         name: description
         description: ''
         required: false
-        example: 'Maxime excepturi qui qui recusandae qui.'
+        example: 'Doloribus nihil cum iure libero dolores.'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       image_id:
+        custom: []
         name: image_id
         description: 'The <code>id</code> of an existing record in the images table.'
         required: false
@@ -3658,48 +4008,54 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
       active:
+        custom: []
         name: active
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
         nullable: true
-        custom: []
+        deprecated: false
     cleanBodyParameters:
-      name: fhj
-      description: 'Maxime excepturi qui qui recusandae qui.'
-      active: true
+      name: bfmhoqgss
+      description: 'Doloribus nihil cum iure libero dolores.'
+      active: false
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer khdc1a5ZED6gfv3P46e8Vab'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - PATCH
-    uri: 'api/brands/{id}/toggle'
+    uri: 'api/v1/brands/{id}/toggle'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'تغيير حالة الماركة (تفعيل/تعطيل)'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       id:
+        custom: []
         name: id
         description: 'The ID of the brand.'
         required: true
@@ -3708,7 +4064,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       id: 1
     queryParameters: []
@@ -3718,30 +4074,35 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer a4E3fh66c8DVeZk15agvPdb'
     controller: null
     method: null
     route: null
-    custom: []
   -
+    custom: []
     httpMethods:
       - DELETE
-    uri: 'api/brands/{brand_id}'
+    uri: 'api/v1/brands/{brand_id}'
     metadata:
+      custom: []
       groupName: '04. نظام المنتجات'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'حذف ماركة'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
-      custom: []
     headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
       brand_id:
+        custom: []
         name: brand_id
         description: 'The ID of the brand.'
         required: true
@@ -3750,7 +4111,7 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
-        custom: []
+        deprecated: false
     cleanUrlParameters:
       brand_id: 1
     queryParameters: []
@@ -3760,8 +4121,10 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6v6EPcgfZVk3eba541adDh8'
     controller: null
     method: null
     route: null
-    custom: []
