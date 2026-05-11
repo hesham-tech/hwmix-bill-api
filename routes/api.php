@@ -435,24 +435,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
         });
     // Plan Controller
     Route::apiResource('plans', PlanController::class);
-    // InvoiceItem Controller
-    Route::controller(InvoiceItemController::class)
-        ->group(function () {
-            Route::get('invoice-items', 'index');
-            Route::post('invoice-items', 'store');
-            Route::get('invoice-items/{id}', 'show');
-            Route::put('invoice-items/{id}', 'update');
-            Route::delete('invoice-items/{id}', 'destroy');
-        });
-    // InvoiceType Controller
-    Route::controller(InvoiceTypeController::class)
-        ->group(function () {
-            Route::get('invoice-types', 'index');
-            Route::post('invoice-type', 'store');
-            Route::get('invoice-type/{id}', 'show');
-            Route::put('invoice-type/{id}', 'update');
-            Route::delete('invoice-type/delete/{id}', 'destroy');
-        });
+
     Route::get('/permissions', [PermissionController::class, 'index']);
 
     // ================== Financials (Expenses & Ledger) ==================
