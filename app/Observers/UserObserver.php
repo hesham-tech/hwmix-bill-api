@@ -59,7 +59,7 @@ class UserObserver
             $identityData['user_email'] = $user->email;
         if ($user->isDirty('username') && $hasColumn('user_username'))
             $identityData['user_username'] = $user->username;
-
+ 
         if (!empty($identityData)) {
             $user->companyUsers()->update($identityData);
         }

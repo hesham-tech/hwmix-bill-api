@@ -50,7 +50,8 @@ Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceC
 
 
 Route::middleware('throttle:auth')->group(function () {
-    Route::post('register', [AuthController::class, 'register']);
+    Route::post('register/customer', [\App\Http\Controllers\Api\Auth\MarketplaceRegisterController::class, 'register']);
+    Route::post('register/company', [\App\Http\Controllers\Api\Auth\TenantProvisioningController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 });
 Route::post('error-reports', [ErrorReportController::class, 'store']);
