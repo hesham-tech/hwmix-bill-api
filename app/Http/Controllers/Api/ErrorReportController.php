@@ -75,7 +75,7 @@ class ErrorReportController extends Controller
             // محاولة جلب المستخدم الحالي بشكل اختياري عبر Sanctum
             $user = Auth::guard('sanctum')->user();
             $userId = $user ? $user->id : null;
-            $companyId = $user ? $user->company_id : null;
+            $companyId = $user ? $user->active_company_id : null;
 
             $report = ErrorReport::create([
                 'user_id' => $userId,

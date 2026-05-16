@@ -53,7 +53,7 @@ class ProductVariantController extends Controller
             $authUser = Auth::user();
 
             $query = ProductVariant::with($this->relations);
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
 
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -124,7 +124,7 @@ class ProductVariantController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -220,7 +220,7 @@ class ProductVariantController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -260,7 +260,7 @@ class ProductVariantController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -399,7 +399,7 @@ class ProductVariantController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -461,7 +461,7 @@ class ProductVariantController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -544,7 +544,7 @@ class ProductVariantController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');

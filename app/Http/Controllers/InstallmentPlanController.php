@@ -166,7 +166,7 @@ class InstallmentPlanController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             // التحقق الأساسي: إذا لم يكن المستخدم مرتبطًا بشركة
             if (!$authUser || !$companyId) {
@@ -222,7 +222,7 @@ class InstallmentPlanController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -278,7 +278,7 @@ class InstallmentPlanController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -339,7 +339,7 @@ class InstallmentPlanController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');

@@ -54,7 +54,7 @@ class AuthController extends Controller
             $companyId = $company ? $company->id : 1;
 
             // 2. البحث عن مستخدم موجود مسبقاً في النظام بالكامل
-            $user = \App\Models\User::withoutGlobalScope('company')
+            $user = User::withoutGlobalScope('company')
                 ->where(function ($q) use ($validated) {
                     $q->where('phone', $validated['phone']);
                     if (!empty($validated['email'])) {
@@ -75,13 +75,13 @@ class AuthController extends Controller
                 \Log::info('Existing user found, linking to company', ['user_id' => $user->id]);
             } else {
                 // 3. إنشاء مستخدم عالمي جديد
-                $user = \App\Models\User::create([
+                $user = User::create([
                     'phone' => $validated['phone'],
                     'email' => $validated['email'] ?? null,
                     'active_company_id' => $companyId,
                     'full_name' => $validated['full_name'],
-                    'nickname' => $validated['nickname'],
-                    'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+                    'nickname' => $validated['nickname'] ?? $validated['full_name'],
+                    'password' => Hash::make($validated['password']),
                 ]);
                 \Log::info('New user created via registration', ['user_id' => $user->id]);
             }
@@ -116,7 +116,7 @@ class AuthController extends Controller
             return api_success([
                 'user' => new UserWithPermissionsResource($user),
                 'token' => $token,
-            ], 'تم تسجيل الحساب بنجاح بنجاح.', 201);
+            ], 'تم تسجيل الحساب بنجاح.', 201);
 
         } catch (Throwable $e) {
             \Illuminate\Support\Facades\DB::rollBack();
@@ -124,6 +124,7 @@ class AuthController extends Controller
             return api_exception($e, 500);
         }
     }
+
 
     /**
      * @group 01. إدارة المصادقة

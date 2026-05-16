@@ -689,7 +689,7 @@ class UserController extends Controller
                 ->first();
 
             $user->update([
-                'company_id' => $newCompanyId,
+                'active_company_id' => $newCompanyId,
                 'branch_id' => $defaultBranch ? $defaultBranch->id : null
             ]);
 

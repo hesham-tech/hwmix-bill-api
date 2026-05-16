@@ -11,6 +11,10 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         // دالة مساعدة للتأكد من وجود الفهرس قبل إضافته
         $addIndexIfNotExists = function (string $tableName, array $columns, string $indexName) {
             $indices = DB::select("SHOW INDEX FROM " . $tableName . " WHERE Key_name = '" . $indexName . "'");

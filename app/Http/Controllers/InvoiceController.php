@@ -319,12 +319,12 @@ class InvoiceController extends Controller
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
             if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                if ($invoice->company_id !== $authUser->company_id && $invoice->user_id !== $authUser->id) {
+                if ($invoice->company_id !== $authUser->active_company_id && $invoice->user_id !== $authUser->id) {
                     Log::warning('Unauthorized access attempt to invoice details', [
                         'user_id' => $authUser->id,
                         'invoice_id' => $id,
                         'company_id' => $invoice->company_id,
-                        'user_company_id' => $authUser->company_id
+                        'user_company_id' => $authUser->active_company_id
                     ]);
                     return api_forbidden('ليس لديك صلاحية للوصول لهذه الفاتورة.');
                 }
@@ -356,7 +356,7 @@ class InvoiceController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -421,7 +421,7 @@ class InvoiceController extends Controller
     {
         try {
             $authUser = Auth::user();
-            $companyId = $authUser->company_id;
+            $companyId = $authUser->active_company_id;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الانتماء لشركة.');
@@ -488,7 +488,7 @@ class InvoiceController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');

@@ -25,7 +25,7 @@ class UserSelfDebtService
     public function handleSelfSaleDebt(User $user, Invoice $invoice, float $downPayment, float $totalInstallmentAmount, ?int $companyCashBoxId = null, ?int $userCashBoxId = null): void
     {
         try {
-            $companyId = $invoice->company_id ?? $user->company_id;
+            $companyId = $invoice->company_id ?? $user->active_company_id;
             $installmentDebt = $totalInstallmentAmount - $downPayment;
             $totalDebt = $totalInstallmentAmount;
 
@@ -61,7 +61,7 @@ class UserSelfDebtService
     public function clearSelfSaleDebt(User $user, Invoice $invoice, float $totalPaidInstallments = 0, ?int $companyCashBoxId = null, ?int $userCashBoxId = null): void
     {
         try {
-            $companyId = $invoice->company_id ?? $user->company_id;
+            $companyId = $invoice->company_id ?? $user->active_company_id;
 
             // 1. عكس مديونية الفاتورة الأصلية (استرجاع إجمالي المبلغ لصفر الرصيد من هذه الفاتورة)
             $originalTotalAmount = $invoice->installmentPlan->total_amount ?? 0;

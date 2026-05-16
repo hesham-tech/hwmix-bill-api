@@ -31,7 +31,7 @@ class GlobalSearchController extends Controller
 
         /** @var \App\Models\User $authUser */
         $authUser = Auth::user();
-        $companyId = $authUser->company_id;
+        $companyId = $authUser->active_company_id;
 
         // 1. Search Users (Customers)
         if ($authUser->hasPermissionTo(perm_key('admin.super'))) {

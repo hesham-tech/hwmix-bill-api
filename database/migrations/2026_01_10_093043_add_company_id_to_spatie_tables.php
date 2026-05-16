@@ -60,17 +60,16 @@ return new class extends Migration {
         $tableName3 = $tableNames['roles'];
         if (Schema::hasTable($tableName3)) {
             Schema::table($tableName3, function (Blueprint $table) use ($tableName3) {
-                // Drop old unique if exists
                 try {
-                    $table->dropUnique($tableName3 . '_name_guard_name_unique');
-                } catch (\Throwable $e) {
-                }
+                    if (DB::connection()->getDriverName() !== 'sqlite') {
+                        $table->dropUnique($tableName3 . '_name_guard_name_unique');
+                    }
+                } catch (\Throwable $e) {}
 
                 // Add new unique with company_id
                 try {
                     $table->unique(['name', 'guard_name', 'company_id'], $tableName3 . '_name_guard_name_company_id_unique');
-                } catch (\Throwable $e) {
-                }
+                } catch (\Throwable $e) {}
             });
         }
     }

@@ -99,7 +99,7 @@ class CompanyController extends Controller
         try {
             DB::beginTransaction();
 
-            $validatedData['company_id'] = $validatedData['company_id'] ?? $authUser->company_id;
+            $validatedData['company_id'] = $validatedData['company_id'] ?? $authUser->active_company_id;
             $validatedData['created_by'] = $validatedData['created_by'] ?? $authUser->id;
 
 
@@ -113,7 +113,7 @@ class CompanyController extends Controller
                 // new \Illuminate\Http\UploadedFile(public_path('images/default-logo.png'), 'default-logo.png');
             }
 
-            $authUser->company_id = $company->id;
+            $authUser->active_company_id = $company->id;
             $authUser->save();
 
             DB::commit();

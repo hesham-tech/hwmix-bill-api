@@ -169,7 +169,7 @@ class InstallmentPaymentController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
             $validatedData = $request->validated();
 
             $cashBoxId = $validatedData['cash_box_id'] ?? $authUser->getDefaultCashBoxForCompany()?->id;

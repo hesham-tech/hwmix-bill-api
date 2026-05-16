@@ -15,7 +15,7 @@ class UpdatePaymentMethodRequest extends FormRequest
 
     public function rules(): array
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = Auth::user()->active_company_id;
         $paymentMethodId = $this->route('payment_method');
 
         return [

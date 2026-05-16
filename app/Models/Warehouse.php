@@ -36,7 +36,7 @@ class Warehouse extends Model
     protected static function booted()
     {
         static::creating(function ($warehouse) {
-            $warehouse->company_id = $warehouse->company_id ?? auth()->user()->company_id ?? null;
+            $warehouse->company_id = $warehouse->company_id ?? auth()->user()->active_company_id ?? null;
             $warehouse->branch_id = $warehouse->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
         });
 

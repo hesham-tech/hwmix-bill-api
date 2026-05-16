@@ -30,7 +30,7 @@ class FinancialLedger extends Model
     protected static function booted()
     {
         static::creating(function ($ledger) {
-            $ledger->company_id = $ledger->company_id ?? auth()->user()->company_id ?? null;
+            $ledger->company_id = $ledger->company_id ?? auth()->user()->active_company_id ?? null;
             $ledger->branch_id = $ledger->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
         });
     }

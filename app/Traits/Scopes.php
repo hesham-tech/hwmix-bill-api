@@ -19,11 +19,11 @@ trait Scopes
     {
         $user = Auth::user();
 
-        if (!$user || !$user->company_id) {
+        if (!$user || !$user->active_company_id) {
             return $query->whereRaw('0 = 1');  // إرجاع استعلام لا يعيد أي نتائج
         }
 
-        return $query->where($this->qualifyColumn('company_id'), $user->company_id);
+        return $query->where($this->qualifyColumn('company_id'), $user->active_company_id);
     }
 
     /**
@@ -65,7 +65,7 @@ trait Scopes
     public function belongsToCurrentCompany(): bool
     {
         $user = Auth::user();
-        return $user && $this->company_id && $this->company_id === $user->company_id;
+        return $user && $this->company_id && $this->company_id === $user->active_company_id;
     }
 
     public function createdByCurrentUser(): bool

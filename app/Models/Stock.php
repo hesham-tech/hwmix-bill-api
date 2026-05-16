@@ -55,7 +55,7 @@ class Stock extends Model
                 $stock->batch = 'B-' . now()->format('Ymd') . '-' . rand(1000, 9999);
             }
 
-            $stock->company_id = $stock->company_id ?? auth()->user()->company_id ?? null;
+            $stock->company_id = $stock->company_id ?? auth()->user()->active_company_id ?? null;
             $stock->branch_id = $stock->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
         });
     }

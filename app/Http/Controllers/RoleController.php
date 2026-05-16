@@ -51,7 +51,7 @@ class RoleController extends Controller
             }
 
             $query = Role::query()->with($this->relations);
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             // فلترة الأدوار حسب الصلاحيات
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -148,7 +148,7 @@ class RoleController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -261,7 +261,7 @@ class RoleController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -365,7 +365,7 @@ class RoleController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -410,7 +410,7 @@ class RoleController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -490,7 +490,7 @@ class RoleController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
@@ -524,7 +524,7 @@ class RoleController extends Controller
             // 2. لا يمكن للمستخدمين العاديين تعيين أدوار لا يملكون صلاحية الوصول إليها.
             if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
                 // التحقق من أن المستخدم الذي يتم تعيين الأدوار له ينتمي لنفس الشركة
-                if ($user->company_id !== $companyId) {
+                if ($user->active_company_id !== $companyId) {
                     return api_forbidden('لا يمكنك تعيين أدوار لمستخدمين خارج شركتك.');
                 }
 

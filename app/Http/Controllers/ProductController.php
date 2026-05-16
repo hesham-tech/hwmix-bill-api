@@ -295,7 +295,7 @@ class ProductController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يجب أن تكون مرتبطًا بشركة.');
@@ -332,7 +332,7 @@ class ProductController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يجب أن تكون مرتبطًا بشركة.');
@@ -377,7 +377,7 @@ class ProductController extends Controller
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
 
-            if (!$authUser || !$authUser->company_id) {
+            if (!$authUser || !$authUser->active_company_id) {
                 return api_unauthorized('يجب أن تكون مرتبطًا بشركة.');
             }
 
@@ -406,7 +406,7 @@ class ProductController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) {
                 return api_unauthorized('يجب أن تكون مرتبطًا بشركة.');

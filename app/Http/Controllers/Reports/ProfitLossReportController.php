@@ -24,7 +24,7 @@ class ProfitLossReportController extends BaseReportController
     {
         $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->toDateString();
         $dateTo = $request->date_to ?? Carbon::now()->toDateString();
-        $companyId = auth()->user()->company_id;
+        $companyId = auth()->user()->active_company_id;
 
         // Fetch existing summaries
         $summaries = DailySalesSummary::where('company_id', $companyId)
@@ -94,7 +94,7 @@ class ProfitLossReportController extends BaseReportController
      */
     public function monthlyComparison(Request $request): JsonResponse
     {
-        $companyId = auth()->user()->company_id;
+        $companyId = auth()->user()->active_company_id;
         $monthsToFetch = 6;
 
         $data = \App\Models\MonthlySalesSummary::where('company_id', $companyId)

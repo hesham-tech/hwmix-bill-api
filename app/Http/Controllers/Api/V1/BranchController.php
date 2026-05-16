@@ -64,7 +64,7 @@ class BranchController extends Controller
 
             // إذا كان هذا الفرع هو الافتراضي، نلغي الافتراضي عن الباقي
             if ($request->is_default) {
-                Branch::where('company_id', auth()->user()->company_id)->update(['is_default' => false]);
+                Branch::where('company_id', auth()->user()->active_company_id)->update(['is_default' => false]);
             }
 
             $branch = Branch::create([
@@ -73,7 +73,7 @@ class BranchController extends Controller
                 'phone' => $request->phone,
                 'email' => $request->email,
                 'is_default' => $request->is_default ?? false,
-                'company_id' => auth()->user()->company_id,
+                'company_id' => auth()->user()->active_company_id,
             ]);
 
             DB::commit();
@@ -120,7 +120,7 @@ class BranchController extends Controller
             DB::beginTransaction();
 
             if ($request->is_default && !$branch->is_default) {
-                Branch::where('company_id', auth()->user()->company_id)->update(['is_default' => false]);
+                Branch::where('company_id', auth()->user()->active_company_id)->update(['is_default' => false]);
             }
 
             $branch->update([

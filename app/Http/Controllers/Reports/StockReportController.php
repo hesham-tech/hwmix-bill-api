@@ -37,7 +37,7 @@ class StockReportController extends BaseReportController
                 DB::raw("SUM(CASE WHEN invoice_types.code = 'sale' THEN invoice_items.quantity ELSE 0 END) as total_out"),
                 DB::raw("ANY_VALUE(stocks.quantity) as current_stock"), // Or use a separate subquery for precision if status matches
             ])
-            ->where('stocks.company_id', auth()->user()->company_id)
+            ->where('stocks.company_id', auth()->user()->active_company_id)
             ->where('products.product_type', 'physical')
             ->groupBy('product_variants.product_id', 'stocks.variant_id', 'stocks.warehouse_id');
 
@@ -68,13 +68,13 @@ class StockReportController extends BaseReportController
                 'total_in' => (float) DB::table('invoice_items')
                     ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
                     ->join('invoice_types', 'invoices.invoice_type_id', '=', 'invoice_types.id')
-                    ->where('invoices.company_id', auth()->user()->company_id)
+                    ->where('invoices.company_id', auth()->user()->active_company_id)
                     ->where('invoice_types.code', 'purchase')
                     ->sum('invoice_items.quantity'),
                 'total_out' => (float) DB::table('invoice_items')
                     ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
                     ->join('invoice_types', 'invoices.invoice_type_id', '=', 'invoice_types.id')
-                    ->where('invoices.company_id', auth()->user()->company_id)
+                    ->where('invoices.company_id', auth()->user()->active_company_id)
                     ->where('invoice_types.code', 'sale')
                     ->sum('invoice_items.quantity'),
                 'current_stock' => (float) Stock::whereCompanyIsCurrent()->where('status', 'available')->sum('quantity'),
@@ -110,7 +110,7 @@ class StockReportController extends BaseReportController
         if (!empty($filters['company_id'])) {
             $valuationQuery->where('stocks.company_id', $filters['company_id']);
         } elseif ($user = auth()->user()) {
-            $valuationQuery->where('stocks.company_id', $user->company_id);
+            $valuationQuery->where('stocks.company_id', $user->active_company_id);
         }
 
         // Apply Status Filters
@@ -169,7 +169,7 @@ class StockReportController extends BaseReportController
             ->where('products.product_type', 'physical');
 
         if ($user = auth()->user()) {
-            $itemQuery->where('stocks.company_id', $user->company_id);
+            $itemQuery->where('stocks.company_id', $user->active_company_id);
         }
 
         $lowStock = $itemQuery
@@ -218,7 +218,7 @@ class StockReportController extends BaseReportController
             ->where('stocks.updated_at', '<', $cutoffDate);
 
         if ($user = auth()->user()) {
-            $inactiveQuery->where('stocks.company_id', $user->company_id);
+            $inactiveQuery->where('stocks.company_id', $user->active_company_id);
         }
 
         $inactive = $inactiveQuery->select([

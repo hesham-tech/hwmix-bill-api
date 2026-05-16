@@ -19,7 +19,7 @@ class ScopePermissionsByCompany
         $user = Auth::user();
 
         if ($user) {
-            $activeCompanyId = $user->company_id;
+            $activeCompanyId = $user->active_company_id;
 
             // Set the Spatie Permissions Team ID to the current active company
             // This scopes all can(), hasRole(), etc. to this company
