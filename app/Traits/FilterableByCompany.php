@@ -18,7 +18,7 @@ trait FilterableByCompany
             // Only apply if user is authenticated and not a super admin
             // and the model has a company_id column
             if ($user && !$user->hasPermissionTo(perm_key('admin.super'))) {
-                $activeCompanyId = $user->company_id;
+                $activeCompanyId = $user->active_company_id;
                 if ($activeCompanyId) {
                     $builder->where($builder->getQuery()->from . '.company_id', $activeCompanyId);
                 }

@@ -78,7 +78,7 @@ class AuthController extends Controller
                 $user = \App\Models\User::create([
                     'phone' => $validated['phone'],
                     'email' => $validated['email'] ?? null,
-                    'company_id' => $companyId,
+                    'active_company_id' => $companyId,
                     'full_name' => $validated['full_name'],
                     'nickname' => $validated['nickname'],
                     'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),

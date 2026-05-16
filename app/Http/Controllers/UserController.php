@@ -61,7 +61,7 @@ class UserController extends Controller
                 return api_unauthorized();
             }
 
-            $activeCompanyId = $authUser->company_id;
+            $activeCompanyId = $authUser->active_company_id;
             $isSuperAdmin = $authUser->can(perm_key('admin.super'));
             $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
             $canViewAll = $authUser->hasPermissionTo(perm_key('users.view_all'));
@@ -245,7 +245,7 @@ class UserController extends Controller
                 'companies' => $user->companies->map(fn($c) => [
                     'id' => $c->id,
                     'name' => $c->name,
-                    'is_in_current_company' => $c->id == (Auth::user()->company_id ?? null)
+                    'is_in_current_company' => $c->id == (Auth::user()->active_company_id ?? null)
                 ])
             ], 'تم العثور على بيانات المستخدم في النظام.');
         } catch (Throwable $e) {
@@ -263,7 +263,7 @@ class UserController extends Controller
         try {
             $companyUser = $action->execute(
                 $request->validated(),
-                Auth::user()->company_id,
+                Auth::user()->active_company_id,
                 Auth::user()
             );
 
@@ -296,7 +296,7 @@ class UserController extends Controller
         // التعرف على البراميترات بأكثر من طريقة لضمان الدقة
         $withPermissions = $request->has('permissions') && ($request->input('permissions') == 1 || $request->input('permissions') == 'true');
         $syncCompanyId = $request->input('sync_company_id');
-        $activeCompanyId = $syncCompanyId ?? $authUser->company_id;
+        $activeCompanyId = $syncCompanyId ?? $authUser->active_company_id;
         $isSuperAdmin = $authUser->can(perm_key('admin.super'));
         $useBasicResource = filter_var($request->input('basic', true), FILTER_VALIDATE_BOOLEAN);
 
@@ -366,7 +366,7 @@ class UserController extends Controller
             return api_unauthorized();
 
         $isSuperAdmin = $authUser->can(perm_key('admin.super'));
-        $activeCompanyId = $authUser->company_id;
+        $activeCompanyId = $authUser->active_company_id;
 
         DB::beginTransaction();
         try {
@@ -544,7 +544,7 @@ class UserController extends Controller
         DB::beginTransaction();
         try {
             $usersToDelete = User::whereIn('id', $userIds)->get();
-            $activeCompanyId = $authUser->company_id;
+            $activeCompanyId = $authUser->active_company_id;
             $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
             $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
             $canDeleteAll = $authUser->hasPermissionTo(perm_key('users.delete_all'));
@@ -719,7 +719,7 @@ class UserController extends Controller
                 return api_unauthorized('يجب تسجيل الدخول.');
             }
 
-            $activeCompanyId = $authUser->company_id;
+            $activeCompanyId = $authUser->active_company_id;
             $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
             $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
             $canViewAll = $authUser->hasPermissionTo(perm_key('users.view_all'));
@@ -856,7 +856,7 @@ class UserController extends Controller
             if (!$authUser)
                 return api_unauthorized();
 
-            $activeCompanyId = $authUser->company_id;
+            $activeCompanyId = $authUser->active_company_id;
             $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
             $isGlobal = filter_var($request->input('global', false), FILTER_VALIDATE_BOOLEAN) && $isSuperAdmin;
 

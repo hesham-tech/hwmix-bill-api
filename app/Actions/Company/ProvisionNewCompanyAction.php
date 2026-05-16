@@ -48,7 +48,7 @@ class ProvisionNewCompanyAction
                     'nickname' => $data['nickname'] ?? $data['full_name'],
                     'password' => Hash::make($data['password']),
                     'username' => $data['username'] ?? $data['phone'],
-                    'company_id' => $company->id, // الشركة الأساسية للمالك
+                    'active_company_id' => $company->id, // الشركة الأساسية للمالك
                 ]);
             }
 

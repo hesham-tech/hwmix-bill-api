@@ -121,8 +121,8 @@ class User extends Authenticatable
      */
     public function getDefaultCashBoxForCompany($companyId = null)
     {
-        // الأولوية لـ Auth::user()->company_id لضمان جلب رصيد الشركة النشطة حالياً حتى لو كان المستخدم في شركة أخرى
-        $companyId = $companyId ?? Auth::user()->company_id ?? $this->company_id ?? null;
+        // الأولوية لـ Auth::user()->active_company_id لضمان جلب رصيد الشركة النشطة حالياً حتى لو كان المستخدم في شركة أخرى
+        $companyId = $companyId ?? Auth::user()->active_company_id ?? $this->active_company_id ?? null;
 
         if (!$companyId) {
             return null;
@@ -174,7 +174,7 @@ class User extends Authenticatable
      */
     public function scopeWithDefaultCashBox($query, $companyId = null)
     {
-        $companyId = $companyId ?? Auth::user()->company_id ?? null;
+        $companyId = $companyId ?? Auth::user()->active_company_id ?? null;
 
         return $query->with([
             'cashBoxes' => function ($q) use ($companyId) {
@@ -191,7 +191,7 @@ class User extends Authenticatable
      */
     public function company()
     {
-        return $this->belongsTo(Company::class, 'company_id');
+        return $this->belongsTo(Company::class, 'active_company_id');
     }
 
     /**
@@ -227,7 +227,7 @@ class User extends Authenticatable
      */
     public function activeCompanyUser(): HasOne
     {
-        $activeCompanyId = $this->company_id ?? null;
+        $activeCompanyId = $this->active_company_id ?? null;
 
         return $this->hasOne(CompanyUser::class, 'user_id')
             ->where('company_id', $activeCompanyId);
@@ -259,7 +259,7 @@ class User extends Authenticatable
      */
     public function getCashBoxesForCompany($companyId = null)
     {
-        $companyId = $companyId ?? $this->company_id ?? Auth::user()->company_id ?? null;
+        $companyId = $companyId ?? $this->active_company_id ?? Auth::user()->active_company_id ?? null;
 
         if (!$companyId) {
             return collect();
@@ -379,7 +379,7 @@ class User extends Authenticatable
      */
     public function companyBranches(): HasMany
     {
-        return $this->hasMany(Branch::class, 'company_id', 'company_id');
+        return $this->hasMany(Branch::class, 'company_id', 'active_company_id');
     }
 
     /**
@@ -419,7 +419,7 @@ class User extends Authenticatable
     public function getDescendantUserIds(): array
     {
         // يتطلب استيراد CompanyUser
-        $companyId = Auth::user()->company_id ?? null;
+        $companyId = Auth::user()->active_company_id ?? null;
 
         if (is_null($companyId)) {
             return [];
@@ -618,11 +618,11 @@ class User extends Authenticatable
             $user = Auth::user();
 
             if ($user && !$user->hasPermissionTo(perm_key('admin.super'))) {
-                $activeCompanyId = $user->company_id;
+                $activeCompanyId = $user->active_company_id;
                 if ($activeCompanyId) {
                     $builder->where(function ($query) use ($activeCompanyId) {
                         // 1. المستخدم ينتمي مباشرة لهذه الشركة
-                        $query->where('users.company_id', $activeCompanyId)
+                        $query->where('users.active_company_id', $activeCompanyId)
                             // 2. أو المستخدم مرتبط بهذه الشركة عبر الجدول الوسيط
                             ->orWhereExists(function ($subQuery) use ($activeCompanyId) {
                                 $subQuery->select(\DB::raw(1))
@@ -644,7 +644,7 @@ class User extends Authenticatable
     {
         // إذا كانت العلاقة محملة مسبقاً، نستخدم المجموعة (Collection) لتوفير الاستعلامات
         if ($this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
-            $activeCompanyId = Auth::user()->company_id ?? $this->company_id;
+            $activeCompanyId = Auth::user()->active_company_id ?? $this->active_company_id;
 
             // البحث عن الخزنة الافتراضية أولاً، ثم أي خزنة نشطة في الشركة المحددة
             $cashBoxes = collect($this->cashBoxes);

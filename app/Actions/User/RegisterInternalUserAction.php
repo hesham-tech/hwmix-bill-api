@@ -58,7 +58,7 @@ class RegisterInternalUserAction
                     'phone' => $data['phone'],
                     'password' => $data['password'] ?? 'password',
                     'created_by' => $creatorUser->id,
-                    'company_id' => $companyId,
+                    'active_company_id' => $companyId,
                     'full_name' => $data['full_name'],
                     'nickname' => $data['nickname'],
                 ]);
