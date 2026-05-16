@@ -405,7 +405,7 @@ class RoleController extends Controller
      * @urlParam role integer معرف الدور للحذف المفرد. Example: 1
      * @bodyParam item_ids integer[] مصفوفة معرفات الأدوار للحذف الجماعي. Example: [2, 3]
      */
-    public function destroy(Request $request, Role $role = null): JsonResponse
+    public function destroy(Request $request, ?Role $role = null): JsonResponse
     {
         try {
             /** @var \App\Models\User $authUser */

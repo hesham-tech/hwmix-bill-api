@@ -28,16 +28,8 @@ class ProvisionNewCompanyAction
     public function execute(array $data): array
     {
         return DB::transaction(function () use ($data) {
-            // 1. إنشاء الشركة
-            $company = Company::create([
-                'name' => $data['company_name'],
-                'email' => $data['company_email'] ?? ($data['email'] ?? null),
-                'phone' => $data['company_phone'] ?? ($data['phone'] ?? null),
-                'address' => $data['address'] ?? null,
-                'status' => 'active',
-            ]);
-
-            // 2. إنشاء المستخدم المالك (أو البحث عنه إذا كان موجوداً)
+            // 1. إنشاء المستخدم المالك (أو البحث عنه إذا كان موجوداً)
+            // ننشئ المستخدم أولاً لنحصل على الـ ID الخاص به ونمرره للشركة
             $user = User::withoutGlobalScopes()->where('phone', $data['phone'])->first();
             
             if (!$user) {
@@ -48,18 +40,22 @@ class ProvisionNewCompanyAction
                     'nickname' => $data['nickname'] ?? $data['full_name'],
                     'password' => Hash::make($data['password']),
                     'username' => $data['username'] ?? $data['phone'],
-                    'active_company_id' => $company->id, // الشركة الأساسية للمالك
                 ]);
             }
 
-            // 3. إنشاء الفرع الرئيسي الافتراضي
-            $branch = Branch::create([
-                'company_id' => $company->id,
-                'name' => 'الفرع الرئيسي',
-                'is_default' => true,
+            // 2. إنشاء الشركة وإسناد المنشئ
+            // هذا سيؤدي لتشغيل CompanyObserver الذي ينشئ (الفرع، المخزن، طرق الدفع، الخزنة) تلقائياً
+            $company = Company::create([
+                'name' => $data['company_name'],
+                'email' => $data['company_email'] ?? ($data['email'] ?? null),
+                'phone' => $data['company_phone'] ?? ($data['phone'] ?? null),
+                'address' => $data['address'] ?? null,
                 'status' => 'active',
-                'created_by' => $user->id,
+                'created_by' => $user->id, // مهم جداً للـ Observer
             ]);
+
+            // 3. تحديث المستخدم بالشركة النشطة
+            $user->update(['active_company_id' => $company->id]);
 
             // 4. ربط المالك بالشركة (Membership)
             $companyUser = CompanyUser::create([
@@ -71,26 +67,22 @@ class ProvisionNewCompanyAction
                 'created_by' => $user->id,
             ]);
 
-            // 5. إسناد دور المالك (Owner) - في سياق الشركة الجديدة
+            // 5. إسناد صلاحية مدير الشركة (admin.company) مباشرة
             setPermissionsTeamId($company->id);
             try {
-                // قد يكون الدور اسمه 'admin.company' أو 'owner' بناءً على السيستم
-                $user->assignRole('admin.company'); 
+                // إسناد الصلاحية مباشرة للمستخدم في سياق هذه الشركة
+                $user->givePermissionTo('admin.company');
+                
+                \Log::info("Provisioning: تم إسناد صلاحية 'admin.company' مباشرة للمستخدم {$user->id} في الشركة {$company->id}");
             } catch (Throwable $e) {
-                \Log::warning('Role admin.company not found during provisioning for company: ' . $company->id);
+                \Log::error('Direct permission assignment failed during provisioning: ' . $e->getMessage());
             }
 
-            // 6. تهيئة المخزن الافتراضي
-            Warehouse::create([
-                'company_id' => $company->id,
-                'branch_id' => $branch->id,
-                'name' => 'المخزن الرئيسي',
-                'is_default' => true,
-                'created_by' => $user->id,
-            ]);
-
-            // 7. ربط المالك بالفرع
-            $user->branches()->sync([$branch->id]);
+            // 6. ربط المالك بالفرع الرئيسي الذي أنشأه الـ Observer
+            $branch = $company->branches()->where('is_default', true)->first();
+            if ($branch) {
+                $user->branches()->sync([$branch->id]);
+            }
 
             return [
                 'company' => $company,
