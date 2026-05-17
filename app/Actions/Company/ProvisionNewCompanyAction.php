@@ -9,7 +9,7 @@ namespace App\Actions\Company;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Branch;
+use Modules\Companies\Models\Branch;
 use App\Models\Warehouse;
 use App\Models\CompanyUser;
 use Illuminate\Support\Facades\DB;

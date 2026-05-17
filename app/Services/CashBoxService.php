@@ -13,20 +13,33 @@ class CashBoxService
     /**
      * تُنشئ أو تُعيد تفعيل خزنة نقدية افتراضية للمستخدم ضمن شركة محددة.
      */
-    public function createDefaultCashBoxForUserCompany(int $userId, int $companyId, int $createdById): ?CashBox
+    public function createDefaultCashBoxForUserCompany(int $userId, int $companyId, int $createdById, ?int $branchId = null): ?CashBox
     {
         try {
+            // تحديد الفرع المستهدف للخزنة
+            $targetBranchId = $branchId;
+            if (!$targetBranchId) {
+                // جلب الفرع الافتراضي للشركة (مع تخطي النطاقات العالمية لتفادي تصفية المستأجر الجديد أثناء التجهيز)
+                $defaultBranch = \Modules\Companies\Models\Branch::withoutGlobalScopes()
+                    ->where('company_id', $companyId)
+                    ->where('is_default', true)
+                    ->first();
+                $targetBranchId = $defaultBranch ? $defaultBranch->id : null;
+            }
+
             // 1. البحث عن خزنة مُعطلة سابقة لنفس المستخدم والشركة
             $cashBox = CashBox::where('user_id', $userId)
                 ->where('company_id', $companyId)
                 ->where('is_active', false)
-                // يفضل البحث عن الخزنة التي كانت افتراضية سابقاً
                 ->first();
 
             if ($cashBox) {
                 // 2. إذا وجدت: إعادة تفعيلها وجعلها افتراضية
                 $cashBox->is_active = true;
                 $cashBox->is_default = true;
+                if ($targetBranchId && is_null($cashBox->branch_id)) {
+                    $cashBox->branch_id = $targetBranchId;
+                }
                 $cashBox->save();
                 return $cashBox;
             }
@@ -46,12 +59,7 @@ class CashBoxService
                 return null;
             }
 
-            // جلب الفرع الافتراضي للشركة
-            $defaultBranch = \Modules\Companies\Models\Branch::where('company_id', $companyId)
-                ->where('is_default', true)
-                ->first();
-
-            return CashBox::firstOrCreate(
+            $cashBox = CashBox::firstOrCreate(
                 [
                     'user_id' => $userId,
                     'company_id' => $companyId,
@@ -65,9 +73,17 @@ class CashBoxService
                     'is_active' => true,
                     'description' => "تم إنشاؤها تلقائيًا مع ارتباط المستخدم بشركة: {$company->name}",
                     'account_number' => null,
-                    'branch_id' => $defaultBranch ? $defaultBranch->id : null,
+                    'branch_id' => $targetBranchId,
                 ]
             );
+
+            // تأمين إضافي: إذا كانت الخزنة موجودة مسبقاً ولكن بدون فرع، نقوم بربطها بالفرع المستهدف فوراً
+            if ($cashBox && is_null($cashBox->branch_id) && $targetBranchId) {
+                $cashBox->branch_id = $targetBranchId;
+                $cashBox->saveQuietly();
+            }
+
+            return $cashBox;
 
         } catch (Throwable $e) {
             Log::error("CashBoxService: فشل في إنشاء/تفعيل خزنة للمستخدم {$userId} والشركة {$companyId}: " . $e->getMessage());

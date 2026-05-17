@@ -69,7 +69,8 @@ class CompanyObserver
                 app(\App\Services\CashBoxService::class)->createDefaultCashBoxForUserCompany(
                     $creatorId,
                     $company->id,
-                    $creatorId
+                    $creatorId,
+                    $branch->id
                 );
             } catch (\Exception $e) {
                 \Log::error("CompanyObserver: فشل إنشاء الخزنة الافتراضية للمنشئ: " . $e->getMessage());

@@ -9,7 +9,7 @@ namespace App\Actions\User;
 
 use App\Models\User;
 use App\Models\CompanyUser;
-use App\Models\Branch;
+use Modules\Companies\Models\Branch;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -84,13 +84,50 @@ class RegisterInternalUserAction
                 }
             }
 
-            // 5. مزامنة الفروع
+            // 5. مزامنة الفروع وتحديد الفرع المستهدف للخزنة
+            $targetBranchId = null;
             if (isset($data['branch_ids'])) {
                 $branchIds = array_filter((array) $data['branch_ids']);
                 $validBranchIds = Branch::whereIn('id', $branchIds)
                     ->where('company_id', $companyId)
                     ->pluck('id')->toArray();
                 $user->branches()->syncWithoutDetaching($validBranchIds);
+
+                if (!empty($validBranchIds)) {
+                    $targetBranchId = $validBranchIds[0];
+                }
+            }
+
+            if (!$targetBranchId) {
+                // إذا لم يتم إرسال فرع، نتحقق من الفرع النشط للجلسة أو فرع المنشئ، ثم كخيار بديل الفرع الافتراضي للشركة
+                $sessionBranchId = config('app.active_branch_id') ?? ($creatorUser ? $creatorUser->branch_id : null);
+
+                if ($sessionBranchId) {
+                    $targetBranchId = $sessionBranchId;
+                } else {
+                    $defaultBranch = Branch::withoutGlobalScopes()
+                        ->where('company_id', $companyId)
+                        ->where('is_default', true)
+                        ->first();
+                    $targetBranchId = $defaultBranch ? $defaultBranch->id : null;
+                }
+
+                // ربط المستخدم بالفرع تلقائياً إن لم يرسل أي فرع لضمان سلامة السياق المالي والتشغيلي
+                if ($targetBranchId) {
+                    $user->branches()->syncWithoutDetaching([$targetBranchId]);
+                }
+            }
+
+            // إنشاء/تحديث الخزنة الافتراضية للمستخدم لتكون مرتبطة بالفرع المستهدف فوراً
+            try {
+                app(\App\Services\CashBoxService::class)->createDefaultCashBoxForUserCompany(
+                    $user->id,
+                    $companyId,
+                    $creatorUser->id,
+                    $targetBranchId
+                );
+            } catch (\Exception $e) {
+                Log::error("فشل إنشاء/تحديث الخزنة للفرع المستهدف للمستخدم {$user->id}: " . $e->getMessage());
             }
 
             // 6. مزامنة الصور

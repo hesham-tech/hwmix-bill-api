@@ -45,6 +45,8 @@ class UserRequest extends FormRequest
             'roles.*' => 'string|exists:roles,name',
             'permissions' => 'nullable|array',
             'permissions.*' => 'string|exists:permissions,name',
+            'branch_ids' => 'nullable|array',
+            'branch_ids.*' => 'exists:branches,id',
         ];
     }
 }
