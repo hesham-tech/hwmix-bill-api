@@ -40,18 +40,21 @@ class UserSeeder extends Seeder
             $customerType = $userData['customer_type'];
             unset($userData['customer_type']);
 
-            $user = User::create($userData);
+            $user = User::updateOrCreate(
+                ['phone' => $userData['phone']],
+                $userData
+            );
             $pivotData = [];
             foreach ($companyIds as $companyId) {
                 $pivotData[$companyId] = [
-                    'created_by' => $userData['created_by'],
+                    'created_by' => $userData['created_by'] ?? 1,
                     'nickname_in_company' => $user->nickname,
                     'full_name_in_company' => $user->full_name,
                     'customer_type_in_company' => $customerType,
                     'status' => 'active',
                 ];
             }
-            $user->companies()->sync($pivotData);
+            $user->companies()->syncWithoutDetaching($pivotData);
         }
     }
 }

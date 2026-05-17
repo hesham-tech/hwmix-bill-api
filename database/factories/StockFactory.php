@@ -5,10 +5,12 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Stock>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Modules\Inventory\Models\Stock>
  */
 class StockFactory extends Factory
 {
+    protected $model = \Modules\Inventory\Models\Stock::class;
+
     /**
      * Define the model's default state.
      *

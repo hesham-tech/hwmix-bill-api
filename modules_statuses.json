@@ -1,4 +1,7 @@
 {
     "Core": true,
-    "Inventory": true
+    "Inventory": true,
+    "Accounting": true,
+    "Sales": true,
+    "Companies": true
 }

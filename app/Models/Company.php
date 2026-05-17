@@ -97,7 +97,7 @@ class Company extends Model
      */
     public function branches()
     {
-        return $this->hasMany(Branch::class);
+        return $this->hasMany(\Modules\Companies\Models\Branch::class);
     }
 
     public function images()

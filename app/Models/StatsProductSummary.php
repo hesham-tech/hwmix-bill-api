@@ -31,7 +31,7 @@ class StatsProductSummary extends Model
 
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(\Modules\Inventory\Models\Product::class);
     }
 
     public function company()

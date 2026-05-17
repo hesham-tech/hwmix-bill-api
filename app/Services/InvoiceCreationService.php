@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Models\ActivityLog;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Models\Product;
-use App\Models\ProductVariant;
+use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductVariant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 

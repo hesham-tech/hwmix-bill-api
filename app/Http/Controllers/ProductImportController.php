@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use App\Models\Category;
-use App\Models\Brand;
+use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\Category;
+use Modules\Inventory\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -97,13 +97,13 @@ class ProductImportController extends Controller
                     // Granular Permission Check for Opening Stock
                     if (!empty($productData['opening_stock']) && $authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('stocks.create'), perm_key('stocks.manual_adjustment')])) {
                         // Link to default or first warehouse if not specified
-                        $warehouseId = $productData['warehouse_id'] ?? \App\Models\Warehouse::where('company_id', $companyId)
+                        $warehouseId = $productData['warehouse_id'] ?? \Modules\Inventory\Models\Warehouse::where('company_id', $companyId)
                             ->orderBy('is_default', 'desc')
                             ->value('id');
 
                         if (!$warehouseId) {
                             // Create default warehouse if none exist
-                            $newWarehouse = \App\Models\Warehouse::create([
+                            $newWarehouse = \Modules\Inventory\Models\Warehouse::create([
                                 'company_id' => $companyId,
                                 'name' => 'المخزن الرئيسي',
                                 'is_default' => true,

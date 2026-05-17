@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\Stock;
+use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductVariant;
+use Modules\Inventory\Models\Stock;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder

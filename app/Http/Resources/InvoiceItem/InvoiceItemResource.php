@@ -3,7 +3,7 @@
 namespace App\Http\Resources\InvoiceItem;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\ProductVariant\ProductVariantResource;
+use Modules\Inventory\Http\Resources\ProductVariantResource;
 
 class InvoiceItemResource extends JsonResource
 {

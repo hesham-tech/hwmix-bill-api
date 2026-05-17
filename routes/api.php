@@ -6,7 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AnalyticsController;
-use App\Http\Controllers\BrandController;
+
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\ProfitController;
 use App\Http\Controllers\ArtisanController;
@@ -22,7 +22,7 @@ use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\GlobalSearchController;
 
 use App\Http\Controllers\AttributeController;
-use App\Http\Controllers\WarehouseController;
+
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\CashBoxTypeController;
 use App\Http\Controllers\InstallmentController;
@@ -178,35 +178,9 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     });
 
 
-    // Transaction Controller
-    Route::controller(TransactionController::class)
-        ->prefix('transactions')
-        ->group(function () {
-            Route::post('transfer', 'transfer');
-            Route::post('deposit', 'deposit');
-            Route::post('withdraw', 'withdraw');
-            Route::get('/', 'transactions');
-            Route::get('user/{cashBoxId?}', 'userTransactions');
-            Route::post('{transaction}/reverse', 'reverseTransaction');
-        });
-    // Invoice Controller
-    Route::controller(InvoiceController::class)
-        ->group(function () {
-            Route::get('invoices', 'index');
-            Route::post('invoices', 'store');
-            Route::get('invoices/{invoice}', 'show');
-            Route::put('invoices/{invoice}', 'update');
-            Route::delete('invoices/{invoice}', 'destroy');
-            Route::post('invoices/deletes', 'deleteMultiple');
-
-            // PDF Routes
-            Route::get('invoice/{id}/pdf', 'downloadPDF')->name('invoice.download-pdf');
-            Route::get('invoice/{id}/pdf-data', 'getInvoiceForPDF')->name('invoice.pdf-data');
-            Route::post('invoice/{id}/email-pdf', 'emailPDF')->name('invoice.email-pdf');
-
-            // Excel Export
-            Route::post('invoices/export-excel', 'exportExcel')->name('invoices.export-excel');
-        });
+    // Transaction Controller (Moved to Accounting Module)
+    // Services & Invoices (Moved to Sales Module)
+    
     // Role Controller
     Route::controller(RoleController::class)
         ->group(function () {
@@ -218,26 +192,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
             Route::post('roles/batch-delete', 'destroy'); // Batch delete
             Route::post('roles/assign', 'assignRole');
         });
-    // cashBoxTypes Controller
-    Route::controller(CashBoxTypeController::class)
-        ->group(function () {
-            Route::get('cash-box-types', 'index');
-            Route::post('cash-box-types', 'store');
-            Route::get('cash-box-types/{cashBoxType}', 'show');
-            Route::put('cash-box-types/{cashBoxType}', 'update');
-            Route::patch('cash-box-types/{id}/toggle', 'toggle');
-            Route::delete('cash-box-types/{cashBoxType}', 'destroy');
-        });
-    // CashBox Controller
-    Route::controller(CashBoxController::class)
-        ->group(function () {
-            Route::get('cash-boxes', 'index');
-            Route::post('cash-boxes', 'store');
-            Route::get('cash-boxes/{cashBox}', 'show');
-            Route::put('cash-boxes/{cashBox}', 'update');
-            Route::delete('cash-boxes/{cashBox}', 'destroy');
-            Route::post('cash-boxes/transfer', 'transferFunds');
-        });
+
     // Logs Controller
     Route::controller(LogController::class)
         ->group(function () {
@@ -245,122 +200,6 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
             Route::post('logs/{log}/undo', 'undo');
         });
 
-    // Product Controller
-    Route::controller(ProductController::class)
-        ->group(function () {
-            Route::get('products', 'index');
-            Route::post('products', 'store');
-            Route::get('products/export', 'export');
-            Route::post('products/import', [ProductImportController::class, 'import']);
-            Route::get('products/{product}', 'show');
-            Route::put('products/{product}', 'update');
-            Route::delete('products/{product}', 'destroy');
-        });
-    // Attribute Controller
-    Route::controller(AttributeController::class)
-        ->group(function () {
-            Route::get('attributes', 'index');
-            Route::post('attributes', 'store');
-            Route::get('attributes/{attribute}', 'show');
-            Route::put('attributes/{attribute}', 'update');
-            Route::delete('attributes/{attribute}', 'destroy');
-            Route::patch('attributes/{id}/toggle', 'toggle');
-            Route::post('attribute/deletes', 'deleteMultiple');
-        });
-    // Attribute Value Controller
-    Route::controller(AttributeValueController::class)
-        ->group(function () {
-            Route::get('attribute-values', 'index');
-            Route::post('attribute-values', 'store');
-            Route::get('attribute-values/{attributeValue}', 'show');
-            Route::put('attribute-values/{attributeValue}', 'update');
-            Route::delete('attribute-values/{attributeValue}', 'destroy');
-            Route::post('attribute-value/deletes', 'deleteMultiple');
-        });
-    // Product Variant Controller
-    Route::controller(ProductVariantController::class)
-        ->group(function () {
-            Route::get('product-variants', 'index');
-            Route::post('product-variants', 'store');
-            Route::get('product-variants/search-by-product', 'searchByProduct');
-            Route::get('product-variants/{productVariant}', 'show');
-            Route::put('product-variants/{productVariant}', 'update');
-            Route::delete('product-variants/{productVariant}', 'destroy');
-            Route::post('product-variants/delete', 'deleteMultiple');
-        });
-    // Warehouse Controller
-    Route::controller(WarehouseController::class)
-        ->group(function () {
-            Route::get('warehouses', 'index');
-            Route::post('warehouses', 'store');
-            Route::get('warehouses/{warehouse}', 'show');
-            Route::put('warehouses/{warehouse}', 'update');
-            Route::delete('warehouses/{warehouse}', 'destroy');
-            Route::patch('warehouses/{warehouse}/set-default', 'setDefault');
-        });
-    // Stock Controller
-    Route::controller(StockController::class)
-        ->group(function () {
-            Route::get('stocks', 'index');
-            Route::post('stock', 'store');
-            Route::get('stock/{stock}', 'show');
-            Route::put('stock/{stock}', 'update');
-            Route::delete('stock/{stock}', 'destroy');
-        });
-    // Category Controller
-    Route::controller(CategoryController::class)
-        ->group(function () {
-            Route::get('categories', 'index');
-            Route::post('categories', 'store');
-            Route::get('categories/{category}', 'show');
-            Route::put('categories/{category}', 'update');
-            Route::patch('categories/{id}/toggle', 'toggle');
-            Route::get('categories/{id}/breadcrumbs', 'breadcrumbs');
-            Route::delete('categories/{category}', 'destroy');
-
-            // Admin Tools
-            Route::post('categories/{id}/globalize', 'globalize');
-            Route::post('categories/merge', 'merge');
-        });
-    // Brand Controller
-    Route::controller(BrandController::class)
-        ->group(function () {
-            Route::get('brands', 'index');
-            Route::post('brands', 'store');
-            Route::get('brands/{brand}', 'show');
-            Route::put('brands/{brand}', 'update');
-            Route::patch('brands/{id}/toggle', 'toggle');
-            Route::delete('brands/{brand}', 'destroy');
-
-            // Admin Tools
-            Route::post('brands/{id}/globalize', 'globalize');
-            Route::post('brands/merge', 'merge');
-        });
-    // InvoiceType Controller
-    Route::controller(InvoiceTypeController::class)->group(function () {
-        Route::get('invoice-types', 'index');
-        Route::post('invoice-types', 'store');
-        Route::get('invoice-types/{invoiceType}', 'show');
-        Route::put('invoice-types/{invoiceType}', 'update');
-        Route::delete('invoice-types/{invoiceType}', 'destroy');
-    });
-
-    // Service Controller
-    Route::apiResource('services', ServiceController::class);
-
-    // Subscription Controller
-    Route::apiResource('subscriptions', SubscriptionController::class);
-    Route::post('subscriptions/{id}/renew', [\App\Http\Controllers\Api\SubscriptionRenewalController::class, 'renew']);
-    Route::get('subscriptions/{id}/history', [\App\Http\Controllers\Api\SubscriptionRenewalController::class, 'history']);
-
-    // InvoiceItem Controller
-    Route::controller(InvoiceItemController::class)->group(function () {
-        Route::get('invoice-items', 'index');
-        Route::post('invoice-item', 'store');
-        Route::get('invoice-item/{invoiceItem}', 'show');
-        Route::put('invoice-item/{invoiceItem}', 'update');
-        Route::delete('invoice-item/{invoiceItem}', 'destroy');
-    });
     // InstallmentPlan Controller
     Route::controller(InstallmentPlanController::class)->group(function () {
         Route::get('installment-plans', 'index');
@@ -406,15 +245,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
             Route::put('installment-payments/{installmentPayment}', 'update');
             Route::delete('installment-payments/{installmentPayment}', 'destroy');
         });
-    // Revenue Controller
-    Route::controller(RevenueController::class)
-        ->group(function () {
-            Route::get('revenues', 'index');
-            Route::post('revenues', 'store');
-            Route::get('revenues/{revenue}', 'show');
-            Route::put('revenues/{revenue}', 'update');
-            Route::delete('revenues/{revenue}', 'destroy');
-        });
+    // Revenue Controller (Moved to Accounting Module)
     // Profit Controller
     Route::controller(ProfitController::class)
         ->group(function () {
@@ -438,12 +269,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
 
     Route::get('/permissions', [PermissionController::class, 'index']);
 
-    // ================== Financials (Expenses & Ledger) ==================
-    Route::apiResource('expenses', \App\Http\Controllers\ExpenseController::class);
-    Route::get('expenses/summary', [\App\Http\Controllers\ExpenseController::class, 'getSummary']);
-    Route::apiResource('expense-categories', \App\Http\Controllers\ExpenseCategoryController::class);
-    Route::get('financial-ledger', [\App\Http\Controllers\FinancialLedgerController::class, 'index']);
-    Route::post('financial-ledger/export', [\App\Http\Controllers\FinancialLedgerController::class, 'export']);
+    // ================== Financials (Expenses & Ledger) (Moved to Accounting Module) ==================
 
     // Summary Reports (High Performance)
     Route::get('reports/profit-loss-summary', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'profitLossSummary']);
@@ -462,10 +288,6 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
 
     // Global Search
     Route::get('global-search', 'App\Http\Controllers\GlobalSearchController@search');
-
-    // Branches
-    Route::get('branches/my-branches', [\App\Http\Controllers\Api\V1\BranchController::class, 'myBranches']);
-    Route::apiResource('branches', \App\Http\Controllers\Api\V1\BranchController::class);
 
     // Artisan commands routes (Secured)
     Route::controller(ArtisanController::class)->prefix('php')->group(function () {

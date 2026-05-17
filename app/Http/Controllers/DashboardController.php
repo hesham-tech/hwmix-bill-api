@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Installment;
-use App\Models\Product;
+use Modules\Inventory\Models\Product;
 use App\Models\User;
 use App\Models\CompanyUser;
 use Illuminate\Http\Request;

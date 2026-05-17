@@ -2,14 +2,16 @@
 
 namespace Database\Factories;
 
-use App\Models\Product;
+use Modules\Inventory\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Modules\Inventory\Models\Product>
  */
 class ProductFactory extends Factory
 {
+    protected $model = Product::class;
+
     /**
      * Define the model's default state.
      *
@@ -25,8 +27,8 @@ class ProductFactory extends Factory
             'featured' => false,
             'returnable' => true,
             'desc' => $this->faker->sentence,
-            'category_id' => \App\Models\Category::factory(),
-            'brand_id' => \App\Models\Brand::factory(),
+            'category_id' => \Modules\Inventory\Models\Category::factory(),
+            'brand_id' => \Modules\Inventory\Models\Brand::factory(),
             'company_id' => \App\Models\Company::factory(),
             'created_by' => \App\Models\User::factory(),
         ];

@@ -7,7 +7,7 @@ use App\Traits\Scopes;
 use App\Traits\HasImages;
 use App\Traits\Filterable;
 use App\Traits\LogsActivity;
-use App\Services\CashBoxService;
+use Modules\Accounting\Services\CashBoxService;
 use Laravel\Sanctum\HasApiTokens;
 use App\Traits\ManagesBalance;
 use Illuminate\Support\Facades\DB;
@@ -27,12 +27,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use App\Observers\UserObserver;
 // يجب استيراد النماذج (Models) المستخدمة داخل الكود:
-use App\Models\CashBox;
+use Modules\Accounting\Models\CashBox;
 use App\Models\Company;
 use App\Models\CompanyUser;
 use App\Models\Installment;
 use App\Models\InstallmentPlan;
-use App\Models\Transaction;
+use Modules\Accounting\Models\Transaction;
 use App\Models\Payment;
 use App\Models\Translation; // تم استخدامه في دالة trans
 use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
@@ -379,7 +379,7 @@ class User extends Authenticatable
      */
     public function companyBranches(): HasMany
     {
-        return $this->hasMany(Branch::class, 'company_id', 'company_id');
+        return $this->hasMany(\Modules\Companies\Models\Branch::class, 'company_id', 'company_id');
     }
 
     /**
@@ -387,7 +387,7 @@ class User extends Authenticatable
      */
     public function branches(): BelongsToMany
     {
-        return $this->belongsToMany(Branch::class, 'branch_user', 'user_id', 'branch_id')
+        return $this->belongsToMany(\Modules\Companies\Models\Branch::class, 'branch_user', 'user_id', 'branch_id')
                     ->withTimestamps();
     }
 

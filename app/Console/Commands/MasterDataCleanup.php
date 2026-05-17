@@ -28,7 +28,7 @@ class MasterDataCleanup extends Command
         $this->info('Starting Master Data Cleanup...');
 
         // 1. Cleanup Global Categories (no company_id, no products, no children)
-        $orphanCategories = \App\Models\Category::whereNull('company_id')
+        $orphanCategories = \Modules\Inventory\Models\Category::whereNull('company_id')
             ->whereDoesntHave('products')
             ->whereDoesntHave('children')
             ->delete();
@@ -36,7 +36,7 @@ class MasterDataCleanup extends Command
         $this->info("Deleted {$orphanCategories} orphan global categories.");
 
         // 2. Cleanup Global Brands (no company_id, no products)
-        $orphanBrands = \App\Models\Brand::whereNull('company_id')
+        $orphanBrands = \Modules\Inventory\Models\Brand::whereNull('company_id')
             ->whereDoesntHave('products')
             ->delete();
 

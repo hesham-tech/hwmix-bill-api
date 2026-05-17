@@ -3,20 +3,21 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Warehouse;
+use Modules\Inventory\Models\Warehouse;
 
 class WarehouseSeeder extends Seeder
 {
     public function run(): void
     {
-        Warehouse::create([
-            'name' => 'المخزن الرئيسي',
-            'location' => 'الموقع الرئيسي',
-            'manager' => 'مدير المخزن',
-            'capacity' => 1000,
-            'status' => 'active',
-            'company_id' => 1,
-            'created_by' => 1,
-        ]);
+        Warehouse::firstOrCreate(
+            ['name' => 'المخزن الرئيسي', 'company_id' => 1],
+            [
+                'location' => 'الموقع الرئيسي',
+                'manager' => 'مدير المخزن',
+                'capacity' => 1000,
+                'status' => 'active',
+                'created_by' => 1,
+            ]
+        );
     }
 }

@@ -1,0 +1,31 @@
+<?php
+
+namespace Modules\Inventory\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class BrandResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'company_id' => $this->company_id,
+            'created_by' => $this->created_by,
+            'description' => $this->description,
+            'active' => (bool) $this->active,
+            'image_url' => $this->image?->url,
+            'image_id' => $this->image?->id,
+            'products_count' => $this->products_count ?? $this->products()->count(),
+            'creator_name' => $this->creator?->name,
+            'synonyms' => $this->synonyms,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
+    }
+}

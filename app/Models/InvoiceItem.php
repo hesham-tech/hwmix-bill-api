@@ -46,12 +46,12 @@ class InvoiceItem extends Model
     // 🔗 العلاقة مع المنتج الأساسي
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(\Modules\Inventory\Models\Product::class);
     }
     // 🔗 العلاقة مع متغير المنتج
     public function variant()
     {
-        return $this->belongsTo(ProductVariant::class, 'variant_id');
+        return $this->belongsTo(\Modules\Inventory\Models\ProductVariant::class, 'variant_id');
     }
     // 🔗 العلاقة مع الشركة
     public function company()

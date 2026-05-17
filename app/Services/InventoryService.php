@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\ActivityLog;
-use App\Models\Stock;
+use Modules\Inventory\Models\Stock;
 use App\Models\ProductVariant;
 use App\Services\DocumentServiceInterface;
 use Illuminate\Support\Facades\DB;

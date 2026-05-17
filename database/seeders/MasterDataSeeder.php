@@ -123,7 +123,7 @@ class MasterDataSeeder extends Seeder
         ];
 
         foreach ($categories as $cat) {
-            $parent = \App\Models\Category::updateOrCreate(
+            $parent = \Modules\Inventory\Models\Category::updateOrCreate(
                 ['slug' => $cat['slug']],
                 [
                     'name' => $cat['name'],
@@ -135,7 +135,7 @@ class MasterDataSeeder extends Seeder
 
             if (isset($cat['children'])) {
                 foreach ($cat['children'] as $child) {
-                    $childModel = \App\Models\Category::updateOrCreate(
+                    $childModel = \Modules\Inventory\Models\Category::updateOrCreate(
                         ['slug' => $child['slug']],
                         [
                             'name' => $child['name'],
@@ -148,7 +148,7 @@ class MasterDataSeeder extends Seeder
 
                     if (isset($child['children'])) {
                         foreach ($child['children'] as $grandChild) {
-                            \App\Models\Category::updateOrCreate(
+                            \Modules\Inventory\Models\Category::updateOrCreate(
                                 ['slug' => $grandChild['slug']],
                                 [
                                     'name' => $grandChild['name'],
@@ -237,7 +237,7 @@ class MasterDataSeeder extends Seeder
         ];
 
         foreach ($brands as $brand) {
-            \App\Models\Brand::updateOrCreate(
+            \Modules\Inventory\Models\Brand::updateOrCreate(
                 ['slug' => $brand['slug']],
                 [
                     'name' => $brand['name'],
