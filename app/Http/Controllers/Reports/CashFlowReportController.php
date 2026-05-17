@@ -93,7 +93,7 @@ class CashFlowReportController extends BaseReportController
             ->whereDate('transactions.created_at', '<=', $dateTo);
 
         if ($user = auth()->user()) {
-            $byCashBoxQuery->where('transactions.company_id', $user->company_id);
+            $byCashBoxQuery->where('transactions.company_id', $user->active_company_id);
         }
 
         $byCashBox = $byCashBoxQuery

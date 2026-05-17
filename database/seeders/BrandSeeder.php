@@ -10,21 +10,19 @@ class BrandSeeder extends Seeder
     public function run(): void
     {
         // بيانات للماركات
-        Brand::firstOrCreate(
-            ['name' => 'Apple', 'company_id' => 1],
-            [
-                'slug' => 'apple',
-                'description' => 'شركة آبل العالمية',
-                'created_by' => 1,
-            ]
-        );
-        Brand::firstOrCreate(
-            ['name' => 'Samsung', 'company_id' => 1],
-            [
-                'slug' => 'samsung',
-                'description' => 'شركة سامسونج الكورية',
-                'created_by' => 1,
-            ]
-        );
+        Brand::create([
+            'name' => 'Apple',
+            'slug' => 'apple',
+            'description' => 'شركة آبل العالمية',
+            'company_id' => 1,
+            'created_by' => 1,
+        ]);
+        Brand::create([
+            'name' => 'Samsung',
+            'slug' => 'samsung',
+            'description' => 'شركة سامسونج الكورية',
+            'company_id' => 1,
+            'created_by' => 1,
+        ]);
     }
 }

@@ -20,7 +20,7 @@ class ImageService
         if (!$user)
             return;
 
-        $companyId = $user->company_id;
+        $companyId = $user->active_company_id;
         $modelName = Str::snake(class_basename($model));
         $storageBase = "uploads/{$companyId}/{$modelName}/{$type}";
 

@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'scope_company' => \App\Http\Middleware\ScopePermissionsByCompany::class,
             'branch_context' => \App\Http\Middleware\BranchContextMiddleware::class,
             'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
+            'staff.only' => \App\Http\Middleware\CheckUserTypeMiddleware::class,
         ]);
         $middleware->appendToGroup('api', \App\Http\Middleware\ScopePermissionsByCompany::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\BranchContextMiddleware::class);

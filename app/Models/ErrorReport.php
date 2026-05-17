@@ -29,7 +29,7 @@ class ErrorReport extends Model
     protected static function booted()
     {
         static::creating(function ($report) {
-            $report->company_id = $report->company_id ?? auth()->user()->company_id ?? null;
+            $report->company_id = $report->company_id ?? auth()->user()->active_company_id ?? null;
             $report->branch_id = $report->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
         });
     }

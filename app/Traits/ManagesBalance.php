@@ -27,7 +27,7 @@ trait ManagesBalance
     public function withdraw(float $amount, $cashBoxId = null, $description = null, $log = true): bool
     {
         $amount = floatval($amount);
-        $authCompanyId = Auth::user()->company_id ?? null;
+        $authCompanyId = Auth::user()->active_company_id ?? null;
 
         DB::beginTransaction();
         try {
@@ -96,7 +96,7 @@ trait ManagesBalance
     {
         $amount = floatval($amount);
         DB::beginTransaction();
-        $authCompanyId = Auth::user()->company_id ?? null;
+        $authCompanyId = Auth::user()->active_company_id ?? null;
 
         try {
             $cashBox = null;
@@ -168,7 +168,7 @@ trait ManagesBalance
 
         DB::beginTransaction();
         try {
-            $authCompanyId = Auth::user()->company_id ?? null;
+            $authCompanyId = Auth::user()->active_company_id ?? null;
             if (is_null($authCompanyId)) {
                 throw new Exception("لا توجد شركة نشطة لإجراء التحويل.");
             }

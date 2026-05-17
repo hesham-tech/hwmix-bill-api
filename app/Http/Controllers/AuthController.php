@@ -43,49 +43,88 @@ class AuthController extends Controller
      */
     public function register(\App\Http\Requests\Auth\RegisterRequest $request): JsonResponse
     {
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $validated = $request->validated();
 
-            \Log::info('Attempting to create user', ['phone' => $validated['phone']]);
+            \Log::info('Registration Attempt', ['phone' => $validated['phone']]);
 
+            // 1. تحديد الشركة الافتراضية
             $company = \App\Models\Company::first();
-            $companyId = $company ? $company->id : 1; // Default to 1 if no company exists yet
+            $companyId = $company ? $company->id : 1;
 
-            \Log::info('Creating user with company ID', ['company_id' => $companyId]);
+            // 2. البحث عن مستخدم موجود مسبقاً في النظام بالكامل
+            $user = User::withoutGlobalScope('company')
+                ->where(function ($q) use ($validated) {
+                    $q->where('phone', $validated['phone']);
+                    if (!empty($validated['email'])) {
+                        $q->orWhere('email', $validated['email']);
+                    }
+                })->first();
 
-            $user = User::create([
-                'phone' => $validated['phone'],
+            if ($user) {
+                // التحقق من عدم الارتباط المسبق بنفس الشركة
+                $exists = \App\Models\CompanyUser::where('user_id', $user->id)
+                    ->where('company_id', $companyId)
+                    ->exists();
+
+                if ($exists) {
+                    \Illuminate\Support\Facades\DB::rollBack();
+                    return api_error('هذا الحساب مسجل بالفعل في هذه الشركة.', ['phone' => $validated['phone']], 409);
+                }
+                \Log::info('Existing user found, linking to company', ['user_id' => $user->id]);
+            } else {
+                // 3. إنشاء مستخدم عالمي جديد
+                $user = User::create([
+                    'phone' => $validated['phone'],
+                    'email' => $validated['email'] ?? null,
+                    'active_company_id' => $companyId,
+                    'full_name' => $validated['full_name'],
+                    'nickname' => $validated['nickname'] ?? $validated['full_name'],
+                    'password' => Hash::make($validated['password']),
+                ]);
+                \Log::info('New user created via registration', ['user_id' => $user->id]);
+            }
+
+            // 4. إنشاء سجل العلاقة مع الشركة (Contextual Data)
+            $companyUser = \App\Models\CompanyUser::updateOrCreate([
+                'user_id' => $user->id,
                 'company_id' => $companyId,
-                'full_name' => $validated['full_name'],
-                'nickname' => $validated['nickname'],
-                'password' => Hash::make($validated['password']),
+            ], [
+                'nickname_in_company' => $validated['nickname'] ?? $user->nickname,
+                'full_name_in_company' => $validated['full_name'] ?? $user->full_name,
+                'status' => 'active',
+                'created_by' => $user->id, // يسجل نفسه كمنشئ للعلاقة
             ]);
 
-            \Log::info('User created successfully', ['user_id' => $user->id]);
+            // 5. ربط الفرع الافتراضي تلقائياً
+            $defaultBranch = \App\Models\Branch::where('company_id', $companyId)
+                ->where('is_default', true)
+                ->first();
+            if ($defaultBranch) {
+                $user->branches()->syncWithoutDetaching([$defaultBranch->id]);
+            }
 
-            // Link user to the default company
-            $user->companies()->attach($companyId, [
-                'created_by' => $user->id,
-                'user_phone' => $user->phone,
-                'full_name_in_company' => $user->full_name,
-                'nickname_in_company' => $user->nickname,
-            ]);
+            \Illuminate\Support\Facades\DB::commit();
+
+            // 6. إطلاق الأحداث وإنشاء التوكن
+            event(new \App\Events\UserCreated($user));
 
             $token = $user->createToken('auth_token')->plainTextToken;
-
             $user->load(['roles.permissions', 'permissions', 'branches', 'company.logo']);
 
             return api_success([
                 'user' => new UserWithPermissionsResource($user),
                 'token' => $token,
-            ], 'تم تسجيل المستخدم بنجاح.', 201);
+            ], 'تم تسجيل الحساب بنجاح.', 201);
+
         } catch (Throwable $e) {
-            \Log::error('Registration Error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
+            \Illuminate\Support\Facades\DB::rollBack();
+            \Log::error('Registration Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return api_exception($e, 500);
         }
     }
+
 
     /**
      * @group 01. إدارة المصادقة

@@ -40,7 +40,7 @@ class InstallmentPayment extends Model
     protected static function booted()
     {
         static::creating(function ($payment) {
-            $payment->company_id = $payment->company_id ?? auth()->user()->company_id ?? null;
+            $payment->company_id = $payment->company_id ?? auth()->user()->active_company_id ?? null;
             $payment->branch_id = $payment->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
         });
     }

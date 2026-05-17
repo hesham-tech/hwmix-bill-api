@@ -38,7 +38,7 @@ class LogController extends Controller
             }
 
             $query = ActivityLog::query();
-            $companyId = $authUser->company_id ?? null; // معرف الشركة النشطة للمستخدم
+            $companyId = $authUser->active_company_id ?? null; // معرف الشركة النشطة للمستخدم
 
             // تطبيق فلترة الصلاحيات باستخدام الـ Scopes المخصصة
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -98,7 +98,7 @@ class LogController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             // التحقق الأساسي: إذا لم يكن المستخدم مرتبطًا بشركة
             if (!$authUser || !$companyId) {

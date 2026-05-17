@@ -15,7 +15,7 @@ class StorePaymentMethodRequest extends FormRequest
 
     public function rules(): array
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = Auth::user()->active_company_id;
 
         return [
             'name' => 'required|string|max:255',

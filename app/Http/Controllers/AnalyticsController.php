@@ -26,7 +26,7 @@ class AnalyticsController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = Auth::user()->active_company_id;
         $today = now()->toDateString();
         $month = now()->format('Y-m');
 
@@ -66,7 +66,7 @@ class AnalyticsController extends Controller
      */
     public function topProducts(Request $request)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = Auth::user()->active_company_id;
         $sortBy = $request->input('sort_by', 'total_sold_quantity');
         $limit = $request->input('limit', 10);
 
@@ -90,7 +90,7 @@ class AnalyticsController extends Controller
      */
     public function userHistory($userId)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = Auth::user()->active_company_id;
 
         $userSummary = StatsUserSummary::where('company_id', $companyId)
             ->where('user_id', $userId)

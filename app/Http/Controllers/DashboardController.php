@@ -24,7 +24,7 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $companyId = $user->company_id;
+        $companyId = $user->active_company_id;
 
         // فحص ما إذا كان المستخدم عميلاً (ليس لديه صلاحيات إدارية)
         $isCustomer = !$user->hasAnyPermission([

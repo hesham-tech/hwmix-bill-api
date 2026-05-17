@@ -35,7 +35,7 @@ class ExpenseCategoryController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:expense_categories,name,NULL,id,company_id,' . auth()->user()->company_id,
+            'name' => 'required|string|max:255|unique:expense_categories,name,NULL,id,company_id,' . auth()->user()->active_company_id,
         ]);
 
         $category = ExpenseCategory::create($request->all());
@@ -46,7 +46,7 @@ class ExpenseCategoryController extends Controller
     public function update(Request $request, ExpenseCategory $expenseCategory): JsonResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:expense_categories,name,' . $expenseCategory->id . ',id,company_id,' . auth()->user()->company_id,
+            'name' => 'required|string|max:255|unique:expense_categories,name,' . $expenseCategory->id . ',id,company_id,' . auth()->user()->active_company_id,
         ]);
 
         $expenseCategory->update($request->all());

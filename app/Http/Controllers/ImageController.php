@@ -64,7 +64,7 @@ class ImageController extends Controller
             ]);
 
             $user = Auth::user();
-            $companyId = $user->company_id;
+            $companyId = $user->active_company_id;
             $type = $request->input('type', 'misc');
             $uploadedImages = [];
 

@@ -17,7 +17,7 @@ class CompanyScope implements Scope
         $authUser = Auth::user();
 
         if ($authUser) {
-            $companyId = $authUser->company_id;
+            $companyId = $authUser->active_company_id;
 
             if ($companyId !== null) {
                 $builder->where('company_id', $companyId);

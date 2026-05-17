@@ -46,7 +46,7 @@ class Installment extends Model
     protected static function booted()
     {
         static::creating(function ($installment) {
-            $installment->company_id = $installment->company_id ?? auth()->user()->company_id ?? null;
+            $installment->company_id = $installment->company_id ?? auth()->user()->active_company_id ?? null;
             $installment->branch_id = $installment->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
         });
     }

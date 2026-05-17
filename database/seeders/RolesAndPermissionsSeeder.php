@@ -51,10 +51,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'username' => 'system_owner',
             'password' => bcrypt('12345678'),
             'phone' => '01006444991',
-            'company_id' => $company ? $company->id : null,
+            'active_company_id' => $company ? $company->id : null,
         ]);
         // إخبار النظام برقم الشركة قبل منح الصلاحيات (Spatie Teams)
-        if (config('permission.teams')) {
+        if (config('permission.teams') && $company) {
             setPermissionsTeamId($company->id);
         }
         $user->givePermissionTo($permissions);

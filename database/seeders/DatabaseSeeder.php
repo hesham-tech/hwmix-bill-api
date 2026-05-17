@@ -13,16 +13,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+
         $this->call([
                 // 1. الأساسيات (The Foundation)
+            CompanySeeder::class,
             PermissionsSeeder::class,
             InvoiceTypeSeeder::class,
             PaymentMethodSeeder::class,
             CashBoxTypeSeeder::class,
             ExpenseCategorySeeder::class,
-
-                // 2. الشركات (الآن المراقب سيجد البيانات اللازمة)
-            CompanySeeder::class,
 
                 // 3. المستخدمين والربط
             UserSeeder::class,
@@ -37,5 +37,7 @@ class DatabaseSeeder extends Seeder
             BrandSeeder::class,
             ProductSeeder::class,
         ]);
+
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
     }
 }

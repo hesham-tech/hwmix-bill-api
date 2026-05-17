@@ -22,7 +22,7 @@ class SubscriptionRenewalController extends Controller
      */
     public function renew(Request $request, $id)
     {
-        $subscription = Subscription::where('company_id', auth()->user()->company_id)
+        $subscription = Subscription::where('company_id', auth()->user()->active_company_id)
             ->findOrFail($id);
 
         $validator = Validator::make($request->all(), [
@@ -56,7 +56,7 @@ class SubscriptionRenewalController extends Controller
      */
     public function history($id)
     {
-        $subscription = Subscription::where('company_id', auth()->user()->company_id)
+        $subscription = Subscription::where('company_id', auth()->user()->active_company_id)
             ->findOrFail($id);
 
         $history = $subscription->payments()

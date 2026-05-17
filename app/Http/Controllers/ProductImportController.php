@@ -33,7 +33,7 @@ class ProductImportController extends Controller
 
             $mapping = $request->input('mapping');
             $rows = $request->input('data');
-            $companyId = $authUser->company_id;
+            $companyId = $authUser->active_company_id;
             $userId = Auth::id();
 
             $count = 0;

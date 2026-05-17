@@ -8,7 +8,7 @@ trait RolePermissions
 {
     public function isCompany()
     {
-        return $this->creator->company_id == Auth::user()->company_id;
+        return $this->creator->company_id == Auth::user()->active_company_id;
     }
 
     // التحقق مما اذا كان المستخدم المسجل انشا المستخدم اللذي انشا النموزج
@@ -24,6 +24,6 @@ trait RolePermissions
 
     public function isCurrentCompany()
     {
-        return $this->id == auth()->user()->company_id;
+        return $this->id == auth()->user()->active_company_id;
     }
 }

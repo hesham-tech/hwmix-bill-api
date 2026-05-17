@@ -19,8 +19,8 @@ class UserWithPermissionsResource extends JsonResource
     public function toArray($request)
     {
         // التأكد من تحديد شركة المستخدم قبل جلب الصلاحيات (مهم لمسارات تسجيل الدخول)
-        if (config('permission.teams') && $this->company_id) {
-            setPermissionsTeamId($this->company_id);
+        if (config('permission.teams') && $this->active_company_id) {
+            setPermissionsTeamId($this->active_company_id);
         }
 
         return [
@@ -39,9 +39,11 @@ class UserWithPermissionsResource extends JsonResource
             'email_verified_at' => $this->email_verified_at,
             'avatar_url' => $this->avatar_url,
             'status' => $this->status,
-            'company_id' => $this->company_id,
+            'active_company_id' => $this->active_company_id,
             'created_by' => $this->created_by,
             'customer_type' => $this->customer_type,
+            'is_staff_or_admin' => $this->isStaffOrAdmin(),
+            'user_type' => $this->isStaffOrAdmin() ? 'staff' : 'customer',
             'has_installments' => $this->whenLoaded('installments', fn() => $this->installments()->exists(), false),
             'cashBoxDefault' => new CashBoxResource($this->getDefaultCashBoxForCompany()),
             // الشركات التي يمكن للمستخدم الوصول إليها
@@ -49,7 +51,7 @@ class UserWithPermissionsResource extends JsonResource
             'cashBoxes' => $this->whenLoaded('cashBoxes', fn() => CashBoxResource::collection($this->cashBoxes ?? collect())),
             'branches' => $this->whenLoaded('branches', function () {
                 if ($this->hasPermissionTo(perm_key('admin.company')) || $this->hasPermissionTo(perm_key('admin.super'))) {
-                    return \Modules\Companies\Models\Branch::where('company_id', $this->company_id)->get();
+                    return \App\Models\Branch::where('company_id', $this->active_company_id)->get();
                 }
                 // إضافة الفرع الافتراضي إذا لم يكن ضمن الفروع المحملة
                 $branches = $this->branches;
