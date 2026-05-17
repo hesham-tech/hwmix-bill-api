@@ -42,6 +42,8 @@ class UserWithPermissionsResource extends JsonResource
             'active_company_id' => $this->active_company_id,
             'created_by' => $this->created_by,
             'customer_type' => $this->customer_type,
+            'is_staff_or_admin' => $this->isStaffOrAdmin(),
+            'user_type' => $this->isStaffOrAdmin() ? 'staff' : 'customer',
             'has_installments' => $this->whenLoaded('installments', fn() => $this->installments()->exists(), false),
             'cashBoxDefault' => new CashBoxResource($this->getDefaultCashBoxForCompany()),
             // الشركات التي يمكن للمستخدم الوصول إليها

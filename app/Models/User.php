@@ -681,4 +681,17 @@ class User extends Authenticatable
         return $this->activeCompanyUser?->customer_type_in_company ?? $value;
     }
 
+    /**
+     * التحقق مما إذا كان المستخدم يملك أي صلاحيات (يعتبر موظف أو مدير).
+     */
+    public function isStaffOrAdmin(): bool
+    {
+        // فحص ما إذا كان لديه صلاحية سوبر أدمن عالمية
+        if ($this->hasPermissionTo(perm_key('admin.super'))) {
+            return true;
+        }
+
+        // فحص ما إذا كان لديه أي صلاحيات مباشرة أو أدوار
+        return $this->permissions()->count() > 0 || $this->roles()->count() > 0;
+    }
 }
