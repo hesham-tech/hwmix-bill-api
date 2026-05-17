@@ -98,7 +98,7 @@ class AuthController extends Controller
             ]);
 
             // 5. ربط الفرع الافتراضي تلقائياً
-            $defaultBranch = \App\Models\Branch::where('company_id', $companyId)
+            $defaultBranch = \Modules\Companies\Models\Branch::where('company_id', $companyId)
                 ->where('is_default', true)
                 ->first();
             if ($defaultBranch) {

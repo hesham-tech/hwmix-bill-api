@@ -28,6 +28,7 @@ class StoreCashBoxRequest extends FormRequest
             'is_default' => ['nullable', 'boolean'],
             'user_id' => ['nullable', 'exists:users,id'],
             'company_id' => ['nullable', 'exists:companies,id'],
+            'branch_id' => ['nullable', 'exists:branches,id'],
             'created_by' => ['nullable', 'exists:users,id'],
             'description' => ['nullable', 'string'],
             'account_number' => ['nullable', 'string', 'max:255'],

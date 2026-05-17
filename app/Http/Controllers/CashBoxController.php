@@ -34,6 +34,7 @@ class CashBoxController extends Controller
             'company',   // للتحقق من belongsToCurrentCompany
             'creator',   // للتحقق من createdByCurrentUser/OrChildren
             'user',      // المستخدم الذي يخصه الصندوق (إذا كان هناك حقل user_id في الصندوق)
+            'branch',    // لعرض الفرع المرتبط بالخزنة
         ];
     }
 
@@ -154,6 +155,10 @@ class CashBoxController extends Controller
 
                 $validatedData['company_id'] = $validatedData['company_id'] ?? $companyId;
                 $validatedData['user_id'] = $validatedData['user_id'] ?? $authUser->id;
+
+                if (!array_key_exists('branch_id', $validatedData)) {
+                    $validatedData['branch_id'] = config('app.active_branch_id') ?? $authUser->branch_id;
+                }
 
                 // التأكد من أن المستخدم مصرح له بإنشاء صندوق لهذه الشركة
                 if ($validatedData['company_id'] != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -419,6 +424,13 @@ class CashBoxController extends Controller
             if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
                 if (!$fromCashBox->belongsToCurrentCompany() || !$toCashBox->belongsToCurrentCompany()) {
                     return api_forbidden('يمكنك فقط تحويل الأموال بين الخزن داخل شركتك.');
+                }
+            }
+
+            // منع التحويل بين فروع مختلفة للموظف العادي لضمان سلامة الرقابة المالية
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+                if ($fromCashBox->branch_id !== null && $toCashBox->branch_id !== null && $fromCashBox->branch_id !== $toCashBox->branch_id) {
+                    return api_forbidden('لا يُسمح للموظف العادي بالتحويل المالي المباشر بين فروع مختلفة. يرجى التواصل مع إدارة النظام.');
                 }
             }
 

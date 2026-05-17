@@ -118,14 +118,13 @@ class DashboardController extends Controller
 
         $totalSales = \App\Models\MonthlySalesSummary::where('company_id', $companyId)->sum('total_revenue');
 
-        // حساب السيولة الصافية (Assets vs Liabilities)
-        $liquidityStats = DB::table('users')
-            ->join('company_user', 'users.id', '=', 'company_user.user_id')
-            ->where('company_user.company_id', $companyId)
+        // حساب السيولة الصافية (Assets vs Liabilities) من الخزن الخاصة بالشركة
+        $liquidityStats = DB::table('cash_boxes')
+            ->where('company_id', $companyId)
             ->selectRaw("
-                SUM(CASE WHEN company_user.balance_in_company > 0 THEN company_user.balance_in_company ELSE 0 END) as total_assets,
-                SUM(CASE WHEN company_user.balance_in_company < 0 THEN company_user.balance_in_company ELSE 0 END) as total_liabilities,
-                SUM(company_user.balance_in_company) as net_liquidity
+                SUM(CASE WHEN balance > 0 THEN balance ELSE 0 END) as total_assets,
+                SUM(CASE WHEN balance < 0 THEN balance ELSE 0 END) as total_liabilities,
+                SUM(balance) as net_liquidity
             ")
             ->first();
 

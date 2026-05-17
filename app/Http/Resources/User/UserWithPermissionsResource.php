@@ -26,7 +26,9 @@ class UserWithPermissionsResource extends JsonResource
         return [
             'id' => $this->id,
             'nickname' => $this->nickname,
-            'balance' => $this->balance,
+            'balance' => $this->active_branch_balance,
+            'active_branch_balance' => $this->active_branch_balance,
+            'total_branches_balance' => $this->total_branches_balance,
             'full_name' => $this->full_name,
             'username' => $this->username,
             'email' => $this->email,
@@ -51,7 +53,7 @@ class UserWithPermissionsResource extends JsonResource
             'cashBoxes' => $this->whenLoaded('cashBoxes', fn() => CashBoxResource::collection($this->cashBoxes ?? collect())),
             'branches' => $this->whenLoaded('branches', function () {
                 if ($this->hasPermissionTo(perm_key('admin.company')) || $this->hasPermissionTo(perm_key('admin.super'))) {
-                    return \App\Models\Branch::where('company_id', $this->active_company_id)->get();
+                    return \Modules\Companies\Models\Branch::where('company_id', $this->active_company_id)->get();
                 }
                 // إضافة الفرع الافتراضي إذا لم يكن ضمن الفروع المحملة
                 $branches = $this->branches;

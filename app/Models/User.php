@@ -128,12 +128,36 @@ class User extends Authenticatable
             return null;
         }
 
-        $cashBox = $this->cashBoxes()
-            ->where('is_default', true)
-            ->where('company_id', $companyId)
-            ->first();
+        $activeBranchId = config('app.active_branch_id') ?? Auth::user()?->branch_id ?? $this->branch_id ?? null;
+        $cashBox = null;
 
-        // إذا لم يتم العثور على خزنة افتراضية، نحاول البحث عن أي خزنة نشطة
+        // 1. محاولة جلب الخزنة الافتراضية المرتبطة بالفرع النشط
+        if ($activeBranchId) {
+            $cashBox = $this->cashBoxes()
+                ->where('is_default', true)
+                ->where('company_id', $companyId)
+                ->where('branch_id', $activeBranchId)
+                ->first();
+
+            // 2. إذا لم توجد، جلب أي خزنة نشطة مرتبطة بالفرع النشط
+            if (!$cashBox) {
+                $cashBox = $this->cashBoxes()
+                    ->where('company_id', $companyId)
+                    ->where('is_active', true)
+                    ->where('branch_id', $activeBranchId)
+                    ->first();
+            }
+        }
+
+        // 3. إذا لم توجد (أو لم يحدد فرع)، نبحث عن الخزنة الافتراضية للشركة بدون قيد الفرع
+        if (!$cashBox) {
+            $cashBox = $this->cashBoxes()
+                ->where('is_default', true)
+                ->where('company_id', $companyId)
+                ->first();
+        }
+
+        // 4. محاولة جلب أي خزنة نشطة للشركة
         if (!$cashBox) {
             $cashBox = $this->cashBoxes()
                 ->where('company_id', $companyId)
@@ -143,10 +167,19 @@ class User extends Authenticatable
 
         // Paranoid Mode: Extra safety if relation was eager loaded but might be null or not a collection
         if (!$cashBox && $this->relationLoaded('cashBoxes')) {
-            $cashBox = collect($this->cashBoxes)
-                ->where('company_id', $companyId)
-                ->where('is_active', true)
-                ->first();
+            if ($activeBranchId) {
+                $cashBox = collect($this->cashBoxes)
+                    ->where('company_id', $companyId)
+                    ->where('is_active', true)
+                    ->where('branch_id', $activeBranchId)
+                    ->first();
+            }
+            if (!$cashBox) {
+                $cashBox = collect($this->cashBoxes)
+                    ->where('company_id', $companyId)
+                    ->where('is_active', true)
+                    ->first();
+            }
         }
 
         // إذا لم يوجد، نقوم بإنشاء واحدة تلقائياً للمستخدم في هذه الشركة لضمان استمرارية العمليات المالية
@@ -207,7 +240,6 @@ class User extends Authenticatable
                 'nickname_in_company',
                 'full_name_in_company',
                 'position_in_company',
-                'balance_in_company',
                 'customer_type_in_company',
                 'status',
                 'created_by'
@@ -379,7 +411,7 @@ class User extends Authenticatable
      */
     public function companyBranches(): HasMany
     {
-        return $this->hasMany(Branch::class, 'company_id', 'active_company_id');
+        return $this->hasMany(\Modules\Companies\Models\Branch::class, 'company_id', 'active_company_id');
     }
 
     /**
@@ -546,12 +578,26 @@ class User extends Authenticatable
         if ($permission === $superAdminKey || (is_object($permission) && $permission->name === $superAdminKey)) {
             static $isSuperAdmin = [];
             if (!isset($isSuperAdmin[$this->id])) {
-                $isSuperAdmin[$this->id] = \DB::table('model_has_permissions')
+                // Check direct permissions (team-blind)
+                $hasDirect = \DB::table('model_has_permissions')
                     ->join('permissions', 'model_has_permissions.permission_id', '=', 'permissions.id')
                     ->where('model_id', $this->id)
                     ->where('model_type', get_class($this))
                     ->where('permissions.name', $superAdminKey)
                     ->exists();
+
+                if ($hasDirect) {
+                    $isSuperAdmin[$this->id] = true;
+                } else {
+                    // Check roles (team-blind)
+                    $isSuperAdmin[$this->id] = \DB::table('model_has_roles')
+                        ->join('role_has_permissions', 'model_has_roles.role_id', '=', 'role_has_permissions.role_id')
+                        ->join('permissions', 'role_has_permissions.permission_id', '=', 'permissions.id')
+                        ->where('model_id', $this->id)
+                        ->where('model_type', get_class($this))
+                        ->where('permissions.name', $superAdminKey)
+                        ->exists();
+                }
             }
             return $isSuperAdmin[$this->id];
         }
@@ -637,32 +683,70 @@ class User extends Authenticatable
     }
 
     /**
+     * الحصول على رصيد خزنة الفرع النشط (Active Branch Safe Balance)
+     * تعليق عربي: يرجع رصيد الخزنة المرتبطة بالفرع النشط الحالي للمستخدم.
+     */
+    public function getActiveBranchBalanceAttribute(): float
+    {
+        $activeCompanyId = Auth::user()->active_company_id ?? $this->active_company_id;
+        $activeBranchId = config('app.active_branch_id') ?? Auth::user()?->branch_id;
+
+        if (!$activeCompanyId || !$activeBranchId) {
+            return 0.0;
+        }
+
+        if ($this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
+            $cashBox = collect($this->cashBoxes)
+                ->where('company_id', $activeCompanyId)
+                ->where('branch_id', $activeBranchId)
+                ->first();
+        } else {
+            $cashBox = $this->cashBoxes()
+                ->where('company_id', $activeCompanyId)
+                ->where('branch_id', $activeBranchId)
+                ->first();
+        }
+
+        return $cashBox ? (float) $cashBox->balance : 0.0;
+    }
+
+    /**
+     * الحصول على إجمالي أرصدة الصناديق في الفروع المنتمي إليها بشرط أن يكون مرتبطاً بأكثر من فرع
+     * تعليق عربي: يرجع مجموع أرصدة كل خزن فروع المستخدم بشرط ارتباطه بأكثر من فرع.
+     */
+    public function getTotalBranchesBalanceAttribute(): ?float
+    {
+        $activeCompanyId = Auth::user()->active_company_id ?? $this->active_company_id;
+
+        if (!$activeCompanyId) {
+            return 0.0;
+        }
+
+        // حساب عدد الفروع المرتبط بها في الشركة الحالية
+        $branchesCount = $this->branches()->count();
+
+        if ($branchesCount <= 1) {
+            return null; // الشرط: إرجاعها فقط إذا كان له أكثر من فرع مرتبط
+        }
+
+        if ($this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
+            return (float) collect($this->cashBoxes)
+                ->where('company_id', $activeCompanyId)
+                ->sum('balance');
+        }
+
+        return (float) $this->cashBoxes()
+            ->where('company_id', $activeCompanyId)
+            ->sum('balance');
+    }
+
+    /**
      * الحصول على الرصيد (المصدر الوحيد: الخزنة)
-     * تم تحسينه ليدعم التحميل المسبق (Eager Loading) وتجنب N+1 queries
+     * تم تحسينه ليرجع رصيد الفرع النشط مباشرة للمحافظة على التوافقية.
      */
     public function getBalanceAttribute()
     {
-        // إذا كانت العلاقة محملة مسبقاً، نستخدم المجموعة (Collection) لتوفير الاستعلامات
-        if ($this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
-            $activeCompanyId = Auth::user()->active_company_id ?? $this->active_company_id;
-
-            // البحث عن الخزنة الافتراضية أولاً، ثم أي خزنة نشطة في الشركة المحددة
-            $cashBoxes = collect($this->cashBoxes);
-
-            $cashBox = $cashBoxes
-                ->where('company_id', $activeCompanyId)
-                ->where('is_default', true)
-                ->first()
-                ?? $cashBoxes
-                    ->where('company_id', $activeCompanyId)
-                    ->where('is_active', true)
-                    ->first();
-
-            return $cashBox ? (float) $cashBox->balance : 0.0;
-        }
-
-        // في حال لم تكن محملة، نعود للمنطق الافتراضي الذي ينفذ استعلاماً مستقلاً
-        return (float) $this->balanceBox();
+        return $this->active_branch_balance;
     }
 
     /**

@@ -45,6 +45,11 @@ class CashBoxService
                 return null;
             }
 
+            // جلب الفرع الافتراضي للشركة
+            $defaultBranch = \Modules\Companies\Models\Branch::where('company_id', $companyId)
+                ->where('is_default', true)
+                ->first();
+
             return CashBox::firstOrCreate(
                 [
                     'user_id' => $userId,
@@ -59,6 +64,7 @@ class CashBoxService
                     'is_active' => true,
                     'description' => "تم إنشاؤها تلقائيًا مع ارتباط المستخدم بشركة: {$company->name}",
                     'account_number' => null,
+                    'branch_id' => $defaultBranch ? $defaultBranch->id : null,
                 ]
             );
 

@@ -17,7 +17,7 @@ class UserObserver
     {
         // إذا لم يتم تحديد فرع يدوياً، نستخدم الفرع الافتراضي للشركة المرتبط بها
         if (empty($user->branch_id) && !empty($user->active_company_id)) {
-            $defaultBranch = \App\Models\Branch::where('company_id', $user->active_company_id)
+            $defaultBranch = \Modules\Companies\Models\Branch::where('company_id', $user->active_company_id)
                 ->where('is_default', true)
                 ->first();
             

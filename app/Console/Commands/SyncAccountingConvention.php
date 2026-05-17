@@ -64,12 +64,7 @@ class SyncAccountingConvention extends Command
                             'balance' => DB::raw("balance * -1")
                         ]);
                     
-                    // 2. تحديث الرصيد المخزن في الجدول الوسيط (Cache column)
-                    DB::table('company_user')
-                        ->where('user_id', $user->id)
-                        ->update([
-                            'balance_in_company' => DB::raw("balance_in_company * -1")
-                        ]);
+                    // 2. تحديث الرصيد المخزن في الجدول الوسيط (Cache column) تم حذفه لأنه لم يعد مستخدماً
                 }
             }
 

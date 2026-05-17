@@ -192,15 +192,8 @@ class SyncCustomerBalances extends Command
 
                 $updatedAny = false;
 
-                // 1. Update company_user
-                if (round($uc->balance_in_company, 2) != round($newBalance, 2)) {
-                    if (!$dryRun) {
-                        DB::table('company_user')
-                            ->where('id', $uc->id)
-                            ->update(['balance_in_company' => $newBalance]);
-                    }
-                    $updatedAny = true;
-                }
+                // 1. Update company_user column (obsolete, dropped from DB)
+                // We no longer store balance_in_company in the pivot table.
 
                 // 2. Update default CashBox if exists
                 $cb = CashBox::where('user_id', $user->id)

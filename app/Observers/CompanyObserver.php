@@ -20,7 +20,7 @@ class CompanyObserver
 
         try {
             // 0️⃣ إنشاء الفرع الرئيسي للشركة
-            $branch = \App\Models\Branch::create([
+            $branch = \Modules\Companies\Models\Branch::create([
                 'name' => 'الفرع الرئيسي',
                 'company_id' => $company->id,
                 'is_default' => true,
@@ -55,7 +55,7 @@ class CompanyObserver
             }
 
             // 3️⃣ 📦 إنشاء المخزن الرئيسي وربطه بالفرع
-            \App\Models\Warehouse::create([
+            \Modules\Inventory\Models\Warehouse::create([
                 'name' => 'المخزن الرئيسي',
                 'company_id' => $company->id,
                 'branch_id' => $branch->id,

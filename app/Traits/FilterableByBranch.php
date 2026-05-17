@@ -22,8 +22,12 @@ trait FilterableByBranch
                 return;
             }
 
-            // سوبر أدمن يرى كل شيء إذا لم يحدد فرعاً معيناً
-            if ($user->hasPermissionTo(perm_key('admin.super')) && !config('app.active_branch_id')) {
+            // سوبر أدمن لديه وصول كامل لجميع الفروع
+            if ($user->hasPermissionTo(perm_key('admin.super'))) {
+                $activeBranchId = config('app.active_branch_id');
+                if ($activeBranchId && $activeBranchId !== 'all') {
+                    $builder->where($builder->getQuery()->from . '.branch_id', $activeBranchId);
+                }
                 return;
             }
 

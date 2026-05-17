@@ -67,7 +67,6 @@ class Company extends Model
                 'nickname_in_company',
                 'full_name_in_company',
                 'position_in_company',
-                'balance_in_company',
                 'customer_type_in_company',
                 'status',
                 'user_phone',

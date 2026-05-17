@@ -29,8 +29,15 @@ class CashBox extends Model
             if ($cashBox->is_default) {
                 static::where('user_id', $cashBox->user_id)
                     ->where('company_id', $cashBox->company_id)
+                    ->where('branch_id', $cashBox->branch_id)
                     ->where('id', '!=', $cashBox->id)
                     ->update(['is_default' => false]);
+            }
+        });
+
+        static::updating(function ($cashBox) {
+            if ($cashBox->isDirty('branch_id')) {
+                throw new \Exception('لا يمكن تعديل الفرع المرتبط بالخزنة الماليّة بعد إنشائها لضمان سلامة القيود التاريخية.');
             }
         });
     }
@@ -44,6 +51,7 @@ class CashBox extends Model
         'user_id',
         'created_by',
         'company_id',
+        'branch_id',
         'description',
         'account_number',
     ];
@@ -65,6 +73,14 @@ class CashBox extends Model
     public function company(): belongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * العلاقة مع الفرع
+     */
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(\Modules\Companies\Models\Branch::class);
     }
 
     /**

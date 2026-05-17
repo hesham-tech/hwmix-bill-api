@@ -72,7 +72,10 @@ class UserController extends Controller
 
             if ($isGlobalView) {
                 // العرض العالمي: جلب سجلات فريدة من جدول users
-                $query = User::query()->with(['company', 'companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes']);
+                $query = User::query()
+                    ->withoutGlobalScope('company_filter')
+                    ->withoutGlobalScope('branch_filter')
+                    ->with(['company', 'companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes']);
             } else {
                 // العرض السياقي: جلب سجلات من company_user
                 if (!$activeCompanyId && !$isSuperAdmin) {
@@ -471,7 +474,7 @@ class UserController extends Controller
             if ($request->has('branch_ids')) {
                 $branchIds = array_filter((array) $request->input('branch_ids'));
                 
-                $validBranchIds = \App\Models\Branch::whereIn('id', $branchIds)
+                $validBranchIds = \Modules\Companies\Models\Branch::whereIn('id', $branchIds)
                                         ->where('company_id', $activeCompanyId)
                                         ->pluck('id')->toArray();
                                         
@@ -684,7 +687,7 @@ class UserController extends Controller
             }
 
             // جلب الفرع الافتراضي للشركة الجديدة
-            $defaultBranch = \App\Models\Branch::where('company_id', $newCompanyId)
+            $defaultBranch = \Modules\Companies\Models\Branch::where('company_id', $newCompanyId)
                 ->where('is_default', true)
                 ->first();
 
@@ -793,7 +796,7 @@ class UserController extends Controller
                 ->when($request->filled('created_at_to'), fn($q) =>
                     $q->where('company_user.created_at', '<=', $request->input('created_at_to') . ' 23:59:59'));
 
-            if (in_array($sortField, ['nickname_in_company', 'status', 'balance_in_company', 'position_in_company', 'customer_type_in_company', 'full_name_in_company', 'user_phone', 'user_email', 'user_username'])) {
+            if (in_array($sortField, ['nickname_in_company', 'status', 'position_in_company', 'customer_type_in_company', 'full_name_in_company', 'user_phone', 'user_email', 'user_username'])) {
                 $baseQuery->orderBy('company_user.' . $sortField, $sortOrder);
             } elseif (in_array($sortField, ['username', 'email', 'phone'])) {
                 $baseQuery->join('users', 'company_user.user_id', '=', 'users.id')

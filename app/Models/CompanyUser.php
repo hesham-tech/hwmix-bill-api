@@ -119,11 +119,29 @@ class CompanyUser extends Pivot
     }
 
     /**
+     * الحصول على رصيد الفرع النشط (Active Branch Balance)
+     * تعليق عربي: يرجع رصيد الخزنة المرتبطة بالفرع النشط للمستخدم.
+     */
+    public function getActiveBranchBalanceAttribute(): float
+    {
+        return $this->user ? (float) $this->user->active_branch_balance : 0.0;
+    }
+
+    /**
+     * الحصول على إجمالي الفروع المنتمي إليها
+     * تعليق عربي: يرجع إجمالي الأرصدة في كل الفروع إذا كانت متعددة.
+     */
+    public function getTotalBranchesBalanceAttribute(): ?float
+    {
+        return $this->user ? $this->user->total_branches_balance : null;
+    }
+
+    /**
      * الحصول على الرصيد الفعلي للمستخدم في هذه الشركة
      */
     public function getBalanceAttribute()
     {
-        return (float) ($this->defaultCashBox?->balance ?? 0);
+        return $this->active_branch_balance;
     }
 
     /**

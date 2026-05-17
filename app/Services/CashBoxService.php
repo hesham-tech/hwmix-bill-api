@@ -46,21 +46,26 @@ class CashBoxService
                 return null;
             }
 
+            // جلب الفرع الافتراضي للشركة
+            $defaultBranch = \Modules\Companies\Models\Branch::where('company_id', $companyId)
+                ->where('is_default', true)
+                ->first();
+
             return CashBox::firstOrCreate(
                 [
                     'user_id' => $userId,
                     'company_id' => $companyId,
                     'cash_box_type_id' => $cashType->id,
                     'is_default' => true,
-                    // **[جديد]** إضافة is_active للقيد
                 ],
                 [
                     'name' => 'الخزنة النقدية',
                     'balance' => 0,
                     'created_by' => $createdById,
-                    'is_active' => true, // **[جديد]** تعيين الحقل الجديد عند الإنشاء
+                    'is_active' => true,
                     'description' => "تم إنشاؤها تلقائيًا مع ارتباط المستخدم بشركة: {$company->name}",
                     'account_number' => null,
+                    'branch_id' => $defaultBranch ? $defaultBranch->id : null,
                 ]
             );
 

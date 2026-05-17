@@ -72,7 +72,9 @@ class CompanyUserWithPermissionsResource extends JsonResource
             // بيانات من جدول company_user
             'nickname' => $this->nickname_in_company,
             'full_name' => $this->full_name_in_company,
-            'balance' => $this->balance_in_company,
+            'balance' => $this->active_branch_balance,
+            'active_branch_balance' => $this->active_branch_balance,
+            'total_branches_balance' => $this->total_branches_balance,
             'position' => $this->position_in_company,
             'status' => $this->status,
             'customer_type' => $this->customer_type_in_company,
