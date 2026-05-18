@@ -13,6 +13,7 @@ use App\Services\AccountingService;
 use App\Services\DocumentServiceInterface;
 use App\Services\Traits\InvoiceHelperTrait;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 /**
  * خدمة فواتير الخدمات - تتولى إدارة ومعالجة إنشاء وتعديل وإلغاء فواتير الخدمات وتسجيل الأثر المالي لها
