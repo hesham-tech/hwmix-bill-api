@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\LogsActivity;
 use App\Models\Company;
 use App\Models\User;
-use App\Models\Stock;
+use Modules\Inventory\Models\Stock;
 
 /**
  * موديل المستودع - تم نقله لموديول المخازن (Inventory)

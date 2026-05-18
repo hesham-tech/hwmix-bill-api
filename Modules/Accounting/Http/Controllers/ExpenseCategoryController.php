@@ -19,7 +19,7 @@ class ExpenseCategoryController extends Controller
         $query = ExpenseCategory::query();
 
         if (!$user->hasPermissionTo(perm_key('admin.super'))) {
-            $query->where('company_id', $user->company_id);
+            $query->where('company_id', $user->active_company_id);
         }
 
         $categories = $query->when($request->all, function ($q) {

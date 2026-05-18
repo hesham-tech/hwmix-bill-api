@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Reports;
 
-use App\Models\Stock;
+use Modules\Inventory\Models\Stock;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * متحكم تقارير المخزون - يتولى توليد وإعداد التحليلات والتقارير المفصلة لحركة المخازن وتقييم المنتجات وتنبيهات النواقص
+ */
 class StockReportController extends BaseReportController
 {
     /**

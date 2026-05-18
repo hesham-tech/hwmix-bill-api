@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Models\ActivityLog;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Models\ProductVariant; // قد لا تكون ضرورية لفاتورة الخدمة، ولكن تم تضمينها كقالب
-use App\Models\Stock; // قد لا تكون ضرورية لفاتورة الخدمة، ولكن تم تضمينها كقالب
+use Modules\Inventory\Models\ProductVariant; // قد لا تكون ضرورية لفاتورة الخدمة، ولكن تم تضمينها كقالب
+use Modules\Inventory\Models\Stock; // قد لا تكون ضرورية لفاتورة الخدمة، ولكن تم تضمينها كقالب
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Services\AccountingService;
@@ -14,6 +14,9 @@ use App\Services\DocumentServiceInterface;
 use App\Services\Traits\InvoiceHelperTrait;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * خدمة فواتير الخدمات - تتولى إدارة ومعالجة إنشاء وتعديل وإلغاء فواتير الخدمات وتسجيل الأثر المالي لها
+ */
 class ServiceInvoiceService implements DocumentServiceInterface
 {
     use InvoiceHelperTrait;

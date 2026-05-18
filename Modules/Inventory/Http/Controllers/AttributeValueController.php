@@ -53,7 +53,7 @@ class AttributeValueController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id;
+            $companyId = $authUser->active_company_id;
 
             $value = AttributeValue::create(array_merge($request->validated(), [
                 'company_id' => $companyId,

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Throwable;
-use App\Models\Stock;
+use Modules\Inventory\Models\Stock;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\ProductVariant;

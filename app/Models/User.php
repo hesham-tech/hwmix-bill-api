@@ -742,6 +742,14 @@ class User extends Authenticatable
     }
 
     /**
+     * الحصول على معرف الشركة النشطة كبديل لـ company_id لضمان التوافقية مع الموديولات المختلفة
+     */
+    public function getCompanyIdAttribute()
+    {
+        return $this->active_company_id;
+    }
+
+    /**
      * الحصول على الرصيد (المصدر الوحيد: الخزنة)
      * تم تحسينه ليرجع رصيد الفرع النشط مباشرة للمحافظة على التوافقية.
      */

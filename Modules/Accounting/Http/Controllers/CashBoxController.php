@@ -83,7 +83,7 @@ class CashBoxController extends Controller
     {
         try {
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
 
@@ -227,7 +227,7 @@ class CashBoxController extends Controller
     {
         try {
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
             if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة.');
 
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('cash_boxes.transfer_funds')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {

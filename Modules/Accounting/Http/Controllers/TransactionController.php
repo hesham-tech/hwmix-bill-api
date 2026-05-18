@@ -35,7 +35,7 @@ class TransactionController extends Controller
     {
         try {
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
             if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة.');
 
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('balance.transfer')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
@@ -86,7 +86,7 @@ class TransactionController extends Controller
 
             $query = Transaction::with($this->relations)
                 ->where('user_id', $authUser->id)
-                ->where('company_id', $authUser->company_id)
+                ->where('company_id', $authUser->active_company_id)
                 ->where('cashbox_id', $cashBoxId);
 
             if ($request->filled('type')) $query->where('type', $request->input('type'));
@@ -104,7 +104,7 @@ class TransactionController extends Controller
     {
         try {
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
             if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة.');
 
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('balance.deposit')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
@@ -146,7 +146,7 @@ class TransactionController extends Controller
     {
         try {
             $authUser = Auth::user();
-            $companyId = $authUser->company_id ?? null;
+            $companyId = $authUser->active_company_id ?? null;
             if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة.');
 
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('balance.withdraw')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
@@ -195,7 +195,7 @@ class TransactionController extends Controller
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 // All
             } elseif ($authUser->hasAnyPermission([perm_key('transactions.view_all'), perm_key('admin.company')])) {
-                $query->where('company_id', $authUser->company_id);
+                $query->where('company_id', $authUser->active_company_id);
             } else {
                 $query->where('user_id', $authUser->id);
             }
@@ -222,7 +222,7 @@ class TransactionController extends Controller
                 $transaction = Transaction::findOrFail($transactionId);
 
                 // Permission check simplified for example
-                if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $transaction->company_id !== $authUser->company_id) {
+                if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $transaction->company_id !== $authUser->active_company_id) {
                     return api_forbidden('ليس لديك إذن.');
                 }
 
@@ -245,7 +245,7 @@ class TransactionController extends Controller
 
                 $reversedTransaction = Transaction::create([
                     'created_by' => $authUser->id,
-                    'company_id' => $authUser->company_id,
+                    'company_id' => $authUser->active_company_id,
                     'user_id' => $transaction->user_id,
                     'cashbox_id' => $transaction->cashbox_id,
                     'amount' => -$transaction->amount,

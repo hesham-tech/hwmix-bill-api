@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Stock\StoreStockRequest; // افتراض وجود طلب StoreStockRequest
 use App\Http\Requests\Stock\UpdateStockRequest; // افتراض وجود طلب UpdateStockRequest
 use App\Http\Resources\Stock\StockResource;
-use App\Models\Stock;
+use Modules\Inventory\Models\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
+/**
+ * متحكم المخزون - يتولى إدارة حركات المخزون والوارد والصادر والأرصدة للمنتجات في المستودعات المختلفة
+ */
 class StockController extends Controller
 {
     protected array $relations;
@@ -150,10 +153,10 @@ class StockController extends Controller
                 $validatedData['created_by'] = $authUser->id;
 
                 // التحقق من أن المتغير والمستودع ينتميان لنفس الشركة
-                $productVariant = \App\Models\ProductVariant::where('id', $validatedData['variant_id'])
+                $productVariant = \Modules\Inventory\Models\ProductVariant::where('id', $validatedData['variant_id'])
                     ->where('company_id', $companyId)
                     ->firstOrFail();
-                $warehouse = \App\Models\Warehouse::where('id', $validatedData['warehouse_id'])
+                $warehouse = \Modules\Inventory\Models\Warehouse::where('id', $validatedData['warehouse_id'])
                     ->where('company_id', $companyId)
                     ->firstOrFail();
 
@@ -267,12 +270,12 @@ class StockController extends Controller
 
                 // التحقق من أن المتغير والمستودع ينتميان لنفس الشركة إذا تم تغييرها
                 if (isset($validatedData['variant_id']) && $validatedData['variant_id'] != $stock->variant_id) {
-                    \App\Models\ProductVariant::where('id', $validatedData['variant_id'])
+                    \Modules\Inventory\Models\ProductVariant::where('id', $validatedData['variant_id'])
                         ->where('company_id', $companyId)
                         ->firstOrFail();
                 }
                 if (isset($validatedData['warehouse_id']) && $validatedData['warehouse_id'] != $stock->warehouse_id) {
-                    \App\Models\Warehouse::where('id', $validatedData['warehouse_id'])
+                    \Modules\Inventory\Models\Warehouse::where('id', $validatedData['warehouse_id'])
                         ->where('company_id', $companyId)
                         ->firstOrFail();
                 }

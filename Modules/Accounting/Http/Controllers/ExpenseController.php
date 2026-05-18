@@ -27,7 +27,7 @@ class ExpenseController extends Controller
 
         if ($user->hasPermissionTo(perm_key('admin.super'))) {
         } elseif ($user->hasAnyPermission([perm_key('expenses.view_all'), perm_key('admin.company')])) {
-            $query->where('company_id', $user->company_id);
+            $query->where('company_id', $user->active_company_id);
         } else {
             $query->where('created_by', $user->id);
         }
@@ -52,7 +52,7 @@ class ExpenseController extends Controller
     public function update(Request $request, Expense $expense): JsonResponse
     {
         $user = auth()->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && $expense->company_id !== $user->company_id) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && $expense->company_id !== $user->active_company_id) {
             return api_forbidden();
         }
 
@@ -69,7 +69,7 @@ class ExpenseController extends Controller
     public function destroy(Expense $expense): JsonResponse
     {
         $user = auth()->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && $expense->company_id !== $user->company_id) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && $expense->company_id !== $user->active_company_id) {
             return api_forbidden();
         }
 
@@ -83,7 +83,7 @@ class ExpenseController extends Controller
         $query = Expense::query();
 
         if (!$user->hasPermissionTo(perm_key('admin.super'))) {
-            $query->where('company_id', $user->company_id);
+            $query->where('company_id', $user->active_company_id);
         }
 
         $total = $query->sum('amount');

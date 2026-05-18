@@ -32,7 +32,7 @@ class FinancialLedgerController extends Controller
         $user = auth()->user();
         if ($user->hasPermissionTo(perm_key('admin.super'))) {
         } elseif ($user->hasAnyPermission([perm_key('financial_ledger.view_all'), perm_key('admin.company')])) {
-            $query->where('company_id', $user->company_id);
+            $query->where('company_id', $user->active_company_id);
         } else {
             $query->where('created_by', $user->id);
         }

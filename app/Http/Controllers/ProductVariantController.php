@@ -8,7 +8,7 @@ use App\Http\Requests\ProductVariant\UpdateProductVariantRequest;
 use App\Http\Resources\ProductVariant\ProductVariantResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Stock;
+use Modules\Inventory\Models\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
+/**
+ * متحكم متغيرات المنتجات - يتولى إدارة الأحجام والمقاسات والألوان للمنتجات مع المخزون والخصائص
+ */
 class ProductVariantController extends Controller
 {
     protected array $relations = [

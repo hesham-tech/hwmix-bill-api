@@ -39,7 +39,7 @@ class RevenueController extends Controller
 
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
             } elseif ($authUser->hasAnyPermission([perm_key('revenues.view_all'), perm_key('admin.company')])) {
-                $query->where('company_id', $authUser->company_id);
+                $query->where('company_id', $authUser->active_company_id);
             } else {
                 $query->where('created_by', $authUser->id);
             }
@@ -67,7 +67,7 @@ class RevenueController extends Controller
             try {
                 $validatedData = $request->validated();
                 $validatedData['created_by'] = $authUser->id;
-                $validatedData['company_id'] = $validatedData['company_id'] ?? $authUser->company_id;
+                $validatedData['company_id'] = $validatedData['company_id'] ?? $authUser->active_company_id;
 
                 $revenue = Revenue::create($validatedData);
                 $revenue->load($this->relations);
@@ -88,7 +88,7 @@ class RevenueController extends Controller
             $authUser = Auth::user();
             if (!$authUser) return api_unauthorized('يتطلب المصادقة.');
 
-            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $revenue->company_id !== $authUser->company_id) {
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $revenue->company_id !== $authUser->active_company_id) {
                 return api_forbidden();
             }
 
@@ -102,7 +102,7 @@ class RevenueController extends Controller
     {
         try {
             $authUser = Auth::user();
-            if (!$authUser || ($revenue->company_id !== $authUser->company_id && !$authUser->hasPermissionTo(perm_key('admin.super')))) {
+            if (!$authUser || ($revenue->company_id !== $authUser->active_company_id && !$authUser->hasPermissionTo(perm_key('admin.super')))) {
                 return api_forbidden();
             }
 
@@ -124,7 +124,7 @@ class RevenueController extends Controller
     {
         try {
             $authUser = Auth::user();
-            if (!$authUser || ($revenue->company_id !== $authUser->company_id && !$authUser->hasPermissionTo(perm_key('admin.super')))) {
+            if (!$authUser || ($revenue->company_id !== $authUser->active_company_id && !$authUser->hasPermissionTo(perm_key('admin.super')))) {
                 return api_forbidden();
             }
 

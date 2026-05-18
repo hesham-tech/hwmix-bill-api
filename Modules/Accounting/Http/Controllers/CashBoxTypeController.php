@@ -39,7 +39,10 @@ class CashBoxTypeController extends Controller
 
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
             } elseif ($authUser->hasAnyPermission([perm_key('cash_box_types.view_all'), perm_key('admin.company')])) {
-                $query->where('company_id', $authUser->company_id);
+                $query->where(function ($q) use ($authUser) {
+                    $q->where('company_id', $authUser->active_company_id)
+                      ->orWhereNull('company_id');
+                });
             } else {
                 $query->where('created_by', $authUser->id);
             }
@@ -70,7 +73,7 @@ class CashBoxTypeController extends Controller
                     'is_default' => 'boolean',
                 ]);
 
-                $validatedData['company_id'] = $authUser->company_id;
+                $validatedData['company_id'] = $authUser->active_company_id;
                 $validatedData['created_by'] = $authUser->id;
 
                 $cashBoxType = CashBoxType::create($validatedData);
