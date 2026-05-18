@@ -27,8 +27,13 @@ return new class extends Migration
             if (Schema::hasColumn($tableName, 'branch_id')) {
                 $indexName = $tableName . '_branch_id_index';
                 
-                // التحقق من وجود الفهرس قبل إضافته لتجنب الأخطاء
-                $indices = DB::select("SHOW INDEX FROM " . $tableName . " WHERE Key_name = '" . $indexName . "'");
+                // التحقق من وجود الفهرس بطريقة متوافقة مع SQLite و MySQL لتفادي أخطاء الاختبارات
+                $driver = DB::connection()->getDriverName();
+                if ($driver === 'sqlite') {
+                    $indices = DB::select("SELECT name FROM sqlite_master WHERE type='index' AND name = ?", [$indexName]);
+                } else {
+                    $indices = DB::select("SHOW INDEX FROM " . $tableName . " WHERE Key_name = ?", [$indexName]);
+                }
                 
                 if (empty($indices)) {
                     Schema::table($tableName, function (Blueprint $table) use ($indexName) {

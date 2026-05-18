@@ -15,8 +15,8 @@ return new class extends Migration {
                 $table->id();
                 $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
                 $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
-                $table->string('subject_type')->nullable();
-                $table->unsignedBigInteger('subject_id')->nullable();
+                $table->string('model')->nullable();
+                $table->unsignedBigInteger('row_id')->nullable();
                 $table->string('action', 50);
                 $table->text('description');
                 $table->json('old_values')->nullable();
@@ -28,7 +28,7 @@ return new class extends Migration {
                 $table->json('metadata')->nullable();
                 $table->timestamps();
 
-                $table->index(['subject_type', 'subject_id']);
+                $table->index(['model', 'row_id']);
                 $table->index('user_id');
                 $table->index('company_id');
                 $table->index('action');

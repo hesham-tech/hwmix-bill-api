@@ -104,7 +104,7 @@ class WarehouseControllerTest extends TestCase
         $warehouse = Warehouse::factory()->create(['company_id' => $this->company->id]);
 
         // Mock stock in this warehouse
-        \App\Models\Stock::factory()->create([
+        \Modules\Inventory\Models\Stock::factory()->create([
             'warehouse_id' => $warehouse->id,
             'company_id' => $this->company->id
         ]);

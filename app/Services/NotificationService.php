@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Invoice;
+use Modules\Sales\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Mail\InvoiceCreatedMail;
 use App\Mail\PaymentReceivedMail;

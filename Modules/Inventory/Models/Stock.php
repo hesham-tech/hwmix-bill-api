@@ -20,6 +20,11 @@ class Stock extends Model
 {
     use HasFactory, Scopes, LogsActivity, RolePermissions, Blameable, FilterableByCompany, FilterableByBranch;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\StockFactory::new();
+    }
+
     protected $fillable = [
         'quantity',
         'reserved',

@@ -20,6 +20,15 @@ class RolesAndPermissionsSeeder extends Seeder
         // نستخدم الشركة الأولى الموجودة بالفعل (التي أنشأها CompanySeeder)
         $company = Company::first();
 
+        if (!$company) {
+            $company = Company::create([
+                'name' => 'شركة افتراضية للنظام',
+                'email' => 'info@default-company.com',
+                'phone' => '01006444991',
+                'created_by' => 1,
+            ]);
+        }
+
         $admin = User::where('email', 'admin@admin.com')->first();
         if (!$admin) {
             $this->createSystemOwner($permissions, $company);

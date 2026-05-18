@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use Carbon\Carbon;
-use App\Models\Invoice;
+use Modules\Sales\Models\Invoice;
 use App\Models\Installment;
 use App\Models\InstallmentPlan;
 use App\Models\User;

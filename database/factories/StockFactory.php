@@ -21,8 +21,8 @@ class StockFactory extends Factory
         return [
             'quantity' => 100,
             'status' => 'available',
-            'variant_id' => \App\Models\ProductVariant::factory(),
-            'warehouse_id' => \App\Models\Warehouse::factory(),
+            'variant_id' => \Modules\Inventory\Models\ProductVariant::factory(),
+            'warehouse_id' => \Modules\Inventory\Models\Warehouse::factory(),
             'company_id' => \App\Models\Company::factory(),
             'created_by' => \App\Models\User::factory(),
         ];

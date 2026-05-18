@@ -3,7 +3,7 @@
 namespace Modules\Inventory\Services;
 
 use Modules\Inventory\Models\Stock;
-use App\Models\ProductVariant;
+use Modules\Inventory\Models\ProductVariant;
 use Modules\Core\Services\DocumentServiceInterface;
 use Modules\Sales\Models\Invoice;
 use Illuminate\Support\Facades\DB;

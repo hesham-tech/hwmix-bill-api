@@ -39,6 +39,9 @@ use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 
 
 /**
+ * تعليق عربي: كلاس المستخدم للنظام ويمثل الحساب الموحد للهوية الصالحة للعملاء، الموردين، والموظفين.
+ */
+/**
  * @method void deposit(float|int $amount)
  */
 #[ObservedBy([UserObserver::class])]
@@ -74,7 +77,7 @@ class User extends Authenticatable
      *
      * @var array
      */
-    protected $appends = ['avatar_url', 'name'];
+    protected $appends = ['avatar_url', 'name', 'is_default_cash_customer'];
 
     /**
      * تعريف أنواع البيانات للمحولات (Casts).
@@ -786,5 +789,32 @@ class User extends Authenticatable
 
         // فحص ما إذا كان لديه أي صلاحيات مباشرة أو أدوار
         return $this->permissions()->count() > 0 || $this->roles()->count() > 0;
+    }
+
+    /**
+     * التحقق مما إذا كان المستخدم هو العميل النقدي الافتراضي للشركة النشطة أو شركة معينة.
+     *
+     * @param int|null $companyId
+     * @return bool
+     */
+    public function isDefaultCashCustomer($companyId = null): bool
+    {
+        $companyId = $companyId ?? $this->active_company_id ?? \Auth::user()?->active_company_id ?? null;
+        if (!$companyId) {
+            return false;
+        }
+
+        $company = \App\Models\Company::find($companyId);
+        return $company && (int)$company->default_cash_customer_id === (int)$this->id;
+    }
+
+    /**
+     * Accessor للتحقق السهل والآلي من العميل النقدي الافتراضي.
+     *
+     * @return bool
+     */
+    public function getIsDefaultCashCustomerAttribute(): bool
+    {
+        return $this->isDefaultCashCustomer();
     }
 }

@@ -20,6 +20,11 @@ class Category extends Model
 {
     use HasFactory, Scopes, Blameable, LogsActivity, HasImages, SmartSearch;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\CategoryFactory::new();
+    }
+
     protected $fillable = ['name', 'slug', 'description', 'active', 'parent_id', 'company_id', 'created_by', 'synonyms'];
 
     protected $casts = [

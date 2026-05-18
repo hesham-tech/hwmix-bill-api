@@ -61,4 +61,30 @@ class UpdateInvoiceRequest extends FormRequest
             'installment_plan.frequency' => 'nullable|string|in:monthly,weekly,biweekly,quarterly',
         ];
     }
+
+    /**
+     * تحقق إضافي بعد التحقق الأولي لمنع التقسيط والديون للعميل النقدي الافتراضي أثناء التحديث.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $userId = $this->input('user_id') ?? $this->route('invoice')?->user_id;
+            if ($userId) {
+                $user = \App\Models\User::find($userId);
+                if ($user && $user->isDefaultCashCustomer()) {
+                    // 1. يمنع التقسيط للعميل النقدي الافتراضي
+                    if ($this->has('installment_plan') && !empty($this->input('installment_plan'))) {
+                        $validator->errors()->add('installment_plan', 'لا يمكن جدولة أقساط للعميل النقدي الافتراضي.');
+                    }
+
+                    // 2. يجب أن تكون الفاتورة مدفوعة بالكامل (لا يسمح بديون للعميل النقدي)
+                    $netAmount = (float) ($this->input('net_amount') ?? $this->route('invoice')?->net_amount);
+                    $paidAmount = (float) $this->input('paid_amount', $this->route('invoice')?->paid_amount ?? 0);
+                    if ($paidAmount < $netAmount) {
+                        $validator->errors()->add('paid_amount', 'يجب دفع قيمة الفاتورة بالكامل للعميل النقدي الافتراضي.');
+                    }
+                }
+            }
+        });
+    }
 }

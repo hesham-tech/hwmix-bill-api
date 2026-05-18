@@ -17,8 +17,10 @@ class BrandFactory extends Factory
      */
     public function definition(): array
     {
+        $name = $this->faker->company;
         return [
-            'name' => $this->faker->company,
+            'name' => $name,
+            'slug' => \Illuminate\Support\Str::slug($name),
             'description' => $this->faker->sentence,
             'company_id' => \App\Models\Company::factory(),
             'created_by' => \App\Models\User::factory(),

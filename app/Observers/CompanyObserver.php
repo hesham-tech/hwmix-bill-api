@@ -76,7 +76,15 @@ class CompanyObserver
                 \Log::error("CompanyObserver: فشل إنشاء الخزنة الافتراضية للمنشئ: " . $e->getMessage());
             }
 
-            \Log::info("CompanyObserver: تم تهيئة الشركة '{$company->name}' (ID: {$company->id}) بالكامل بمستودع وطرق دفع وخزنة افتراضية.");
+            // 5️⃣ 👥 إنشاء العميل النقدي الافتراضي للشركة
+            try {
+                $company->getOrCreateDefaultCashCustomer();
+                \Log::info("CompanyObserver: تم إنشاء العميل النقدي الافتراضي للشركة (ID: {$company->id}).");
+            } catch (\Exception $e) {
+                \Log::error("CompanyObserver: فشل إنشاء العميل النقدي الافتراضي للشركة: " . $e->getMessage());
+            }
+
+            \Log::info("CompanyObserver: تم تهيئة الشركة '{$company->name}' (ID: {$company->id}) بالكامل بمستودع وطرق دفع وخزنة وعميل نقدي افتراضي.");
             
         } catch (\Exception $e) {
             \Log::error("CompanyObserver: فشل تهيئة موارد الشركة '{$company->name}': " . $e->getMessage());

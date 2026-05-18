@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class WarehouseFactory extends Factory
 {
+    protected $model = \Modules\Inventory\Models\Warehouse::class;
     /**
      * Define the model's default state.
      *

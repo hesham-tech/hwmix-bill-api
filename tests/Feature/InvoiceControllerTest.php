@@ -6,10 +6,10 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\InvoiceType;
-use App\Models\Product;
-use App\Models\ProductVariant;
+use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductVariant;
 use App\Models\CashBox;
-use App\Models\Stock;
+use Modules\Inventory\Models\Stock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class InvoiceControllerTest extends TestCase
@@ -31,15 +31,26 @@ class InvoiceControllerTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->company = Company::factory()->create();
-        $this->user->company_id = $this->company->id;
+        $this->user->active_company_id = $this->company->id;
         $this->user->save();
+
+        // Link user to company (Membership)
+        \App\Models\CompanyUser::create([
+            'user_id' => $this->user->id,
+            'company_id' => $this->company->id,
+            'status' => 'active',
+            'created_by' => $this->user->id,
+        ]);
+
+        // Scope Spatie permissions to the test company
+        setPermissionsTeamId($this->company->id);
 
         // Grant super admin permission to bypass other checks
         $this->user->givePermissionTo('admin.super');
 
         // Setup financial data for the user
         $cashBoxType = \App\Models\CashBoxType::factory()->create(['name' => 'Cash']);
-        $this->cashBox = \App\Models\CashBox::factory()->create([
+        $this->cashBox = CashBox::factory()->create([
             'user_id' => $this->user->id,
             'company_id' => $this->company->id,
             'cash_box_type_id' => $cashBoxType->id,
@@ -56,8 +67,8 @@ class InvoiceControllerTest extends TestCase
         ]);
 
         // Setup stock for the variant
-        $warehouse = \App\Models\Warehouse::factory()->create(['company_id' => $this->company->id]);
-        \App\Models\Stock::factory()->create([
+        $warehouse = \Modules\Inventory\Models\Warehouse::factory()->create(['company_id' => $this->company->id]);
+        Stock::factory()->create([
             'variant_id' => $this->variant->id,
             'warehouse_id' => $warehouse->id,
             'company_id' => $this->company->id,
@@ -96,7 +107,7 @@ class InvoiceControllerTest extends TestCase
             ],
         ];
 
-        $response = $this->postJson('/api/invoice', $payload);
+        $response = $this->postJson('/api/v1/invoices', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('invoices', ['invoice_type_id' => $invoiceType->id]);
@@ -132,9 +143,135 @@ class InvoiceControllerTest extends TestCase
             ],
         ];
 
-        $response = $this->postJson('/api/invoice', $payload);
+        $response = $this->postJson('/api/v1/invoices', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('invoices', ['invoice_type_id' => $invoiceType->id]);
+    }
+
+    /**
+     * اختبار: إنشاء فاتورة سريعة للعميل النقدي الافتراضي بنجاح (دفع كامل).
+     */
+    public function test_creates_quick_invoice_for_default_cash_customer_successfully()
+    {
+        // تهيئة العميل النقدي الافتراضي للشركة
+        $cashCustomer = $this->company->getOrCreateDefaultCashCustomer();
+        $invoiceType = InvoiceType::factory()->create(['code' => 'sale']);
+        $this->company->invoiceTypes()->syncWithoutDetaching([$invoiceType->id => ['is_active' => true]]);
+
+        $payload = [
+            'invoice_type_id' => $invoiceType->id,
+            'invoice_type_code' => 'sale',
+            'gross_amount' => 500,
+            'net_amount' => 500,
+            'paid_amount' => 500, // دفع كامل - شرط أساسي للعميل النقدي
+            'remaining_amount' => 0,
+            'user_id' => $cashCustomer->id,
+            'status' => 'confirmed',
+            'company_id' => $this->company->id,
+            'cash_box_id' => $this->cashBox->id,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'variant_id' => $this->variant->id,
+                    'name' => $this->product->name,
+                    'quantity' => 1,
+                    'unit_price' => 500,
+                    'discount' => 0,
+                    'total' => 500,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson('/api/v1/invoices', $payload);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('invoices', ['user_id' => $cashCustomer->id, 'net_amount' => 500]);
+
+        // التحقق من عدم تسجيل أي ذمم أو مديونيات على حساب العميل النقدي
+        $cashCustomer->refresh();
+        $this->assertEquals(0, (float)$cashCustomer->balance ?? 0,
+            'يجب ألا يكون للعميل النقدي أي ذمم أو رصيد مسجل.');
+    }
+
+    /**
+     * اختبار: رفض الفاتورة السريعة للعميل النقدي إذا كانت غير مدفوعة بالكامل.
+     */
+    public function test_rejects_quick_invoice_for_cash_customer_if_not_fully_paid()
+    {
+        $cashCustomer = $this->company->getOrCreateDefaultCashCustomer();
+        $invoiceType = InvoiceType::factory()->create(['code' => 'sale']);
+        $this->company->invoiceTypes()->syncWithoutDetaching([$invoiceType->id => ['is_active' => true]]);
+
+        $payload = [
+            'invoice_type_id' => $invoiceType->id,
+            'invoice_type_code' => 'sale',
+            'gross_amount' => 500,
+            'net_amount' => 500,
+            'paid_amount' => 100, // دفع جزئي - يجب رفضه
+            'remaining_amount' => 400,
+            'user_id' => $cashCustomer->id,
+            'status' => 'confirmed',
+            'company_id' => $this->company->id,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'variant_id' => $this->variant->id,
+                    'name' => $this->product->name,
+                    'quantity' => 1,
+                    'unit_price' => 500,
+                    'discount' => 0,
+                    'total' => 500,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson('/api/v1/invoices', $payload);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['paid_amount']);
+    }
+
+    /**
+     * اختبار: رفض التقسيط للعميل النقدي الافتراضي.
+     */
+    public function test_rejects_installment_plan_for_default_cash_customer()
+    {
+        $cashCustomer = $this->company->getOrCreateDefaultCashCustomer();
+        $invoiceType = InvoiceType::factory()->create(['code' => 'sale']);
+        $this->company->invoiceTypes()->syncWithoutDetaching([$invoiceType->id => ['is_active' => true]]);
+
+        $payload = [
+            'invoice_type_id' => $invoiceType->id,
+            'invoice_type_code' => 'sale',
+            'gross_amount' => 1000,
+            'net_amount' => 1000,
+            'paid_amount' => 1000,
+            'remaining_amount' => 0,
+            'user_id' => $cashCustomer->id,
+            'status' => 'confirmed',
+            'company_id' => $this->company->id,
+            'installment_plan' => [ // يجب رفض هذا للعميل النقدي
+                'down_payment' => 200,
+                'number_of_installments' => 4,
+                'frequency' => 'monthly',
+            ],
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'variant_id' => $this->variant->id,
+                    'name' => $this->product->name,
+                    'quantity' => 1,
+                    'unit_price' => 1000,
+                    'discount' => 0,
+                    'total' => 1000,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson('/api/v1/invoices', $payload);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['installment_plan']);
     }
 }

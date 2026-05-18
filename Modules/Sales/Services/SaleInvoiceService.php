@@ -11,7 +11,7 @@ use App\Services\InstallmentService;
 use Modules\Accounting\Services\AccountingService;
 use Illuminate\Support\Facades\Log;
 use App\Services\InvoiceCalculator;
-use App\Models\DigitalProductDelivery;
+use Modules\Inventory\Models\DigitalProductDelivery;
 
 class SaleInvoiceService implements DocumentServiceInterface
 {

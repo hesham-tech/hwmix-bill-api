@@ -3,7 +3,7 @@
 namespace Modules\Sales\Services;
 
 use Modules\Sales\Models\Invoice;
-use App\Models\ProductVariant;
+use Modules\Inventory\Models\ProductVariant;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Modules\Accounting\Services\AccountingService;

@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Invoice;
+use Modules\Sales\Models\Invoice;
 use App\Services\StatsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

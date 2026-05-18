@@ -17,6 +17,11 @@ class Attribute extends Model
 {
     use HasFactory, Blameable, Scopes, LogsActivity;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\AttributeFactory::new();
+    }
+
     protected $fillable = ['name', 'value', 'active', 'company_id', 'created_by'];
 
     public function logLabel()

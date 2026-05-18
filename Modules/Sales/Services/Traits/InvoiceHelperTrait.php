@@ -4,7 +4,7 @@ namespace Modules\Sales\Services\Traits;
 
 use Modules\Sales\Models\Invoice;
 use Modules\Sales\Models\InvoiceItem;
-use App\Models\ProductVariant;
+use Modules\Inventory\Models\ProductVariant;
 use Modules\Inventory\Models\Stock;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;

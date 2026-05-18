@@ -18,6 +18,11 @@ class AttributeValue extends Model
 {
     use HasFactory, Blameable, Scopes, SoftDeletes, LogsActivity;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\AttributeValueFactory::new();
+    }
+
     protected $fillable = [
         'attribute_id',
         'company_id',

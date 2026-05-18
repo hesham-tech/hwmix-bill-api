@@ -19,6 +19,11 @@ class Brand extends Model
 {
     use HasFactory, Scopes, Blameable, LogsActivity, HasImages, SmartSearch;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\BrandFactory::new();
+    }
+
     protected $fillable = ['name', 'slug', 'description', 'active', 'company_id', 'created_by', 'synonyms'];
 
     protected $casts = [

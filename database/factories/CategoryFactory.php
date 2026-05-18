@@ -18,8 +18,10 @@ class CategoryFactory extends Factory
      */
     public function definition(): array
     {
+        $name = $this->faker->word;
         return [
-            'name' => $this->faker->word,
+            'name' => $name,
+            'slug' => \Illuminate\Support\Str::slug($name),
             'description' => $this->faker->sentence,
             'company_id' => \App\Models\Company::factory(),
             'created_by' => \App\Models\User::factory(),

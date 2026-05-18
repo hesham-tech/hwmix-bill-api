@@ -20,6 +20,11 @@ class Product extends Model
 {
     use HasFactory, Blameable, Scopes, LogsActivity, HasImages;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\ProductFactory::new();
+    }
+
     protected $fillable = [
         'name',
         'product_type',

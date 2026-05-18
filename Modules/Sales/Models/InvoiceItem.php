@@ -9,12 +9,12 @@ use Modules\Sales\Observers\InvoiceItemObserver;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Blameable;
 use App\Traits\Scopes;
-use App\Models\Product;
-use App\Models\ProductVariant;
+use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductVariant;
 use App\Models\Company;
 use App\Models\User;
 use App\Models\Subscription;
-use App\Models\DigitalProductDelivery;
+use Modules\Inventory\Models\DigitalProductDelivery;
 
 #[ObservedBy([InvoiceItemObserver::class])]
 class InvoiceItem extends Model

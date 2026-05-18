@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Models\InvoiceItem;
 use App\Models\Invoice;
-use App\Models\Product;
+use Modules\Inventory\Models\Product;
 use App\Models\Company;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;

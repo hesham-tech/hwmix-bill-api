@@ -14,6 +14,14 @@ class CompanyResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // تحميل العميل النقدي إذا كان متاحاً
+        $cashCustomer = null;
+        if ($this->default_cash_customer_id) {
+            $cashCustomer = \App\Models\User::withoutGlobalScopes()
+                ->select(['id', 'full_name', 'nickname', 'phone', 'email', 'active_company_id'])
+                ->find($this->default_cash_customer_id);
+        }
+
         return [
             'id' => $this->id,
             'owner_name' => $this->owner_name,
@@ -29,6 +37,17 @@ class CompanyResource extends JsonResource
             'print_settings' => $this->print_settings,
             'created_by' => $this->created_by,
             'logo' => $this->logo?->url,
+            'default_cash_customer_id' => $this->default_cash_customer_id,
+            'default_cash_customer' => $cashCustomer ? [
+                'id' => $cashCustomer->id,
+                'name' => $cashCustomer->full_name ?? 'عميل نقدي',
+                'nickname' => $cashCustomer->nickname ?? 'عميل نقدي',
+                'phone' => $cashCustomer->phone,
+                'email' => $cashCustomer->email,
+                'balance' => 0,
+                'is_default_cash_customer' => true,
+                'customer_type' => 'retail',
+            ] : null,
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
         ];

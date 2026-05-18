@@ -25,6 +25,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Observers\CompanyObserver;
 
 // #[ScopedBy([CompanyScope::class])]
+/**
+ * تعليق عربي: كلاس الشركة للنظام ويمثل المستأجر (Tenant) الأساسي في بيئة الـ Multi-Tenant.
+ */
 #[ObservedBy([CompanyObserver::class])]
 class Company extends Model
 {
@@ -44,6 +47,7 @@ class Company extends Model
         'settings',
         'created_by',
         'company_id',
+        'default_cash_customer_id',
     ];
 
     protected $casts = [
@@ -163,5 +167,85 @@ class Company extends Model
     public function logLabel()
     {
         return "الشركة ({$this->name})";
+    }
+
+    /**
+     * علاقة العميل النقدي الافتراضي للشركة.
+     */
+    public function defaultCashCustomer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'default_cash_customer_id');
+    }
+
+    /**
+     * الحصول على العميل النقدي أو إنشاؤه تلقائياً إذا كان مفقوداً أو محذوفاً.
+     */
+    public function getOrCreateDefaultCashCustomer()
+    {
+        if ($this->default_cash_customer_id) {
+            $customer = User::withoutGlobalScopes()->find($this->default_cash_customer_id);
+            if ($customer) {
+                return $customer;
+            }
+        }
+
+        return \DB::transaction(function () {
+            $phone = '999' . str_pad($this->id, 7, '0', STR_PAD_LEFT);
+            $email = "cash.customer.{$this->id}@hwnix.local";
+            $username = "cash_customer_{$this->id}";
+
+            $customer = User::withoutGlobalScopes()->where('phone', $phone)->first();
+
+            if (!$customer) {
+                $customer = User::create([
+                    'phone' => $phone,
+                    'email' => $email,
+                    'full_name' => 'عميل نقدي',
+                    'nickname' => 'عميل نقدي',
+                    'password' => \Hash::make('cash_customer_secret'),
+                    'username' => $username,
+                    'created_by' => $this->created_by ?? 1,
+                    'active_company_id' => $this->id,
+                    'status' => 'active',
+                ]);
+            }
+
+            $pivotExists = CompanyUser::where('user_id', $customer->id)
+                ->where('company_id', $this->id)
+                ->exists();
+
+            if (!$pivotExists) {
+                CompanyUser::create([
+                    'user_id' => $customer->id,
+                    'company_id' => $this->id,
+                    'nickname_in_company' => 'عميل نقدي',
+                    'full_name_in_company' => 'عميل نقدي',
+                    'customer_type_in_company' => 'cash_customer',
+                    'status' => 'active',
+                    'created_by' => $this->created_by ?? 1,
+                ]);
+            }
+
+            $defaultBranchId = $this->branches()->where('is_default', true)->value('id');
+            if ($defaultBranchId) {
+                $branchUserExists = \DB::table('branch_user')
+                    ->where('user_id', $customer->id)
+                    ->where('branch_id', $defaultBranchId)
+                    ->exists();
+
+                if (!$branchUserExists) {
+                    \DB::table('branch_user')->insert([
+                        'user_id' => $customer->id,
+                        'branch_id' => $defaultBranchId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            $this->update(['default_cash_customer_id' => $customer->id]);
+
+            return $customer;
+        });
     }
 }

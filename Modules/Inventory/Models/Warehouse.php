@@ -18,6 +18,11 @@ class Warehouse extends Model
 {
     use HasFactory, Blameable, Scopes, LogsActivity, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\WarehouseFactory::new();
+    }
+
     /**
      * Label for activity logs.
      */

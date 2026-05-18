@@ -3,13 +3,15 @@
 namespace Modules\Accounting\Services;
 
 use App\Models\User;
-use App\Models\Invoice;
-use Modules\Accounting\Models\InvoicePayment; // Verify if this exists or needs move
+use Modules\Sales\Models\Invoice;
+use Modules\Sales\Models\InvoicePayment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 /**
  * خدمة المحاسبة (AccountingService) - موديول المحاسبة
+ * تتضمن منطق العزل المالي للعميل النقدي الافتراضي (cash_customer) بحيث لا تُسجَّل
+ * أي ذمم أو حركات رصيد باسمه مع الحفاظ الكامل على تدفق الخزينة للمؤسسة.
  */
 class AccountingService
 {
@@ -29,8 +31,12 @@ class AccountingService
             $party = User::find($invoice->user_id);
             $authUser = Auth::user();
 
+            // العميل النقدي الافتراضي: لا تسجيل ذمم أو حركات رصيد على حسابه
+            $isCashCustomer = $party && $party->isDefaultCashCustomer($invoice->company_id);
+
             if (in_array($type, ['sale', 'installment_sale', 'service_invoice'])) {
-                if ($party) {
+                // تسجيل المديونية فقط للعملاء الحقيقيين (ليس العميل النقدي)
+                if ($party && !$isCashCustomer) {
                     $party->deposit($netAmount, $userCashBoxId, "إثبات مديونية فاتورة {$type} رقم: {$invoice->invoice_number}");
                 }
 
@@ -38,11 +44,12 @@ class AccountingService
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'in', [
                         'cash_box_id' => $cashBoxId,
                         'party_cash_box_id' => $userCashBoxId,
-                        'description' => "دفعة من فاتورة رقم: {$invoice->invoice_number}"
+                        'description' => "دفعة من فاتورة رقم: {$invoice->invoice_number}",
+                        'skip_party_balance' => $isCashCustomer,
                     ]);
                 }
             } elseif ($type === 'purchase') {
-                if ($party) {
+                if ($party && !$isCashCustomer) {
                     $party->withdraw($netAmount, $userCashBoxId, "إثبات التزام فاتورة شراء رقم: {$invoice->invoice_number}");
                 }
 
@@ -50,29 +57,32 @@ class AccountingService
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'out', [
                         'cash_box_id' => $cashBoxId,
                         'party_cash_box_id' => $userCashBoxId,
-                        'description' => "سداد فاتورة شراء رقم: {$invoice->invoice_number}"
+                        'description' => "سداد فاتورة شراء رقم: {$invoice->invoice_number}",
+                        'skip_party_balance' => $isCashCustomer,
                     ]);
                 }
             } elseif ($type === 'sale_return') {
-                if ($party) {
+                if ($party && !$isCashCustomer) {
                     $party->withdraw($netAmount, $userCashBoxId, "إلغاء مديونية (مرتجع مبيعات) رقم: {$invoice->invoice_number}");
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'out', [
                         'cash_box_id' => $cashBoxId,
                         'party_cash_box_id' => $userCashBoxId,
-                        'description' => "رد مبلغ لمرتجع مبيعات رقم: {$invoice->invoice_number}"
+                        'description' => "رد مبلغ لمرتجع مبيعات رقم: {$invoice->invoice_number}",
+                        'skip_party_balance' => $isCashCustomer,
                     ]);
                 }
             } elseif ($type === 'purchase_return') {
-                if ($party) {
+                if ($party && !$isCashCustomer) {
                     $party->deposit($netAmount, $userCashBoxId, "إلغاء التزام (مرتجع مشتريات) رقم: {$invoice->invoice_number}");
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'in', [
                         'cash_box_id' => $cashBoxId,
                         'party_cash_box_id' => $userCashBoxId,
-                        'description' => "استلام مبلغ לمرتجع مشتريات رقم: {$invoice->invoice_number}"
+                        'description' => "استلام مبلغ لمرتجع مشتريات رقم: {$invoice->invoice_number}",
+                        'skip_party_balance' => $isCashCustomer,
                     ]);
                 }
             }
@@ -88,15 +98,17 @@ class AccountingService
             $cashBoxId = $options['cash_box_id'] ?? null;
             $partyCashBoxId = $options['party_cash_box_id'] ?? null;
             $description = $options['description'] ?? ($direction === 'in' ? 'قبض نقدي' : 'صرف نقدي');
+            // skip_party_balance: يُمرَّر من recordInvoiceCreation عند التعامل مع العميل النقدي
+            $skipPartyBalance = $options['skip_party_balance'] ?? false;
 
             if ($direction === 'in') {
                 $staff->deposit($amount, $cashBoxId, $description);
-                if ($party) {
+                if ($party && !$skipPartyBalance) {
                     $party->withdraw($amount, $partyCashBoxId, "دفع مبلغ: {$amount} - {$description}");
                 }
             } else {
                 $staff->withdraw($amount, $cashBoxId, $description);
-                if ($party) {
+                if ($party && !$skipPartyBalance) {
                     $party->deposit($amount, $partyCashBoxId, "استلام مبلغ: {$amount} - {$description}");
                 }
             }
@@ -119,48 +131,55 @@ class AccountingService
             $party = User::find($invoice->user_id);
             $authUser = Auth::user();
 
+            // العميل النقدي الافتراضي: لا عكس لذمم على حسابه
+            $isCashCustomer = $party && $party->isDefaultCashCustomer($invoice->company_id);
+
             if (in_array($type, ['sale', 'installment_sale', 'service_invoice'])) {
-                if ($party) {
+                if ($party && !$isCashCustomer) {
                     $party->withdraw($netAmount, $userCashBoxId, "إلغاء مديونية فاتورة {$type} رقم: {$invoice->invoice_number}");
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'out', [
                         'cash_box_id' => $cashBoxId,
                         'party_cash_box_id' => $userCashBoxId,
-                        'description' => "رد مبلغ مدفوع لإلغاء الفاتورة رقم: {$invoice->invoice_number}"
+                        'description' => "رد مبلغ مدفوع لإلغاء الفاتورة رقم: {$invoice->invoice_number}",
+                        'skip_party_balance' => $isCashCustomer,
                     ]);
                 }
             } elseif ($type === 'purchase') {
-                if ($party) {
+                if ($party && !$isCashCustomer) {
                     $party->deposit($netAmount, $userCashBoxId, "إلغاء التزام فاتورة شراء رقم: {$invoice->invoice_number}");
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'in', [
                         'cash_box_id' => $cashBoxId,
                         'party_cash_box_id' => $userCashBoxId,
-                        'description' => "استرداد مبلغ مدفوع لإلغاء الفاتورة رقم: {$invoice->invoice_number}"
+                        'description' => "استرداد مبلغ مدفوع لإلغاء الفاتورة رقم: {$invoice->invoice_number}",
+                        'skip_party_balance' => $isCashCustomer,
                     ]);
                 }
             } elseif ($type === 'sale_return') {
-                if ($party) {
+                if ($party && !$isCashCustomer) {
                     $party->deposit($netAmount, $userCashBoxId, "إلغاء أثر مرتجع مبيعات رقم: {$invoice->invoice_number}");
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'in', [
                         'cash_box_id' => $cashBoxId,
                         'party_cash_box_id' => $userCashBoxId,
-                        'description' => "استرداد مبلغ رد للعميل (إلغاء مرتجع) رقم: {$invoice->invoice_number}"
+                        'description' => "استرداد مبلغ رد للعميل (إلغاء مرتجع) رقم: {$invoice->invoice_number}",
+                        'skip_party_balance' => $isCashCustomer,
                     ]);
                 }
             } elseif ($type === 'purchase_return') {
-                if ($party) {
+                if ($party && !$isCashCustomer) {
                     $party->withdraw($netAmount, $userCashBoxId, "إلغاء أثر مرتجع مشتريات رقم: {$invoice->invoice_number}");
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'out', [
                         'cash_box_id' => $cashBoxId,
                         'party_cash_box_id' => $userCashBoxId,
-                        'description' => "رد مبلغ استلم من المورد (إلغاء مرتجع) رقم: {$invoice->invoice_number}"
+                        'description' => "رد مبلغ استلم من المورد (إلغاء مرتجع) رقم: {$invoice->invoice_number}",
+                        'skip_party_balance' => $isCashCustomer,
                     ]);
                 }
             }
@@ -208,7 +227,7 @@ class AccountingService
                 $paymentForThisInvoice = min($remaining, $invoiceRemaining);
 
                 // Use the correct model for InvoicePayment (might be in App\Models or moved)
-                \App\Models\InvoicePayment::create([
+                InvoicePayment::create([
                     'invoice_id' => $invoice->id,
                     'cash_box_id' => $cashBoxId,
                     'amount' => $paymentForThisInvoice,

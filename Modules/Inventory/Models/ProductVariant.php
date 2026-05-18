@@ -20,6 +20,11 @@ class ProductVariant extends Model
 {
     use HasFactory, Blameable, Scopes, LogsActivity, HasImages;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\ProductVariantFactory::new();
+    }
+
     protected $fillable = [
         'barcode',
         'sku',
@@ -124,9 +129,15 @@ class ProductVariant extends Model
 
     private static function generateUniqueBarcode()
     {
-        $lastBarcode = self::whereRaw("barcode REGEXP '^[0-9]+$'")
-            ->orderByRaw('CAST(barcode AS UNSIGNED) DESC')
-            ->first();
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite') {
+            $lastBarcode = self::where('barcode', 'glob', '[0-9]*')
+                ->orderByRaw('CAST(barcode AS INTEGER) DESC')
+                ->first();
+        } else {
+            $lastBarcode = self::whereRaw("barcode REGEXP '^[0-9]+$'")
+                ->orderByRaw('CAST(barcode AS UNSIGNED) DESC')
+                ->first();
+        }
 
         $nextBarcode = $lastBarcode ? (int) $lastBarcode->barcode + 1 : 1000000000;
         $barcode = str_pad($nextBarcode, 10, '0', STR_PAD_LEFT);

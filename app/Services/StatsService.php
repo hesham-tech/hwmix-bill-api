@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
+use Modules\Sales\Models\Invoice;
+use Modules\Sales\Models\InvoiceItem;
 use App\Models\StatsProductSummary;
 use App\Models\StatsUserSummary;
 use App\Models\StatsUserProductMatrix;
