@@ -166,9 +166,17 @@ class User extends Authenticatable
         }
 
         // Paranoid Mode: Extra safety if relation was eager loaded but might be null or not a collection
-        if (!$cashBox && $this->relationLoaded('cashBoxes')) {
+        if (!$cashBox && $this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
             if ($activeBranchId) {
                 $cashBox = collect($this->cashBoxes)
+                    ->where('company_id', $companyId)
+                    ->where('branch_id', $activeBranchId)
+                    ->firstWhere('is_default', true)
+                    ?? collect($this->cashBoxes)
+                    ->where('company_id', $companyId)
+                    ->where('branch_id', $activeBranchId)
+                    ->firstWhere('is_default', 1)
+                    ?? collect($this->cashBoxes)
                     ->where('company_id', $companyId)
                     ->where('is_active', true)
                     ->where('branch_id', $activeBranchId)
@@ -176,6 +184,12 @@ class User extends Authenticatable
             }
             if (!$cashBox) {
                 $cashBox = collect($this->cashBoxes)
+                    ->where('company_id', $companyId)
+                    ->firstWhere('is_default', true)
+                    ?? collect($this->cashBoxes)
+                    ->where('company_id', $companyId)
+                    ->firstWhere('is_default', 1)
+                    ?? collect($this->cashBoxes)
                     ->where('company_id', $companyId)
                     ->where('is_active', true)
                     ->first();
@@ -272,7 +286,7 @@ class User extends Authenticatable
      */
     public function cashBoxes(): HasMany
     {
-        return $this->hasMany(CashBox::class, 'user_id');
+        return $this->hasMany(CashBox::class, 'user_id')->withoutGlobalScopes();
     }
 
     /**
@@ -688,25 +702,12 @@ class User extends Authenticatable
      */
     public function getActiveBranchBalanceAttribute(): float
     {
-        $activeCompanyId = Auth::user()->active_company_id ?? $this->active_company_id;
-        $activeBranchId = config('app.active_branch_id') ?? Auth::user()?->branch_id;
-
-        if (!$activeCompanyId || !$activeBranchId) {
+        $activeCompanyId = Auth::user()->active_company_id ?? $this->active_company_id ?? null;
+        if (!$activeCompanyId) {
             return 0.0;
         }
 
-        if ($this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
-            $cashBox = collect($this->cashBoxes)
-                ->where('company_id', $activeCompanyId)
-                ->where('branch_id', $activeBranchId)
-                ->first();
-        } else {
-            $cashBox = $this->cashBoxes()
-                ->where('company_id', $activeCompanyId)
-                ->where('branch_id', $activeBranchId)
-                ->first();
-        }
-
+        $cashBox = $this->getDefaultCashBoxForCompany($activeCompanyId);
         return $cashBox ? (float) $cashBox->balance : 0.0;
     }
 

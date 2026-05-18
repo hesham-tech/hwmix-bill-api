@@ -23,6 +23,7 @@ class StoreCashBoxRequest extends FormRequest
             'created_by' => ['nullable', 'exists:users,id'],
             'description' => ['nullable', 'string'],
             'account_number' => ['nullable', 'string', 'max:255'],
+            'branch_id' => ['nullable', 'exists:branches,id'],
         ];
     }
 }

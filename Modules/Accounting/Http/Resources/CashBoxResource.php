@@ -21,6 +21,8 @@ class CashBoxResource extends JsonResource
             'user_id' => $this->user_id,
             'created_by' => $this->created_by,
             'company_id' => $this->company_id,
+            'branch_id' => $this->branch_id,
+            'branch_name' => $this->branch?->name,
             'is_default' => (bool) $this->is_default,
             'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),

@@ -23,6 +23,7 @@ class UpdateCashBoxRequest extends FormRequest
             'company_id' => ['sometimes', 'exists:companies,id'],
             'description' => ['nullable', 'string', 'max:255'],
             'account_number' => ['nullable', 'string', 'max:255'],
+            'branch_id' => ['nullable', 'exists:branches,id'],
         ];
     }
 }

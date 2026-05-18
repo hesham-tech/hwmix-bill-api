@@ -30,6 +30,7 @@ class CashBoxController extends Controller
             'company',
             'creator',
             'user',
+            'branch',
         ];
     }
 
@@ -95,6 +96,10 @@ class CashBoxController extends Controller
                 $validatedData = $request->validated();
                 $validatedData['company_id'] = $validatedData['company_id'] ?? $companyId;
                 $validatedData['user_id'] = $validatedData['user_id'] ?? $authUser->id;
+
+                if (!array_key_exists('branch_id', $validatedData)) {
+                    $validatedData['branch_id'] = config('app.active_branch_id') ?? $authUser->branch_id;
+                }
 
                 if ($validatedData['company_id'] != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
                     DB::rollBack();

@@ -51,9 +51,18 @@ class CashBox extends Model
         'user_id',
         'created_by',
         'company_id',
+        'branch_id',
         'description',
         'account_number',
     ];
+
+    /**
+     * العلاقة مع الفرع التابع للشركة النشطة
+     */
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(\Modules\Companies\Models\Branch::class);
+    }
 
     public function creator(): BelongsTo
     {
