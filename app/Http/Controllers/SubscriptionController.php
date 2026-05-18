@@ -127,8 +127,11 @@ class SubscriptionController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $hasPermission = $authUser->hasAnyPermission([
@@ -211,8 +214,11 @@ class SubscriptionController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $subscription = Subscription::with($this->relations)->findOrFail($id);
@@ -248,8 +254,11 @@ class SubscriptionController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $subscription = Subscription::with(['company', 'creator', 'user', 'plan'])->findOrFail($id);
@@ -329,8 +338,11 @@ class SubscriptionController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $subscription = Subscription::with(['company', 'creator'])->findOrFail($id);

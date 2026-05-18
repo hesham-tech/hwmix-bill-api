@@ -133,8 +133,11 @@ class StockController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('stocks.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
@@ -184,8 +187,11 @@ class StockController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $stock = Stock::with($this->relations)->findOrFail($id);
@@ -230,8 +236,11 @@ class StockController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $stock = Stock::with(['company', 'creator', 'variant', 'warehouse'])->findOrFail($id);
@@ -298,8 +307,11 @@ class StockController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $stock = Stock::with(['company', 'creator'])->findOrFail($id);

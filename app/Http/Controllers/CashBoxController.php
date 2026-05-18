@@ -140,8 +140,11 @@ class CashBoxController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             // صلاحيات إنشاء صندوق نقدي
@@ -155,10 +158,7 @@ class CashBoxController extends Controller
 
                 $validatedData['company_id'] = $validatedData['company_id'] ?? $companyId;
                 $validatedData['user_id'] = $validatedData['user_id'] ?? $authUser->id;
-
-                if (!array_key_exists('branch_id', $validatedData)) {
-                    $validatedData['branch_id'] = config('app.active_branch_id') ?? $authUser->branch_id;
-                }
+                $validatedData['branch_id'] = $validatedData['branch_id'] ?? config('app.active_branch_id') ?? $authUser->branch_id;
 
                 // التأكد من أن المستخدم مصرح له بإنشاء صندوق لهذه الشركة
                 if ($validatedData['company_id'] != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -203,8 +203,11 @@ class CashBoxController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             // التحقق من صلاحيات العرض
@@ -245,8 +248,11 @@ class CashBoxController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             // التحقق من صلاحيات التحديث
@@ -312,8 +318,11 @@ class CashBoxController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             // التحقق من صلاحيات الحذف
@@ -374,8 +383,11 @@ class CashBoxController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             // صلاحية خاصة لتحويل الأموال

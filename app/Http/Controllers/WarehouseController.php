@@ -190,8 +190,11 @@ class WarehouseController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $warehouse->load($this->relations);
@@ -296,8 +299,11 @@ class WarehouseController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $warehouse->load(['company', 'creator', 'stocks']); // تحميل العلاقات للتحقق من الصلاحيات

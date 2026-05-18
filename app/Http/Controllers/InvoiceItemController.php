@@ -122,8 +122,11 @@ class InvoiceItemController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('invoice_items.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
@@ -170,8 +173,11 @@ class InvoiceItemController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $item = InvoiceItem::with($this->relations)->findOrFail($id);
@@ -211,8 +217,11 @@ class InvoiceItemController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $item = InvoiceItem::with(['company', 'creator'])->findOrFail($id);
@@ -273,8 +282,11 @@ class InvoiceItemController extends Controller
             $authUser = Auth::user();
             $companyId = $authUser->active_company_id ?? null;
 
-            if (!$authUser || !$companyId) {
-                return api_unauthorized('يتطلب المصادقة أو الارتباط بالشركة.');
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
             $item = InvoiceItem::with(['company', 'creator'])->findOrFail($id);
