@@ -14,12 +14,24 @@ use App\Observers\InvoiceObserver;
 
 use App\Traits\SmartSearch;
 
+/**
+ * تعليق عربي: كلاس يمثل الفواتير بمختلف أنواعها (بيع، شراء، مرتجعات) داخل النظام.
+ */
 #[ObservedBy([InvoiceObserver::class])]
 class Invoice extends Model
 {
     use HasFactory, LogsActivity, Blameable, Scopes, SoftDeletes, SmartSearch, \App\Traits\FilterableByBranch;
 
     protected $guarded = [];
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        $typeName = $this->invoiceType?->name ?? 'فاتورة';
+        return "{$typeName} رقم #{$this->invoice_number} بمبلغ: {$this->net_amount}";
+    }
 
     protected $casts = [
         'total_tax' => 'decimal:2',
@@ -157,14 +169,6 @@ class Invoice extends Model
     public function payments()
     {
         return $this->hasMany(InvoicePayment::class, 'invoice_id');
-    }
-
-    /**
-     * Label for activity logs.
-     */
-    public function logLabel()
-    {
-        return "الفاتورة ({$this->invoice_number})";
     }
 
     /**

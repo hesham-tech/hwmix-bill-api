@@ -18,11 +18,12 @@ class PaymentObserver
         // 1. Log Activity
         ActivityLog::create([
             'action' => 'paid',
-            'description' => "تم تسجيل دفعة مبلغ " . number_format((float) $payment->amount, 2) . " للفاتورة #" . ($payment->invoice->invoice_number ?? $payment->invoice_id),
+            'description' => "تم تسجيل دفعة مبلغ " . number_format((float) $payment->amount, 2) . " للفاتورة #" . ($payment->invoice?->invoice_number ?? $payment->invoice_id),
             'model' => \App\Models\Invoice::class,
             'row_id' => $payment->invoice_id,
-            'user_id' => Auth::id(),
+            'user_id' => Auth::id() ?? $payment->created_by,
             'company_id' => $payment->company_id,
+            'branch_id' => $payment->invoice?->branch_id ?? config('app.active_branch_id') ?? Auth::user()?->branch_id,
         ]);
 
         // 2. Send Email Notification
