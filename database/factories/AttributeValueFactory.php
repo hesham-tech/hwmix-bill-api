@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class AttributeValueFactory extends Factory
 {
+    protected $model = \Modules\Inventory\Models\AttributeValue::class;
+
     /**
      * Define the model's default state.
      *
@@ -17,7 +19,7 @@ class AttributeValueFactory extends Factory
     public function definition(): array
     {
         return [
-            'attribute_id' => \App\Models\Attribute::factory(),
+            'attribute_id' => \Modules\Inventory\Models\Attribute::factory(),
             'name' => $this->faker->word(),
             'color' => $this->faker->hexColor(),
             'created_by' => \App\Models\User::factory(),

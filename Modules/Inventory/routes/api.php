@@ -13,6 +13,8 @@ use Modules\Inventory\Http\Controllers\AttributeValueController;
 Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:api'])->prefix('v1')->group(function () {
     // متغيرات المنتجات (Products Variants Search)
     Route::get('product-variants/search-by-product', [\Modules\Inventory\Http\Controllers\ProductVariantController::class, 'searchByProduct']);
+    Route::post('product-variants/delete', [\Modules\Inventory\Http\Controllers\ProductVariantController::class, 'deleteMultiple']);
+    Route::apiResource('product-variants', \Modules\Inventory\Http\Controllers\ProductVariantController::class);
 
     Route::apiResource('inventories', InventoryController::class)->names('inventory');
     

@@ -4,11 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Product;
-use App\Models\ProductVariant;
+use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductVariant;
 use Modules\Inventory\Models\Warehouse;
-use App\Models\Attribute;
-use App\Models\AttributeValue;
+use Modules\Inventory\Models\Attribute;
+use Modules\Inventory\Models\AttributeValue;
 use Modules\Inventory\Models\Stock;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,7 +28,18 @@ class ProductVariantControllerTest extends TestCase
 
         $this->seed(AddPermissionsSeeder::class);
         $this->company = Company::factory()->create();
-        $this->admin = User::factory()->create(['company_id' => $this->company->id]);
+        
+        $this->admin = User::factory()->create();
+        $this->admin->active_company_id = $this->company->id;
+        $this->admin->save();
+        
+        \App\Models\CompanyUser::create([
+            'user_id' => $this->admin->id,
+            'company_id' => $this->company->id,
+            'status' => 'active',
+            'created_by' => $this->admin->id,
+        ]);
+        
         $this->admin->givePermissionTo('admin.super');
 
         $this->product = Product::factory()->create(['company_id' => $this->company->id]);
@@ -42,7 +53,7 @@ class ProductVariantControllerTest extends TestCase
             'company_id' => $this->company->id
         ]);
 
-        $response = $this->getJson('/api/product-variants');
+        $response = $this->getJson('/api/v1/product-variants');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data']);
@@ -73,7 +84,7 @@ class ProductVariantControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->postJson('/api/product-variant', $payload);
+        $response = $this->postJson('/api/v1/product-variants', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('product_variants', ['sku' => 'TEST-SKU-123']);
@@ -89,7 +100,7 @@ class ProductVariantControllerTest extends TestCase
             'company_id' => $this->company->id
         ]);
 
-        $response = $this->getJson("/api/product-variant/{$variant->id}");
+        $response = $this->getJson("/api/v1/product-variants/{$variant->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $variant->id);
@@ -118,7 +129,7 @@ class ProductVariantControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->putJson("/api/product-variant/{$variant->id}", $payload);
+        $response = $this->putJson("/api/v1/product-variants/{$variant->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('stocks', ['id' => $stock->id, 'quantity' => 20]);
@@ -137,7 +148,7 @@ class ProductVariantControllerTest extends TestCase
             'quantity' => 10
         ]);
 
-        $response = $this->deleteJson("/api/product-variant/{$variant->id}");
+        $response = $this->deleteJson("/api/v1/product-variants/{$variant->id}");
 
         $response->assertStatus(409);
         $this->assertDatabaseHas('product_variants', ['id' => $variant->id]);
@@ -156,7 +167,7 @@ class ProductVariantControllerTest extends TestCase
             'quantity' => 0
         ]);
 
-        $response = $this->deleteJson("/api/product-variant/{$variant->id}");
+        $response = $this->deleteJson("/api/v1/product-variants/{$variant->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('product_variants', ['id' => $variant->id]);
@@ -171,12 +182,21 @@ class ProductVariantControllerTest extends TestCase
             'company_id' => $companyB->id
         ]);
 
-        $userA = User::factory()->create(['company_id' => $this->company->id]);
+        $userA = User::factory()->create();
+        $userA->active_company_id = $this->company->id;
+        $userA->save();
+        \App\Models\CompanyUser::create([
+            'user_id' => $userA->id,
+            'company_id' => $this->company->id,
+            'status' => 'active',
+            'created_by' => $userA->id,
+        ]);
+
         $userA->givePermissionTo('product_variants.view_all');
 
         $this->actingAs($userA);
 
-        $response = $this->getJson("/api/product-variant/{$variantB->id}");
+        $response = $this->getJson("/api/v1/product-variants/{$variantB->id}");
         if ($response->status() !== 403)
             dd($response->json());
         $response->assertStatus(403);

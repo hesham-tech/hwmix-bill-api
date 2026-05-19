@@ -8,6 +8,9 @@ use App\Http\Resources\Company\CompanyResource;
 use App\Http\Resources\Image\ImageResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * متحور البيانات لمتغيرات المنتجات
+ */
 class ProductVariantResource extends JsonResource
 {
     public function toArray(Request $request): array
@@ -27,7 +30,12 @@ class ProductVariantResource extends JsonResource
             'weight' => $this->weight,
             'dimensions' => $this->dimensions,
             'tax' => $this->tax,
-            'cost' => $this->when(auth()->user()?->hasAnyPermission([perm_key('products.view_purchase_price'), 'admin.super', 'admin.company']), $availableStocks->sortByDesc('created_at')->first()?->cost ?? 0),
+            'cost' => $this->when(
+                auth()->user()?->hasAnyPermission([perm_key('products.view_purchase_price'), 'admin.super', 'admin.company']),
+                ($availableStocks->sortByDesc('created_at')->first()?->cost ?? 0) > 0 
+                    ? $availableStocks->sortByDesc('created_at')->first()?->cost 
+                    : ($this->purchase_price ?? 0)
+            ),
             'quantity' => $availableStocks->sum('quantity') ?? null,
             'min_quantity' => $this->min_quantity,
             'discount' => $this->discount,

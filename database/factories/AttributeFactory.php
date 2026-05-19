@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class AttributeFactory extends Factory
 {
+    protected $model = \Modules\Inventory\Models\Attribute::class;
     /**
      * Define the model's default state.
      *
