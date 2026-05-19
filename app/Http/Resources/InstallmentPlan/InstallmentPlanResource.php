@@ -64,48 +64,56 @@ class InstallmentPlanResource extends JsonResource
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
 
-            'customer' => new UserBasicResource($this->whenLoaded('customer')),
-            'creator' => new UserBasicResource($this->whenLoaded('creator')),
-            'invoice' => new InvoiceResource($this->whenLoaded('invoice')),
-            'invoice_items' => InvoiceItemResource::collection(
-                $this->whenLoaded('invoice', function () {
-                    return $this->invoice->items;
-                })
-            ),
-            'payments' => $this->whenLoaded('payments', fn() => InstallmentPaymentResource::collection($this->payments)),
-            'installments' => InstallmentResource::collection(
-                $installments->sort(function ($a, $b) {
-                    $priority = function ($inst) {
-                        $now = now()->endOfDay();
-                        $status = $inst->status;
-                        $pendingStatuses = ['pending', 'في الانتظار', 'لم يتم الدفع', 'partially_paid', 'مدفوع جزئياً', 'overdue', 'متأخر'];
-                        $paidStatuses = ['paid', 'تم الدفع', 'مدفوع'];
-                        $cancelStatuses = ['canceled', 'cancelled', 'ملغي', 'ملغى'];
+            'customer' => $this->relationLoaded('customer')
+                ? ($this->customer ? new UserBasicResource($this->customer) : null)
+                : new \Illuminate\Http\Resources\MissingValue,
+            'creator' => $this->relationLoaded('creator')
+                ? ($this->creator ? new UserBasicResource($this->creator) : null)
+                : new \Illuminate\Http\Resources\MissingValue,
+            'invoice' => $this->relationLoaded('invoice')
+                ? ($this->invoice ? new InvoiceResource($this->invoice) : null)
+                : new \Illuminate\Http\Resources\MissingValue,
+            'invoice_items' => $this->relationLoaded('invoice') && $this->invoice
+                ? InvoiceItemResource::collection($this->invoice->items)
+                : new \Illuminate\Http\Resources\MissingValue,
+            'payments' => $this->relationLoaded('payments') && $this->payments
+                ? InstallmentPaymentResource::collection($this->payments)
+                : new \Illuminate\Http\Resources\MissingValue,
+            'installments' => $this->relationLoaded('installments') && $this->installments
+                ? InstallmentResource::collection(
+                    $this->installments->sort(function ($a, $b) {
+                        $priority = function ($inst) {
+                            $now = now()->endOfDay();
+                            $status = $inst->status;
+                            $pendingStatuses = ['pending', 'في الانتظار', 'لم يتم الدفع', 'partially_paid', 'مدفوع جزئياً', 'overdue', 'متأخر'];
+                            $paidStatuses = ['paid', 'تم الدفع', 'مدفوع'];
+                            $cancelStatuses = ['canceled', 'cancelled', 'ملغي', 'ملغى'];
 
-                        if ((empty($status) || in_array($status, $pendingStatuses)) && $inst->due_date <= $now) {
-                            return 1;
-                        }
-                        if ((empty($status) || in_array($status, $pendingStatuses)) && $inst->due_date > $now) {
-                            return 2;
-                        }
-                        if (in_array($status, $paidStatuses)) {
-                            return 3;
-                        }
-                        if (in_array($status, $cancelStatuses)) {
-                            return 4;
-                        }
-                        return 5;
-                    };
+                            if ((empty($status) || in_array($status, $pendingStatuses)) && $inst->due_date <= $now) {
+                                return 1;
+                            }
+                            if ((empty($status) || in_array($status, $pendingStatuses)) && $inst->due_date > $now) {
+                                return 2;
+                            }
+                            if (in_array($status, $paidStatuses)) {
+                                return 3;
+                            }
+                            if (in_array($status, $cancelStatuses)) {
+                                return 4;
+                            }
+                            return 5;
+                        };
 
-                    $pa = $priority($a);
-                    $pb = $priority($b);
+                        $pa = $priority($a);
+                        $pb = $priority($b);
 
-                    if ($pa !== $pb) {
-                        return $pa - $pb;
-                    }
-                    return strcmp($a->due_date->toDateTimeString(), $b->due_date->toDateTimeString());
-                })
-            ),
+                        if ($pa !== $pb) {
+                            return $pa - $pb;
+                        }
+                        return strcmp($a->due_date->toDateTimeString(), $b->due_date->toDateTimeString());
+                    })
+                )
+                : new \Illuminate\Http\Resources\MissingValue,
         ];
     }
 
