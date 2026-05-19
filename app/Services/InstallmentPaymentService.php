@@ -44,7 +44,7 @@ class InstallmentPaymentService
                 throw new Exception('InstallmentPaymentService: لم يتم تحديد صندوق نقدي للموظف المستلم.');
             }
 
-            $clientUser = User::find($installmentPlan->user_id);
+            $clientUser = User::withoutGlobalScopes()->find($installmentPlan->user_id);
             if (!$clientUser) {
                 throw new Exception('InstallmentPaymentService: لم يتم العثور على العميل المرتبط بخطة التقسيط.');
             }
