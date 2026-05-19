@@ -653,8 +653,9 @@ class UserController extends Controller
      * @urlParam user required معرف المستخدم. Example: 1
      * @bodyParam company_id integer required معرف الشركة. Example: 2
      */
-    public function changeCompany(Request $request, User $user)
+    public function changeCompany(Request $request, $userId)
     {
+        $user = User::withoutGlobalScopes()->findOrFail($userId);
         $authUser = Auth::user();
 
         if (!$authUser) {
