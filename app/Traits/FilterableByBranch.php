@@ -56,7 +56,10 @@ trait FilterableByBranch
             }
 
             // إذا لم يتم تمرير هيدر، نستخدم الفرع الافتراضي للمستخدم أو أول فرع في القائمة
-            if ($user->branch_id) {
+            if ($user->hasPermissionTo(perm_key('admin.company'))) {
+                // مدير الشركة له حق الوصول لكل بيانات شركته، لا يتم حقن فلتر الفروع
+                return;
+            } elseif ($user->branch_id) {
                 $builder->where($builder->getQuery()->from . '.branch_id', $user->branch_id);
             } elseif (!empty($allowedBranchIds)) {
                 $builder->where($builder->getQuery()->from . '.branch_id', $allowedBranchIds[0]);

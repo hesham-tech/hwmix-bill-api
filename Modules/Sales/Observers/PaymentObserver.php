@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Modules\Sales\Models\Invoice;
 
+// مراقب عمليات دفع الفواتير لموديول المبيعات لتسجيل الأنشطة وتعديل الأرصدة المالية
 class PaymentObserver
 {
     public function created(InvoicePayment $payment): void
@@ -17,8 +18,8 @@ class PaymentObserver
         ActivityLog::create([
             'action' => 'paid',
             'description' => "تم تسجيل دفعة مبلغ " . number_format((float) $payment->amount, 2) . " للفاتورة #" . ($payment->invoice?->invoice_number ?? $payment->invoice_id),
-            'subject_type' => Invoice::class,
-            'subject_id' => $payment->invoice_id,
+            'model' => Invoice::class,
+            'row_id' => $payment->invoice_id,
             'user_id' => Auth::id(),
             'company_id' => $payment->company_id,
         ]);

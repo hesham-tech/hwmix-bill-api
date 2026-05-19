@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
 
+// سمة (Trait) لتسجيل الأنشطة وتتبع التعديلات والعمليات الحساسة على الكيانات تلقائياً
 trait LogsActivity
 {
     /**
@@ -80,8 +81,6 @@ trait LogsActivity
     private function recordActivity($action, $description, $oldValues = null, $newValues = null)
     {
         $user = Auth::user();
-        if (!$user)
-            return;
 
         // Filtering sensitive fields
         $sensitiveFields = ['password', 'remember_token', 'token', 'access_token', 'secret', 'key'];
@@ -92,16 +91,21 @@ trait LogsActivity
             return array_diff_key($data, array_flip($sensitiveFields));
         };
 
+        // Determine user IDs and company ID
+        $userId = $user?->id ?? ($this->created_by ?? $this->user_id ?? null);
+        $companyId = $user?->active_company_id ?? ($this->company_id ?? null);
+        $branchId = config('app.active_branch_id') ?? $user?->branch_id ?? ($this->branch_id ?? null);
+
         \App\Jobs\LogActivityJob::dispatch([
             'action' => $action,
             'model' => get_class($this),
             'row_id' => $this->id,
             'old_values' => $filter($oldValues),
             'new_values' => $filter($newValues),
-            'user_id' => $user->id,
-            'created_by' => $user->id,
-            'company_id' => $user->active_company_id,
-            'branch_id' => config('app.active_branch_id') ?? $user->branch_id,
+            'user_id' => $userId,
+            'created_by' => $userId,
+            'company_id' => $companyId,
+            'branch_id' => $branchId,
             'ip_address' => request()->ip(),
             'user_agent' => request()->header('User-Agent'),
             'url' => request()->getRequestUri(),
@@ -112,30 +116,27 @@ trait LogsActivity
     public function logCreated($text)
     {
         $user = Auth::user();
-        if (!$user)
-            return;
-        $description = 'قام المستخدم ' . ($user->nickname ?? $user->name) . ' بانشاء ' . $text;
+        $userName = $user ? ($user->nickname ?? $user->name) : 'النظام';
+        $description = 'قام المستخدم ' . $userName . ' بانشاء ' . $text;
         $this->recordActivity('انشاء', $description, null, $this->getAttributes());
     }
 
     public function logUpdated($text)
     {
         $user = Auth::user();
-        if (!$user)
-            return;
+        $userName = $user ? ($user->nickname ?? $user->name) : 'النظام';
         $changes = $this->getChanges();
         $oldValues = array_intersect_key($this->getOriginal(), $changes);
 
-        $description = 'قام المستخدم ' . ($user->nickname ?? $user->name) . ' بتعديل ' . $text;
+        $description = 'قام المستخدم ' . $userName . ' بتعديل ' . $text;
         $this->recordActivity('تعديل', $description, $oldValues, $changes);
     }
 
     public function logDeleted($text)
     {
         $user = Auth::user();
-        if (!$user)
-            return;
-        $description = 'قام المستخدم ' . ($user->nickname ?? $user->name) . ' بحذف ' . $text;
+        $userName = $user ? ($user->nickname ?? $user->name) : 'النظام';
+        $description = 'قام المستخدم ' . $userName . ' بحذف ' . $text;
         $this->recordActivity('حذف', $description, $this->getAttributes(), null);
     }
 
@@ -147,19 +148,25 @@ trait LogsActivity
         $changes = ['status' => 'canceled'];
         $oldValues = array_intersect_key($this->getOriginal(), $changes);
 
-        $description = 'قام المستخدم ' . (Auth::user()->nickname ?? Auth::user()->name) . ' بإلغاء ' . $text;
+        $user = Auth::user();
+        $userName = $user ? ($user->nickname ?? $user->name) : 'النظام';
+        $description = 'قام المستخدم ' . $userName . ' بإلغاء ' . $text;
         $this->recordActivity('إلغاء', $description, $oldValues, $changes);
     }
 
     public function logRestored($text)
     {
-        $description = 'قام المستخدم ' . (Auth::user()->nickname ?? Auth::user()->name) . ' باستعادة ' . $text;
+        $user = Auth::user();
+        $userName = $user ? ($user->nickname ?? $user->name) : 'النظام';
+        $description = 'قام المستخدم ' . $userName . ' باستعادة ' . $text;
         $this->recordActivity('استعادة', $description, null, $this->getAttributes());
     }
 
     public function logForceDeleted($text)
     {
-        $description = 'قام المستخدم ' . (Auth::user()->nickname ?? Auth::user()->name) . ' بحذف ' . $text . ' حذف نهائي';
+        $user = Auth::user();
+        $userName = $user ? ($user->nickname ?? $user->name) : 'النظام';
+        $description = 'قام المستخدم ' . $userName . ' بحذف ' . $text . ' حذف نهائي';
         $this->recordActivity('حذف نهائي', $description, $this->getAttributes(), null);
     }
 }

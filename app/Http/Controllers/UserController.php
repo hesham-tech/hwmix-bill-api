@@ -76,6 +76,13 @@ class UserController extends Controller
                     ->withoutGlobalScope('company_filter')
                     ->withoutGlobalScope('branch_filter')
                     ->with(['company', 'companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes']);
+
+                // استبعاد العملاء النقديين لجميع الشركات عند عدم البحث
+                if (!$request->filled('search')) {
+                    $query->whereDoesntHave('companyUsers', function ($q) {
+                        $q->where('customer_type_in_company', 'cash_customer');
+                    });
+                }
             } else {
                 // العرض السياقي: جلب سجلات من company_user
                 if (!$activeCompanyId && !$isSuperAdmin) {
@@ -102,6 +109,11 @@ class UserController extends Controller
 
                 // استبعاد المستخدم الحالي من القائمة الإدارية
                 $query->where('user_id', '!=', $authUser->id);
+
+                // استبعاد جميع المستخدمين من النوع نقدي (العملاء النقديين) عند عدم البحث
+                if (!$request->filled('search')) {
+                    $query->where('customer_type_in_company', '!=', 'cash_customer');
+                }
             }
 
             // تطبيق البحث الذكي (Smart Search)
@@ -532,14 +544,22 @@ class UserController extends Controller
      * 
      * @bodyParam item_ids integer[] required مصفوفة المعرفات. Example: [2, 3]
      */
-    public function destroy(Request $request)
+    public function destroy(Request $request, User $user = null)
     {
         $authUser = Auth::user();
         if (!$authUser) {
             return api_unauthorized('يجب تسجيل الدخول.');
         }
 
-        $userIds = $request->input('item_ids');
+        if ($user && $user->exists) {
+            $userIds = [$user->id];
+        } else {
+            $userIds = $request->input('item_ids');
+            if (is_numeric($userIds)) {
+                $userIds = [(int)$userIds];
+            }
+        }
+
         if (!$userIds || !is_array($userIds) || empty($userIds)) {
             return api_error('لم يتم تحديد معرفات المستخدمين بشكل صحيح', [], 400);
         }

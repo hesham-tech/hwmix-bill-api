@@ -7,11 +7,22 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\LogsActivity;
+
 /**
+ * تعليق عربي: كلاس يمثل الخدمات المتاحة للاشتراك بداخل النظام وتفاصيل تسعيرها ومدتها الافتراضية.
  */
 class Service extends Model
 {
-    use HasFactory, Scopes, Blameable;
+    use HasFactory, Scopes, Blameable, LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "الخدمة ({$this->name})";
+    }
     protected $fillable = [
         'name',
         'description',

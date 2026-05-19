@@ -31,8 +31,10 @@ class FinancialTransactionService implements DocumentServiceInterface
         // تسجيل سجل النشاط
         ActivityLog::create([
             'action' => 'إنشاء معاملة مالية',
-            'user_id' => $data['created_by'],
-            'details' => 'تم إنشاء معاملة مالية بقيمة ' . $transaction->amount,
+            'user_id' => $data['created_by'] ?? null,
+            'company_id' => $data['company_id'] ?? null,
+            'branch_id' => $data['branch_id'] ?? null,
+            'description' => 'تم إنشاء معاملة مالية بقيمة ' . $transaction->amount,
         ]);
 
         // إعادة البيانات النهائية
@@ -40,5 +42,15 @@ class FinancialTransactionService implements DocumentServiceInterface
             'transaction_id' => $transaction->id,
             'amount' => $transaction->amount,
         ];
+    }
+
+    public function update(array $data, \App\Models\Invoice $invoice)
+    {
+        throw new \Exception('Method not implemented');
+    }
+
+    public function cancel(\App\Models\Invoice $invoice): \App\Models\Invoice
+    {
+        throw new \Exception('Method not implemented');
     }
 }

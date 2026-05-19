@@ -145,6 +145,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
             Route::put('change-company/{userId}', 'changeCompany');
             Route::put('users/{user}/cashbox/{cashBoxId}/set-default', 'setDefaultCashBox');
             Route::post('users/delete', 'destroy');
+            Route::delete('users/{user}', 'destroy');
         });
 
     // company Controller

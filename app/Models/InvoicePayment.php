@@ -6,14 +6,28 @@ use App\Traits\Blameable;
 use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use App\Observers\PaymentObserver;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * تعليق عربي: كلاس يمثل سجلات سداد الفواتير والمدفوعات المالية المرتبطة بالفاتورة.
+ */
 #[ObservedBy([PaymentObserver::class])]
 class InvoicePayment extends Model
 {
-    use HasFactory, SoftDeletes, Blameable, Scopes;
+    use HasFactory, SoftDeletes, Blameable, Scopes, LogsActivity;
+
+    protected $doNotLog = ['created'];
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "دفعة فاتورة #{$this->invoice_id} بمبلغ: {$this->amount}";
+    }
 
     protected $fillable = [
         'invoice_id',

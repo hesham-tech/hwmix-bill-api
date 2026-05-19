@@ -35,8 +35,10 @@ class OrderAndQuotationService implements DocumentServiceInterface
         // تسجيل سجل النشاط
         ActivityLog::create([
             'action' => 'إنشاء مستند',
-            'user_id' => $data['created_by'],
-            'details' => 'تم إنشاء المستند رقم ' . $document->invoice_number,
+            'user_id' => $data['created_by'] ?? null,
+            'company_id' => $data['company_id'] ?? null,
+            'branch_id' => $data['branch_id'] ?? null,
+            'description' => 'تم إنشاء المستند رقم ' . $document->invoice_number,
         ]);
 
         // إعادة البيانات النهائية
@@ -44,5 +46,15 @@ class OrderAndQuotationService implements DocumentServiceInterface
             'invoice_number' => $document->invoice_number,
             'total' => $document->total_amount,
         ];
+    }
+
+    public function update(array $data, \App\Models\Invoice $invoice)
+    {
+        throw new \Exception('Method not implemented');
+    }
+
+    public function cancel(\App\Models\Invoice $invoice): \App\Models\Invoice
+    {
+        throw new \Exception('Method not implemented');
     }
 }

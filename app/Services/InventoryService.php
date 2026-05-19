@@ -53,7 +53,9 @@ class InventoryService implements DocumentServiceInterface
             ActivityLog::create([
                 'action' => 'تعديل المخزون',
                 'user_id' => $data['created_by'],
-                'details' => 'تم إجراء تعديلات مخزنية لعدد ' . count($data['items']) . ' أصناف.',
+                'company_id' => $data['company_id'],
+                'branch_id' => $data['branch_id'] ?? null,
+                'description' => 'تم إجراء تعديلات مخزنية لعدد ' . count($data['items']) . ' أصناف.',
             ]);
 
             DB::commit();

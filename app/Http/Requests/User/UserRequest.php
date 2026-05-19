@@ -21,13 +21,81 @@ class UserRequest extends FormRequest
      */
     public function rules(): array
     {
+        $companyId = \Illuminate\Support\Facades\Auth::user()->active_company_id ?? $this->input('company_id');
+
         return [
-            'phone' => 'required|string|max:15|unique:users,phone',
+            'phone' => [
+                'required',
+                'string',
+                'max:15',
+                function ($attribute, $value, $fail) use ($companyId) {
+                    $existingUser = \App\Models\User::withoutGlobalScopes()
+                        ->where('phone', $value)
+                        ->first();
+
+                    if ($existingUser && $companyId) {
+                        $isLinked = \App\Models\CompanyUser::where('user_id', $existingUser->id)
+                            ->where('company_id', $companyId)
+                            ->exists();
+
+                        if ($isLinked) {
+                            $fail('رقم الهاتف مسجل بالفعل ومرتبط بهذه الشركة.');
+                        }
+                    }
+                }
+            ],
             'password' => 'nullable|string|min:8',
-            'email' => "nullable|email",
+            'email' => [
+                'nullable',
+                'email',
+                function ($attribute, $value, $fail) {
+                    $phone = $this->input('phone');
+                    $existingUserByPhone = \App\Models\User::withoutGlobalScopes()
+                        ->where('phone', $phone)
+                        ->first();
+
+                    $existingUserByEmail = \App\Models\User::withoutGlobalScopes()
+                        ->where('email', $value)
+                        ->first();
+
+                    if ($existingUserByEmail) {
+                        if (!$existingUserByPhone || $existingUserByEmail->id !== $existingUserByPhone->id) {
+                            $fail('البريد الإلكتروني مسجل بالفعل لمستخدم آخر.');
+                        }
+                    }
+                }
+            ],
             'full_name' => 'required|string|max:255',
             'nickname' => 'required|string|max:255',
-            'username' => 'nullable|string|max:255|unique:users,username',
+            'username' => [
+                'nullable',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    $phone = $this->input('phone');
+                    $existingUserByPhone = \App\Models\User::withoutGlobalScopes()
+                        ->where('phone', $phone)
+                        ->first();
+
+                    if (!$existingUserByPhone) {
+                        $usernameExists = \App\Models\User::withoutGlobalScopes()
+                            ->where('username', $value)
+                            ->exists();
+
+                        if ($usernameExists) {
+                            $fail('اسم المستخدم مسجل بالفعل في النظام.');
+                        }
+                    } else {
+                        $existingUserByUsername = \App\Models\User::withoutGlobalScopes()
+                            ->where('username', $value)
+                            ->first();
+
+                        if ($existingUserByUsername && $existingUserByUsername->id !== $existingUserByPhone->id) {
+                            $fail('اسم المستخدم مسجل بالفعل لمستخدم آخر.');
+                        }
+                    }
+                }
+            ],
             'position' => 'nullable|string|max:255',
             'settings' => 'nullable|json',
             'last_login_at' => 'nullable|date',

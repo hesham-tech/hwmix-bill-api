@@ -9,9 +9,22 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Company;
 use App\Models\User;
 
+use App\Traits\LogsActivity;
+
+/**
+ * تعليق عربي: كلاس يمثل أنواع الفواتير المختلفة المتاحة في النظام داخل موديول المبيعات.
+ */
 class InvoiceType extends Model
 {
-    use HasFactory, Scopes, Blameable;
+    use HasFactory, Scopes, Blameable, LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "نوع الفاتورة ({$this->name})";
+    }
 
     protected $fillable = [
         'name',

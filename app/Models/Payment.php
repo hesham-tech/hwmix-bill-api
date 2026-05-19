@@ -7,11 +7,22 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\LogsActivity;
+
 /**
+ * تعليق عربي: كلاس يمثل عمليات الدفع العامة غير المرتبطة مباشرة بفاتورة مبيعات واحدة.
  */
 class Payment extends Model
 {
-    use HasFactory, Blameable, Scopes;
+    use HasFactory, Blameable, Scopes, LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "عملية دفع بمبلغ: {$this->amount}";
+    }
     protected $fillable = [
         'user_id',
         'company_id',

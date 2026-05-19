@@ -7,9 +7,22 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\LogsActivity;
+
+/**
+ * تعليق عربي: كلاس يمثل سجلات تحصيل وإثبات دفع مبالغ الاشتراكات للعملاء.
+ */
 class SubscriptionPayment extends Model
 {
-    use HasFactory, Scopes, Blameable;
+    use HasFactory, Scopes, Blameable, LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "دفعة اشتراك رقم #{$this->subscription_id} بمبلغ: {$this->amount}";
+    }
 
     protected $fillable = [
         'subscription_id',

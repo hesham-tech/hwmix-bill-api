@@ -10,9 +10,22 @@ use App\Models\Company;
 use App\Models\User;
 use App\Models\Subscription;
 
+use App\Traits\LogsActivity;
+
+/**
+ * تعليق عربي: كلاس يمثل الخدمات المتاحة للاشتراك وتفاصيل تسعيرها ومدتها داخل موديول المبيعات.
+ */
 class Service extends Model
 {
-    use HasFactory, Scopes, Blameable;
+    use HasFactory, Scopes, Blameable, LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "الخدمة ({$this->name})";
+    }
 
     protected $fillable = [
         'name',

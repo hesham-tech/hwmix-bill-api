@@ -481,6 +481,7 @@ class TransactionController extends Controller
                 $query->where('type', $request->input('type'));
             }
             if ($request->filled('user_id')) {
+                $query->withoutGlobalScope('branch_filter');
                 $query->where('user_id', $request->input('user_id'));
             }
             if ($request->filled('cashbox_id')) {

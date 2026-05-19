@@ -202,6 +202,15 @@ class TransactionController extends Controller
 
             if ($request->filled('type')) $query->where('type', $request->input('type'));
 
+            if ($request->filled('user_id')) {
+                $query->withoutGlobalScope('branch_filter');
+                $userId = $request->input('user_id');
+                $query->where(function ($q) use ($userId) {
+                    $q->where('user_id', $userId)
+                      ->orWhere('target_user_id', $userId);
+                });
+            }
+
             $perPage = max(1, $request->get('per_page', 10));
             $transactions = $query->orderBy('created_at', 'desc')->paginate($perPage);
 

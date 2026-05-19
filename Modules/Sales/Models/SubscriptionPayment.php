@@ -11,9 +11,22 @@ use App\Models\Company;
 use App\Models\PaymentMethod;
 use App\Models\CashBox;
 
+use App\Traits\LogsActivity;
+
+/**
+ * تعليق عربي: كلاس يمثل سجلات تحصيل وإثبات دفع مبالغ الاشتراكات للعملاء داخل موديول المبيعات.
+ */
 class SubscriptionPayment extends Model
 {
-    use HasFactory, Scopes, Blameable;
+    use HasFactory, Scopes, Blameable, LogsActivity;
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "دفعة اشتراك رقم #{$this->subscription_id} بمبلغ: {$this->amount}";
+    }
 
     protected $fillable = [
         'subscription_id',

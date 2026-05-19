@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
 
+// مراقب عمليات دفع الفواتير لتسجيل الأنشطة والقيود المالية التابعة للشركة
 class PaymentObserver
 {
     /**
@@ -18,8 +19,8 @@ class PaymentObserver
         ActivityLog::create([
             'action' => 'paid',
             'description' => "تم تسجيل دفعة مبلغ " . number_format((float) $payment->amount, 2) . " للفاتورة #" . ($payment->invoice->invoice_number ?? $payment->invoice_id),
-            'subject_type' => \App\Models\Invoice::class,
-            'subject_id' => $payment->invoice_id,
+            'model' => \App\Models\Invoice::class,
+            'row_id' => $payment->invoice_id,
             'user_id' => Auth::id(),
             'company_id' => $payment->company_id,
         ]);

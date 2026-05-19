@@ -66,9 +66,13 @@ class CashBoxController extends Controller
             $cashBoxQuery = CashBox::query()->with($this->relations);
             $companyId = $authUser->active_company_id ?? null;
 
-            // تطبيق منطق الصلاحيات: كل مستخدم يرى صناديقه فقط بناءً على طلب العميل
-            $cashBoxQuery->where('user_id', $authUser->id);
-
+            // تطبيق منطق الصلاحيات: المدراء يرون كل الصناديق، بينما العملاء يرون صناديقهم فقط
+            if (!$authUser->can('admin.super') && 
+                !$authUser->can('admin.company') && 
+                !$authUser->can('cashboxes.view_all')) {
+                // العميل أو الموظف العادي يرى صناديقه فقط
+                $cashBoxQuery->where('user_id', $authUser->id);
+            }
 
             // التصفية باستخدام الحقول المقدمة
             if (!empty($request->get('name'))) {
@@ -91,6 +95,7 @@ class CashBoxController extends Controller
             }
 
             if (!empty($request->get('user_id'))) { // فلتر جديد لتحديد الصناديق الخاصة بمستخدم معين
+                $cashBoxQuery->withoutGlobalScope('branch_filter');
                 $cashBoxQuery->where('user_id', $request->get('user_id'));
             }
 
@@ -171,6 +176,16 @@ class CashBoxController extends Controller
                 // $validatedData['active'] = (bool) ($validatedData['active'] ?? true);
 
                 $cashBox = CashBox::create($validatedData);
+
+                // إذا تم تعيين هذه الخزنة كافتراضية، قم بإزالة الصفة عن باقي الخزائن لنفس المستخدم والفرع
+                if (isset($validatedData['is_default']) && $validatedData['is_default']) {
+                    CashBox::where('company_id', $cashBox->company_id)
+                        ->where('user_id', $cashBox->user_id)
+                        ->where('branch_id', $cashBox->branch_id)
+                        ->where('id', '!=', $cashBox->id)
+                        ->update(['is_default' => false]);
+                }
+
                 $cashBox->load($this->relations);
                 DB::commit();
                 return api_success(new CashBoxResource($cashBox), 'تم إنشاء الخزنة بنجاح.', 201);
@@ -289,6 +304,16 @@ class CashBoxController extends Controller
                 // $validatedData['active'] = (bool) ($validatedData['active'] ?? $cashBox->active); // إذا كان هناك حقل نشط
 
                 $cashBox->update($validatedData);
+
+                // إذا تم تعيين هذه الخزنة كافتراضية، قم بإزالة الصفة عن باقي الخزائن لنفس المستخدم والفرع
+                if (isset($validatedData['is_default']) && $validatedData['is_default']) {
+                    CashBox::where('company_id', $cashBox->company_id)
+                        ->where('user_id', $cashBox->user_id)
+                        ->where('branch_id', $cashBox->branch_id)
+                        ->where('id', '!=', $cashBox->id)
+                        ->update(['is_default' => false]);
+                }
+
                 $cashBox->load($this->relations);
                 DB::commit();
                 return api_success(new CashBoxResource($cashBox), 'تم تحديث الخزنة بنجاح.');

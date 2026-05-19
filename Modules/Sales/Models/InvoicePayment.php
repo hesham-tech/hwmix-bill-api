@@ -14,10 +14,25 @@ use Modules\Accounting\Models\CashBox;
 use App\Models\Company;
 use App\Models\User;
 
+use App\Traits\LogsActivity;
+
+/**
+ * تعليق عربي: كلاس يمثل سجلات سداد الفواتير والمدفوعات المالية المرتبطة بالفاتورة داخل موديول المبيعات.
+ */
 #[ObservedBy([PaymentObserver::class])]
 class InvoicePayment extends Model
 {
-    use HasFactory, SoftDeletes, Blameable, Scopes;
+    use HasFactory, SoftDeletes, Blameable, Scopes, LogsActivity;
+
+    protected $doNotLog = ['created'];
+
+    /**
+     * Label for activity logs.
+     */
+    public function logLabel()
+    {
+        return "دفعة فاتورة #{$this->invoice_id} بمبلغ: {$this->amount}";
+    }
 
     protected $fillable = [
         'invoice_id',
