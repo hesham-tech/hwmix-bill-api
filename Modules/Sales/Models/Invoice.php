@@ -122,7 +122,7 @@ class Invoice extends Model
 
     public function customer()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id')->withoutGlobalScopes();
     }
     public function invoiceType()
     {
@@ -142,11 +142,11 @@ class Invoice extends Model
     }
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by')->withoutGlobalScopes();
     }
     public function updater()
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(User::class, 'updated_by')->withoutGlobalScopes();
     }
     public function installmentPlan()
     {
