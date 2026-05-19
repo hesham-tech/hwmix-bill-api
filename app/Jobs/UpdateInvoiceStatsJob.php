@@ -19,7 +19,7 @@ class UpdateInvoiceStatsJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(Invoice $invoice)
+    public function __construct($invoice)
     {
         $this->invoice = $invoice;
     }

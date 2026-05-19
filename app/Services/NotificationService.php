@@ -14,7 +14,7 @@ class NotificationService
     /**
      * إرسال إشعار عند إنشاء فاتورة جديدة
      */
-    public function notifyInvoiceCreated(Invoice $invoice)
+    public function notifyInvoiceCreated($invoice)
     {
         if (!$invoice->user || !$invoice->user->email) {
             return;
@@ -30,7 +30,7 @@ class NotificationService
     /**
      * إرسال إشعار عند استلام دفعة
      */
-    public function notifyPaymentReceived(InvoicePayment $payment)
+    public function notifyPaymentReceived($payment)
     {
         $invoice = $payment->invoice;
         if (!$invoice || !$invoice->user || !$invoice->user->email) {

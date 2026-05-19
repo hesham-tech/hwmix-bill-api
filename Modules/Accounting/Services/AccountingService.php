@@ -47,6 +47,76 @@ class AccountingService
                         'description' => "دفعة من فاتورة رقم: {$invoice->invoice_number}",
                         'skip_party_balance' => $isCashCustomer,
                     ]);
+
+                    $createdById = $authUser ? $authUser->id : $invoice->created_by;
+
+                    // إذا كان العميل حقيقياً وهناك زيادة مدفوعة عن قيمة الفاتورة الصافية
+                    if ($paidAmount > $netAmount && $party && !$isCashCustomer) {
+                        $excess = $paidAmount - $netAmount;
+
+                        // 1. قصر مدفوع الفاتورة الحالية على قيمتها الصافية فقط
+                        $invoice->paid_amount = $netAmount;
+                        $invoice->remaining_amount = 0;
+                        $invoice->payment_status = Invoice::PAYMENT_PAID;
+                        $invoice->save();
+
+                        // تسجيل دفعة للفاتورة الحالية بقيمتها الصافية
+                        InvoicePayment::create([
+                            'invoice_id' => $invoice->id,
+                            'cash_box_id' => $cashBoxId,
+                            'amount' => $netAmount,
+                            'payment_date' => now(),
+                            'notes' => "سداد كامل قيمة الفاتورة رقم: {$invoice->invoice_number}",
+                            'company_id' => $invoice->company_id,
+                            'created_by' => $createdById,
+                        ]);
+
+                        // 2. جلب وتوزيع الزيادة على أقدم الفواتير غير المدفوعة للعميل
+                        $dueInvoices = Invoice::where('user_id', $party->id)
+                            ->where('id', '!=', $invoice->id)
+                            ->whereIn('payment_status', [Invoice::PAYMENT_UNPAID, Invoice::PAYMENT_PARTIALLY_PAID])
+                            ->where('status', '!=', 'canceled')
+                            ->orderBy('id', 'asc')
+                            ->lockForUpdate()
+                            ->get();
+
+                        /** @var Invoice $dueInvoice */
+                        foreach ($dueInvoices as $dueInvoice) {
+                            if ($excess <= 0) break;
+                            $dueRemaining = (float)$dueInvoice->remaining_amount;
+                            if ($dueRemaining <= 0) continue;
+
+                            $allocated = min($excess, $dueRemaining);
+
+                            InvoicePayment::create([
+                                'invoice_id' => $dueInvoice->id,
+                                'cash_box_id' => $cashBoxId,
+                                'amount' => $allocated,
+                                'payment_date' => now(),
+                                'notes' => "تسوية دفعة زائدة مستلمة من الفاتورة رقم: {$invoice->invoice_number}",
+                                'company_id' => $dueInvoice->company_id,
+                                'created_by' => $createdById,
+                            ]);
+
+                            $dueInvoice->paid_amount += $allocated;
+                            $dueInvoice->remaining_amount = max(0, $dueInvoice->net_amount - $dueInvoice->paid_amount);
+                            $dueInvoice->updatePaymentStatus();
+                            $dueInvoice->save();
+
+                            $excess -= $allocated;
+                        }
+                    } else {
+                        // دفعة عادية مساوية أو أقل من الصافي
+                        InvoicePayment::create([
+                            'invoice_id' => $invoice->id,
+                            'cash_box_id' => $cashBoxId,
+                            'amount' => $paidAmount,
+                            'payment_date' => now(),
+                            'notes' => "دفعة من فاتورة رقم: {$invoice->invoice_number}",
+                            'company_id' => $invoice->company_id,
+                            'created_by' => $createdById,
+                        ]);
+                    }
                 }
             } elseif ($type === 'purchase') {
                 if ($party && !$isCashCustomer) {
@@ -219,6 +289,7 @@ class AccountingService
                 }
             }
 
+            /** @var Invoice $invoice */
             foreach ($dueInvoices as $invoice) {
                 if ($remaining <= 0) break;
                 $invoiceRemaining = (float)$invoice->remaining_amount;
