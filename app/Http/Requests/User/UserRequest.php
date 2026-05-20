@@ -97,7 +97,7 @@ class UserRequest extends FormRequest
                 }
             ],
             'position' => 'nullable|string|max:255',
-            'settings' => 'nullable|json',
+            'settings' => 'nullable|array',
             'last_login_at' => 'nullable|date',
             'email_verified_at' => 'nullable|date',
             'type' => 'nullable|in:system_owner,company_owner,sales,accounting,client,user',

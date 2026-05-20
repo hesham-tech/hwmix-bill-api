@@ -89,6 +89,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'settings' => 'array',
         ];
     }
 
@@ -697,6 +698,15 @@ class User extends Authenticatable
                 }
             }
         });
+    }
+
+    /**
+     * Resolve the route binding for the model.
+     * تعليق عربي: تجاوز الفلترة بالشركة عند جلب المستخدم عبر الروابط لتمكين التحكم بالصلاحيات داخل الكنترولر.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->withoutGlobalScopes()->where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 
     /**

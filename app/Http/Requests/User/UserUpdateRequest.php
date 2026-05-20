@@ -30,7 +30,7 @@ class UserUpdateRequest extends FormRequest
             'phone' => 'sometimes|required|string|max:15|unique:users,phone,' . ($this->route('user')?->id ?? $this->route('user')),
             'password' => 'nullable|string|min:8',
             'position' => 'nullable|string|max:255',
-            'settings' => 'nullable|json',
+            'settings' => 'nullable|array',
             'last_login_at' => 'nullable',
             'email_verified_at' => 'nullable',
             'created_by' => 'nullable|exists:users,id',

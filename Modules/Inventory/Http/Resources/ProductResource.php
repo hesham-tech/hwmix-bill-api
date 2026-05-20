@@ -10,6 +10,9 @@ use App\Http\Resources\Image\ImageResource;
 use App\Http\Resources\InstallmentPlan\InstallmentPlanBasicResource;
 use Modules\Inventory\Models\ProductVariant;
 
+/**
+ * متحور البيانات للمنتجات
+ */
 class ProductResource extends JsonResource
 {
     public function toArray(Request $request)
@@ -53,6 +56,7 @@ class ProductResource extends JsonResource
             'images' => $this->whenLoaded('images', fn() => ImageResource::collection($this->images)),
             'primary_image_url' => $this->primary_image_url,
             'tags' => $this->tags ?? [],
+            'sales_count' => (int) ($this->sales_count ?? 0),
             'published_at' => $this->whenNotNull($this->published_at ? $this->published_at->format('Y-m-d H:i:s') : null),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

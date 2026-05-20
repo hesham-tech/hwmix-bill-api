@@ -40,6 +40,7 @@ class ProductVariantResource extends JsonResource
             'min_quantity' => $this->min_quantity,
             'discount' => $this->discount,
             'status' => $this->status,
+            'sales_count' => (int) ($this->sales_count ?? 0),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
 
