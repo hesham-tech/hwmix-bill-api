@@ -70,7 +70,17 @@ class UserController extends Controller
             // تحديد إذا كان المطلوب هو العرض العالمي (للسوبر أدمن فقط)
             $isGlobalView = filter_var($request->input('global', false), FILTER_VALIDATE_BOOLEAN) && $isSuperAdmin;
 
-            if ($isGlobalView) {
+            // فلتر: المستخدمون غير التابعين لأي شركة (active_company_id = null)
+            $isUnaffiliated = filter_var($request->input('unaffiliated', false), FILTER_VALIDATE_BOOLEAN) && $isSuperAdmin;
+
+            if ($isUnaffiliated) {
+                // جلب المستخدمين الذين ليس لديهم شركة نشطة
+                $query = User::query()
+                    ->withoutGlobalScope('company_filter')
+                    ->withoutGlobalScope('branch_filter')
+                    ->with(['company', 'companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes'])
+                    ->whereNull('active_company_id');
+            } elseif ($isGlobalView) {
                 // العرض العالمي: جلب سجلات فريدة من جدول users
                 $query = User::query()
                     ->withoutGlobalScope('company_filter')
@@ -120,7 +130,7 @@ class UserController extends Controller
             if ($request->filled('search')) {
                 $search = $request->input('search');
 
-                if ($isGlobalView) {
+                if ($isGlobalView || $isUnaffiliated) {
                     // البحث العالمي للمشرف العام
                     $columns = ['username', 'email', 'phone', 'full_name', 'nickname'];
                     $query->smartSearch($search, $columns);
@@ -191,7 +201,7 @@ class UserController extends Controller
                 }
             }
 
-            $resourceClass = $isGlobalView ? UserResource::class : CompanyUserBasicResource::class;
+            $resourceClass = ($isGlobalView || $isUnaffiliated) ? UserResource::class : CompanyUserBasicResource::class;
 
             if (is_null($data)) {
                 return api_success([], 'لا توجد بيانات متاحة.');
@@ -744,60 +754,97 @@ class UserController extends Controller
             }
 
             $activeCompanyId = $authUser->active_company_id;
-            $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
-            $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
-            $canViewAll = $authUser->hasPermissionTo(perm_key('users.view_all'));
+            $isSuperAdmin    = $authUser->hasPermissionTo(perm_key('admin.super'));
+            $isCompanyAdmin  = $authUser->hasPermissionTo(perm_key('admin.company'));
+            $canViewAll      = $authUser->hasPermissionTo(perm_key('users.view_all'));
             $canViewChildren = $authUser->hasPermissionTo(perm_key('users.view_children'));
-            $canViewSelf = $authUser->hasPermissionTo(perm_key('users.view_self'));
+            $canViewSelf     = $authUser->hasPermissionTo(perm_key('users.view_self'));
 
-            $baseQuery = CompanyUser::query();
-
-            $baseQuery->with([
-                'user' => fn($q) => $q->with([
-                    'cashBoxes' => function ($cashBoxQuery) use ($activeCompanyId) {
-                        if ($activeCompanyId) {
-                            $cashBoxQuery->where('company_id', $activeCompanyId);
-                        }
-                    },
-                    'creator',
-                    'companies.logo'
-                ]),
-                'company',
-            ]);
-
-            if ($isSuperAdmin) {
-                // يرى الكل
-            } elseif ($activeCompanyId) {
-                $baseQuery->where('company_id', $activeCompanyId);
-
-                if ($isCompanyAdmin || $canViewAll) {
-                    // يرى الكل في شركته
-                } elseif ($canViewChildren) {
-                    $descendantUserIds = $authUser->getDescendantUserIds();
-                    $baseQuery->whereIn('user_id', $descendantUserIds);
-                } elseif ($canViewSelf) {
-                    $baseQuery->where('user_id', $authUser->id);
-                } else {
-                    return api_forbidden('ليس لديك صلاحية للبحث عن المستخدمين في هذه الشركة.');
-                }
-            } else {
-                return api_forbidden('ليس لديك صلاحية للبحث عن المستخدمين.');
-            }
-
-            $perPage = max(1, $request->input('per_page', 10));
-            $page = max(1, $request->input('page', 1));
+            $perPage   = max(1, $request->input('per_page', 10));
             $sortField = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'asc');
 
-            $search = $request->input('search');
-            $baseQueryWithoutSearch = clone $baseQuery;
+            // ======================================================
+            // السوبر أدمن: يرى جميع المستخدمين بدون قيود (User model)
+            // ======================================================
+            if ($isSuperAdmin) {
+                $query = User::query()
+                    ->withoutGlobalScope('company_filter')
+                    ->withoutGlobalScope('branch_filter')
+                    ->with(['company', 'companies.logo', 'creator', 'roles', 'images', 'cashBoxes']);
+
+                if ($request->filled('search')) {
+                    $search  = $request->input('search');
+                    $columns = ['username', 'email', 'phone', 'full_name', 'nickname'];
+                    $query->smartSearch($search, $columns);
+                }
+
+                $query
+                    ->when($request->filled('status'), fn($q) =>
+                        $q->where('status', $request->input('status')))
+                    ->when($request->filled('phone'), fn($q) =>
+                        $q->where('phone', 'like', '%' . $request->phone . '%'))
+                    ->when($request->filled('email'), fn($q) =>
+                        $q->where('email', 'like', '%' . $request->email . '%'));
+
+                $allowedSortFields = ['id', 'full_name', 'nickname', 'username', 'email', 'phone', 'created_at'];
+                $query->orderBy(in_array($sortField, $allowedSortFields) ? $sortField : 'id', $sortOrder);
+
+                /** @var \Illuminate\Pagination\LengthAwarePaginator $users */
+                $users = $query->paginate($perPage);
+
+                // تحسين التشابه (Similarity Matching)
+                if ($request->filled('search')) {
+                    $search  = $request->input('search');
+                    $items   = $users->getCollection();
+                    $refined = (new User())->refineSimilarity($items, $search, ['full_name', 'nickname', 'username', 'email', 'phone'], 80);
+                    if ($refined && !$refined->isEmpty()) {
+                        $users->setCollection($refined);
+                    }
+                }
+
+                if ($users->isEmpty()) {
+                    return api_success([], 'لم يتم العثور على مستخدمين.');
+                }
+
+                return api_success(UserResource::collection($users), 'تم جلب المستخدمين بنجاح.');
+            }
+
+            // ======================================================
+            // بقية المستخدمين: يعملون في نطاق الشركة النشطة (CompanyUser)
+            // ======================================================
+            if (!$activeCompanyId) {
+                return api_forbidden('يجب تحديد شركة نشطة.');
+            }
+
+            $baseQuery = CompanyUser::query()
+                ->with([
+                    'user' => fn($q) => $q->with([
+                        'cashBoxes' => function ($cashBoxQuery) use ($activeCompanyId) {
+                            $cashBoxQuery->where('company_id', $activeCompanyId);
+                        },
+                        'creator',
+                        'companies.logo'
+                    ]),
+                    'company',
+                ])
+                ->where('company_id', $activeCompanyId);
+
+            if ($isCompanyAdmin || $canViewAll) {
+                // يرى الكل في شركته
+            } elseif ($canViewChildren) {
+                $descendantUserIds = $authUser->getDescendantUserIds();
+                $baseQuery->whereIn('user_id', $descendantUserIds);
+            } elseif ($canViewSelf) {
+                $baseQuery->where('user_id', $authUser->id);
+            } else {
+                return api_forbidden('ليس لديك صلاحية للبحث عن المستخدمين في هذه الشركة.');
+            }
 
             if ($request->filled('search')) {
-                $search = $request->input('search');
-                $columns = ['nickname_in_company', 'full_name_in_company'];
-                $relationColumns = [
-                    'user' => ['email', 'phone', 'username', 'full_name', 'nickname']
-                ];
+                $search         = $request->input('search');
+                $columns        = ['nickname_in_company', 'full_name_in_company'];
+                $relationColumns = ['user' => ['email', 'phone', 'username', 'full_name', 'nickname']];
                 $baseQuery->smartSearch($search, $columns, $relationColumns);
             }
 
@@ -817,7 +864,7 @@ class UserController extends Controller
                 ->when($request->filled('created_at_to'), fn($q) =>
                     $q->where('company_user.created_at', '<=', $request->input('created_at_to') . ' 23:59:59'));
 
-            if (in_array($sortField, ['nickname_in_company', 'status', 'position_in_company', 'customer_type_in_company', 'full_name_in_company', 'user_phone', 'user_email', 'user_username'])) {
+            if (in_array($sortField, ['nickname_in_company', 'status', 'position_in_company', 'customer_type_in_company', 'full_name_in_company'])) {
                 $baseQuery->orderBy('company_user.' . $sortField, $sortOrder);
             } elseif (in_array($sortField, ['username', 'email', 'phone'])) {
                 $baseQuery->join('users', 'company_user.user_id', '=', 'users.id')
@@ -830,21 +877,12 @@ class UserController extends Controller
             /** @var \Illuminate\Pagination\LengthAwarePaginator $companyUsers */
             $companyUsers = $baseQuery->paginate($perPage);
 
-            // تحسين النتائج باستخدام التشابه (Similarity Matching) بنسبة 80%
+            // تحسين التشابه (Similarity Matching)
             if ($request->filled('search')) {
-                $search = $request->input('search');
-                $items = $companyUsers->getCollection();
-
-                $fieldsToCompare = [
-                    'nickname_in_company',
-                    'full_name_in_company',
-                    'user.email',
-                    'user.phone',
-                    'user.username',
-                    'user.full_name',
-                    'user.nickname'
-                ];
-                $refined = (new CompanyUser())->refineSimilarity($items, $search, $fieldsToCompare, 80);
+                $search  = $request->input('search');
+                $items   = $companyUsers->getCollection();
+                $fields  = ['nickname_in_company', 'full_name_in_company', 'user.email', 'user.phone', 'user.username', 'user.full_name', 'user.nickname'];
+                $refined = (new CompanyUser())->refineSimilarity($items, $search, $fields, 80);
 
                 if ($refined) {
                     $companyUsers->setCollection($refined);
