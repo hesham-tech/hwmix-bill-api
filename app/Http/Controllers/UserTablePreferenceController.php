@@ -27,10 +27,30 @@ class UserTablePreferenceController extends Controller
             'expires_at', 'published_at', 'desc', 'desc_long', 'visibility', 'created_by_name'
         ],
         'invoices.index' => [
-            'invoice_number', 'client_name', 'net_amount', 'tax_amount', 'total_amount', 'status', 'created_at', 'updated_at', 'actions'
+            'invoice_number', 'customer', 'issue_date', 'financials', 'status', 'actions', 
+            'client_name', 'net_amount', 'tax_amount', 'total_amount', 'created_at', 'updated_at'
         ],
         'users.index' => [
-            'name', 'email', 'phone', 'active', 'roles', 'created_at', 'updated_at', 'actions'
+            'full_name', 'phone', 'roles', 'status', 'actions', 
+            'name', 'email', 'active', 'created_at', 'updated_at'
+        ],
+        'customers.index' => [
+            'full_name', 'phone', 'balance_display', 'status', 'actions'
+        ],
+        'payments.index' => [
+            'invoice', 'amount', 'payment_method', 'payment_date', 'actions'
+        ],
+        'expenses.index' => [
+            'expense_date', 'expense_category', 'notes', 'amount', 'reference_number', 'creator', 'actions'
+        ],
+        'subscriptions.index' => [
+            'customer', 'service', 'financial', 'billing', 'status', 'actions'
+        ],
+        'services.index' => [
+            'name', 'default_price', 'created_at', 'actions'
+        ],
+        'warehouses.index' => [
+            'name', 'location', 'status', 'actions'
         ],
     ];
 
