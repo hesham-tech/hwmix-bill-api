@@ -63,6 +63,16 @@ class UserTablePreferenceController extends Controller
             'name', 'location', 'status', 'actions',
             'manager', 'capacity', 'description', 'created_at', 'updated_at'
         ],
+        'dashboard.client' => [
+            'balance', 'activeInstallmentPlans', 'upcomingInstallments',
+            'recentPurchases', 'recentPayments', 'installmentsTimeline', 'quickLinks'
+        ],
+        'dashboard.admin' => [
+            'analyticsStats', 'basicStats', 'productIntelligenceTable',
+            'salesTrendChart', 'dashboardTasksWidget', 'topProductsChart',
+            'quickActions', 'recentInvoices', 'upcomingPayments',
+            'upcomingInstallments', 'profitSummaryWidget', 'reportsQuickLinks'
+        ],
     ];
 
     /**
