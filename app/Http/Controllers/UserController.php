@@ -576,7 +576,7 @@ class UserController extends Controller
 
         DB::beginTransaction();
         try {
-            $usersToDelete = User::whereIn('id', $userIds)->get();
+            $usersToDelete = User::withoutGlobalScopes()->whereIn('id', $userIds)->get();
             $activeCompanyId = $authUser->active_company_id;
             $isSuperAdmin = $authUser->hasPermissionTo(perm_key('admin.super'));
             $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
