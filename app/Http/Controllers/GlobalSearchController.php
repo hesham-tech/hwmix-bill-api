@@ -35,24 +35,26 @@ class GlobalSearchController extends Controller
 
         // 1. Search Users (Customers)
         if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-            // Super Admin: Search all unique users globally
-            $users = User::query()
+            // Super Admin: يرى جميع المستخدمين بدون قيود (بما فيهم من لا شركة لهم)
+            $users = User::withoutGlobalScopes()
                 ->smartSearch($query, ['full_name', 'nickname', 'phone', 'email', 'username'])
                 ->with([
                     'image',
                     'cashBoxes' => function ($q) use ($companyId) {
-                        $q->where('company_id', $companyId);
+                        if ($companyId) {
+                            $q->where('company_id', $companyId);
+                        }
                     }
                 ])
                 ->limit(10)
                 ->get()
                 ->append('balance')
                 ->map(fn($u) => [
-                    'id' => $u->id,
-                    'full_name' => $u->full_name,
-                    'nickname' => $u->nickname,
-                    'phone' => $u->phone,
-                    'balance' => $u->balance,
+                    'id'         => $u->id,
+                    'full_name'  => $u->full_name,
+                    'nickname'   => $u->nickname,
+                    'phone'      => $u->phone,
+                    'balance'    => $u->balance,
                     'avatar_url' => $u->avatar_url,
                 ]);
         } else {
