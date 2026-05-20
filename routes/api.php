@@ -43,6 +43,8 @@ use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\ErrorReportController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\BootstrapController;
+use App\Http\Controllers\UserTablePreferenceController;
 
 
 
@@ -131,6 +133,13 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     });
     // Auth Controller
     Route::get('me', [AuthController::class, 'me']);
+    Route::get('bootstrap', [BootstrapController::class, 'index']);
+    Route::prefix('ui-preferences')->group(function () {
+        Route::get('/', [UserTablePreferenceController::class, 'index']);
+        Route::post('/', [UserTablePreferenceController::class, 'store']);
+        Route::delete('/{tableKey}', [UserTablePreferenceController::class, 'reset']);
+        Route::post('/reset-all', [UserTablePreferenceController::class, 'resetAll']);
+    });
     // User Controller
     Route::controller(UserController::class)
         ->group(function () {

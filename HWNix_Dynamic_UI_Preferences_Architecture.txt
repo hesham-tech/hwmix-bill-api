@@ -1,0 +1,275 @@
+# HWNix Bill — Dynamic UI Preferences Architecture
+
+نحن نقوم بتطوير HWNix Bill كنظام Multi-Tenant ERP & Billing Platform باستخدام Laravel 11 و Vue 3 + Vuetify 3 وفق معمارية Modular و API-First.
+
+المطلوب إنشاء نظام احترافي لتخصيص الجداول وواجهة المستخدم بحيث يستطيع كل مستخدم تخصيص:
+- إظهار/إخفاء الأعمدة
+- ترتيب الأعمدة Drag & Drop
+- عدد العناصر في الصفحة
+- ترتيب الفرز
+- وبعض إعدادات الواجهة مستقبلًا
+
+ويكون كل ذلك محفوظًا بشكل مستقل لكل:
+- مستخدم
+- شركة
+- شاشة
+
+---
+
+# Architecture Strategy
+
+يجب تنفيذ النظام بمعمارية Hybrid Architecture لضمان:
+- سرعة تحميل عالية جدًا
+- أقل عدد Requests ممكن
+- مزامنة موثوقة بين الأجهزة
+- تجربة UI فورية
+
+طبقات النظام:
+
+1. Database
+تعتبر Source of Truth الأساسية.
+
+2. Pinia Store
+تعتبر Runtime State أثناء تشغيل التطبيق.
+
+3. LocalStorage
+Persistent Browser Cache لتسريع التحميل الأولي باستخدام Stale-While-Revalidate Pattern.
+
+---
+
+# Backend Specifications
+
+## Database Table
+
+إنشاء جدول:
+
+user_table_preferences
+
+الحقول:
+
+- user_id
+- company_id
+- table_key
+- preferences (JSON)
+- updated_at
+- timestamps
+
+مع:
+Unique Composite Index:
+(user_id, company_id, table_key)
+
+ويستخدم:
+table_key
+
+بدل:
+table_name
+
+أمثلة:
+- invoices.index
+- products.index
+- users.index
+- dashboard.sales
+
+---
+
+# Bootstrap Endpoint
+
+إنشاء:
+
+/api/bootstrap
+
+ويعيد:
+- بيانات المستخدم
+- الشركة النشطة
+- الصلاحيات
+- Feature Flags مستقبلًا
+- screen_preferences المطلوبة فقط للشاشات الحالية أو الأساسية
+
+يجب عدم تحميل جميع التفضيلات الضخمة دائمًا داخل bootstrap لتجنب تضخم الـ payload.
+
+---
+
+# Frontend Architecture
+
+## State Management
+
+إنشاء:
+useUIPreferencesStore باستخدام Pinia.
+
+---
+
+# Loading Flow
+
+عند تشغيل التطبيق:
+
+1. تحميل التفضيلات مباشرة من LocalStorage
+2. Render UI فورًا بدون انتظار API
+3. Fetch أحدث البيانات من السيرفر بالخلفية
+4. مزامنة:
+- Pinia
+- LocalStorage
+
+إذا كانت نسخة السيرفر أحدث.
+
+---
+
+# Runtime Rules
+
+- جميع الجداول تعتمد على Pinia فقط
+- يمنع قراءة LocalStorage بشكل متكرر
+- يمنع Request منفصل لكل جدول أثناء التنقل العادي
+
+---
+
+# Saving Strategy
+
+عند تعديل المستخدم:
+- يتم تحديث Pinia فورًا
+- تحديث LocalStorage فورًا
+- حفظ Database بطريقة Debounced (1.5s – 2s)
+
+ويفضل تنفيذ flush للحفظ عند:
+- تغيير الشركة
+- إغلاق الصفحة
+- Logout
+
+---
+
+# UI Specifications
+
+استخدام:
+- Vuetify 3
+- v-data-table أو v-data-table-server
+- Vue.Draggable.next أو SortableJS
+
+داخل:
+- v-menu
+أو:
+- v-dialog
+
+لدعم:
+- Drag & Drop
+- إظهار/إخفاء الأعمدة
+
+---
+
+# Backend Fetching Rule
+
+الـ Backend يعيد البيانات كاملة دائمًا.
+
+الـ Frontend فقط هو المسؤول عن:
+- إخفاء الأعمدة
+- ترتيبها
+- التحكم في العرض
+
+وذلك لتقليل:
+- تعقيد الـ SQL
+- Dynamic Queries
+- مشاكل الكاش
+
+---
+
+# Preferences JSON Structure
+
+```json
+{
+  "version": 1,
+  "updated_at": "2026-05-20T12:00:00Z",
+  "pagination": {
+    "items_per_page": 15
+  },
+  "sort_by": [
+    {
+      "key": "created_at",
+      "order": "desc"
+    }
+  ],
+  "columns": [
+    {
+      "key": "invoice_number",
+      "visible": true,
+      "width": 180,
+      "pinned": "left",
+      "mandatory": true
+    },
+    {
+      "key": "client_name",
+      "visible": true,
+      "mandatory": false
+    },
+    {
+      "key": "created_at",
+      "visible": false,
+      "mandatory": false
+    }
+  ]
+}
+```
+
+---
+
+# Mandatory Columns Rule
+
+الأعمدة التي تحتوي:
+mandatory: true
+
+لا يمكن إخفاؤها من الواجهة.
+
+ويجب أن تكون معرفة داخل:
+System Column Registry
+
+وليس اعتمادًا فقط على بيانات المستخدم.
+
+---
+
+# Security & Validation Rules
+
+- المستخدم لا يستطيع إرسال أي column key عشوائي
+- جميع الأعمدة المسموح بها يجب أن تكون معرفة مسبقًا داخل النظام
+- يجب التحقق من صحة keys القادمة من الـ frontend
+
+---
+
+# Versioning Strategy
+
+يجب دعم:
+- schema versioning
+- backward compatibility
+
+وعند تغير بنية الأعمدة:
+- يتم fallback آمن
+أو:
+- reset تلقائي للتفضيلات القديمة
+
+---
+
+# Reset & Recovery
+
+إضافة:
+- Reset Preferences Endpoint
+- Restore Default Layout
+
+لدعم:
+- إعادة الضبط
+- إصلاح أي تعارض مستقبلي
+
+---
+
+# Development Principles
+
+- Modular Architecture
+- Multi-Tenant Ready
+- Clean Architecture Friendly
+- Scalable
+- Cache Friendly
+- API First
+- Future UIPreferences Module Ready
+
+ويجب بناء النظام بحيث يمكن لاحقًا توسيعه لدعم:
+- Dashboard Widgets
+- Saved Views
+- Layout Preferences
+- Filters
+- Density Modes
+- Sidebar Preferences
+- Per Company UI Personalization
