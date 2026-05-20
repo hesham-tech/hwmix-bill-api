@@ -28,29 +28,40 @@ class UserTablePreferenceController extends Controller
         ],
         'invoices.index' => [
             'invoice_number', 'customer', 'issue_date', 'financials', 'status', 'actions', 
-            'client_name', 'net_amount', 'tax_amount', 'total_amount', 'created_at', 'updated_at'
+            'client_name', 'net_amount', 'tax_amount', 'total_amount', 'created_at', 'updated_at',
+            'gross_amount', 'total_discount', 'paid_amount', 'remaining_amount', 'due_date',
+            'notes', 'reference_number'
         ],
         'users.index' => [
             'full_name', 'phone', 'roles', 'status', 'actions', 
-            'name', 'email', 'active', 'created_at', 'updated_at'
+            'name', 'email', 'active', 'created_at', 'updated_at',
+            'nickname', 'username', 'position', 'active_branch_balance', 'total_branches_balance'
         ],
         'customers.index' => [
-            'full_name', 'phone', 'balance_display', 'status', 'actions'
+            'full_name', 'phone', 'balance_display', 'status', 'actions',
+            'name', 'nickname', 'username', 'email', 'position',
+            'active_branch_balance', 'created_at', 'updated_at'
         ],
         'payments.index' => [
-            'invoice', 'amount', 'payment_method', 'payment_date', 'actions'
+            'invoice', 'amount', 'payment_method', 'payment_date', 'actions',
+            'method', 'notes', 'is_split', 'created_at', 'updated_at'
         ],
         'expenses.index' => [
-            'expense_date', 'expense_category', 'notes', 'amount', 'reference_number', 'creator', 'actions'
+            'expense_date', 'expense_category', 'notes', 'amount', 'reference_number', 'creator', 'actions',
+            'payment_method', 'created_at'
         ],
         'subscriptions.index' => [
-            'customer', 'service', 'financial', 'billing', 'status', 'actions'
+            'customer', 'service', 'financial', 'billing', 'status', 'actions',
+            'unique_identifier', 'start_date', 'ends_at', 'billing_cycle', 'price',
+            'partial_payment', 'auto_renew', 'renewal_type', 'notes', 'created_at', 'updated_at'
         ],
         'services.index' => [
-            'name', 'default_price', 'created_at', 'actions'
+            'name', 'default_price', 'created_at', 'actions',
+            'description', 'period_unit', 'period_value', 'updated_at'
         ],
         'warehouses.index' => [
-            'name', 'location', 'status', 'actions'
+            'name', 'location', 'status', 'actions',
+            'manager', 'capacity', 'description', 'created_at', 'updated_at'
         ],
     ];
 
