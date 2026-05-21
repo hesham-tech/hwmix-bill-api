@@ -68,7 +68,7 @@ class TaskController extends Controller
         DB::beginTransaction();
         try {
             $task = Task::create([
-                'company_id' => $request->user()->company_id,
+                'company_id' => $request->user()->active_company_id,
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
                 'priority' => $validated['priority'],

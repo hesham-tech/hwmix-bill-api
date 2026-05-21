@@ -18,7 +18,7 @@ class CreateBrandAction extends BaseAction
     {
         /** @var \App\Models\User $authUser */
         $authUser = Auth::user();
-        $companyId = $authUser->company_id;
+        $companyId = $authUser->active_company_id;
 
         // التحقق من الصلاحيات
         if (!$authUser->hasPermissionTo(perm_key('admin.super')) && 

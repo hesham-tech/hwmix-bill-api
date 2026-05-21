@@ -28,7 +28,7 @@ class CreateWarehouseAction extends BaseAction
         }
 
         return DB::transaction(function () use ($data, $authUser) {
-            $companyId = $authUser->company_id;
+            $companyId = $authUser->active_company_id;
             
             // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمتخدم.
             $warehouseCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($data['company_id']))

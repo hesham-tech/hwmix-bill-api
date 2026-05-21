@@ -18,7 +18,7 @@ class CreateCategoryAction extends BaseAction
     {
         /** @var \App\Models\User $authUser */
         $authUser = Auth::user();
-        $companyId = $authUser->company_id;
+        $companyId = $authUser->active_company_id;
 
         if (!$authUser->hasPermissionTo(perm_key('admin.super')) && 
             !$authUser->hasPermissionTo(perm_key('categories.create')) && 

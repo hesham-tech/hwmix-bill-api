@@ -28,7 +28,7 @@ class AccountingService
             $cashBoxId = $options['cash_box_id'] ?? null;
             $userCashBoxId = $options['user_cash_box_id'] ?? null;
             
-            $party = User::find($invoice->user_id);
+            $party = User::withoutGlobalScopes()->find($invoice->user_id);
             $authUser = Auth::user();
 
             // العميل النقدي الافتراضي: لا تسجيل ذمم أو حركات رصيد على حسابه
@@ -198,7 +198,7 @@ class AccountingService
             $cashBoxId = $options['cash_box_id'] ?? null;
             $userCashBoxId = $options['user_cash_box_id'] ?? null;
             
-            $party = User::find($invoice->user_id);
+            $party = User::withoutGlobalScopes()->find($invoice->user_id);
             $authUser = Auth::user();
 
             // العميل النقدي الافتراضي: لا عكس لذمم على حسابه

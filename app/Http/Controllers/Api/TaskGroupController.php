@@ -33,7 +33,7 @@ class TaskGroupController extends Controller
         DB::beginTransaction();
         try {
             $group = TaskGroup::create([
-                'company_id' => $request->user()->company_id,
+                'company_id' => $request->user()->active_company_id,
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'color' => $validated['color'] ?? 'primary',

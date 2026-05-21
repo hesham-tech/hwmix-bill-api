@@ -54,6 +54,11 @@ class InvoiceController extends Controller
             }
 
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                // سوبر أدمن: إذا اختار شركة نشطة يرى فواتيرها فقط، وإلا يرى الكل
+                $activeCompanyId = $authUser->active_company_id;
+                if ($activeCompanyId) {
+                    $query->where('company_id', $activeCompanyId);
+                }
             } elseif ($authUser->hasAnyPermission([perm_key('invoices.view_all'), perm_key('admin.company')])) {
                 $query->whereCompanyIsCurrent();
             } elseif ($authUser->hasPermissionTo(perm_key('invoices.view_children'))) {
@@ -110,7 +115,7 @@ class InvoiceController extends Controller
             $authUser = Auth::user();
             
             if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                if ($invoice->company_id !== $authUser->company_id && $invoice->user_id !== $authUser->id) {
+                if ($invoice->company_id !== $authUser->active_company_id && $invoice->user_id !== $authUser->id) {
                     return api_forbidden('ليس لديك صلاحية للوصول لهذه الفاتورة.');
                 }
             }
@@ -125,20 +130,25 @@ class InvoiceController extends Controller
     {
         try {
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->company_id) return api_unauthorized('يتطلب المصادقة.');
+            $companyId = $authUser->active_company_id;
+            if (!$authUser || !$companyId) {
+                return api_unauthorized('يتطلب المصادقة أو اختيار شركة نشطة. يرجى تسجيل الخروج وإعادة الدخول.');
+            }
 
             if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('invoices.create'), perm_key('admin.company')])) {
                 return api_forbidden('ليس لديك صلاحية لإنشاء الفواتير.');
             }
 
             $validated = $request->validated();
-            $validated['company_id'] = $authUser->company_id;
+            $validated['company_id'] = $companyId;
             $validated['created_by'] = $authUser->id;
 
             DB::beginTransaction();
             try {
                 $invoiceType = InvoiceType::findOrFail($validated['invoice_type_id']);
-                $service = ServiceResolver::resolve($validated['invoice_type_code'] ?? $invoiceType->code);
+                $invoiceTypeCode = $validated['invoice_type_code'] ?? $invoiceType->code;
+
+                $service = ServiceResolver::resolve($invoiceTypeCode);
                 $responseDTO = $service->create($validated);
 
                 $responseDTO->load($this->showRelations);
@@ -149,18 +159,20 @@ class InvoiceController extends Controller
                 return api_error('فشل التحقق من صحة البيانات.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
-                throw $e;
+                // إرجاع رسالة الخطأ الفعلية للمستخدم بدلاً من إخفائها
+                return api_exception($e, 500, 'فشل إنشاء الفاتورة: ' . $e->getMessage());
             }
         } catch (Throwable $e) {
-            return api_exception($e);
+            return api_exception($e, 500, 'حدث خطأ غير متوقع: ' . $e->getMessage());
         }
     }
+
 
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): JsonResponse
     {
         try {
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->company_id) return api_unauthorized('يتطلب المصادقة.');
+            if (!$authUser) return api_unauthorized('يتطلب المصادقة.');
 
             $canUpdate = $authUser->hasPermissionTo(perm_key('admin.super')) || 
                         ($authUser->hasAnyPermission([perm_key('invoices.update_all'), perm_key('admin.company')]) && $invoice->belongsToCurrentCompany()) ||
@@ -172,7 +184,8 @@ class InvoiceController extends Controller
             DB::beginTransaction();
             try {
                 $validated = $request->validated();
-                $validated['company_id'] = $authUser->company_id;
+                $companyId = $authUser->active_company_id;
+                $validated['company_id'] = $companyId;
                 $validated['updated_by'] = $authUser->id;
 
                 $service = ServiceResolver::resolve($invoice->invoice_type_code);
@@ -198,7 +211,7 @@ class InvoiceController extends Controller
         DB::beginTransaction();
         try {
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->company_id) return api_unauthorized('يتطلب المصادقة.');
+            if (!$authUser || !$authUser->active_company_id) return api_unauthorized('يتطلب المصادقة.');
 
             $invoice = Invoice::findOrFail($id);
             $canDelete = $authUser->hasPermissionTo(perm_key('admin.super')) || 

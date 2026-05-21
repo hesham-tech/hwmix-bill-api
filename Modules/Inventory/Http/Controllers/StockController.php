@@ -62,7 +62,7 @@ class StockController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id;
+            $companyId = $authUser->active_company_id;
 
             DB::beginTransaction();
             

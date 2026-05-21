@@ -95,7 +95,7 @@ class ProductController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            $companyId = $authUser->company_id;
+            $companyId = $authUser->active_company_id;
 
             $product = $this->productService->createProduct($request->toSimpleProductData(), $authUser, $companyId);
 

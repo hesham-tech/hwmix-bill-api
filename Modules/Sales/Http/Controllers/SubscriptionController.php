@@ -59,7 +59,8 @@ class SubscriptionController extends Controller
     {
         try {
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->company_id) return api_unauthorized('يتطلب المصادقة.');
+            $companyId = $authUser->active_company_id;
+            if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة أو اختيار شركة نشطة.');
 
             if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('subscriptions.create'), perm_key('admin.company')])) {
                 return api_forbidden('ليس لديك إذن لإنشاء اشتراكات.');
@@ -69,7 +70,7 @@ class SubscriptionController extends Controller
             try {
                 $validatedData = $request->validated();
                 $validatedData['created_by'] = $authUser->id;
-                $validatedData['company_id'] = $authUser->company_id;
+                $validatedData['company_id'] = $companyId;
 
                 if (empty($validatedData['next_billing_date']) && !empty($validatedData['starts_at'])) {
                     $startDate = \Carbon\Carbon::parse($validatedData['starts_at']);

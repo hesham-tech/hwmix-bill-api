@@ -32,7 +32,7 @@ class BranchController extends Controller
     public function store(StoreBranchRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $validated['company_id'] = Auth::user()->company_id;
+        $validated['company_id'] = Auth::user()->active_company_id;
 
         // إذا كان الفرع افتراضياً، قم بإزالة الافتراضية من الفروع الأخرى
         if ($validated['is_default'] ?? false) {
@@ -118,7 +118,7 @@ class BranchController extends Controller
      */
     protected function authorizeAccess(Branch $branch)
     {
-        if ($branch->company_id !== Auth::user()->company_id && !Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
+        if ($branch->company_id !== Auth::user()->active_company_id && !Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
             abort(403, 'غير مصرح لك بالوصول لهذا الفرع.');
         }
     }

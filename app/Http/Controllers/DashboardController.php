@@ -46,7 +46,7 @@ class DashboardController extends Controller
         });
 
         \Log::info('Dashboard Response for Request', [
-            'company_id' => $request->user()->company_id,
+            'company_id' => $request->user()->active_company_id,
             'data_kpis' => $data['kpis'] ?? null
         ]);
 

@@ -39,7 +39,7 @@ class Expense extends Model
     protected static function booted()
     {
         static::creating(function ($expense) {
-            $expense->company_id = $expense->company_id ?? auth()->user()->company_id ?? null;
+            $expense->company_id = $expense->company_id ?? auth()->user()->active_company_id ?? null;
             $expense->branch_id = $expense->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
         });
     }

@@ -61,7 +61,8 @@ class ServiceController extends Controller
     {
         try {
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->company_id) return api_unauthorized('يتطلب المصادقة.');
+            $companyId = $authUser->active_company_id;
+            if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة أو اختيار شركة نشطة.');
 
             if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('services.create'), perm_key('admin.company')])) {
                 return api_forbidden('ليس لديك إذن لإنشاء خدمات.');
@@ -71,7 +72,7 @@ class ServiceController extends Controller
             try {
                 $validatedData = $request->validated();
                 $validatedData['created_by'] = $authUser->id;
-                $validatedData['company_id'] = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id'])) ? $validatedData['company_id'] : $authUser->company_id;
+                $validatedData['company_id'] = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id'])) ? $validatedData['company_id'] : $companyId;
 
                 $service = Service::create($validatedData);
                 $service->load($this->relations);

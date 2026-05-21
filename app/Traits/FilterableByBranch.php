@@ -22,12 +22,8 @@ trait FilterableByBranch
                 return;
             }
 
-            // سوبر أدمن لديه وصول كامل لجميع الفروع
+            // سوبر أدمن لديه وصول كامل لجميع البيانات بدون أي قيود على الفرع
             if ($user->hasPermissionTo(perm_key('admin.super'))) {
-                $activeBranchId = config('app.active_branch_id');
-                if ($activeBranchId && $activeBranchId !== 'all') {
-                    $builder->where($builder->getQuery()->from . '.branch_id', $activeBranchId);
-                }
                 return;
             }
 

@@ -43,7 +43,7 @@ class Revenue extends Model
     protected static function booted()
     {
         static::creating(function ($revenue) {
-            $revenue->company_id = $revenue->company_id ?? auth()->user()->company_id ?? null;
+            $revenue->company_id = $revenue->company_id ?? auth()->user()->active_company_id ?? null;
             $revenue->branch_id = $revenue->branch_id ?? config('app.active_branch_id') ?? auth()->user()->branch_id ?? null;
         });
     }

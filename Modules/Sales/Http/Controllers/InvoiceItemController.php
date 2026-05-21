@@ -60,7 +60,8 @@ class InvoiceItemController extends Controller
     {
         try {
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->company_id) return api_unauthorized('يتطلب المصادقة.');
+            $companyId = $authUser->active_company_id;
+            if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة أو اختيار شركة نشطة.');
 
             if (!$authUser->hasAnyPermission([perm_key('admin.super'), perm_key('invoice_items.create'), perm_key('admin.company')])) {
                 return api_forbidden('ليس لديك صلاحية لإنشاء عناصر فواتير.');
@@ -70,9 +71,9 @@ class InvoiceItemController extends Controller
             try {
                 $validatedData = $request->validated();
                 $validatedData['created_by'] = $authUser->id;
-                $validatedData['company_id'] = $authUser->company_id;
+                $validatedData['company_id'] = $companyId;
 
-                Invoice::where('id', $validatedData['invoice_id'])->where('company_id', $authUser->company_id)->firstOrFail();
+                Invoice::where('id', $validatedData['invoice_id'])->where('company_id', $companyId)->firstOrFail();
 
                 $item = InvoiceItem::create($validatedData);
                 $item->load($this->relations);
@@ -127,7 +128,7 @@ class InvoiceItemController extends Controller
                 $validatedData['updated_by'] = $authUser->id;
 
                 if (isset($validatedData['invoice_id']) && $validatedData['invoice_id'] != $item->invoice_id) {
-                    Invoice::where('id', $validatedData['invoice_id'])->where('company_id', $authUser->company_id)->firstOrFail();
+                    Invoice::where('id', $validatedData['invoice_id'])->where('company_id', $authUser->active_company_id)->firstOrFail();
                 }
 
                 $item->update($validatedData);

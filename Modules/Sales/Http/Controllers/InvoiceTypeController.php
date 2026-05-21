@@ -27,9 +27,10 @@ class InvoiceTypeController extends Controller
     {
         try {
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->company_id) return api_unauthorized('يتطلب المصادقة.');
+            $companyId = $authUser->active_company_id;
+            if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة أو اختيار شركة نشطة.');
 
-            $company = Company::find($authUser->company_id);
+            $company = Company::find($companyId);
             $types = $company->invoiceTypes()
                 ->when($request->filled('context'), fn($q) => $q->where('context', $request->input('context')))
                 ->get();
@@ -57,7 +58,7 @@ class InvoiceTypeController extends Controller
     {
         try {
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->company_id) return api_unauthorized('يتطلب المصادقة.');
+            if (!$authUser || !$authUser->active_company_id) return api_unauthorized('يتطلب المصادقة.');
 
             $type = InvoiceType::with($this->relations)->findOrFail($id);
             $canView = $authUser->hasPermissionTo(perm_key('admin.super')) || 
@@ -77,10 +78,11 @@ class InvoiceTypeController extends Controller
     {
         try {
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->company_id) return api_unauthorized('يتطلب المصادقة.');
+            $companyId = $authUser->active_company_id;
+            if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة أو اختيار شركة نشطة.');
 
             $type = InvoiceType::findOrFail($id);
-            $company = Company::find($authUser->company_id);
+            $company = Company::find($companyId);
 
             if (!$company->invoiceTypes()->where('invoice_type_id', $id)->exists()) {
                 return api_error('هذا النوع غير مرتبط بشركتك.', [], 404);

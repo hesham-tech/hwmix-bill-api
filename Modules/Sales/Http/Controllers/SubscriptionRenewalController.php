@@ -20,7 +20,7 @@ class SubscriptionRenewalController extends Controller
 
     public function renew(Request $request, $id): JsonResponse
     {
-        $subscription = Subscription::where('company_id', auth()->user()->company_id)->findOrFail($id);
+        $subscription = Subscription::where('company_id', auth()->user()->active_company_id)->findOrFail($id);
 
         $validator = Validator::make($request->all(), [
             'amount' => 'required|numeric|min:0',
@@ -41,7 +41,7 @@ class SubscriptionRenewalController extends Controller
 
     public function history($id): JsonResponse
     {
-        $subscription = Subscription::where('company_id', auth()->user()->company_id)->findOrFail($id);
+        $subscription = Subscription::where('company_id', auth()->user()->active_company_id)->findOrFail($id);
         $history = $subscription->payments()->with(['paymentMethod', 'cashBox', 'creator'])->latest()->paginate(10);
         return response()->json($history);
     }

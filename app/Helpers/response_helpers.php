@@ -125,33 +125,36 @@ if (!function_exists('api_error')) {
  * 💥 إرجاع استجابة في حالة Exception
  */
 if (!function_exists('api_exception')) {
-    function api_exception(Throwable $e, int $code = 500, string $message = 'خطأ في جلب البيانات'): JsonResponse
+    function api_exception(Throwable $e, int $code = 500, string $message = null): JsonResponse
     {
         // التعامل مع أنواع محددة من الأخطاء
         if ($e instanceof ValidationException) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'خطأ في التحقق من البيانات',
-                'errors' => $e->errors(),
+                'errors'  => $e->errors(),
             ], 422);
         } elseif ($e instanceof ModelNotFoundException) {
             $model = class_basename($e->getModel());
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => "السجل غير موجود ($model)",
-                'error' => config('app.debug') ? $e->getMessage() : null,
+                'error'   => $e->getMessage(),
             ], 404);
         }
 
+        // استخدام رسالة الـ Exception الفعلية كرسالة رئيسية للمستخدم
+        $userMessage = $message ?? $e->getMessage() ?? 'حدث خطأ غير متوقع';
+
         // تجميع تفاصيل الخطأ
         $errorDetails = [
-            'status' => false,
-            'message' => $message,
-            'error' => $e->getMessage(),
+            'status'    => false,
+            'message'   => $userMessage,
+            'error'     => $e->getMessage(),
             'exception' => get_class($e),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => config('app.debug') ? explode("\n", $e->getTraceAsString()) : [],
+            'file'      => $e->getFile(),
+            'line'      => $e->getLine(),
+            'trace'     => config('app.debug') ? explode("\n", $e->getTraceAsString()) : [],
         ];
 
         // تسجيل الخطأ

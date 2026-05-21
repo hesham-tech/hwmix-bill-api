@@ -31,7 +31,7 @@ class FinancialLedgerService
             'source_type' => get_class($source),
             'source_id' => $source->id,
             'account_type' => $accountType,
-            'company_id' => $source->company_id ?? Auth::user()->company_id,
+            'company_id' => $source->company_id ?? Auth::user()->active_company_id,
             'created_by' => Auth::id(),
         ]);
     }
