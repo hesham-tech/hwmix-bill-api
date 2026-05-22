@@ -321,33 +321,47 @@ trait InvoiceHelperTrait
     protected function incrementStockForItems(array $items, ?int $companyId = null, ?int $createdBy = null, ?int $warehouseId = null): void
     {
         try {
+            $company = \App\Models\Company::find($companyId);
+            $autoUpdatePrice = $company ? $company->auto_update_purchase_price : true;
+            $valuationMethod = $company ? $company->inventory_valuation_method : 'average';
+
             foreach ($items as $item) {
                 $itemWarehouseId = $item['warehouse_id'] ?? $warehouseId;
                 $variant = ProductVariant::find($item['variant_id'] ?? null);
                 if (!$variant) continue;
                 if (!$variant->product?->requiresStock()) continue;
 
-                $stock = $variant->stocks()
-                    ->where('status', 'available')
-                    ->when($itemWarehouseId, function ($query) use ($itemWarehouseId) {
-                        return $query->where('warehouse_id', $itemWarehouseId);
-                    })
-                    ->orderBy('created_at', 'desc')
-                    ->first();
+                $unitPrice = isset($item['unit_price']) ? (float)$item['unit_price'] : 0;
+                $quantity = (int)$item['quantity'];
 
-                if ($stock) {
-                    $stock->quantity += $item['quantity'];
-                    $stock->save();
-                } else {
-                    Stock::create([
-                        'variant_id' => $item['variant_id'],
-                        'warehouse_id' => $itemWarehouseId,
-                        'quantity' => $item['quantity'],
-                        'status' => 'available',
-                        'company_id' => $companyId,
-                        'created_by' => $createdBy,
-                    ]);
+                Stock::create([
+                    'variant_id' => $item['variant_id'],
+                    'warehouse_id' => $itemWarehouseId,
+                    'quantity' => $quantity,
+                    'cost' => $unitPrice,
+                    'status' => 'available',
+                    'company_id' => $companyId,
+                    'created_by' => $createdBy,
+                ]);
+
+                if ($valuationMethod === 'average') {
+                    $currentTotalQty = $variant->stocks()->where('status', 'available')->sum('quantity');
+                    $oldQty = max(0, $currentTotalQty - $quantity);
+                    $oldAvgCost = (float)$variant->average_cost;
+                    
+                    if ($currentTotalQty > 0) {
+                        $newAvgCost = (($oldQty * $oldAvgCost) + ($quantity * $unitPrice)) / $currentTotalQty;
+                        $variant->average_cost = $newAvgCost;
+                    } else {
+                        $variant->average_cost = $unitPrice;
+                    }
                 }
+
+                if ($autoUpdatePrice && $unitPrice > 0) {
+                    $variant->purchase_price = $unitPrice;
+                }
+                
+                $variant->save();
             }
         } catch (\Throwable $e) {
             throw $e;
@@ -399,22 +413,28 @@ trait InvoiceHelperTrait
         }
 
         if ($variantId) {
-            $stockCost = (float) \DB::table('stocks')
-                ->where('variant_id', $variantId)
-                ->where('cost', '>', 0)
-                ->latest('created_at')
-                ->value('cost');
-
-            if ($stockCost > 0) {
-                return $stockCost;
-            }
-
+            $companyId = auth()->user()?->active_company_id;
+            $company = $companyId ? \App\Models\Company::find($companyId) : null;
+            $valuationMethod = $company ? $company->inventory_valuation_method : 'average';
+            
             $variant = ProductVariant::find($variantId);
-            $catalogPrice = (float) ($variant?->purchase_price ?? 0);
+            if (!$variant) return 0;
 
-            if ($catalogPrice > 0) {
-                return $catalogPrice;
+            if ($valuationMethod === 'average') {
+                return (float)$variant->average_cost > 0 ? (float)$variant->average_cost : (float)$variant->purchase_price;
+            } elseif ($valuationMethod === 'fifo') {
+                $stockCost = (float) \DB::table('stocks')
+                    ->where('variant_id', $variantId)
+                    ->where('status', 'available')
+                    ->where('cost', '>', 0)
+                    ->orderBy('created_at', 'asc') // Oldest first
+                    ->value('cost');
+                
+                if ($stockCost > 0) return $stockCost;
             }
+
+            // Fallback for last_purchase_price or if others fail
+            return (float)$variant->purchase_price;
         }
 
         return 0;

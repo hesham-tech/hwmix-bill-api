@@ -162,6 +162,22 @@ class Company extends Model
     }
 
     /**
+     * الحصول على طريقة التقييم المالي للمخزون
+     */
+    public function getInventoryValuationMethodAttribute(): string
+    {
+        return $this->settings['inventory_valuation_method'] ?? 'average'; // average, fifo, last_purchase_price
+    }
+
+    /**
+     * الحصول على حالة التحديث التلقائي لسعر الشراء
+     */
+    public function getAutoUpdatePurchasePriceAttribute(): bool
+    {
+        return (bool)($this->settings['auto_update_purchase_price'] ?? true);
+    }
+
+    /**
      * Label for activity logs.
      */
     public function logLabel()
