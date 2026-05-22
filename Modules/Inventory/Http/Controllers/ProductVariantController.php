@@ -545,6 +545,12 @@ class ProductVariantController extends Controller
                 'product', 'images', 'attributes.attributeValue', 'stocks'
             ]);
 
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+            if ($authUser && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                $query->whereCompanyIsCurrent();
+            }
+
             $query->whereHas('product', function($q) use ($inSales) {
                 if ($inSales) {
                     $q->inSales();
@@ -570,7 +576,18 @@ class ProductVariantController extends Controller
                 
                 if (!$product) return null;
 
-                $quantity = $product->require_stock ? $variant->stocks->where('status', 'available')->sum('quantity') : 999999;
+                $activeBranchId = config('app.active_branch_id') ?? (Auth::check() ? Auth::user()->branch_id : null);
+                
+                $availableStocks = $variant->stocks->where('status', 'available');
+                
+                // Filter stocks by branch if a branch context exists
+                if ($activeBranchId) {
+                    $availableStocks = $availableStocks->filter(function($stock) use ($activeBranchId) {
+                        return $stock->branch_id == $activeBranchId || ($stock->warehouse && $stock->warehouse->branch_id == $activeBranchId);
+                    });
+                }
+
+                $quantity = $product->require_stock ? $availableStocks->sum('quantity') : 999999;
                 
                 if ($hasStock && $product->require_stock && $quantity <= 0) {
                     return null;
