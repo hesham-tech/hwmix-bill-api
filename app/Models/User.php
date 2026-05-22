@@ -763,6 +763,14 @@ class User extends Authenticatable
     }
 
     /**
+     * تعليق عربي: تعيين معرف الشركة النشطة تلقائياً عند تمرير company_id لضمان التوافقية مع الجداول والاختبارات.
+     */
+    public function setCompanyIdAttribute($value)
+    {
+        $this->attributes['active_company_id'] = $value;
+    }
+
+    /**
      * الحصول على الرصيد (المصدر الوحيد: الخزنة)
      * تم تحسينه ليرجع رصيد الفرع النشط مباشرة للمحافظة على التوافقية.
      */
