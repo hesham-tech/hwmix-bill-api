@@ -159,6 +159,27 @@ class UserController extends Controller
                 }
             }
 
+            // فلترة حسب تصنيف المستخدم (موظف / عميل)
+            if ($request->filled('user_type')) {
+                $userType = $request->input('user_type');
+                
+                $userFilterCallback = function ($q) use ($userType) {
+                    if ($userType === 'staff') {
+                        $q->where(function($subQ) {
+                            $subQ->has('roles')->orHas('permissions');
+                        });
+                    } elseif ($userType === 'customer') {
+                        $q->doesntHave('roles')->doesntHave('permissions');
+                    }
+                };
+
+                if ($isGlobalView || $isUnaffiliated) {
+                    $query->where($userFilterCallback);
+                } else {
+                    $query->whereHas('user', $userFilterCallback);
+                }
+            }
+
             // تحديد عدد العناصر في الصفحة والفرز
             $perPage = max(1, $request->input('per_page', 10));
             $sortField = $request->input('sort_by');
@@ -211,6 +232,28 @@ class UserController extends Controller
         } catch (Throwable $e) {
             return api_exception($e);
         }
+    }
+
+    /**
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * عرض قائمة الموظفين (عالمياً للسوبر أدمن، أو حسب الشركة للمديرين)
+     */
+    public function staff(Request $request)
+    {
+        $request->merge(['user_type' => 'staff']);
+        return $this->index($request);
+    }
+
+    /**
+     * @group 07. الإدارة وسجلات النظام
+     * 
+     * عرض قائمة العملاء (عالمياً للسوبر أدمن، أو حسب الشركة للمديرين)
+     */
+    public function customers(Request $request)
+    {
+        $request->merge(['user_type' => 'customer']);
+        return $this->index($request);
     }
 
     /**

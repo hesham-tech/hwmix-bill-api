@@ -144,6 +144,8 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     Route::controller(UserController::class)
         ->group(function () {
             Route::get('users', 'index');
+            Route::get('users/staff', 'staff');
+            Route::get('users/customers', 'customers');
             Route::get('users/lookup', 'lookup');
             Route::get('users/stats', 'stats');
             Route::get('users/search', 'usersSearch');
