@@ -36,7 +36,7 @@ class GuidanceController extends Controller
             $companyId = $user->active_company_id;
 
             if (!$companyId) {
-                return api_error('الشركة النشطة غير محددة.', [], 400);
+                return api_success([], 'تم جلب تقدم الإرشادات بنجاح (وضع كل الشركات).');
             }
 
             $progress = $this->guidanceService->getProgressForUser($user, $companyId);
@@ -61,7 +61,7 @@ class GuidanceController extends Controller
             $companyId = $user->active_company_id;
 
             if (!$companyId) {
-                return api_error('الشركة النشطة غير محددة.', [], 400);
+                return api_success((object)[], 'تم تسجيل خطوة الإرشاد بنجاح (وضع كل الشركات).');
             }
 
             $validated = $request->validated();
@@ -90,7 +90,7 @@ class GuidanceController extends Controller
             $companyId = $user->active_company_id;
 
             if (!$companyId) {
-                return api_error('الشركة النشطة غير محددة.', [], 400);
+                return api_success(null, 'تم إلغاء إكمال خطوة الإرشاد بنجاح (وضع كل الشركات).');
             }
 
             $validated = $request->validated();
@@ -118,7 +118,7 @@ class GuidanceController extends Controller
             $companyId = $user->active_company_id;
 
             if (!$companyId) {
-                return api_error('الشركة النشطة غير محددة.', [], 400);
+                return api_success(null, 'تم إعادة ضبط جولات الإرشاد والتعليم بنجاح (وضع كل الشركات).');
             }
 
             $this->guidanceService->resetProgressForUser($user, $companyId);

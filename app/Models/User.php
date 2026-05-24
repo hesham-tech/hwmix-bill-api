@@ -681,7 +681,7 @@ class User extends Authenticatable
         static::addGlobalScope('company_filter', function (\Illuminate\Database\Eloquent\Builder $builder) {
             $user = Auth::user();
 
-            if ($user && !$user->hasPermissionTo(perm_key('admin.super'))) {
+            if ($user) {
                 $activeCompanyId = $user->active_company_id;
                 if ($activeCompanyId) {
                     $builder->where(function ($query) use ($activeCompanyId) {
@@ -695,6 +695,8 @@ class User extends Authenticatable
                                     ->where('company_user.company_id', $activeCompanyId);
                             });
                     });
+                } elseif (!$user->hasPermissionTo(perm_key('admin.super'))) {
+                    $builder->whereRaw('1 = 0');
                 }
             }
         });

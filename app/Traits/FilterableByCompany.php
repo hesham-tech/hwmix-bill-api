@@ -15,12 +15,12 @@ trait FilterableByCompany
         static::addGlobalScope('company_filter', function (Builder $builder) {
             $user = Auth::user();
 
-            // Only apply if user is authenticated and not a super admin
-            // and the model has a company_id column
-            if ($user && !$user->hasPermissionTo(perm_key('admin.super'))) {
+            if ($user) {
                 $activeCompanyId = $user->active_company_id;
                 if ($activeCompanyId) {
                     $builder->where($builder->getQuery()->from . '.company_id', $activeCompanyId);
+                } elseif (!$user->hasPermissionTo(perm_key('admin.super'))) {
+                    $builder->whereRaw('1 = 0');
                 }
             }
         });

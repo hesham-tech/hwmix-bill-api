@@ -85,7 +85,7 @@ class UserTablePreferenceController extends Controller
             $companyId = $user->active_company_id;
 
             if (!$companyId) {
-                return api_error('الشركة النشطة غير محددة.', [], 400);
+                return api_success((object)[], 'تم جلب تفضيلات الواجهة بنجاح (وضع كل الشركات).');
             }
 
             $keys = $request->query('keys');
@@ -116,7 +116,7 @@ class UserTablePreferenceController extends Controller
             $companyId = $user->active_company_id;
 
             if (!$companyId) {
-                return api_error('الشركة النشطة غير محددة.', [], 400);
+                return api_success((object)[], 'تم حفظ تفضيلات الجدول بنجاح (وضع كل الشركات).');
             }
 
             $validated = $request->validate([
@@ -180,7 +180,7 @@ class UserTablePreferenceController extends Controller
             $companyId = $user->active_company_id;
 
             if (!$companyId) {
-                return api_error('الشركة النشطة غير محددة.', [], 400);
+                return api_success(null, 'تم إعادة ضبط تفضيلات الجدول للحالة الافتراضية (وضع كل الشركات).');
             }
 
             UserTablePreference::where('user_id', $user->id)
@@ -205,7 +205,7 @@ class UserTablePreferenceController extends Controller
             $companyId = $user->active_company_id;
 
             if (!$companyId) {
-                return api_error('الشركة النشطة غير محددة.', [], 400);
+                return api_success(null, 'تم إعادة ضبط جميع تفضيلات الواجهة بنجاح (وضع كل الشركات).');
             }
 
             UserTablePreference::where('user_id', $user->id)

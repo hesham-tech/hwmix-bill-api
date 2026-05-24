@@ -744,31 +744,43 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
-            'company_id' => 'required|integer|exists:companies,id',
+            'company_id' => 'present|nullable|integer|exists:companies,id',
         ]);
 
         DB::beginTransaction();
         try {
-            $newCompanyId = $validated['company_id'];
+            $newCompanyId = $validated['company_id'] ?? null;
 
-            $companyUserExists = CompanyUser::withoutGlobalScopes()->where('user_id', $user->id)
-                ->where('company_id', $newCompanyId)
-                ->exists();
+            if ($newCompanyId) {
+                $companyUserExists = CompanyUser::withoutGlobalScopes()->where('user_id', $user->id)
+                    ->where('company_id', $newCompanyId)
+                    ->exists();
 
-            if (!$companyUserExists && !$user->hasPermissionTo(perm_key('admin.super'))) {
-                DB::rollback();
-                return api_error('المستخدم غير مرتبط بالشركة المحددة.', [], 400);
+                if (!$companyUserExists && !$user->hasPermissionTo(perm_key('admin.super'))) {
+                    DB::rollback();
+                    return api_error('المستخدم غير مرتبط بالشركة المحددة.', [], 400);
+                }
+
+                // جلب الفرع الافتراضي للشركة الجديدة
+                $defaultBranch = \Modules\Companies\Models\Branch::where('company_id', $newCompanyId)
+                    ->where('is_default', true)
+                    ->first();
+
+                $user->update([
+                    'active_company_id' => $newCompanyId,
+                    'branch_id' => $defaultBranch ? $defaultBranch->id : null
+                ]);
+            } else {
+                if (!$user->hasPermissionTo(perm_key('admin.super'))) {
+                    DB::rollback();
+                    return api_error('المستخدم غير مصرح له بتعطيل الشركة النشطة.', [], 400);
+                }
+
+                $user->update([
+                    'active_company_id' => null,
+                    'branch_id' => null
+                ]);
             }
-
-            // جلب الفرع الافتراضي للشركة الجديدة
-            $defaultBranch = \Modules\Companies\Models\Branch::where('company_id', $newCompanyId)
-                ->where('is_default', true)
-                ->first();
-
-            $user->update([
-                'active_company_id' => $newCompanyId,
-                'branch_id' => $defaultBranch ? $defaultBranch->id : null
-            ]);
 
             $user->load('activeCompanyUser.company');
             DB::commit();

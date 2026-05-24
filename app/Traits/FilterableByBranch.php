@@ -22,18 +22,21 @@ trait FilterableByBranch
                 return;
             }
 
-            // سوبر أدمن لديه وصول كامل لجميع البيانات بدون أي قيود على الفرع
-            if ($user->hasPermissionTo(perm_key('admin.super'))) {
+            // سوبر أدمن يرى كل شيء فقط في حال عدم اختيار شركة نشطة
+            if ($user->hasPermissionTo(perm_key('admin.super')) && !$user->active_company_id) {
                 return;
             }
 
             $activeBranchId = config('app.active_branch_id');
-            $allowedBranchIds = $user->getAllowedBranchIds();
+            
+            $allowedBranchIds = $user->hasPermissionTo(perm_key('admin.super'))
+                ? \Illuminate\Support\Facades\DB::table('branches')->where('company_id', $user->active_company_id)->pluck('id')->toArray()
+                : $user->getAllowedBranchIds();
 
             if ($activeBranchId === 'all') {
                 // إذا اختار عرض كل الفروع
-                if ($user->hasPermissionTo(perm_key('admin.company'))) {
-                    // مدير الشركة يرى كل فروع شركته، لا حاجة لفلتر الفرع لأن فلتر الشركة يعمل
+                if ($user->hasPermissionTo(perm_key('admin.company')) || $user->hasPermissionTo(perm_key('admin.super'))) {
+                    // مدير الشركة أو السوبر أدمن يرى كل فروع شركته
                     return;
                 } else {
                     // الموظف العادي يرى الفروع المخصصة له فقط
@@ -41,8 +44,8 @@ trait FilterableByBranch
                     return;
                 }
             } elseif ($activeBranchId) {
-                // إذا اختار فرعاً محدداً، يجب التأكد أنه ضمن فنياته المسموحة أو أنه مدير شركة
-                if ($user->hasPermissionTo(perm_key('admin.company')) || in_array($activeBranchId, $allowedBranchIds)) {
+                // إذا اختار فرعاً محدداً، يجب التأكد أنه ضمن فنياته المسموحة أو أنه مدير شركة أو سوبر أدمن
+                if ($user->hasPermissionTo(perm_key('admin.company')) || $user->hasPermissionTo(perm_key('admin.super')) || in_array($activeBranchId, $allowedBranchIds)) {
                     $builder->where($builder->getQuery()->from . '.branch_id', $activeBranchId);
                 } else {
                     // محاولة وصول لفرع غير مصرح به
@@ -52,8 +55,8 @@ trait FilterableByBranch
             }
 
             // إذا لم يتم تمرير هيدر، نستخدم الفرع الافتراضي للمستخدم أو أول فرع في القائمة
-            if ($user->hasPermissionTo(perm_key('admin.company'))) {
-                // مدير الشركة له حق الوصول لكل بيانات شركته، لا يتم حقن فلتر الفروع
+            if ($user->hasPermissionTo(perm_key('admin.company')) || $user->hasPermissionTo(perm_key('admin.super'))) {
+                // مدير الشركة أو السوبر أدمن له حق الوصول لكل بيانات شركته، لا يتم حقن فلتر الفروع
                 return;
             } elseif ($user->branch_id) {
                 $builder->where($builder->getQuery()->from . '.branch_id', $user->branch_id);
