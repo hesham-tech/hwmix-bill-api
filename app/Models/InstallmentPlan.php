@@ -11,11 +11,11 @@ use Illuminate\Database\Eloquent\SoftDeletes; // ← ✅ استيراد السو
 use App\Traits\SmartSearch;
 
 /**
- * InstallmentPlan Model
+ * تعليق عربي: كلاس يمثل خطط التقسيط للعملاء في النظام مع دعم العزل الكامل حسب الشركة.
  */
 class InstallmentPlan extends Model
 {
-    use HasFactory, Blameable, Scopes, SoftDeletes, \App\Traits\LogsActivity, SmartSearch;
+    use HasFactory, Blameable, Scopes, SoftDeletes, \App\Traits\LogsActivity, SmartSearch, \App\Traits\FilterableByCompany;
 
     /**
      * Label for activity logs.
@@ -61,6 +61,13 @@ class InstallmentPlan extends Model
         'start_date' => 'datetime',
         'end_date' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($plan) {
+            $plan->company_id = $plan->company_id ?? auth()->user()->active_company_id ?? null;
+        });
+    }
 
     // العلاقات زي ما هي 👇
     public function invoice()
