@@ -4,5 +4,9 @@
     "Accounting": true,
     "Sales": true,
     "Companies": true,
-    "Guidance": true
+    "Guidance": true,
+    "Payment": true,
+    "Notification": true,
+    "ExportImport": true,
+    "Media": true
 }
