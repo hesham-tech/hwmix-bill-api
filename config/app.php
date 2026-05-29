@@ -118,6 +118,8 @@ return [
     |
     */
 
+    'master_company_id' => env('SYSTEM_MASTER_COMPANY_ID', 1),
+
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),

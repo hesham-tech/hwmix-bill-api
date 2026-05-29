@@ -56,6 +56,7 @@ Route::middleware('throttle:auth')->group(function () {
     Route::post('register/company', [\App\Http\Controllers\Api\Auth\TenantProvisioningController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 });
+Route::get('public/plans', [PlanController::class, 'publicPlans']);
 Route::post('error-reports', [ErrorReportController::class, 'store']);
 Route::get('media/view/{path}', [ImageController::class, 'serve'])->where('path', '.*')->name('media.serve');
 
@@ -150,7 +151,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
             Route::get('users/stats', 'stats');
             Route::get('users/search', 'usersSearch');
             Route::get('users/search-advanced', 'indexWithSearch');
-            Route::post('users', 'store');
+            Route::post('users', 'store')->middleware('saas.limit:users');
             Route::get('users/{user}', 'show');
             Route::put('users/{user}', 'update');
             Route::put('change-company/{userId}', 'changeCompany');
@@ -279,6 +280,11 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
         });
     // Plan Controller
     Route::apiResource('plans', PlanController::class);
+
+    // SaaS Subscription Management
+    Route::get('saas/my-subscription', [\App\Http\Controllers\SaaS\SaaSSubscriptionController::class, 'mySubscription']);
+    Route::patch('saas/my-subscription/toggle-auto-renew', [\App\Http\Controllers\SaaS\SaaSSubscriptionController::class, 'toggleAutoRenew']);
+    Route::post('saas/my-subscription/upgrade', [\App\Http\Controllers\SaaS\SaaSSubscriptionController::class, 'upgrade']);
 
     Route::get('/permissions', [PermissionController::class, 'index']);
 

@@ -28,6 +28,7 @@ class ProvisionNewCompanyRequest extends FormRequest
             'phone' => 'required|string|unique:users,phone',
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:8',
+            'plan_id' => 'nullable|exists:plans,id',
         ];
     }
 

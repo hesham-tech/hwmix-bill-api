@@ -316,4 +316,24 @@ class PlanController extends Controller
             return api_exception($e);
         }
     }
+
+    /**
+     * @group 08. إعدادات النظام وتفضيلاته
+     * 
+     * عرض خطط الأسعار النشطة للعامة (صفحة الهبوط)
+     */
+    public function publicPlans(): JsonResponse
+    {
+        try {
+            $masterCompanyId = (int) config('app.master_company_id', 1);
+            $plans = Plan::where('is_active', true)
+                ->where('company_id', $masterCompanyId)
+                ->orderBy('price', 'asc')
+                ->get();
+
+            return api_success(PlanResource::collection($plans), 'تم جلب الخطط النشطة بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
 }

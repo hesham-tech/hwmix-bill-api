@@ -10,6 +10,15 @@ class Plan extends Model
     protected $table = 'plans';
     protected $guarded = [];
 
+    protected $casts = [
+        'features' => 'array',
+        'is_active' => 'boolean',
+        'price' => 'decimal:2',
+        'max_users' => 'integer',
+        'max_products' => 'integer',
+        'max_invoices' => 'integer',
+    ];
+
     // علاقات شائعة
     public function company()
     {

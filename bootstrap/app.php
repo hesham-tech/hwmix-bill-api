@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'branch_context' => \App\Http\Middleware\BranchContextMiddleware::class,
             'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
             'staff.only' => \App\Http\Middleware\CheckUserTypeMiddleware::class,
+            'saas.limit' => \App\Http\Middleware\CheckSaaSResourceLimit::class,
         ]);
         $middleware->appendToGroup('api', \App\Http\Middleware\ScopePermissionsByCompany::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\BranchContextMiddleware::class);

@@ -12,7 +12,7 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     // Invoice Routes
     Route::controller(InvoiceController::class)->group(function () {
         Route::get('invoices', 'index');
-        Route::post('invoices', 'store');
+        Route::post('invoices', 'store')->middleware('saas.limit:invoices');
         Route::get('invoices/{invoice}', 'show');
         Route::put('invoices/{invoice}', 'update');
         Route::delete('invoices/{invoice}', 'destroy');

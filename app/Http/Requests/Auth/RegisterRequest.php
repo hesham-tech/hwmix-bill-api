@@ -26,6 +26,8 @@ class RegisterRequest extends FormRequest
             'nickname' => 'required|string|max:255',
             'phone' => 'required|string|unique:users,phone',
             'password' => 'required|string|min:8',
+            'company_name' => 'nullable|string|max:255',
+            'plan_id' => 'nullable|integer|exists:plans,id',
         ];
     }
 

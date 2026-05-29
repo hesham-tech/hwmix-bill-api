@@ -67,6 +67,42 @@ class ProvisionNewCompanyAction
                 'created_by' => $user->id,
             ]);
 
+            // 4.1 ربط المستخدم بالشركة الأم (Master Company) كعضو بسيط بدون أدوار أو صلاحيات
+            $masterCompanyId = (int) config('app.master_company_id', 1);
+            if ($company->id !== $masterCompanyId) {
+                CompanyUser::create([
+                    'user_id' => $user->id,
+                    'company_id' => $masterCompanyId,
+                    'nickname_in_company' => $user->nickname,
+                    'full_name_in_company' => $user->full_name,
+                    'status' => 'active',
+                    'created_by' => $user->id,
+                ]);
+            }
+
+            // 4.2 تفعيل الباقة المحددة أو الافتراضية للشركة الجديدة
+            $planId = $data['plan_id'] ?? null;
+            $selectedPlan = null;
+            if ($planId) {
+                $selectedPlan = \App\Models\Plan::where('id', $planId)->first();
+            }
+            if (!$selectedPlan) {
+                $selectedPlan = \App\Models\Plan::where('code', 'free_trial')->first();
+            }
+
+            if ($selectedPlan) {
+                $originalUser = auth()->user();
+                auth()->setUser($user);
+                
+                \App\Services\SaaS\SubscriptionService::initializeSubscription($company->id, $selectedPlan->id);
+                
+                if ($originalUser) {
+                    auth()->setUser($originalUser);
+                } else {
+                    auth()->logout();
+                }
+            }
+
             // 5. إسناد صلاحية مدير الشركة (admin.company) مباشرة
             setPermissionsTeamId($company->id);
             try {

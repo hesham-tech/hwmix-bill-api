@@ -19,7 +19,8 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     Route::apiResource('inventories', InventoryController::class)->names('inventory');
     
     // المستودعات
-    Route::apiResource('warehouses', WarehouseController::class);
+    Route::post('warehouses', [WarehouseController::class, 'store'])->middleware('saas.limit:warehouses');
+    Route::apiResource('warehouses', WarehouseController::class)->except(['store']);
     Route::patch('warehouses/{warehouse}/set-default', [WarehouseController::class, 'setDefault']);
 
     // العلامات التجارية
@@ -31,7 +32,8 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     Route::patch('categories/{category}/toggle', [CategoryController::class, 'toggle']);
 
     // المنتجات
-    Route::apiResource('products', ProductController::class);
+    Route::post('products', [ProductController::class, 'store'])->middleware('saas.limit:products');
+    Route::apiResource('products', ProductController::class)->except(['store']);
 
     // السمات
     Route::apiResource('attributes', AttributeController::class);
