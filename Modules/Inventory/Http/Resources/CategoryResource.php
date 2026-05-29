@@ -4,6 +4,9 @@ namespace Modules\Inventory\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * مورد بيانات القسم (CategoryResource) - لتحويل كائن القسم إلى تنسيق JSON للاستجابة.
+ */
 class CategoryResource extends JsonResource
 {
     public function toArray($request)
@@ -24,6 +27,7 @@ class CategoryResource extends JsonResource
             'products_count' => $this->products_count ?? $this->products()->count(),
             'synonyms' => $this->synonyms,
             'full_path' => $this->getFullPath(),
+            'parent_path' => $this->parent ? $this->parent->getFullPath() : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

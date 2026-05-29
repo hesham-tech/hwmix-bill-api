@@ -3,229 +3,375 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use Modules\Inventory\Models\Warehouse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\Scopes\CompanyScope;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Company\CompanyRequest;
-use App\Http\Resources\Company\CompanyResource;
 use App\Http\Requests\Company\CompanyUpdateRequest;
+use App\Http\Resources\Company\CompanyResource;
 
+/**
+ * متحكم إدارة الشركات — CRUD كامل مع حماية صلاحيات متدرجة (super > view_all > view_children > view_self).
+ * يدعم التصفية والترتيب والتصفح مع دعم كامل للـ Multi-Tenant isolation.
+ */
 class CompanyController extends Controller
 {
-    private array $relations;
+    // =========================================================================
+    // الـ Relations التي تُحمّل مع كل شركة
+    // =========================================================================
+    private array $relations = ['logo'];
 
-    public function __construct()
-    {
-        $this->relations = [
-            'logo',
-        ];
-    }
+    // =========================================================================
+    // قراءة القائمة
+    // =========================================================================
 
     /**
+     * عرض قائمة الشركات بحسب صلاحية المستخدم مع دعم الفلاتر والترتيب.
+     *
+     * الصلاحيات:
+     *  - admin.super      → جميع الشركات بدون أي فلتر
+     *  - companies.view_all   → جميع الشركات (نفس السوبر عملياً)
+     *  - companies.view_children → الشركات التي أنشأها المستخدم أو مرؤوسيه
+     *  - companies.view_self     → الشركات التي أنشأها المستخدم فقط
+     *  - أي شيء آخر         → 403 Forbidden
+     *
      * @group 07. الإدارة وسجلات النظام
-     * 
-     * عرض قائمة الشركات
-     * 
-     * @queryParam per_page integer عدد النتائج.
+     * @queryParam per_page    integer  عدد النتائج في الصفحة. Default: 10
+     * @queryParam sort_by     string   حقل الترتيب. Default: id
+     * @queryParam sort_order  string   asc | desc. Default: asc
+     * @queryParam created_at_from string فلتر من تاريخ (Y-m-d)
+     * @queryParam created_at_to   string فلتر إلى تاريخ (Y-m-d)
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         try {
-            $authUser = Auth::user();
-            $query = Company::with($this->relations);
+            $user  = Auth::user();
+            $query = Company::withoutGlobalScopes()->with($this->relations)->withCount('branches');
 
-            if ($authUser->hasPermissionTo(perm_key('admin.super')) || $authUser->hasPermissionTo(perm_key('companies.view_all'))) {
-                // وصول مطلق
-            } elseif ($authUser->hasPermissionTo(perm_key('admin.company'))) {
-                // يرى شركته والشركات المرتبطة به
-                $myCompanyIds = $authUser->companies->pluck('id')->toArray();
-                $query->whereIn('id', $myCompanyIds);
-            } elseif ($authUser->hasPermissionTo(perm_key('companies.view_children'))) {
-                // يرى فقط ما يتبع لشجرته
-                $descendantIds = $authUser->getDescendantUserIds();
-                $query->whereIn('created_by', array_merge([$authUser->id], $descendantIds));
-            } elseif ($authUser->hasPermissionTo(perm_key('companies.view_self'))) {
-                $query->where('created_by', $authUser->id);
+            // ---- تطبيق نطاق الرؤية بحسب الصلاحية ----
+            if (
+                $user->hasPermissionTo(perm_key('admin.super')) ||
+                $user->hasPermissionTo(perm_key('companies.view_all'))
+            ) {
+                // وصول مطلق — لا فلتر
+            } elseif ($user->hasPermissionTo(perm_key('companies.view_children'))) {
+                // يرى ما أنشأه هو أو مرؤوسيه
+                $descendantIds = method_exists($user, 'getDescendantUserIds')
+                    ? $user->getDescendantUserIds()
+                    : [];
+                $query->whereIn('created_by', array_merge([$user->id], $descendantIds));
+            } elseif ($user->hasPermissionTo(perm_key('companies.view_self'))) {
+                // يرى ما أنشأه هو فقط
+                $query->where('created_by', $user->id);
             } else {
                 return api_forbidden('ليس لديك صلاحية لعرض الشركات.');
             }
 
-            if (!empty($request->get('created_at_from'))) {
-                $query->where('created_at', '>=', $request->get('created_at_from') . ' 00:00:00');
+            // ---- الفلاتر الاختيارية ----
+            if ($from = $request->get('created_at_from')) {
+                $query->where('created_at', '>=', $from . ' 00:00:00');
             }
-            if (!empty($request->get('created_at_to'))) {
-                $query->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
+            if ($to = $request->get('created_at_to')) {
+                $query->where('created_at', '<=', $to . ' 23:59:59');
+            }
+            if ($search = $request->get('search')) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'LIKE', "%{$search}%")
+                      ->orWhere('email', 'LIKE', "%{$search}%")
+                      ->orWhere('phone', 'LIKE', "%{$search}%");
+                });
             }
 
-            $perPage = max(1, $request->get('per_page', 10));
-            $sortField = $request->get('sort_by', 'id');
-            $sortOrder = $request->get('sort_order', 'asc');
+            // ---- الترتيب والتصفح ----
+            $allowedSortFields = ['id', 'name', 'email', 'created_at'];
+            $sortField  = in_array($request->get('sort_by'), $allowedSortFields) ? $request->get('sort_by') : 'id';
+            $sortOrder  = in_array($request->get('sort_order'), ['asc', 'desc']) ? $request->get('sort_order') : 'asc';
+            $perPage    = max(1, min(200, (int) $request->get('per_page', 15)));
+
             $companies = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
 
-            if ($companies->isEmpty()) {
-                return api_success([], 'لم يتم العثور على شركات.'); // استخدم مصفوفة فارغة إذا لم يتم العثور على شركات
-            } else {
-                return api_success(CompanyResource::collection($companies), 'تم جلب الشركات بنجاح.');
-            }
+            return api_success(
+                CompanyResource::collection($companies),
+                $companies->isEmpty() ? 'لم يتم العثور على شركات.' : 'تم جلب الشركات بنجاح.'
+            );
         } catch (\Exception $e) {
             return api_exception($e);
         }
     }
 
+    // =========================================================================
+    // عرض شركة واحدة
+    // =========================================================================
+
     /**
+     * عرض تفاصيل شركة محددة.
+     *
+     * الصلاحيات:
+     *  - admin.super / view_all     → أي شركة
+     *  - admin.company / view_children → شركته أو التابعة له
+     *  - view_self                  → شركته التي أنشأها هو فقط
+     *
      * @group 07. الإدارة وسجلات النظام
-     * 
-     * إضافة شركة جديدة
-     * 
+     * @urlParam company int required معرف الشركة. Example: 1
+     */
+    public function show(Company $company): JsonResponse
+    {
+        $user = Auth::user();
+
+        if (!$this->canView($user, $company)) {
+            return api_forbidden('ليس لديك صلاحية لعرض هذه الشركة.');
+        }
+
+        return api_success(
+            new CompanyResource($company->loadMissing($this->relations)),
+            'تم جلب بيانات الشركة بنجاح.'
+        );
+    }
+
+    // =========================================================================
+    // إنشاء شركة
+    // =========================================================================
+
+    /**
+     * إنشاء شركة جديدة في النظام.
+     *
+     * الصلاحيات: admin.super | companies.create | admin.company
+     *
+     * @group 07. الإدارة وسجلات النظام
      * @bodyParam name string required اسم الشركة. Example: شركة التقدم
      */
-    public function store(CompanyRequest $request)
+    public function store(CompanyRequest $request): JsonResponse
     {
-        $authUser = Auth::user();
-        if (
-            !$authUser->hasAnyPermission([
-                perm_key('admin.super'),
-                perm_key('companies.create'),
-                perm_key('admin.company')
-            ])
-        ) {
-            return api_forbidden('ليس لديك صلاحية لإنشاء شركة.');
+        $user = Auth::user();
+
+        if (!$user->hasAnyPermission([
+            perm_key('admin.super'),
+            perm_key('companies.create'),
+        ])) {
+            return api_forbidden('ليس لديك صلاحية لإنشاء شركة جديدة.');
         }
 
-        $validatedData = $request->validated();
         try {
-            DB::beginTransaction();
+            $company = DB::transaction(function () use ($request, $user) {
+                $data                = $request->validated();
+                $data['created_by']  = $data['created_by'] ?? $user->id;
+                $data['company_id']  = $data['company_id'] ?? $user->active_company_id;
 
-            $validatedData['company_id'] = $validatedData['company_id'] ?? $authUser->active_company_id;
-            $validatedData['created_by'] = $validatedData['created_by'] ?? $authUser->id;
+                $company = Company::create($data);
 
+                // ربط المستخدم المُنشئ بالشركة تلقائياً
+                $company->users()->attach($user->id, ['created_by' => $user->id]);
 
-            $company = Company::create($validatedData);
-            $company->users()->attach($authUser->id, ['created_by' => $authUser->id]);
-            if ($request->has('images_ids')) {
-                $imagesIds = $request->input('images_ids');
-                $company->syncImages($imagesIds, 'logo');
-            } else {
-                // اضافة صوره افتراضية
-                // new \Illuminate\Http\UploadedFile(public_path('images/default-logo.png'), 'default-logo.png');
-            }
+                // مزامنة الصور (اللوغو) إن وجدت
+                if ($request->filled('images_ids')) {
+                    $company->syncImages($request->input('images_ids'), 'logo');
+                }
 
-            $authUser->active_company_id = $company->id;
-            $authUser->save();
+                return $company;
+            });
 
-            DB::commit();
-            return api_success(new CompanyResource($company->load($this->relations)), 'تم إنشاء الشركة بنجاح');
+            return api_success(
+                new CompanyResource($company->load($this->relations)),
+                'تم إنشاء الشركة بنجاح.',
+                201
+            );
         } catch (\Exception $e) {
-            DB::rollback();
             return api_exception($e);
         }
     }
 
+    // =========================================================================
+    // تحديث شركة
+    // =========================================================================
+
     /**
+     * تحديث بيانات شركة محددة.
+     *
+     * الصلاحيات:
+     *  - admin.super / update_all     → تعديل أي شركة
+     *  - admin.company / update_children → تعديل شركاته أو التابعة له
+     *  - update_self                  → تعديل ما أنشأه هو فقط
+     *
      * @group 07. الإدارة وسجلات النظام
-     * 
-     * عرض تفاصيل شركة
-     * 
-     * @urlParam company required معرف الشركة. Example: 1
+     * @urlParam company int required معرف الشركة. Example: 1
      */
-    public function show(Company $company)
+    public function update(CompanyUpdateRequest $request, Company $company): JsonResponse
     {
-        $authUser = Auth::user();
+        $user = Auth::user();
 
-        if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-            return api_success(new CompanyResource(Company::withoutGlobalScope(CompanyScope::class)->findOrFail($company->id)), 'تم جلب بيانات الشركة بنجاح');
+        if (!$this->canUpdate($user, $company)) {
+            return api_forbidden('ليس لديك صلاحية لتحديث هذه الشركة.');
         }
 
-        if (
-            $authUser->hasPermissionTo(perm_key('companies.view_all')) ||
-            ($authUser->hasPermissionTo(perm_key('companies.view_children')) && $company->isOwn()) ||
-            ($authUser->hasPermissionTo(perm_key('companies.view_self')) && $company->isSelf()) ||
-            ($authUser->hasPermissionTo(perm_key('admin.company')) && ($company->isCurrentCompany() || $company->isOwn()))
-        ) {
-            return api_success(new CompanyResource($company->load($this->relations)), 'تم جلب بيانات الشركة بنجاح');
-        }
+        try {
+            DB::transaction(function () use ($request, $company) {
+                $company->update($request->validated());
 
-        return api_forbidden('ليس لديك صلاحية لعرض هذه الشركة.');
-    }
-
-    public function update(CompanyUpdateRequest $request, Company $company)
-    {
-        $authUser = Auth::user();
-        $validated = $request->validated();
-        if (
-            $authUser->hasPermissionTo(perm_key('admin.super')) ||
-            $authUser->hasPermissionTo(perm_key('companies.update_all')) ||
-            ($authUser->hasPermissionTo(perm_key('companies.update_children')) && $company->isOwn()) ||
-            ($authUser->hasPermissionTo(perm_key('companies.update_self')) && $company->isSelf()) ||
-            ($authUser->hasPermissionTo(perm_key('admin.company')) && ($company->isCurrentCompany() || $company->isOwn()))
-        ) {
-            try {
-                DB::beginTransaction();
-                $company->update($validated);
-
-                if ($request->has('images_ids')) {
-                    $imagesIds = $request->input('images_ids');
-                    $company->syncImages($imagesIds, 'logo');
+                if ($request->filled('images_ids')) {
+                    $company->syncImages($request->input('images_ids'), 'logo');
                 }
-                DB::commit();
-                return api_success(new CompanyResource($company->load($this->relations)), 'تم تحديث الشركة بنجاح');
-            } catch (\Exception $e) {
-                DB::rollback();
-                return api_exception($e);
-            }
-        }
+            });
 
-        return api_forbidden('ليس لديك صلاحية لتحديث هذه الشركة.');
+            return api_success(
+                new CompanyResource($company->fresh()->load($this->relations)),
+                'تم تحديث بيانات الشركة بنجاح.'
+            );
+        } catch (\Exception $e) {
+            return api_exception($e);
+        }
     }
 
+    // =========================================================================
+    // حذف شركات (Batch)
+    // =========================================================================
+
     /**
+     * حذف شركة أو مجموعة شركات (Batch Delete).
+     *
+     * الصلاحيات:
+     *  - admin.super / delete_all     → حذف أي شركة
+     *  - admin.company / delete_children → حذف ما يتبعه فقط
+     *  - delete_self                  → حذف ما أنشأه هو فقط
+     *
+     * ⚠️ لا يمكن حذف الشركة النشطة الحالية للمستخدم.
+     *
      * @group 07. الإدارة وسجلات النظام
-     * 
-     * حذف شركات (Batch)
-     * 
-     * @bodyParam item_ids integer[] required مصفوفة المعرفات.
+     * @bodyParam item_ids int[] required مصفوفة معرفات الشركات. Example: [1, 2]
      */
-    public function destroy(Request $request)
+    public function destroy(Request $request): JsonResponse
     {
-        $authUser = Auth::user();
+        $user = Auth::user();
+
+        $request->validate([
+            'item_ids'   => 'required|array|min:1',
+            'item_ids.*' => 'integer|exists:companies,id',
+        ]);
+
         $companyIds = $request->input('item_ids');
+        $companies  = Company::withoutGlobalScopes()->whereIn('id', $companyIds)->get();
 
-        if (!$companyIds || !is_array($companyIds)) {
-            return api_error('لم يتم تحديد معرفات الشركات بشكل صحيح', [], 400);
+        // التحقق من الصلاحية على كل شركة
+        foreach ($companies as $company) {
+            if (!$this->canDelete($user, $company)) {
+                return api_forbidden("ليس لديك صلاحية لحذف الشركة: {$company->name} (#{$company->id}).");
+            }
         }
 
-        $companiesToDelete = Company::whereIn('id', $companyIds)->get();
-
-        foreach ($companiesToDelete as $company) {
-            if (
-                !(
-                    $authUser->hasPermissionTo(perm_key('admin.super')) ||
-                    $authUser->hasPermissionTo(perm_key('companies.delete_all')) ||
-                    ($authUser->hasPermissionTo(perm_key('companies.delete_children')) && $company->isOwn()) ||
-                    ($authUser->hasPermissionTo(perm_key('companies.delete_self')) && $company->isSelf()) ||
-                    ($authUser->hasPermissionTo(perm_key('admin.company')) && ($company->isCurrentCompany() || $company->isOwn()))
-                )
-            ) {
-                return api_forbidden('ليس لديك صلاحية لحذف الشركة ذات المعرف: ' . $company->id);
-            }
+        // منع حذف الشركة النشطة للمستخدم
+        if (in_array($user->active_company_id, $companyIds)) {
+            return api_error(
+                'لا يمكن حذف الشركة النشطة الحالية. يرجى تغيير الشركة النشطة أولاً.',
+                [],
+                422
+            );
         }
 
         try {
-            DB::beginTransaction();
-            foreach ($companiesToDelete as $company) {
-                if ($logo = $company->images()->where('type', 'logo')->first()) {
-                    $company->deleteImage($logo);
+            DB::transaction(function () use ($companies) {
+                foreach ($companies as $company) {
+                    // حذف اللوغو المرتبط قبل حذف الشركة
+                    if ($logo = $company->images()->where('type', 'logo')->first()) {
+                        $company->deleteImage($logo);
+                    }
+                    $company->delete();
                 }
-                $company->delete();
-            }
-            DB::commit();
-            return api_success([], 'تم حذف الشركات بنجاح');
+            });
+
+            return api_success(null, 'تم حذف الشركات المحددة بنجاح.');
         } catch (\Exception $e) {
-            DB::rollback();
             return api_exception($e);
         }
+    }
+
+    // =========================================================================
+    // دوال خاصة للتحقق من الصلاحيات — مركزية لتسهيل الصيانة
+    // =========================================================================
+
+    /**
+     * هل يملك المستخدم صلاحية عرض هذه الشركة؟
+     */
+    private function canView($user, Company $company): bool
+    {
+        if (
+            $user->hasPermissionTo(perm_key('admin.super')) ||
+            $user->hasPermissionTo(perm_key('companies.view_all'))
+        ) {
+            return true;
+        }
+
+        if ($user->hasPermissionTo(perm_key('companies.view_children'))) {
+            $descendantIds = method_exists($user, 'getDescendantUserIds') ? $user->getDescendantUserIds() : [];
+            if (in_array($company->created_by, array_merge([$user->id], $descendantIds))) {
+                return true;
+            }
+        }
+
+        if (
+            $user->hasPermissionTo(perm_key('companies.view_self')) &&
+            $company->isSelf()
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * هل يملك المستخدم صلاحية تعديل هذه الشركة؟
+     */
+    private function canUpdate($user, Company $company): bool
+    {
+        if (
+            $user->hasPermissionTo(perm_key('admin.super')) ||
+            $user->hasPermissionTo(perm_key('companies.update_all'))
+        ) {
+            return true;
+        }
+
+        if ($user->hasPermissionTo(perm_key('companies.update_children'))) {
+            $descendantIds = method_exists($user, 'getDescendantUserIds') ? $user->getDescendantUserIds() : [];
+            if (in_array($company->created_by, array_merge([$user->id], $descendantIds))) {
+                return true;
+            }
+        }
+
+        if (
+            $user->hasPermissionTo(perm_key('companies.update_self')) &&
+            $company->isSelf()
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * هل يملك المستخدم صلاحية حذف هذه الشركة؟
+     */
+    private function canDelete($user, Company $company): bool
+    {
+        if (
+            $user->hasPermissionTo(perm_key('admin.super')) ||
+            $user->hasPermissionTo(perm_key('companies.delete_all'))
+        ) {
+            return true;
+        }
+
+        if ($user->hasPermissionTo(perm_key('companies.delete_children'))) {
+            $descendantIds = method_exists($user, 'getDescendantUserIds') ? $user->getDescendantUserIds() : [];
+            if (in_array($company->created_by, array_merge([$user->id], $descendantIds))) {
+                return true;
+            }
+        }
+
+        if (
+            $user->hasPermissionTo(perm_key('companies.delete_self')) &&
+            $company->isSelf()
+        ) {
+            return true;
+        }
+
+        return false;
     }
 }

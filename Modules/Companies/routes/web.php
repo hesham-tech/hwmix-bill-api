@@ -1,8 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Companies\Http\Controllers\CompaniesController;
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('companies', CompaniesController::class)->names('companies');
-});
+/*
+|--------------------------------------------------------------------------
+| Web Routes — Companies Module
+|--------------------------------------------------------------------------
+| جميع مسارات الشركات تعمل عبر API فقط.
+| يُرجى الرجوع إلى: routes/api.php أو Modules/Companies/routes/api.php
+|--------------------------------------------------------------------------
+*/

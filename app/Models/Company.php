@@ -33,6 +33,16 @@ class Company extends Model
 {
     use HasFactory, Notifiable, Translatable, HasRoles, Filterable, Scopes, RolePermissions, LogsActivity, HasImages;
 
+    /**
+     * تجاوز الـ Global Scopes عند ربط النموذج بالـ Route (Route Model Binding).
+     * هذا يمنع خطأ 404 بسبب فلتر الشركة النشطة عند الوصول لشركة مختلفة.
+     * التحقق من الصلاحيات يتم داخل الـ Controller.
+     */
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        return $this->withoutGlobalScopes()->where($field ?? $this->getRouteKeyName(), $value)->first();
+    }
+
     protected $fillable = [
         'name',
         'description',

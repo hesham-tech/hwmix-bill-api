@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
- * @group إدارة الأقسام (Module Inventory)
+ * متحكم إدارة الأقسام (CategoryController) - موديول المخازن لإدارة واسترجاع الفئات الرئيسية والفرعية.
  */
 class CategoryController extends Controller
 {
@@ -45,7 +45,10 @@ class CategoryController extends Controller
             }
 
             $perPage = max(1, (int) $request->get('per_page', 20));
-            $categories = $query->orderBy('created_at', 'desc')->paginate($perPage);
+            
+            $sortBy = $request->input('sort_by', 'name');
+            $sortOrder = $request->input('sort_order', 'asc');
+            $categories = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
 
             return api_success(CategoryResource::collection($categories), 'تم استرداد الأقسام بنجاح.');
         } catch (Throwable $e) {
