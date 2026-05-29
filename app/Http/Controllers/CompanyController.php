@@ -163,6 +163,9 @@ class CompanyController extends Controller
                 // ربط المستخدم المُنشئ بالشركة تلقائياً
                 $company->users()->attach($user->id, ['created_by' => $user->id]);
 
+                // تحديث الشركة النشطة للمستخدم إلى الشركة الجديدة
+                $user->update(['active_company_id' => $company->id]);
+
                 // مزامنة الصور (اللوغو) إن وجدت
                 if ($request->filled('images_ids')) {
                     $company->syncImages($request->input('images_ids'), 'logo');
@@ -314,6 +317,13 @@ class CompanyController extends Controller
             return true;
         }
 
+        if (
+            $user->hasPermissionTo(perm_key('admin.company')) &&
+            $company->isCurrentCompany()
+        ) {
+            return true;
+        }
+
         return false;
     }
 
@@ -339,6 +349,13 @@ class CompanyController extends Controller
         if (
             $user->hasPermissionTo(perm_key('companies.update_self')) &&
             $company->isSelf()
+        ) {
+            return true;
+        }
+
+        if (
+            $user->hasPermissionTo(perm_key('admin.company')) &&
+            $company->isCurrentCompany()
         ) {
             return true;
         }

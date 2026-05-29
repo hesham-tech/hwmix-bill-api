@@ -34,7 +34,7 @@ class CompanyControllerTest extends TestCase
         Company::factory()->count(3)->create();
         // dump(Company::pluck('name')->toArray());
 
-        $response = $this->getJson('/api/companys'); // Note the route is 'companys' in api.php
+        $response = $this->getJson('/api/v1/companies'); // Note the route is 'companies' in api.php
 
         $response->assertStatus(200);
         $response->assertJsonCount(5, 'data'); // 3 new + 1 from setUp + 1 from seeder (System Company)
@@ -51,9 +51,9 @@ class CompanyControllerTest extends TestCase
             'address' => 'Test Address',
         ];
 
-        $response = $this->postJson('/api/company', $payload);
+        $response = $this->postJson('/api/v1/companies', $payload);
 
-        $response->assertStatus(200);
+        $response->assertStatus(201); // 201 Created is returned by store()
         $this->assertDatabaseHas('companies', ['name' => 'New Test Company']);
 
         // Check if default warehouse was created
@@ -71,7 +71,7 @@ class CompanyControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        $response = $this->getJson("/api/company/{$this->company->id}");
+        $response = $this->getJson("/api/v1/companies/{$this->company->id}");
 
         $response->assertStatus(200);
         $response->assertJsonFragment(['name' => $this->company->name]);
@@ -85,7 +85,7 @@ class CompanyControllerTest extends TestCase
             'name' => 'Updated Company Name',
         ];
 
-        $response = $this->putJson("/api/company/{$this->company->id}", $payload);
+        $response = $this->putJson("/api/v1/companies/{$this->company->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('companies', ['name' => 'Updated Company Name']);
@@ -102,7 +102,7 @@ class CompanyControllerTest extends TestCase
             'item_ids' => [$company1->id, $company2->id]
         ];
 
-        $response = $this->postJson('/api/company/delete', $payload);
+        $response = $this->postJson('/api/v1/companies/delete', $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('companies', ['id' => $company1->id]);
@@ -118,7 +118,7 @@ class CompanyControllerTest extends TestCase
 
         $otherCompany = Company::factory()->create();
 
-        $response = $this->getJson('/api/companys');
+        $response = $this->getJson('/api/v1/companies');
 
         $response->assertStatus(200);
         // Should only see companies they belong to (just $this->company)
