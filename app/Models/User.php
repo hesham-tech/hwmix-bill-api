@@ -624,52 +624,39 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على الاسم الكامل بشكل مرن (Accessor)
+     * الحصول على الاسم المفضل للهوية العالمية (العالمي فقط)
      */
     public function getNameAttribute()
     {
-        // استخدام العلاقة فقط إذا كانت محملة لتجنب التكرار اللانهائي أثناء التسلسل
-        $activeCompanyUser = $this->relationLoaded('activeCompanyUser') ? $this->activeCompanyUser : null;
-
-        // 1. الأولوية للقب في الشركة المحددة
-        if ($activeCompanyUser && !empty($activeCompanyUser->nickname_in_company)) {
-            return $activeCompanyUser->nickname_in_company;
-        }
-
-        // 2. الاسم الكامل في الشركة المحددة
-        if ($activeCompanyUser && !empty($activeCompanyUser->full_name_in_company)) {
-            return $activeCompanyUser->full_name_in_company;
-        }
-
-        // 3. اللقب العالمي
-        if (!empty($this->nickname))
+        if (!empty($this->nickname)) {
             return $this->nickname;
+        }
 
-        // 4. الاسم الكامل العالمي
-        if (!empty($this->full_name))
+        if (!empty($this->full_name)) {
             return $this->full_name;
+        }
 
-        // 5. المحاولة باسم المستخدم
-        if (!empty($this->username))
+        if (!empty($this->username)) {
             return $this->username;
+        }
 
         return 'عميل غير معروف';
     }
 
     /**
-     * الحصول على اللقب (Context-Aware)
+     * الحصول على اللقب للهوية العالمية (العالمي فقط)
      */
     public function getNicknameAttribute($value)
     {
-        return $this->activeCompanyUser?->nickname_in_company ?? $value;
+        return $value;
     }
 
     /**
-     * الحصول على الاسم الكامل (Context-Aware)
+     * الحصول على الاسم الكامل للهوية العالمية (العالمي فقط)
      */
     public function getFullNameAttribute($value)
     {
-        return $this->activeCompanyUser?->full_name_in_company ?? $value;
+        return $value;
     }
 
     /**

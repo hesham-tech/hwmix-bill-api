@@ -54,11 +54,18 @@ class UpdateInvoiceRequest extends FormRequest
             'items.*.tax_amount' => 'nullable|numeric|min:0',
             'items.*.subtotal' => 'nullable|numeric|min:0',
             'items.*.total' => 'required_with:items|numeric|min:0',
+            'total_balance' => 'nullable|numeric',
             'installment_plan' => 'nullable|array',
             'installment_plan.down_payment' => 'nullable|numeric',
             'installment_plan.number_of_installments' => 'nullable|integer|min:1',
             'installment_plan.installment_amount' => 'nullable|numeric',
             'installment_plan.frequency' => 'nullable|string|in:monthly,weekly,biweekly,quarterly',
+            'installment_plan.net_amount' => 'nullable|numeric',
+            'installment_plan.interest_rate' => 'nullable|numeric',
+            'installment_plan.interest_amount' => 'nullable|numeric',
+            'installment_plan.total_amount' => 'nullable|numeric',
+            'installment_plan.round_step' => 'nullable|integer',
+            'installment_plan.start_date' => 'nullable|date',
         ];
     }
 

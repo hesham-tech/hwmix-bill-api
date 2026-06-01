@@ -34,22 +34,6 @@ class UserObserver
             return \Illuminate\Support\Facades\Schema::hasColumn($companyUserTable, $column);
         };
 
-        // [تزامن البيانات]: إذا تغير الاسم العالمي، نقوم بتحديث الحقول المقابلة في سجلات الشركات إذا كانت فارغة
-        if ($user->isDirty(['full_name', 'nickname'])) {
-            $user->companyUsers()->each(function ($companyUser) use ($user, $hasColumn) {
-                $updateData = [];
-                if ($user->isDirty('full_name') && $hasColumn('full_name_in_company') && empty($companyUser->full_name_in_company)) {
-                    $updateData['full_name_in_company'] = $user->full_name;
-                }
-                if ($user->isDirty('nickname') && $hasColumn('nickname_in_company') && empty($companyUser->nickname_in_company)) {
-                    $updateData['nickname_in_company'] = $user->nickname;
-                }
-
-                if (!empty($updateData)) {
-                    $companyUser->update($updateData);
-                }
-            });
-        }
 
         // [تزامن بيانات الهوية]: تحديث حقول الكاش (phone, email, username) في جميع الشركات
         $identityData = [];
