@@ -274,4 +274,77 @@ class InvoiceControllerTest extends TestCase
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['installment_plan']);
     }
+
+    /**
+     * اختبار: إنشاء فاتورة بيع بالتقسيط بنجاح مع إنشاء خطة التقسيط والأقساط المجدولة.
+     */
+    public function test_resolves_invoice_creation_service_for_installment_sale()
+    {
+        $invoiceType = InvoiceType::factory()->create([
+            'code' => 'installment_sale',
+            'company_id' => $this->company->id
+        ]);
+
+        $customer = User::factory()->create();
+        // Link customer to company (Membership)
+        \App\Models\CompanyUser::create([
+            'user_id' => $customer->id,
+            'company_id' => $this->company->id,
+            'status' => 'active',
+            'created_by' => $this->user->id,
+        ]);
+
+        $payload = [
+            'user_id' => $customer->id,
+            'invoice_type_id' => $invoiceType->id,
+            'invoice_type_code' => 'installment_sale',
+            'invoice_number' => 'INV-INST-001',
+            'due_date' => now()->addDays(30)->format('Y-m-d'),
+            'gross_amount' => 12000,
+            'net_amount' => 12000,
+            'paid_amount' => 2000,
+            'remaining_amount' => 10000,
+            'total_balance' => 12000,
+            'status' => 'confirmed',
+            'company_id' => $this->company->id,
+            'cash_box_id' => $this->cashBox->id,
+            'installment_plan' => [
+                'down_payment' => 2000,
+                'number_of_installments' => 10,
+                'installment_amount' => 1000,
+                'frequency' => 'monthly',
+                'net_amount' => 12000,
+                'interest_rate' => 0,
+                'interest_amount' => 0,
+                'total_amount' => 12000,
+                'round_step' => 5,
+                'start_date' => now()->addMonth()->format('Y-m-d'),
+            ],
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'variant_id' => $this->variant->id,
+                    'name' => $this->product->name,
+                    'quantity' => 12,
+                    'unit_price' => 1000,
+                    'discount' => 0,
+                    'total' => 12000,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson('/api/v1/invoices', $payload);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('invoices', ['invoice_type_id' => $invoiceType->id]);
+        $this->assertDatabaseHas('installment_plans', [
+            'invoice_id' => $response->json('data.id'),
+            'user_id' => $customer->id,
+            'remaining_amount' => 10000.00
+        ]);
+        $this->assertDatabaseHas('installments', [
+            'user_id' => $customer->id,
+            'amount' => 1000.00
+        ]);
+    }
 }
