@@ -49,7 +49,7 @@ class UserControllerTest extends TestCase
             'status' => 'active',
         ]);
 
-        $response = $this->getJson('/api/users');
+        $response = $this->getJson('/api/v1/users');
 
         $response->assertStatus(200);
         $response->assertJsonFragment(['nickname' => 'Test User']);
@@ -66,10 +66,11 @@ class UserControllerTest extends TestCase
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'nickname' => 'New Nickname',
+            'full_name' => 'New User Full Name',
             'status' => 'active',
         ];
 
-        $response = $this->postJson('/api/user', $payload);
+        $response = $this->postJson('/api/v1/users', $payload);
 
         $response->assertStatus(200); // Controller returns 200 for success
         $this->assertDatabaseHas('users', ['username' => 'newuser']);
@@ -91,7 +92,7 @@ class UserControllerTest extends TestCase
             'status' => 'active',
         ]);
 
-        $response = $this->getJson("/api/user/{$user->id}");
+        $response = $this->getJson("/api/v1/users/{$user->id}");
 
         $response->assertStatus(200);
         $response->assertJsonFragment(['nickname' => 'Target User']);
@@ -113,7 +114,7 @@ class UserControllerTest extends TestCase
             'nickname' => 'Updated Nickname',
         ];
 
-        $response = $this->putJson("/api/user/{$user->id}", $payload);
+        $response = $this->putJson("/api/v1/users/{$user->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('company_user', ['nickname_in_company' => 'Updated Nickname']);
@@ -142,7 +143,7 @@ class UserControllerTest extends TestCase
             'company_id' => $newCompany->id,
         ];
 
-        $response = $this->putJson("/api/change-company/{$user->id}", $payload);
+        $response = $this->putJson("/api/v1/change-company/{$user->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertEquals($newCompany->id, $user->fresh()->company_id);
@@ -162,7 +163,7 @@ class UserControllerTest extends TestCase
             'item_ids' => [$user1->id, $user2->id]
         ];
 
-        $response = $this->postJson('/api/users/delete', $payload);
+        $response = $this->postJson('/api/v1/users/delete', $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('users', ['id' => $user1->id]);
@@ -184,12 +185,12 @@ class UserControllerTest extends TestCase
         CompanyUser::create(['user_id' => $userB->id, 'company_id' => $companyB->id, 'nickname_in_company' => 'User B']);
 
         // Try to list (should only see users in company A)
-        $response = $this->getJson('/api/users');
+        $response = $this->getJson('/api/v1/users');
         $response->assertStatus(200);
         $response->assertJsonMissing(['nickname' => 'User B']);
 
         // Try to show User B directly
-        $response = $this->getJson("/api/user/{$userB->id}");
+        $response = $this->getJson("/api/v1/users/{$userB->id}");
         $response->assertStatus(404); // UserController returns 404 for user not in active company
     }
 }

@@ -417,8 +417,12 @@ class UserController extends Controller
         }
 
         // Fallback للرؤية العالمية للسوبر أدمن
-        $user->load($this->relations);
-        return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح (عرض عالمي).');
+        if ($isSuperAdmin) {
+            $user->load($this->relations);
+            return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح (عرض عالمي).');
+        }
+
+        return api_not_found('المستخدم غير موجود في هذه الشركة.');
     }
     /**
      * @group 07. الإدارة وسجلات النظام
@@ -441,40 +445,45 @@ class UserController extends Controller
             $validated = $request->validated();
 
             // 1. [تعديل الهوية]: جدول users
-            // السوبر أدمن، صاحب الحساب، أو الموظفين ذوي الصلاحيات يمكنهم تعديل البيانات العالمية
             $isUpdatingSelf = ($authUser->id === $user->id);
             $canUpdateAll = $authUser->can(perm_key('users.update_all'));
             $canUpdateChildren = $authUser->can(perm_key('users.update_children'));
             $isDescendant = $canUpdateChildren ? in_array($user->id, $authUser->getDescendantUserIds()) : false;
 
             if ($isSuperAdmin || $isUpdatingSelf || $canUpdateAll || $isDescendant) {
-                $userData = array_intersect_key($validated, array_flip([
+                // إذا كان المستخدم يعدل هويته الشخصية، يسمح له بتعديل الاسم واللقب عالمياً
+                // أما لو كان المشرف يعدل مستخدماً آخر، فلا نلمس الاسم واللقب في جدول users ونحدث بقية البيانات العالمية فقط (الهاتف، الإيميل، كلمة المرور)
+                $allowedKeys = [
                     'username',
                     'email',
                     'phone',
-                    'full_name',
-                    'nickname',
                     'password',
-                    'position',
                     'settings'
-                ]));
+                ];
+                if ($isUpdatingSelf) {
+                    $allowedKeys[] = 'full_name';
+                    $allowedKeys[] = 'nickname';
+                    $allowedKeys[] = 'position';
+                }
+
+                $userData = array_intersect_key($validated, array_flip($allowedKeys));
                 if (!empty($userData)) {
                     $user->update($userData);
                 }
             }
 
             // 2. [تعديل العضوية]: جدول company_user
-            // يتم التعديل في سياق الشركة النشطة للأدمن، أو المستخدم نفسه لبياناته في تلك الشركة
-            if ($activeCompanyId) {
+            // يتم التعديل في سياق الشركة النشطة فقط للمشرفين عند تعديل مستخدمين آخرين
+            // ولا يتم تحديث جدول الوسيط للمستخدم الحالي عند تعديل ملفه الشخصي للحفاظ على استقلالية هويته
+            if ($activeCompanyId && !$isUpdatingSelf) {
                 $companyUser = $user->companyUsers()->where('company_id', $activeCompanyId)->first();
                 if ($companyUser) {
                     $contextData = [];
-                    // ملاحظة: إذا كان المستخدم يعدل بياناته، نأخذ اللقب من المدخلات أو نستخدم المنطق التلقائي
                     if (isset($validated['nickname']))
                         $contextData['nickname_in_company'] = $validated['nickname'];
                     if (isset($validated['full_name']))
                         $contextData['full_name_in_company'] = $validated['full_name'];
-                    if (isset($validated['status']) && !$isUpdatingSelf)
+                    if (isset($validated['status']))
                         $contextData['status'] = $validated['status'];
                     if (isset($validated['balance']) && $isSuperAdmin) {
                         // [تعديل]: تحديث الرصيد في الخزنة مباشرة بدلاً من جدول الربط عند تعديل السوبر أدمن
