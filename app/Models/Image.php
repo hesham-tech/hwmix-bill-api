@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Image extends Model
 {
@@ -56,6 +57,11 @@ class Image extends Model
         $path = ltrim($path, '/');
         if (str_starts_with($path, 'storage/')) {
             $path = substr($path, 8);
+        }
+
+        // Check if the file actually exists on the public disk
+        if (!Storage::disk('public')->exists($path)) {
+            return null;
         }
 
         // Return full URL using our CORS-safe media serve route

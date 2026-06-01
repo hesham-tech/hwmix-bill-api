@@ -24,6 +24,11 @@ class CheckSaaSResourceLimit
 
         $companyId = $user->active_company_id;
 
+        // السوبر أدمن معفى تماماً من قيود الباقات والموارد
+        if ($user->hasPermissionTo(perm_key('admin.super'))) {
+            return $next($request);
+        }
+
         // التحقق من قيود الباقة الجارية
         if (!LimitResolver::isWithinLimit($companyId, $resource)) {
             $resourceLabel = $this->getResourceLabel($resource);

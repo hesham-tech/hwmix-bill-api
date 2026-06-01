@@ -35,6 +35,36 @@ class PlanResource extends JsonResource
             'creator' => $this->whenLoaded('creator'),
             'updater' => $this->whenLoaded('updater'),
             'subscriptions' => $this->whenLoaded('subscriptions'),
+            // إحصائيات السوبر أدمن
+            'active_companies_count' => $this->when(\Illuminate\Support\Facades\Auth::user()?->hasPermissionTo(perm_key('admin.super')), function() {
+                return \App\Models\CompanySubscription::where('plan_id', $this->id)
+                    ->whereIn('status', ['active', 'trial'])
+                    ->where(function ($q) {
+                        $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
+                    })
+                    ->where(function ($q) {
+                        $q->whereNull('trial_ends_at')->orWhere('trial_ends_at', '>', now());
+                    })
+                    ->count();
+            }),
+            'active_users_count' => $this->when(\Illuminate\Support\Facades\Auth::user()?->hasPermissionTo(perm_key('admin.super')), function() {
+                $activeCompanyIds = \App\Models\CompanySubscription::where('plan_id', $this->id)
+                    ->whereIn('status', ['active', 'trial'])
+                    ->where(function ($q) {
+                        $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
+                    })
+                    ->where(function ($q) {
+                        $q->whereNull('trial_ends_at')->orWhere('trial_ends_at', '>', now());
+                    })
+                    ->pluck('company_id')
+                    ->toArray();
+                    
+                if (empty($activeCompanyIds)) return 0;
+                
+                return \App\Models\CompanyUser::whereIn('company_id', $activeCompanyIds)
+                    ->distinct('user_id')
+                    ->count();
+            }),
         ];
     }
 }

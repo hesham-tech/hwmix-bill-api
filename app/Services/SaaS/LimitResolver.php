@@ -34,9 +34,8 @@ class LimitResolver
                 
             case 'warehouses':
                 // المخازن موجودة في موديول المخازن
-                return \Illuminate\Support\Facades\DB::table('warehouses')
+                return \Modules\Inventory\Models\Warehouse::withoutGlobalScopes()
                     ->where('company_id', $companyId)
-                    ->whereNull('deleted_at')
                     ->count();
                     
             default:
@@ -64,6 +63,18 @@ class LimitResolver
                 return $sub->isActive();
             })
             ->first();
+
+        if (!$subscription) {
+            // تفعيل تلقائي ذاتي للباقة التجريبية الافتراضية لمنع توقف الشركات القديمة أو المهيأة يدوياً
+            $freePlan = \App\Models\Plan::where('code', 'free_trial')->first();
+            if ($freePlan) {
+                try {
+                    $subscription = \App\Services\SaaS\SubscriptionService::initializeSubscription($companyId, $freePlan->id);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('SaaS self-healing failed to initialize subscription', ['company_id' => $companyId, 'error' => $e->getMessage()]);
+                }
+            }
+        }
 
         if (!$subscription) {
             return false; // لا يوجد اشتراك نشط -> لا يمكن إنشاء موارد
@@ -130,6 +141,18 @@ class LimitResolver
                 return $sub->isActive();
             })
             ->first();
+
+        if (!$subscription) {
+            // تفعيل تلقائي ذاتي للباقة التجريبية الافتراضية للشركات القديمة عند الاستعلام عن المصفوفة
+            $freePlan = \App\Models\Plan::where('code', 'free_trial')->first();
+            if ($freePlan) {
+                try {
+                    $subscription = \App\Services\SaaS\SubscriptionService::initializeSubscription($companyId, $freePlan->id);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('SaaS matrix self-healing failed to initialize subscription', ['company_id' => $companyId, 'error' => $e->getMessage()]);
+                }
+            }
+        }
 
         $matrix = [
             'plan_id' => $subscription ? $subscription->plan_id : null,

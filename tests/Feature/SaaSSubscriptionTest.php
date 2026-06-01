@@ -80,10 +80,10 @@ class SaaSSubscriptionTest extends TestCase
             'status' => 'active'
         ]);
 
-        // التحقق من تفعيل الباقة التجريبية المجانية تلقائياً
+        // التحقق من تفعيل الباقة المجانية تلقائياً
         $this->assertDatabaseHas('company_subscriptions', [
             'company_id' => $newCompany->id,
-            'status' => 'trial',
+            'status' => 'active',
             'price' => 0.00
         ]);
     }
@@ -109,7 +109,7 @@ class SaaSSubscriptionTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('data.plan_name', 'الباقة التجريبية المجانية')
-            ->assertJsonPath('data.status', 'trial')
+            ->assertJsonPath('data.status', 'active')
             ->assertJsonStructure([
                 'status',
                 'data' => [
@@ -260,6 +260,85 @@ class SaaSSubscriptionTest extends TestCase
         // التحقق من الميزات الجديدة للشركة
         $this->assertTrue(FeatureAccessService::hasAccess($newCompany->id, 'payment_gateways'));
         $this->assertTrue(FeatureAccessService::hasAccess($newCompany->id, 'installment_system'));
+    }
+
+    /** @test */
+    public function test_super_admin_can_view_companies_subscriptions_and_change_plan()
+    {
+        // 1. إنشاء مستأجر جديد
+        $payload = [
+            'company_name' => 'شركة النيل للتقنية',
+            'full_name' => 'مازن النيل',
+            'phone' => '01012345679',
+            'password' => 'password123',
+        ];
+        $this->postJson('/api/v1/register/company', $payload);
+        $newCompany = Company::where('name', 'شركة النيل للتقنية')->first();
+
+        // 2. إنشاء باقة جديدة مميزة (Active Premium Plan) للترقية إليها
+        $masterCompanyId = (int) config('app.master_company_id', 1);
+        $premiumPlan = Plan::create([
+            'name' => 'الباقة سوبر نيل',
+            'code' => 'super_nile',
+            'price' => 500.00,
+            'currency' => 'EGP',
+            'duration' => 1,
+            'duration_unit' => 'months',
+            'trial_days' => 0,
+            'is_active' => true,
+            'company_id' => $masterCompanyId,
+            'features' => [],
+            'max_users' => 10,
+        ]);
+
+        // 3. إنشاء مستخدم سوبر أدمن
+        $superAdmin = User::create([
+            'phone' => '01012345688',
+            'full_name' => 'السوبر أدمن العام',
+            'username' => 'superadmin_test',
+            'password' => bcrypt('password123'),
+        ]);
+        
+        // إسناد صلاحية admin.super له
+        $permission = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'admin.super', 'guard_name' => 'web']);
+        $superAdmin->givePermissionTo($permission);
+
+        // 4. اختبار الوصول كمستخدم عادي (مازن النيل)
+        $normalUser = User::where('phone', '01012345679')->first();
+        $this->actingAs($normalUser);
+        
+        $this->getJson('/api/v1/saas/companies-subscriptions')
+            ->assertStatus(403);
+            
+        $this->postJson('/api/v1/saas/companies-subscriptions/change-plan', [
+            'company_id' => $newCompany->id,
+            'plan_id' => $premiumPlan->id
+        ])->assertStatus(403);
+
+        // 5. اختبار الوصول كسوبر أدمن
+        $this->actingAs($superAdmin);
+        
+        // أ) جلب قائمة اشتراكات الشركات
+        $responseList = $this->getJson('/api/v1/saas/companies-subscriptions');
+        $responseList->assertStatus(200);
+        $responseList->assertJsonFragment([
+            'company_name' => 'شركة النيل للتقنية'
+        ]);
+
+        // ب) تغيير باقة الشركة
+        $responseChange = $this->postJson('/api/v1/saas/companies-subscriptions/change-plan', [
+            'company_id' => $newCompany->id,
+            'plan_id' => $premiumPlan->id
+        ]);
+        $responseChange->assertStatus(200);
+
+        // التحقق من قاعدة البيانات
+        $this->assertDatabaseHas('company_subscriptions', [
+            'company_id' => $newCompany->id,
+            'plan_id' => $premiumPlan->id,
+            'status' => 'active',
+            'price' => 500.00
+        ]);
     }
 }
 

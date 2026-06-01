@@ -628,7 +628,7 @@ class UserController extends Controller
 
             $deletedCount = 0;
             $skippedCount = 0;
-            $skipReasons = []; // **[تعديل]: مصفوفة لتخزين أسباب التخطي**
+            $skipReasons = [];
             $descendantUserIds = [];
 
             if ($canDeleteChildren) {
@@ -641,46 +641,42 @@ class UserController extends Controller
                     continue;
                 }
 
-                // 1. منطق المشرف العام (Hard Delete من النظام)
-                if ($isSuperAdmin || $canDeleteAll) {
+                // 1. فحص الأمان المالي والقيود أولاً في كل الحالات (للشركة النشطة)
+                if ($activeCompanyId) {
+                    $deletionSafetyCheck = $user->hasActiveTransactionsInCompany($activeCompanyId);
 
-                    // يتم هنا افتراض أن المشرف العام له صلاحية تجاوز التحقق من سلامة البيانات
-                    // أو أن يتم إضافة فحص مشابه لـ hasActiveTransactionsInCompany على مستوى النظام كله هنا إذا لزم الأمر.
+                    if ($deletionSafetyCheck !== null) {
+                        $skippedCount++;
+                        $skipReasons[] = [
+                            'user_id' => $user->id,
+                            'username' => $user->username ?: $user->nickname,
+                            'reason' => $deletionSafetyCheck['message'],
+                        ];
+                        Log::warning("تم تخطي حذف/فصل المستخدم {$user->id} بسبب: {$deletionSafetyCheck['message']}");
+                        continue;
+                    }
+                }
 
+                // تحديد نوع الحذف المطلوب
+                $deleteType = $request->input('delete_type', 'company');
+                $shouldGlobalDelete = ($deleteType === 'global') && ($isSuperAdmin || $canDeleteAll);
+
+                if ($shouldGlobalDelete) {
+                    // 2. حذف نهائي كلي من النظام (Hard Delete)
                     $user->cashBoxes()->delete();
                     $user->companyUsers()->delete();
                     $user->delete();
                     $deletedCount++;
-                }
-
-                // 2. منطق مسؤول الشركة (Un-link من الشركة)
-                elseif ($activeCompanyId && ($isCompanyAdmin || $canDeleteChildren)) {
-                    if ($isCompanyAdmin || ($canDeleteChildren && in_array($user->id, $descendantUserIds))) {
-
-                        // **[تعديل]: استدعاء الدالة واستقبال رسالة المنع**
-                        $deletionSafetyCheck = $user->hasActiveTransactionsInCompany($activeCompanyId);
-
-                        if ($deletionSafetyCheck !== null) {
-                            $skippedCount++;
-                            // **[تعديل]: تسجيل سبب التخطي لإرساله للواجهة الأمامية**
-                            $skipReasons[] = [
-                                'user_id' => $user->id,
-                                'username' => $user->username,
-                                'reason' => $deletionSafetyCheck['message'],
-                            ];
-                            Log::warning("تم تخطي فصل المستخدم {$user->id} ({$user->username}) بسبب: {$deletionSafetyCheck['message']}");
-                            continue;
-                        }
-
+                } else {
+                    // 3. فك ارتباط بالشركة النشطة فقط (Un-link)
+                    if ($activeCompanyId && ($isSuperAdmin || $isCompanyAdmin || ($canDeleteChildren && in_array($user->id, $descendantUserIds)))) {
                         $companyUser = $user->companyUsers()->where('company_id', $activeCompanyId)->first();
 
                         if ($companyUser) {
-                            // **[تنظيف]:** تم حذف السطر القديم لحذف الخزنة يدوياً
-
                             $companyUser->delete();
                             $deletedCount++;
 
-                            // الحذف النهائي المشروط للمستخدم من جدول users إذا لم يعد لديه ارتباطات
+                            // الحذف النهائي التلقائي للمستخدم من جدول users إذا لم يعد لديه ارتباط بأي شركة أخرى
                             if ($user->companyUsers()->count() === 0) {
                                 $user->delete();
                             }

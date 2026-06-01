@@ -285,6 +285,8 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     Route::get('saas/my-subscription', [\App\Http\Controllers\SaaS\SaaSSubscriptionController::class, 'mySubscription']);
     Route::patch('saas/my-subscription/toggle-auto-renew', [\App\Http\Controllers\SaaS\SaaSSubscriptionController::class, 'toggleAutoRenew']);
     Route::post('saas/my-subscription/upgrade', [\App\Http\Controllers\SaaS\SaaSSubscriptionController::class, 'upgrade']);
+    Route::get('saas/companies-subscriptions', [\App\Http\Controllers\SaaS\SaaSSubscriptionController::class, 'companiesSubscriptions']);
+    Route::post('saas/companies-subscriptions/change-plan', [\App\Http\Controllers\SaaS\SaaSSubscriptionController::class, 'changeCompanyPlan']);
 
     Route::get('/permissions', [PermissionController::class, 'index']);
 
