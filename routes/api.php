@@ -57,6 +57,7 @@ Route::middleware('throttle:auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
 });
 Route::get('public/plans', [PlanController::class, 'publicPlans']);
+Route::get('public/company', [CompanyController::class, 'publicCompany']);
 Route::post('error-reports', [ErrorReportController::class, 'store']);
 Route::get('media/view/{path}', [ImageController::class, 'serve'])->where('path', '.*')->name('media.serve');
 

@@ -391,4 +391,22 @@ class CompanyController extends Controller
 
         return false;
     }
+
+    /**
+     * تعليق عربي: جلب بيانات الشركة الأولى في النظام لعرضها على صفحات الهبوط العامة.
+     */
+    public function publicCompany(): JsonResponse
+    {
+        try {
+            $company = Company::withoutGlobalScopes()->with($this->relations)->first();
+
+            if (!$company) {
+                return api_error('لم يتم العثور على أي شركة في النظام.', 404);
+            }
+
+            return api_success(new CompanyResource($company), 'تم جلب بيانات الهوية العامة بنجاح.');
+        } catch (\Exception $e) {
+            return api_exception($e);
+        }
+    }
 }
