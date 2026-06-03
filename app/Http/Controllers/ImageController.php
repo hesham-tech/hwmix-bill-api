@@ -54,6 +54,51 @@ class ImageController extends Controller
         try {
             // سجل جميع بيانات الطلب
             logger($request->all());
+
+            // دعم تحويل ملف وسائط من المكتبة العامة إلى سجل صورة مرتبط بالشركة
+            if ($request->has('media_file_id') || $request->has('media_file_ids')) {
+                $request->validate([
+                    'media_file_id' => ['nullable', 'integer', 'exists:media_files,id'],
+                    'media_file_ids' => ['nullable', 'array'],
+                    'media_file_ids.*' => ['integer', 'exists:media_files,id'],
+                    'type' => ['nullable', 'string'],
+                ]);
+
+                $user = Auth::user();
+                $companyId = $user->active_company_id;
+                $type = $request->input('type', 'misc');
+                $createdImages = [];
+
+                $ids = $request->has('media_file_ids')
+                    ? $request->input('media_file_ids')
+                    : [$request->input('media_file_id')];
+
+                foreach ($ids as $id) {
+                    if (empty($id)) continue;
+                    $mediaFile = \Modules\Media\Models\MediaFile::findOrFail($id);
+
+                    $image = Image::create([
+                        'url' => '/storage/' . $mediaFile->file_path, // الرابط المتوقع في حقل url للشركة والمنتجات
+                        'type' => $type,
+                        'company_id' => $companyId,
+                        'created_by' => $user->id,
+                        'is_temp' => 1,
+                        'file_name' => $mediaFile->filename,
+                        'mime_type' => $mediaFile->mime_type,
+                        'size' => $mediaFile->file_size,
+                    ]);
+
+                    $createdImages[] = $image;
+                }
+
+                return api_success(
+                    $request->has('media_file_ids')
+                        ? ImageResource::collection($createdImages)
+                        : new ImageResource($createdImages[0]),
+                    'تم ربط ملفات الوسائط بنجاح'
+                );
+            }
+
             // سجل بيانات ملفات الصور
             logger($request->file('images'));
 
