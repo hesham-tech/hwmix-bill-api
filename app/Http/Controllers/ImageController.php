@@ -83,9 +83,6 @@ class ImageController extends Controller
                         'company_id' => $companyId,
                         'created_by' => $user->id,
                         'is_temp' => 1,
-                        'file_name' => $mediaFile->filename,
-                        'mime_type' => $mediaFile->mime_type,
-                        'size' => $mediaFile->file_size,
                     ]);
 
                     $createdImages[] = $image;

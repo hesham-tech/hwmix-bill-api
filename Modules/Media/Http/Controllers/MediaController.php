@@ -28,12 +28,18 @@ class MediaController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            if (!Auth::user()->hasPermissionTo(perm_key('images.view_all')) && !Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
-                return api_forbidden('غير مصرح لك باستعراض مكتبة الوسائط.');
+            $query = MediaFile::query();
+
+            // إذا لم يكن سوبر أدمن ولا مدير شركة ولا يملك صلاحية عرض جميع الصور
+            if (!Auth::user()->hasPermissionTo(perm_key('images.view_all')) && 
+                !Auth::user()->hasPermissionTo(perm_key('admin.super')) && 
+                !Auth::user()->hasPermissionTo(perm_key('admin.company'))) {
+                // يعرض فقط الصور التي قام برفعها بنفسه
+                $query->where('created_by', Auth::id());
             }
 
             // يتم الفرز scoped بالشركة النشطة تلقائياً بفضل FilterableByCompany
-            $mediaFiles = MediaFile::orderBy('id', 'desc')->paginate(18);
+            $mediaFiles = $query->orderBy('id', 'desc')->paginate(18);
 
             return api_success(MediaFileResource::collection($mediaFiles), 'تم جلب مكتبة الوسائط بنجاح');
         } catch (\Throwable $e) {
@@ -47,10 +53,7 @@ class MediaController extends Controller
     public function upload(UploadMediaRequest $request): JsonResponse
     {
         try {
-            if (!Auth::user()->hasPermissionTo(perm_key('images.create')) && !Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
-                return api_forbidden('غير مصرح لك برفع ملفات وسائط.');
-            }
-
+            // يسمح لأي مستخدم مسجل بالرفع لوسائطه الخاصة داخل الشركة الحالية
             $mediaFile = $this->storageService->store(
                 $request->file('file'),
                 Auth::user()->active_company_id,
@@ -72,9 +75,11 @@ class MediaController extends Controller
             $mediaFile = MediaFile::findOrFail($id);
 
             // التحقق من الصلاحيات
-            if (!Auth::user()->hasPermissionTo(perm_key('images.delete_all')) && !Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
-                // إذا لم يكن لديه حذف الكل، نتحقق مما إذا كان هو من أنشأه ولديه صلاحية حذف الخاص به
-                if ($mediaFile->created_by !== Auth::id() || !Auth::user()->hasPermissionTo(perm_key('images.delete_self'))) {
+            if (!Auth::user()->hasPermissionTo(perm_key('images.delete_all')) && 
+                !Auth::user()->hasPermissionTo(perm_key('admin.super')) && 
+                !Auth::user()->hasPermissionTo(perm_key('admin.company'))) {
+                // إذا لم يكن لديه صلاحية حذف الكل، نتحقق مما إذا كان هو من أنشأه
+                if ($mediaFile->created_by !== Auth::id()) {
                     return api_forbidden('غير مصرح لك بحذف هذا الملف.');
                 }
             }
