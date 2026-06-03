@@ -38,6 +38,13 @@ class MediaController extends Controller
                 $query->where('created_by', Auth::id());
             }
 
+            // استثناء ملفات الوسائط المستخدمة بالفعل في جدول images
+            $query->whereNotExists(function ($q) {
+                $q->select(\DB::raw(1))
+                  ->from('images')
+                  ->whereRaw("images.url LIKE CONCAT('%', media_files.file_path)");
+            });
+
             // يتم الفرز scoped بالشركة النشطة تلقائياً بفضل FilterableByCompany
             $mediaFiles = $query->orderBy('id', 'desc')->paginate(18);
 

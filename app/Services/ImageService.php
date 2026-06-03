@@ -43,13 +43,25 @@ class ImageService
             $oldRelativePath = ltrim(str_replace('/storage/', '', $oldUrlRaw), '/');
 
             $ext = pathinfo($oldUrlRaw, PATHINFO_EXTENSION);
-            $fileName = "{$modelName}_{$model->id}_" . uniqid() . '.' . $ext;
+            
+            // توحيد اسم ملف الشعار للشركة ليكون ثابتاً دائماً (مثل logo.svg) لضمان ثبات روابط BIMI والـ DNS
+            if ($modelName === 'company' && $type === 'logo') {
+                $fileName = "logo.{$ext}";
+            } else {
+                $fileName = "{$modelName}_{$model->id}_" . uniqid() . '.' . $ext;
+            }
+            
             $newRelativePath = "{$storageBase}/{$fileName}";
 
             // نقل الملف فيزيائياً باستخدام قرص public
             if (Storage::disk('public')->exists($oldRelativePath)) {
                 // التأكد من وجود المجلد الوجهة
                 Storage::disk('public')->makeDirectory($storageBase);
+
+                // إذا كان الملف الوجهة موجوداً مسبقاً، نقوم بحذفه لتجنب فشل دالة move
+                if (Storage::disk('public')->exists($newRelativePath)) {
+                    Storage::disk('public')->delete($newRelativePath);
+                }
 
                 if (Storage::disk('public')->move($oldRelativePath, $newRelativePath)) {
                     $image->update([
@@ -59,6 +71,11 @@ class ImageService
                         'is_temp' => 0,
                         'type' => $type,
                     ]);
+
+                    // حذف سجل الوسائط الأصلي بعد نقل الملف للكيان بنجاح لمنع ظهوره كصورة تالفة في المعرض
+                    if (class_exists('\Modules\Media\Models\MediaFile')) {
+                        \Modules\Media\Models\MediaFile::where('file_path', $oldRelativePath)->delete();
+                    }
                 }
             } elseif (!$image->is_temp && str_contains($oldUrlRaw, $storageBase)) {
                 // إذا كان الملف غير موجود في المسار القديم ولكنه ليس مؤقتاً ومساره يحتوي على المجلد الوجهة

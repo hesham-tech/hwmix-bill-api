@@ -17,7 +17,7 @@ class MailSettingResource extends JsonResource
             'mail_host' => $this->mail_host,
             'mail_port' => $this->mail_port,
             'mail_username' => $this->mail_username,
-            // لا يتم إرجاع كلمة السر الفعلية أبداً عبر الـ API لدواعي الأمان
+            'mail_password' => $this->mail_password,
             'mail_password_configured' => !empty($this->mail_password),
             'mail_encryption' => $this->mail_encryption,
             'mail_from_address' => $this->mail_from_address,
