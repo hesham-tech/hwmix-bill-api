@@ -487,6 +487,7 @@ class CashBoxController extends Controller
                 }
             }
 
+            Transaction::$preventObserverLog = true;
             DB::beginTransaction();
             try {
                 // إضافة السجل الخاص بالمستخدم المخصوم منه (حركة خصم من الصندوق المصدر)
@@ -535,6 +536,8 @@ class CashBoxController extends Controller
             } catch (Throwable $e) {
                 DB::rollback();
                 return api_error('فشل التحويل. يرجى المحاولة مرة أخرى.', [], 500);
+            } finally {
+                Transaction::$preventObserverLog = false;
             }
         } catch (ValidationException $e) {
             return api_error('فشل التحقق من صحة البيانات أثناء تحويل الأموال.', $e->errors(), 422);

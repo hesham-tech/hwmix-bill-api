@@ -8,9 +8,14 @@ use App\Traits\FilterableByCompany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use App\Traits\LogsActivity;
+
+/**
+ * كلاس نموذج مجموعات المهام (TaskGroup) لتنظيم وتجميع المهام وتعيينها للمستخدمين.
+ */
 class TaskGroup extends Model
 {
-    use SoftDeletes, FilterableByCompany;
+    use SoftDeletes, FilterableByCompany, LogsActivity;
 
     protected $guarded = [];
 

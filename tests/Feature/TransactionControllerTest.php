@@ -49,14 +49,14 @@ class TransactionControllerTest extends TestCase
             'user_id' => $this->admin->id,
             'cashbox_id' => $this->cashBox->id,
             'company_id' => $this->company->id,
-            'type' => 'إيداع',
+            'type' => 'deposit',
             'amount' => 500,
             'balance_before' => 0,
             'balance_after' => 500,
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson('/api/transactions');
+        $response = $this->getJson('/api/v1/transactions');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'total']);
@@ -73,12 +73,12 @@ class TransactionControllerTest extends TestCase
             'description' => 'Test deposit',
         ];
 
-        $response = $this->postJson('/api/deposit', $payload);
+        $response = $this->postJson('/api/v1/transactions/deposit', $payload);
 
         $response->assertStatus(200);
         $this->assertEquals(1500, $this->cashBox->fresh()->balance);
         $this->assertDatabaseHas('transactions', [
-            'type' => 'إيداع',
+            'type' => 'deposit',
             'amount' => 500,
         ]);
     }
@@ -93,12 +93,12 @@ class TransactionControllerTest extends TestCase
             'description' => 'Test withdraw',
         ];
 
-        $response = $this->postJson('/api/withdraw', $payload);
+        $response = $this->postJson('/api/v1/transactions/withdraw', $payload);
 
         $response->assertStatus(200);
         $this->assertEquals(700, $this->cashBox->fresh()->balance);
         $this->assertDatabaseHas('transactions', [
-            'type' => 'سحب',
+            'type' => 'withdraw',
             'amount' => 300,
         ]);
     }
@@ -113,7 +113,7 @@ class TransactionControllerTest extends TestCase
             'description' => 'Overdraft attempt',
         ];
 
-        $response = $this->postJson('/api/withdraw', $payload);
+        $response = $this->postJson('/api/v1/transactions/withdraw', $payload);
 
         $response->assertStatus(422); // Validation error for insufficient balance
     }
@@ -139,7 +139,7 @@ class TransactionControllerTest extends TestCase
             'description' => 'Transfer to other user',
         ];
 
-        $response = $this->postJson('/api/transfer', $payload);
+        $response = $this->postJson('/api/v1/transactions/transfer', $payload);
 
         $response->assertStatus(200);
         $this->assertEquals(600, $this->cashBox->fresh()->balance);
@@ -154,7 +154,7 @@ class TransactionControllerTest extends TestCase
             'user_id' => $this->admin->id,
             'cashbox_id' => $this->cashBox->id,
             'company_id' => $this->company->id,
-            'type' => 'إيداع',
+            'type' => 'deposit',
             'amount' => 500,
             'balance_before' => 1000,
             'balance_after' => 1500,
@@ -164,12 +164,12 @@ class TransactionControllerTest extends TestCase
         // Update balance to reflect the transaction
         $this->cashBox->update(['balance' => 1500]);
 
-        $response = $this->postJson("/api/transactions/{$transaction->id}/reverse");
+        $response = $this->postJson("/api/v1/transactions/{$transaction->id}/reverse");
 
         $response->assertStatus(200);
         $this->assertEquals(1000, $this->cashBox->fresh()->balance);
         $this->assertDatabaseHas('transactions', [
-            'type' => 'عكس_إيداع',
+            'type' => 'reverse_deposit',
             'amount' => -500,
         ]);
     }

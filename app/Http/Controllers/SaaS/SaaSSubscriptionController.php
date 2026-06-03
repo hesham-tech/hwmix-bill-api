@@ -107,7 +107,51 @@ class SaaSSubscriptionController extends Controller
                 return api_error('أنت مشترك بالفعل في هذه الباقة.', [], 422);
             }
 
-            // ترقية الباقة
+            // إذا كانت الباقة مدفوعة وليس لها أيام تجربة (trial_days = 0)
+            if ($plan->price > 0 && (int) $plan->trial_days === 0) {
+                $masterCompanyId = (int) config('app.master_company_id', 1);
+                $gateway = \Modules\Payment\Models\PaymentGateway::where('company_id', $masterCompanyId)
+                    ->where('is_active', true)
+                    ->orderBy('is_default', 'desc')
+                    ->first();
+
+                if (!$gateway) {
+                    return api_error('بوابات الدفع الإلكتروني غير مهيأة حالياً في النظام لاستقبال الاشتراكات المدفوعة.', [], 422);
+                }
+
+                // تهيئة اشتراك معلق الدفع
+                $pendingSub = \App\Services\SaaS\SubscriptionService::initializePendingSubscription($companyId, $plan->id);
+
+                // إنشاء معاملة الدفع ورابط الدفع
+                $processPaymentAction = app(\Modules\Payment\Actions\ProcessPaymentAction::class);
+                
+                // تحديد روابط النجاح والفشل للعودة للفرونت إند
+                $frontendUrl = $request->input('redirect_url') ?? 'http://localhost:5173/app/my-subscription';
+                $successUrl = $frontendUrl . '?payment_status=success&sub_id=' . $pendingSub->id;
+                $cancelUrl = $frontendUrl . '?payment_status=cancel';
+
+                $paymentResult = $processPaymentAction->handle([
+                    'payment_gateway_id' => $gateway->id,
+                    'payable_type' => \App\Models\CompanySubscription::class,
+                    'payable_id' => $pendingSub->id,
+                    'amount' => $plan->price,
+                    'currency' => $plan->currency ?: 'EGP',
+                    'branch_id' => null,
+                    'options' => [
+                        'success_url' => $successUrl,
+                        'cancel_url' => $cancelUrl,
+                    ]
+                ]);
+
+                return api_success([
+                    'requires_payment' => true,
+                    'payment_url' => $paymentResult['payment_url'],
+                    'transaction_id' => $paymentResult['transaction_id'],
+                    'subscription_id' => $pendingSub->id
+                ], 'يرجى إتمام عملية الدفع لتفعيل الباقة.');
+            }
+
+            // ترقية الباقة مباشرة إذا كانت مجانية أو تملك أيام تجربة
             \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId);
 
             // جلب مصفوفة الاستهلاك الجديدة وإرجاعها

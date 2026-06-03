@@ -5,8 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Traits\LogsActivity;
+
+/**
+ * كلاس نموذج مرفقات المهام (TaskAttachment) لربط الملفات المرفوعة بالمهام الخاصة بها.
+ */
 class TaskAttachment extends Model
 {
+    use LogsActivity;
     protected $guarded = [];
 
     /**

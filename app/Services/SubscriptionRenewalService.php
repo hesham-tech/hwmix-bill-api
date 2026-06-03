@@ -121,23 +121,28 @@ class SubscriptionRenewalService
         if (!$cashBox)
             return;
 
-        $balanceBefore = $cashBox->balance;
-        $balanceAfter = $balanceBefore + $payment->amount;
+        Transaction::$preventObserverLog = true;
+        try {
+            $balanceBefore = (float)$cashBox->balance;
+            $balanceAfter = $balanceBefore + (float)$payment->amount;
 
-        // Create transaction record
-        Transaction::create([
-            'cashbox_id' => $payment->cash_box_id,
-            'user_id' => $payment->user_id,
-            'company_id' => $payment->company_id,
-            'amount' => $payment->amount,
-            'balance_before' => $balanceBefore,
-            'balance_after' => $balanceAfter,
-            'type' => 'deposit',
-            'description' => "تجديد اشتراك: " . ($payment->subscription->service->name ?? 'خدمة') . " - " . ($payment->subscription->user->nickname ?? $payment->subscription->user->full_name ?? 'عميل'),
-            'created_by' => $payment->created_by,
-        ]);
+            // Create transaction record
+            Transaction::create([
+                'cashbox_id' => $payment->cash_box_id,
+                'user_id' => $payment->user_id,
+                'company_id' => $payment->company_id,
+                'amount' => $payment->amount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'type' => 'deposit',
+                'description' => "تجديد اشتراك: " . ($payment->subscription->service->name ?? 'خدمة') . " - " . ($payment->subscription->user->nickname ?? $payment->subscription->user->full_name ?? 'عميل'),
+                'created_by' => $payment->created_by,
+            ]);
 
-        // Update cash box balance
-        $cashBox->increment('balance', (float) $payment->amount);
+            // Update cash box balance
+            $cashBox->increment('balance', (float) $payment->amount);
+        } finally {
+            Transaction::$preventObserverLog = false;
+        }
     }
 }

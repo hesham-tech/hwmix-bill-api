@@ -6,8 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+use App\Traits\LogsActivity;
+
+/**
+ * كلاس نموذج تعيينات المهام (TaskAssignment) لربط المهام بالمستخدمين أو المجموعات المكلفة بها.
+ */
 class TaskAssignment extends Model
 {
+    use LogsActivity;
     protected $guarded = [];
 
     /**

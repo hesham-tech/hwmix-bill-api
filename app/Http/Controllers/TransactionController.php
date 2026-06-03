@@ -538,6 +538,7 @@ class TransactionController extends Controller
                 return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
+            Transaction::$preventObserverLog = true;
             DB::beginTransaction();
 
             try {
@@ -616,6 +617,8 @@ class TransactionController extends Controller
             } catch (Throwable $e) {
                 DB::rollBack();
                 return api_error('فشل عكس المعاملة. يرجى المحاولة مرة أخرى.', [], 500);
+            } finally {
+                Transaction::$preventObserverLog = false;
             }
         } catch (Throwable $e) {
             return api_exception($e, 500);

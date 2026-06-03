@@ -5,8 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Traits\LogsActivity;
+
+/**
+ * كلاس نموذج سجلات حركة المهام (TaskActivity) لتسجيل التعليقات والتغييرات داخل كل مهمة.
+ */
 class TaskActivity extends Model
 {
+    use LogsActivity;
     protected $guarded = [];
 
     protected $casts = [

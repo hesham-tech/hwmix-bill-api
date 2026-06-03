@@ -14,6 +14,8 @@ use App\Observers\TransactionObserver;
 #[ObservedBy([TransactionObserver::class])]
 class Transaction extends Model
 {
+    public static bool $preventObserverLog = false;
+
     use Blameable, Scopes, \App\Traits\LogsActivity, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
     protected $fillable = [
         'user_id',
@@ -34,8 +36,8 @@ class Transaction extends Model
     protected static function booted()
     {
         static::creating(function ($transaction) {
-            $transaction->company_id = $transaction->company_id ?? Auth::user()->active_company_id;
-            $transaction->branch_id = $transaction->branch_id ?? config('app.active_branch_id') ?? Auth::user()->branch_id;
+            $transaction->company_id = $transaction->company_id ?? Auth::user()?->active_company_id;
+            $transaction->branch_id = $transaction->branch_id ?? config('app.active_branch_id') ?? Auth::user()?->branch_id;
         });
     }
 

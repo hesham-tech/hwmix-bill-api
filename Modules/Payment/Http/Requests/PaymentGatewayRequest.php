@@ -21,6 +21,7 @@ class PaymentGatewayRequest extends FormRequest
             'config' => 'required|array',
             'is_active' => 'nullable|boolean',
             'is_test_mode' => 'nullable|boolean',
+            'is_default' => 'nullable|boolean',
         ];
     }
 }

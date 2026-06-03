@@ -38,35 +38,50 @@ class SendMailJob implements ShouldQueue
 
     public function handle(): void
     {
-        // 1. البحث عن إعدادات البريد الافتراضية والنشطة الخاصة بالشركة
-        // لا نستخدم Global Scopes هنا لضمان تشغيل المهمة بالخلفية بشكل مستقل عن جلسة المستخدم
+        // 1. البحث عن إعدادات البريد الافتراضية والنشطة الخاصة بالشركة (غير العامة)
         $setting = MailSetting::withoutGlobalScopes()
             ->where('company_id', $this->companyId)
+            ->where('is_global', false)
             ->where('is_active', true)
             ->where('is_default', true)
             ->first();
 
-        // في حال لم يتم تعيين حساب افتراضي، نأخذ أول حساب نشط متاح كـ fallback
+        // 2. في حال لم يجد، نأخذ أي حساب نشط للشركة نفسها (غير العامة) كـ fallback
         if (!$setting) {
             $setting = MailSetting::withoutGlobalScopes()
                 ->where('company_id', $this->companyId)
+                ->where('is_global', false)
+                ->where('is_active', true)
+                ->first();
+        }
+
+        // 3. في حال لم يجد، نأخذ الحساب الافتراضي العام للنظام (سيستم)
+        if (!$setting) {
+            $setting = MailSetting::withoutGlobalScopes()
+                ->where('is_global', true)
+                ->where('is_active', true)
+                ->where('is_default', true)
+                ->first();
+        }
+
+        // 4. في حال لم يجد، نأخذ أي حساب عام نشط للنظام
+        if (!$setting) {
+            $setting = MailSetting::withoutGlobalScopes()
+                ->where('is_global', true)
                 ->where('is_active', true)
                 ->first();
         }
 
         try {
             if ($setting) {
-                // استخدام الموزع الديناميكي المخصص للشركة
+                // استخدام الموزع الديناميكي المخصص للشركة أو النظام
                 $mailer = DynamicMailer::getMailer($setting);
                 
                 $mailer->html($this->body, function ($message) {
                     $message->to($this->recipient)->subject($this->subject);
                 });
             } else {
-                // استخدام موزع البريد الافتراضي للنظام
-                Mail::html($this->body, function ($message) {
-                    $message->to($this->recipient)->subject($this->subject);
-                });
+                throw new \Exception('تكامل البريد الإلكتروني غير متاح أو غير مهيأ للنظام أو الشركة.');
             }
 
             // تسجيل العملية بنجاح في سجلات التنبيهات

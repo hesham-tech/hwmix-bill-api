@@ -62,6 +62,10 @@ jobs:
         run: |
           ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan db:seed --class=PermissionsSeeder --force"
 
+      - name: Seed Legal Documents (Run Once)
+        run: |
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && echo 'if (\DB::table(\"legal_documents\")->count() === 0) \Artisan::call(\"db:seed\", [\"--class\" => \"Modules\\\\Legal\\\\database\\\\seeders\\\\LegalDatabaseSeeder\", \"--force\" => true]);' | php artisan tinker"
+
       - name: Reset Permissions Cache
         run: |
           ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan permission:cache-reset"

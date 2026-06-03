@@ -13,6 +13,7 @@ trait HasTransferTo
     public function transferTo(User $targetUser, float $amount, int $fromCashBoxId, int $toCashBoxId, $description = null): bool
     {
         $amount = floatval($amount);
+        Transaction::$preventObserverLog = true;
         DB::beginTransaction();
 
         try {
@@ -62,6 +63,8 @@ trait HasTransferTo
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
+        } finally {
+            Transaction::$preventObserverLog = false;
         }
     }
 }

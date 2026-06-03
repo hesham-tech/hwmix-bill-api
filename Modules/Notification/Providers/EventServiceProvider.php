@@ -13,6 +13,10 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [];
 
+    protected $subscribe = [
+        \Modules\Notification\Listeners\NotificationWorkflowSubscriber::class,
+    ];
+
     /**
      * Indicates if events should be discovered.
      *

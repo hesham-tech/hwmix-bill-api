@@ -798,4 +798,14 @@ return [
         'withdraw' => ['key' => 'balance.withdraw', 'label' => 'إجراء سحب رصيد (شخصي)'],
         'transfer' => ['key' => 'balance.transfer', 'label' => 'تحويل رصيد (شخصي)'],
     ],
+    // => LEGAL DOCUMENTS
+    'legal_documents' => [
+        'name' => ['key' => 'legal_documents', 'label' => 'صلاحيات المستندات القانونية'],
+        'page' => ['key' => 'legal_documents.page', 'label' => 'صفحة المستندات القانونية'],
+        'view_all' => ['key' => 'legal_documents.view_all', 'label' => 'عرض المستندات القانونية'],
+        'create' => ['key' => 'legal_documents.create', 'label' => 'إنشاء مسودة مستند جديد'],
+        'update_all' => ['key' => 'legal_documents.update_all', 'label' => 'تعديل أو صياغة إصدار جديد'],
+        'delete_all' => ['key' => 'legal_documents.delete_all', 'label' => 'حذف مسودة مستند أو إصدار غير منشور'],
+    ],
 ];
+

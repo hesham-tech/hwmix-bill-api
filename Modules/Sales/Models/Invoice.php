@@ -26,6 +26,11 @@ class Invoice extends Model
 
     protected $guarded = [];
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\InvoiceFactory::new();
+    }
+
     /**
      * Label for activity logs.
      */

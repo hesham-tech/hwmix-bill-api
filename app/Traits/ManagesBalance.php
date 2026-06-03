@@ -1,5 +1,5 @@
 <?php
-
+// تعليق عربي: تريت لإدارة حركات الأرصدة للمستخدم وحماية عمليات السحب والإيداع والتحويل
 namespace App\Traits;
 
 use App\Models\CashBox;
@@ -29,6 +29,7 @@ trait ManagesBalance
         $amount = floatval($amount);
         $authCompanyId = Auth::user()->active_company_id ?? null;
 
+        Transaction::$preventObserverLog = true;
         DB::beginTransaction();
         try {
             $cashBox = null;
@@ -81,6 +82,8 @@ trait ManagesBalance
                 'cash_box_id' => $cashBoxId,
             ]);
             throw $e;
+        } finally {
+            Transaction::$preventObserverLog = false;
         }
     }
 
@@ -95,6 +98,7 @@ trait ManagesBalance
     public function deposit(float $amount, $cashBoxId = null, $description = null, $log = true): bool
     {
         $amount = floatval($amount);
+        Transaction::$preventObserverLog = true;
         DB::beginTransaction();
         $authCompanyId = Auth::user()->active_company_id ?? null;
 
@@ -152,6 +156,8 @@ trait ManagesBalance
                 'cash_box_id' => $cashBoxId,
             ]);
             throw $e;
+        } finally {
+            Transaction::$preventObserverLog = false;
         }
     }
 
@@ -166,6 +172,7 @@ trait ManagesBalance
             throw new Exception('Unauthorized: You do not have permission to transfer.');
         }
 
+        Transaction::$preventObserverLog = true;
         DB::beginTransaction();
         try {
             $authCompanyId = Auth::user()->active_company_id ?? null;
@@ -237,6 +244,8 @@ trait ManagesBalance
                 'amount' => $amount,
             ]);
             throw $e;
+        } finally {
+            Transaction::$preventObserverLog = false;
         }
     }
 
@@ -246,6 +255,7 @@ trait ManagesBalance
     public function transferTo(User $targetUser, float $amount, int $fromCashBoxId, int $toCashBoxId, $description = null): bool
     {
         $amount = floatval($amount);
+        Transaction::$preventObserverLog = true;
         DB::beginTransaction();
         try {
             $fromCashBox = CashBox::findOrFail($fromCashBoxId);
@@ -300,6 +310,8 @@ trait ManagesBalance
                 'amount' => $amount,
             ]);
             throw $e;
+        } finally {
+            Transaction::$preventObserverLog = false;
         }
     }
 }

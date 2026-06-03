@@ -4,9 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\LogsActivity;
+
+/**
+ * كلاس نموذج الخطط والاشتراكات (Plan) لإدارة باقات النظام المتاحة للشركات ومميزاتها وحدودها.
+ */
 class Plan extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory, \App\Traits\Scopes, \App\Traits\Blameable;
+    use \Illuminate\Database\Eloquent\Factories\HasFactory, \App\Traits\Scopes, \App\Traits\Blameable, LogsActivity;
     protected $table = 'plans';
     protected $guarded = [];
 

@@ -9,12 +9,14 @@ use App\Traits\FilterableByBranch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\LogsActivity;
+
 /**
- * موديل السجل المالي (FinancialLedger) - موديول المحاسبة
+ * موديل السجل المالي (FinancialLedger) - موديول المحاسبة لتسجيل الحركات والقيود المالية.
  */
 class FinancialLedger extends Model
 {
-    use HasFactory, Blameable, Scopes, FilterableByCompany, FilterableByBranch;
+    use HasFactory, Blameable, Scopes, LogsActivity, FilterableByCompany, FilterableByBranch;
 
     protected $table = 'financial_ledger';
 

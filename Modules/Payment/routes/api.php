@@ -8,6 +8,7 @@ use Modules\Payment\Http\Controllers\PaymentController;
 
 // 1. مسارات محمية بصلاحيات تسجيل الدخول
 Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
+    Route::patch('payment-gateways/{id}/set-default', [PaymentGatewayController::class, 'setDefault'])->name('payment-gateways.set-default');
     Route::apiResource('payment-gateways', PaymentGatewayController::class)->names('payment-gateways');
     Route::post('payments/process', [PaymentController::class, 'process'])->name('payment.process');
 });

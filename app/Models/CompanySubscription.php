@@ -71,4 +71,55 @@ class CompanySubscription extends Model
 
         return true;
     }
+
+    /**
+     * تفعيل الاشتراك عند اتمام الدفع بنجاح.
+     */
+    public function markAsPaid($transaction = null)
+    {
+        // 1. إلغاء أي اشتراكات سابقة نشطة للشركة
+        self::where('company_id', $this->company_id)
+            ->where('id', '!=', $this->id)
+            ->whereIn('status', ['active', 'trial'])
+            ->update(['status' => 'canceled']);
+
+        // 2. تحديث الاشتراك الحالي ليصبح نشطاً
+        $startsAt = now();
+        $endsAt = $this->calculateEndsAt($startsAt);
+
+        $this->update([
+            'status' => 'active',
+            'starts_at' => $startsAt,
+            'ends_at' => $endsAt,
+        ]);
+        
+        // تحديث السياق للشركة
+        \Log::info("SaaS: تم تفعيل الاشتراك #{$this->id} للشركة #{$this->company_id} بعد الدفع بنجاح.");
+    }
+
+    /**
+     * حساب تاريخ انتهاء الاشتراك بناءً على باقته.
+     */
+    protected function calculateEndsAt($startsAt)
+    {
+        $plan = $this->plan;
+        if (!$plan || !$plan->duration || !$plan->duration_unit) {
+            return null;
+        }
+
+        $unit = strtolower($plan->duration_unit);
+        $endsAt = clone $startsAt;
+
+        if ($unit === 'day' || $unit === 'days') {
+            $endsAt->addDays($plan->duration);
+        } elseif ($unit === 'month' || $unit === 'months') {
+            $endsAt->addMonths($plan->duration);
+        } elseif ($unit === 'year' || $unit === 'years') {
+            $endsAt->addYears($plan->duration);
+        } else {
+            $endsAt->addMonths($plan->duration);
+        }
+
+        return $endsAt;
+    }
 }

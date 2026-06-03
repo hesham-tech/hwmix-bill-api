@@ -8,5 +8,6 @@
     "Payment": true,
     "Notification": true,
     "ExportImport": true,
-    "Media": true
+    "Media": true,
+    "Legal": true
 }

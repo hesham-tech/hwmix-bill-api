@@ -83,4 +83,28 @@ class PaymentGatewayController extends Controller
             return api_exception($e);
         }
     }
+
+    /**
+     * تعيين بوابة الدفع كافتراضية وإلغاء البقية للشركة
+     */
+    public function setDefault($id): JsonResponse
+    {
+        try {
+            $gateway = PaymentGateway::findOrFail($id);
+            
+            \Illuminate\Support\Facades\DB::transaction(function() use ($gateway) {
+                // إلغاء الافتراضية للبوابات الأخرى لنفس الشركة
+                PaymentGateway::where('company_id', $gateway->company_id)
+                    ->where('id', '!=', $gateway->id)
+                    ->update(['is_default' => false]);
+                
+                // تعيين البوابة الحالية كافتراضية
+                $gateway->update(['is_default' => true]);
+            });
+
+            return api_success(new PaymentGatewayResource($gateway), 'تم تعيين بوابة الدفع كبوابة افتراضية بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
 }

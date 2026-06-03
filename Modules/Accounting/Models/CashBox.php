@@ -40,6 +40,44 @@ class CashBox extends Model
                 throw new \Exception('لا يمكن تعديل الفرع المرتبط بالخزنة الماليّة بعد إنشائها لضمان سلامة القيود التاريخية.');
             }
         });
+
+        static::created(function ($cashBox) {
+            if ($cashBox->balance != 0 && !\App\Models\Transaction::$preventObserverLog) {
+                \App\Models\Transaction::create([
+                    'user_id' => $cashBox->user_id,
+                    'cashbox_id' => $cashBox->id,
+                    'created_by' => \Illuminate\Support\Facades\Auth::id() ?? $cashBox->user_id,
+                    'company_id' => $cashBox->company_id,
+                    'type' => 'deposit',
+                    'amount' => abs((float)$cashBox->balance),
+                    'balance_before' => 0,
+                    'balance_after' => (float)$cashBox->balance,
+                    'description' => 'رصيد افتتاحي للخزينة عند الإنشاء',
+                ]);
+            }
+        });
+
+        static::updated(function ($cashBox) {
+            if ($cashBox->wasChanged('balance') && !\App\Models\Transaction::$preventObserverLog) {
+                $balanceBefore = (float)$cashBox->getOriginal('balance');
+                $balanceAfter = (float)$cashBox->balance;
+                $amount = $balanceAfter - $balanceBefore;
+                
+                if ($amount != 0) {
+                    \App\Models\Transaction::create([
+                        'user_id' => $cashBox->user_id,
+                        'cashbox_id' => $cashBox->id,
+                        'created_by' => \Illuminate\Support\Facades\Auth::id() ?? $cashBox->user_id,
+                        'company_id' => $cashBox->company_id,
+                        'type' => $amount > 0 ? 'deposit' : 'withdraw',
+                        'amount' => abs($amount),
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balanceAfter,
+                        'description' => 'تحديث تلقائي للرصيد عبر النظام (مراقب الخزينة)',
+                    ]);
+                }
+            }
+        });
     }
 
     protected $fillable = [

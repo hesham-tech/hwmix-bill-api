@@ -7,18 +7,44 @@ namespace Modules\Notification\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+use Modules\Notification\Models\WhatsAppSetting;
+
 class WhatsAppService
 {
     protected array $config;
 
-    public function __construct(array $config = [])
+    public function __construct($config = [])
     {
+        if ($config instanceof WhatsAppSetting) {
+            $config = [
+                'access_token' => $config->access_token,
+                'phone_number_id' => $config->phone_number_id,
+            ];
+        }
+
+        // إذا كانت الإعدادات فارغة، نحاول تحميل الإعداد الافتراضي للشركة النشطة للمستخدم الحالي
+        if (empty($config['access_token']) && empty($config['phone_number_id'])) {
+            $user = auth()->user();
+            if ($user && $user->active_company_id) {
+                $setting = WhatsAppSetting::where('company_id', $user->active_company_id)
+                    ->where('is_active', true)
+                    ->where('is_default', true)
+                    ->first();
+                if ($setting) {
+                    $config = [
+                        'access_token' => $setting->access_token,
+                        'phone_number_id' => $setting->phone_number_id,
+                    ];
+                }
+            }
+        }
+
         // استخدام الإعدادات الافتراضية من config أو الممررة يدوياً (مخصصة للشركة)
         $this->config = array_merge([
             'access_token' => env('WHATSAPP_ACCESS_TOKEN', ''),
             'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID', ''),
             'version' => 'v19.0',
-        ], $config);
+        ], (array) $config);
     }
 
     /**

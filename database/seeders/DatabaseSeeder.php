@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             BrandSeeder::class,
             ProductSeeder::class,
+            \Modules\Legal\database\seeders\LegalDatabaseSeeder::class,
         ]);
 
         \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();

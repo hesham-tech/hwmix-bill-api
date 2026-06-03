@@ -9,3 +9,5 @@ Artisan::command('inspire', function () {
 
 use Illuminate\Support\Facades\Schedule;
 Schedule::command('app:master-data-cleanup')->daily();
+Schedule::command('notifications:process-workflows')->daily();
+Schedule::command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();

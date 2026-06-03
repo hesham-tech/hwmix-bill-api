@@ -9,9 +9,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  */
+use App\Traits\LogsActivity;
+
+/**
+ * كلاس نموذج الترجمات (Translation) لحفظ وإدارة قيم الحقول المترجمة للكيانات المتعددة اللغات.
+ */
 class Translation extends Model
 {
-    use Scopes, Blameable;
+    use Scopes, Blameable, LogsActivity;
     protected $fillable = ['locale', 'field', 'value'];
 
     // علاقة Polymorphic

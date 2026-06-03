@@ -36,7 +36,7 @@ class CashBoxControllerTest extends TestCase
         $this->actingAs($this->admin);
         CashBox::factory()->count(3)->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson('/api/cashBoxs'); // Note the 's' in cashBoxs as seen in api.php
+        $response = $this->getJson('/api/v1/cash-boxes');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data']);
@@ -53,7 +53,7 @@ class CashBoxControllerTest extends TestCase
             'user_id' => $this->admin->id
         ];
 
-        $response = $this->postJson('/api/cashBox', $payload);
+        $response = $this->postJson('/api/v1/cash-boxes', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('cash_boxes', ['name' => 'Main Safe', 'company_id' => $this->company->id]);
@@ -64,7 +64,7 @@ class CashBoxControllerTest extends TestCase
         $this->actingAs($this->admin);
         $box = CashBox::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson("/api/cashBox/{$box->id}");
+        $response = $this->getJson("/api/v1/cash-boxes/{$box->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $box->id);
@@ -77,7 +77,7 @@ class CashBoxControllerTest extends TestCase
 
         $payload = ['name' => 'Updated Name'];
 
-        $response = $this->putJson("/api/cashBox/{$box->id}", $payload);
+        $response = $this->putJson("/api/v1/cash-boxes/{$box->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('cash_boxes', ['id' => $box->id, 'name' => 'Updated Name']);
@@ -88,7 +88,7 @@ class CashBoxControllerTest extends TestCase
         $this->actingAs($this->admin);
         $box = CashBox::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->deleteJson("/api/cashBox/{$box->id}");
+        $response = $this->deleteJson("/api/v1/cash-boxes/{$box->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('cash_boxes', ['id' => $box->id]);
@@ -108,7 +108,7 @@ class CashBoxControllerTest extends TestCase
             'created_by' => $this->admin->id
         ]);
 
-        $response = $this->deleteJson("/api/cashBox/{$box->id}");
+        $response = $this->deleteJson("/api/v1/cash-boxes/{$box->id}");
 
         $response->assertStatus(409);
         $this->assertDatabaseHas('cash_boxes', ['id' => $box->id]);
@@ -139,12 +139,12 @@ class CashBoxControllerTest extends TestCase
             'description' => 'Test transfer'
         ];
 
-        $response = $this->postJson('/api/cashBox/transfer', $payload);
+        $response = $this->postJson('/api/v1/cash-boxes/transfer', $payload);
 
         $response->assertStatus(200);
         $this->assertEquals(500, $sourceBox->fresh()->balance);
         $this->assertEquals(500, $targetBox->fresh()->balance);
-        $this->assertEquals(2, Transaction::count());
+        $this->assertEquals(3, Transaction::count());
 
         $this->assertDatabaseHas('transactions', [
             'cashbox_id' => $sourceBox->id,
@@ -180,7 +180,7 @@ class CashBoxControllerTest extends TestCase
             'amount' => 500
         ];
 
-        $response = $this->postJson('/api/cashBox/transfer', $payload);
+        $response = $this->postJson('/api/v1/cash-boxes/transfer', $payload);
 
         $response->assertStatus(422);
         $this->assertEquals(100, $sourceBox->fresh()->balance);
@@ -196,13 +196,13 @@ class CashBoxControllerTest extends TestCase
 
         $this->actingAs($companyAdmin);
 
-        $response = $this->getJson("/api/cashBox/{$otherBox->id}");
+        $response = $this->getJson("/api/v1/cash-boxes/{$otherBox->id}");
         $response->assertStatus(404);
 
-        $response = $this->putJson("/api/cashBox/{$otherBox->id}", ['name' => 'Hack']);
+        $response = $this->putJson("/api/v1/cash-boxes/{$otherBox->id}", ['name' => 'Hack']);
         $response->assertStatus(404);
 
-        $response = $this->deleteJson("/api/cashBox/{$otherBox->id}");
+        $response = $this->deleteJson("/api/v1/cash-boxes/{$otherBox->id}");
         $response->assertStatus(404);
     }
 }

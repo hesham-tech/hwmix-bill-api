@@ -18,7 +18,13 @@ class SavePaymentGatewayAction extends BaseAction
 
         /** @var PaymentGatewayDTO $dto */
         $dto = $data['dto'];
-        $gatewayId = $data['id'] ?? null;
+        $companyId = Auth::user()->active_company_id;
+        $existingConfig = [];
+
+        if ($gatewayId) {
+            $gateway = PaymentGateway::findOrFail($gatewayId);
+            $existingConfig = $gateway->config ?? [];
+        }
 
         // تشفير الحقول السرية الحساسة قبل الحفظ لضمان الأمان وعدم تسريب المفاتيح
         $encryptedConfig = array_map(function($value) {
@@ -28,22 +34,35 @@ class SavePaymentGatewayAction extends BaseAction
             return $value;
         }, $dto->config);
 
+        $finalConfig = array_merge($existingConfig, $encryptedConfig);
+
         $gatewayData = [
             'name' => $dto->name,
             'driver' => $dto->driver,
-            'config' => $encryptedConfig,
+            'config' => $finalConfig,
             'is_active' => $dto->isActive,
             'is_test_mode' => $dto->isTestMode,
-            'company_id' => Auth::user()->active_company_id,
+            'is_default' => $dto->isDefault,
+            'company_id' => $companyId,
         ];
 
-        if ($gatewayId) {
-            $gateway = PaymentGateway::findOrFail($gatewayId);
-            $gateway->update($gatewayData);
-        } else {
-            $gateway = PaymentGateway::create($gatewayData);
-        }
+        return \Illuminate\Support\Facades\DB::transaction(function() use ($gatewayId, $gatewayData, $companyId, $dto) {
+            if ($dto->isDefault) {
+                PaymentGateway::where('company_id', $companyId)
+                    ->when($gatewayId, function($q) use ($gatewayId) {
+                        $q->where('id', '!=', $gatewayId);
+                    })
+                    ->update(['is_default' => false]);
+            }
 
-        return $gateway;
+            if ($gatewayId) {
+                $gateway = PaymentGateway::findOrFail($gatewayId);
+                $gateway->update($gatewayData);
+            } else {
+                $gateway = PaymentGateway::create($gatewayData);
+            }
+
+            return $gateway;
+        });
     }
 }

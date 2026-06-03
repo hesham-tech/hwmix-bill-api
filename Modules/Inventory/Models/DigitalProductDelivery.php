@@ -12,12 +12,14 @@ use App\Models\InvoiceItem;
 use App\Models\User;
 use App\Models\Company;
 
+use App\Traits\LogsActivity;
+
 /**
- * موديل تسليم المنتج الرقمي (DigitalProductDelivery) - موديول المخازن
+ * موديل تسليم المنتج الرقمي (DigitalProductDelivery) - موديول المخازن لإدارة وتتبع عمليات تسليم المنتجات الرقمية والتراخيص.
  */
 class DigitalProductDelivery extends Model
 {
-    use HasFactory, SoftDeletes, Blameable, Scopes;
+    use HasFactory, SoftDeletes, Blameable, Scopes, LogsActivity;
 
     // Status Constants
     const STATUS_PENDING = 'pending';

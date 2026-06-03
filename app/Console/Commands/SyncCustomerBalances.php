@@ -174,44 +174,49 @@ class SyncCustomerBalances extends Command
         $users = User::all();
         $synced = 0;
 
-        foreach ($users as $user) {
-            // Get all companies this user is associated with
-            $userCompanies = DB::table('company_user')
-                ->where('user_id', $user->id)
-                ->get();
-
-            foreach ($userCompanies as $uc) {
-                $totalRemaining = DB::table('installments')
+        \App\Models\Transaction::$preventObserverLog = true;
+        try {
+            foreach ($users as $user) {
+                // Get all companies this user is associated with
+                $userCompanies = DB::table('company_user')
                     ->where('user_id', $user->id)
-                    ->where('company_id', $uc->company_id)
-                    ->whereNull('deleted_at')
-                    ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
-                    ->sum('remaining');
+                    ->get();
 
-                $newBalance = -abs($totalRemaining);
+                foreach ($userCompanies as $uc) {
+                    $totalRemaining = DB::table('installments')
+                        ->where('user_id', $user->id)
+                        ->where('company_id', $uc->company_id)
+                        ->whereNull('deleted_at')
+                        ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
+                        ->sum('remaining');
 
-                $updatedAny = false;
+                    $newBalance = -abs($totalRemaining);
 
-                // 1. Update company_user column (obsolete, dropped from DB)
-                // We no longer store balance_in_company in the pivot table.
+                    $updatedAny = false;
 
-                // 2. Update default CashBox if exists
-                $cb = CashBox::where('user_id', $user->id)
-                    ->where('company_id', $uc->company_id)
-                    ->where('is_default', true)
-                    ->first();
+                    // 1. Update company_user column (obsolete, dropped from DB)
+                    // We no longer store balance_in_company in the pivot table.
 
-                if ($cb && round($cb->balance, 2) != round($newBalance, 2)) {
-                    if (!$dryRun) {
-                        $cb->update(['balance' => $newBalance]);
+                    // 2. Update default CashBox if exists
+                    $cb = CashBox::where('user_id', $user->id)
+                        ->where('company_id', $uc->company_id)
+                        ->where('is_default', true)
+                        ->first();
+
+                    if ($cb && round($cb->balance, 2) != round($newBalance, 2)) {
+                        if (!$dryRun) {
+                            $cb->update(['balance' => $newBalance]);
+                        }
+                        $updatedAny = true;
                     }
-                    $updatedAny = true;
-                }
 
-                if ($updatedAny) {
-                    $synced++;
+                    if ($updatedAny) {
+                        $synced++;
+                    }
                 }
             }
+        } finally {
+            \App\Models\Transaction::$preventObserverLog = false;
         }
         $this->line("   - تم تحديث أرصدة {$synced} سجل علاقة عميل بشركة.");
     }

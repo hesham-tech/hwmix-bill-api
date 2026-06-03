@@ -156,6 +156,24 @@ class Company extends Model
     }
 
     /**
+     * الحصول على الإعدادات مع إدراج القيم الافتراضية للاحتفاظ بسجلات النشاط (سنة واحدة)
+     */
+    public function getSettingsAttribute($value)
+    {
+        $settings = is_string($value) ? json_decode($value, true) : ($value ?? []);
+        if (!is_array($settings)) {
+            $settings = [];
+        }
+        if (!isset($settings['activity_log_retention_value'])) {
+            $settings['activity_log_retention_value'] = 1;
+        }
+        if (!isset($settings['activity_log_retention_unit'])) {
+            $settings['activity_log_retention_unit'] = 'years';
+        }
+        return $settings;
+    }
+
+    /**
      * الحصول على إعدادات الطباعة من حقل settings مع قيم افتراضية
      */
     public function getPrintSettingsAttribute(): array

@@ -27,6 +27,15 @@ class MailSettingRequest extends FormRequest
             'mail_from_name' => 'required|string|max:255',
             'is_active' => 'nullable|boolean',
             'is_default' => 'nullable|boolean',
+            'is_global' => [
+                'nullable',
+                'boolean',
+                function ($attribute, $value, $fail) {
+                    if ($value && (!auth()->user() || !auth()->user()->hasPermissionTo(perm_key('admin.super')))) {
+                        $fail('غير مسموح لغير المسؤولين الخارقين تفعيل الإعدادات العامة.');
+                    }
+                }
+            ],
         ];
     }
 }

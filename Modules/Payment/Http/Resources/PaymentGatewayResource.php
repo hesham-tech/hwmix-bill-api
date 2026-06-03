@@ -41,6 +41,7 @@ class PaymentGatewayResource extends JsonResource
             'config' => $maskedConfig,
             'is_active' => (bool) $this->is_active,
             'is_test_mode' => (bool) $this->is_test_mode,
+            'is_default' => (bool) $this->is_default,
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,
             'created_at' => $this->created_at,

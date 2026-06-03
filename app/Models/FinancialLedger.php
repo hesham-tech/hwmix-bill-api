@@ -7,9 +7,14 @@ use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\LogsActivity;
+
+/**
+ * كلاس نموذج الدفتر المالي (FinancialLedger) لتسجيل وتتبع كافة الحركات والقيود المالية المباشرة والغير مباشرة.
+ */
 class FinancialLedger extends Model
 {
-    use HasFactory, Blameable, Scopes, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
+    use HasFactory, Blameable, Scopes, LogsActivity, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
 
     protected $table = 'financial_ledger';
 

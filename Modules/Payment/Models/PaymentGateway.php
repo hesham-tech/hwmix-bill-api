@@ -22,6 +22,7 @@ class PaymentGateway extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'is_test_mode' => 'boolean',
+        'is_default' => 'boolean',
         'config' => 'array',
     ];
 

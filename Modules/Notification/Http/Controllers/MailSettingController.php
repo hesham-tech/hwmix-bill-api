@@ -17,12 +17,12 @@ use Modules\Notification\Services\DynamicMailer;
 class MailSettingController extends Controller
 {
     /**
-     * عرض قائمة حسابات البريد الإلكتروني المضافة للشركة الحالية.
+     * عرض قائمة حسابات البريد الإلكتروني المضافة للشركة الحالية أو العامة.
      */
     public function index(): JsonResponse
     {
         try {
-            $settings = MailSetting::where('company_id', Auth::user()->active_company_id)->get();
+            $settings = MailSetting::get();
             return api_success(MailSettingResource::collection($settings), 'تم جلب قائمة حسابات البريد بنجاح');
         } catch (\Throwable $e) {
             return api_exception($e);
@@ -35,7 +35,7 @@ class MailSettingController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $setting = MailSetting::where('company_id', Auth::user()->active_company_id)->findOrFail($id);
+            $setting = MailSetting::findOrFail($id);
             return api_success(new MailSettingResource($setting), 'تم جلب تفاصيل حساب البريد بنجاح');
         } catch (\Throwable $e) {
             return api_exception($e);
@@ -61,6 +61,11 @@ class MailSettingController extends Controller
     public function update(MailSettingRequest $request, $id, SaveMailSettingAction $action): JsonResponse
     {
         try {
+            $setting = MailSetting::findOrFail($id);
+            if ($setting->is_global && (!Auth::user() || !Auth::user()->hasPermissionTo(perm_key('admin.super')))) {
+                return api_error('غير مسموح بتعديل السجلات العامة للسيستم.', 403);
+            }
+
             $data = array_merge($request->validated(), ['id' => $id]);
             $setting = $action->handle($data);
             return api_success(new MailSettingResource($setting), 'تم تحديث حساب البريد بنجاح');
@@ -75,7 +80,10 @@ class MailSettingController extends Controller
     public function destroy($id): JsonResponse
     {
         try {
-            $setting = MailSetting::where('company_id', Auth::user()->active_company_id)->findOrFail($id);
+            $setting = MailSetting::findOrFail($id);
+            if ($setting->is_global && (!Auth::user() || !Auth::user()->hasPermissionTo(perm_key('admin.super')))) {
+                return api_error('غير مسموح بحذف السجلات العامة للسيستم.', 403);
+            }
 
             // نمنع حذف الحساب الافتراضي إذا وجد غيره، لحماية الإرسال بالخلفية
             if ($setting->is_default) {
@@ -100,8 +108,12 @@ class MailSettingController extends Controller
     public function setDefault($id): JsonResponse
     {
         try {
+            $setting = MailSetting::findOrFail($id);
+            if ($setting->is_global && (!Auth::user() || !Auth::user()->hasPermissionTo(perm_key('admin.super')))) {
+                return api_error('غير مسموح بتعيين حساب سيستم عام كافتراضي مباشرة.', 403);
+            }
+
             $companyId = Auth::user()->active_company_id;
-            $setting = MailSetting::where('company_id', $companyId)->findOrFail($id);
 
             if (!$setting->is_active) {
                 return api_error('لا يمكن تعيين حساب غير نشط كحساب افتراضي.');
@@ -130,7 +142,7 @@ class MailSettingController extends Controller
         ]);
 
         try {
-            $setting = MailSetting::where('company_id', Auth::user()->active_company_id)->findOrFail($id);
+            $setting = MailSetting::findOrFail($id);
 
             // بناء الموزع الديناميكي واختبار الإرسال
             $mailer = DynamicMailer::getMailer($setting);

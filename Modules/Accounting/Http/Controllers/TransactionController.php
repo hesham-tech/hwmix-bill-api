@@ -170,6 +170,14 @@ class TransactionController extends Controller
             $cashBoxId = $validated['cash_box_id'] ?? $targetUser->getDefaultCashBoxForCompany($companyId)?->id;
             if (!$cashBoxId) return api_error('لا توجد خزنة للمستهدف.', [], 422);
 
+            $cashBox = CashBox::findOrFail($cashBoxId);
+            if ($cashBox->user_id === $targetUserId && $targetUser->isStaffOrAdmin()) {
+                $currentBalance = $targetUser->balanceBox($cashBoxId);
+                if ($currentBalance < $validated['amount']) {
+                    return api_error('الرصيد غير كافٍ في عهدة الموظف.', [], 422);
+                }
+            }
+
             DB::beginTransaction();
             try {
                 $targetUser->withdraw($validated['amount'], $cashBoxId, $validated['description'] ?? 'سحب نقدي خارجي');
@@ -226,6 +234,7 @@ class TransactionController extends Controller
             $authUser = Auth::user();
             if (!$authUser) return api_unauthorized('يتطلب المصادقة.');
 
+            \App\Models\Transaction::$preventObserverLog = true;
             DB::beginTransaction();
             try {
                 $transaction = Transaction::findOrFail($transactionId);
@@ -270,6 +279,8 @@ class TransactionController extends Controller
             } catch (Throwable $e) {
                 DB::rollBack();
                 return api_exception($e, 500);
+            } finally {
+                \App\Models\Transaction::$preventObserverLog = false;
             }
         } catch (Throwable $e) {
             return api_exception($e, 500);

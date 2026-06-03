@@ -44,13 +44,21 @@ class SaveMailSettingAction extends BaseAction
             'company_id' => $companyId,
         ];
 
+        if (isset($data['is_global']) && Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
+            $settingData['is_global'] = (bool)$data['is_global'];
+        }
+
         // نقوم بإضافة وتشفير كلمة السر فقط في حال تمريرها لتجنب الكتابة فوقها بقيمة فارغة
         if (!empty($data['mail_password'])) {
             $settingData['mail_password'] = $data['mail_password'];
         }
 
         if ($id) {
-            $setting = MailSetting::where('company_id', $companyId)->findOrFail($id);
+            if (Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
+                $setting = MailSetting::findOrFail($id);
+            } else {
+                $setting = MailSetting::where('company_id', $companyId)->findOrFail($id);
+            }
             $setting->update($settingData);
         } else {
             $setting = MailSetting::create($settingData);

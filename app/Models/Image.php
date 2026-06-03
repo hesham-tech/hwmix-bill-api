@@ -5,8 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
+use App\Traits\LogsActivity;
+
+/**
+ * كلاس نموذج الصور والوسائط (Image) لربط الصور المرفوعة بمختلف الكيانات (المنتجات، الشركات، إلخ) عبر علاقة متعددة الأشكال.
+ */
 class Image extends Model
 {
+    use LogsActivity;
     protected $table = 'images';
     protected $fillable = [
         'url',

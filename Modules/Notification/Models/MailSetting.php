@@ -5,7 +5,7 @@ namespace Modules\Notification\Models;
 // تعليق عربي: موديل إعدادات البريد الإلكتروني لتخزين وحماية تفاصيل SMTP/Mailgun لكل شركة.
 
 use App\Traits\Blameable;
-use App\Traits\FilterableByCompany;
+use App\Traits\FilterableByCompanyOrGlobal;
 use App\Traits\LogsActivity;
 use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +15,7 @@ use App\Models\Company;
 
 class MailSetting extends Model
 {
-    use HasFactory, SoftDeletes, Blameable, LogsActivity, Scopes, FilterableByCompany;
+    use HasFactory, SoftDeletes, Blameable, LogsActivity, Scopes, FilterableByCompanyOrGlobal;
 
     protected $guarded = [];
 

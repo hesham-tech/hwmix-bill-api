@@ -263,6 +263,7 @@ class CashBoxController extends Controller
 
             $description = $validated['description'] ?? ($authUser->id == $toUser->id ? "تحويل داخلي بين {$fromCashBox->name} إلى {$toCashBox->name}" : "تحويل من {$authUser->nickname} إلى {$toUser->nickname}");
 
+            \App\Models\Transaction::$preventObserverLog = true;
             DB::beginTransaction();
             try {
                 Transaction::create([
@@ -302,6 +303,8 @@ class CashBoxController extends Controller
             } catch (Throwable $e) {
                 DB::rollback();
                 return api_exception($e, 500);
+            } finally {
+                \App\Models\Transaction::$preventObserverLog = false;
             }
         } catch (Throwable $e) {
             return api_exception($e, 500);

@@ -14,12 +14,12 @@ class TransactionCreated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public Transaction $transaction;
+    public $transaction;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(Transaction $transaction)
+    public function __construct($transaction)
     {
         $this->transaction = $transaction;
     }

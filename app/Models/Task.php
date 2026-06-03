@@ -9,9 +9,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
+use App\Traits\LogsActivity;
+
+/**
+ * كلاس نموذج المهام (Task) لإدارة وتتبع المهام في النظام.
+ */
 class Task extends Model
 {
-    use SoftDeletes, FilterableByCompany;
+    use SoftDeletes, FilterableByCompany, LogsActivity;
 
     protected $guarded = [];
 
