@@ -36,11 +36,11 @@ jobs:
 
       - name: Ensure Remote Directory Exists
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "mkdir -p /home/u715355537/domains/hwnix.com/public_html/bill-api/"
+          ssh -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=15 u715355537@212.107.17.234 "mkdir -p /home/u715355537/domains/hwnix.com/public_html/bill-api/"
 
       - name: Deploy via Rsync
         run: |
-          rsync -avz --delete -e "ssh -p 65002 -o StrictHostKeyChecking=no" \
+          rsync -avz --delete -e "ssh -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=15" \
           --exclude='.git/' \
           --exclude='.github/' \
           --exclude='node_modules/' \
@@ -54,37 +54,32 @@ jobs:
           --exclude='*.log' \
           ./ u715355537@212.107.17.234:/home/u715355537/domains/hwnix.com/public_html/bill-api/
 
-      - name: Run Database Migrations
+      - name: Run Post-Deployment Commands
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan migrate --force"
-
-      - name: Seed Permissions
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan db:seed --class=PermissionsSeeder --force"
-
-      - name: Seed Legal Documents (Run Once)
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && echo 'if (\DB::table(\"legal_documents\")->count() === 0) \Artisan::call(\"db:seed\", [\"--class\" => \"Modules\\\\Legal\\\\database\\\\seeders\\\\LegalDatabaseSeeder\", \"--force\" => true]);' | php artisan tinker"
-
-      - name: Reset Permissions Cache
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan permission:cache-reset"
-
-      - name: Clear All Caches
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan cache:clear && php artisan permission:cache-reset && php artisan config:clear && php artisan route:clear && php artisan event:clear"
-
-      - name: Rebuild Composer Autoloader
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && composer dump-autoload -o"
-
-      - name: Optimize for Production
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan config:cache && php artisan route:cache"
-
-      - name: Alignment Fixes for Storage Link (Optional)
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/bill-api && php artisan storage:link"
+          ssh -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=15 u715355537@212.107.17.234 << 'EOF'
+            set -e
+            cd /home/u715355537/domains/hwnix.com/public_html/bill-api
+            echo "🚀 Running Database Migrations..."
+            php artisan migrate --force
+            echo "🔑 Seeding Permissions..."
+            php artisan db:seed --class=PermissionsSeeder --force
+            echo "⚖️ Seeding Legal Documents..."
+            echo 'if (\DB::table("legal_documents")->count() === 0) \Artisan::call("db:seed", ["--class" => "Modules\\Legal\\database\\seeders\\LegalDatabaseSeeder", "--force" => true]);' | php artisan tinker
+            echo "🧹 Resetting and Clearing Caches..."
+            php artisan permission:cache-reset
+            php artisan cache:clear
+            php artisan config:clear
+            php artisan route:clear
+            php artisan event:clear
+            echo "📦 Rebuilding Composer Autoloader..."
+            composer dump-autoload -o
+            echo "⚡ Optimizing Application..."
+            php artisan config:cache
+            php artisan route:cache
+            echo "🔗 Enforcing Storage Link..."
+            php artisan storage:link
+            echo "🚀 Post-deployment finished successfully!"
+          EOF
 
       - name: Deployment Complete
         run: echo "✅ Production Deployment successful!"

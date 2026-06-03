@@ -36,11 +36,11 @@ jobs:
 
       - name: Ensure Remote Directory Exists
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "mkdir -p /home/u715355537/domains/hwnix.com/public_html/api-teste/"
+          ssh -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=15 u715355537@212.107.17.234 "mkdir -p /home/u715355537/domains/hwnix.com/public_html/api-teste/"
 
       - name: Deploy via Rsync
         run: |
-          rsync -avz --delete -e "ssh -p 65002 -o StrictHostKeyChecking=no" \
+          rsync -avz --delete -e "ssh -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=15" \
           --exclude='.git/' \
           --exclude='.github/' \
           --exclude='node_modules/' \
@@ -52,33 +52,32 @@ jobs:
           --exclude='README.md' \
           ./ u715355537@212.107.17.234:/home/u715355537/domains/hwnix.com/public_html/api-teste/
 
-      - name: Run Database Migrations
+      - name: Run Post-Deployment Commands
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && php artisan migrate --force"
-
-      - name: Seed Permissions
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && php artisan db:seed --class=PermissionsSeeder --force"
-
-      - name: Seed Legal Documents (Run Once)
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && echo 'if (\DB::table(\"legal_documents\")->count() === 0) \Artisan::call(\"db:seed\", [\"--class\" => \"Modules\\\\Legal\\\\database\\\\seeders\\\\LegalDatabaseSeeder\", \"--force\" => true]);' | php artisan tinker"
-
-      - name: Reset Permissions Cache
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && php artisan permission:cache-reset"
-
-      - name: Clear All Caches
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && php artisan cache:clear && php artisan permission:cache-reset && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan event:clear"
-
-      - name: Rebuild Composer Autoloader
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && composer dump-autoload -o"
-
-      - name: Optimize for Production
-        run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && php artisan config:cache && php artisan route:cache && php artisan optimize"
+          ssh -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=15 u715355537@212.107.17.234 << 'EOF'
+            set -e
+            cd /home/u715355537/domains/hwnix.com/public_html/api-teste
+            echo "🚀 Running Database Migrations..."
+            php artisan migrate --force
+            echo "🔑 Seeding Permissions..."
+            php artisan db:seed --class=PermissionsSeeder --force
+            echo "⚖️ Seeding Legal Documents..."
+            echo 'if (\DB::table("legal_documents")->count() === 0) \Artisan::call("db:seed", ["--class" => "Modules\\Legal\\database\\seeders\\LegalDatabaseSeeder", "--force" => true]);' | php artisan tinker
+            echo "🧹 Resetting and Clearing Caches..."
+            php artisan permission:cache-reset
+            php artisan cache:clear
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+            php artisan event:clear
+            echo "📦 Rebuilding Composer Autoloader..."
+            composer dump-autoload -o
+            echo "⚡ Optimizing Application..."
+            php artisan config:cache
+            php artisan route:cache
+            php artisan optimize
+            echo "🚀 Post-deployment finished successfully!"
+          EOF
 
       - name: Deployment Complete
         run: echo "✅ Deployment successful! Migrations run, caches cleared, and application optimized."
