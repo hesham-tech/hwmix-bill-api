@@ -124,4 +124,15 @@ class CompanyControllerTest extends TestCase
         // Should only see companies they belong to (just $this->company)
         $response->assertJsonMissing(['name' => $otherCompany->name]);
     }
+
+    public function test_can_get_public_company()
+    {
+        $firstCompany = Company::withoutGlobalScopes()->first();
+
+        // No authentication required
+        $response = $this->getJson('/api/v1/public/company');
+
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['name' => $firstCompany->name]);
+    }
 }
