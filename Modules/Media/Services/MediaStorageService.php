@@ -30,12 +30,15 @@ class MediaStorageService
     {
         $originalName = $file->getClientOriginalName();
         $mimeType = $file->getMimeType();
+        $extension = strtolower($file->getClientOriginalExtension());
+        
         $isImage = str_starts_with($mimeType, 'image/');
+        $isSvg = ($mimeType === 'image/svg+xml' || $extension === 'svg');
         
         $companyFolder = 'media/' . $companyId;
         Storage::disk('public')->makeDirectory($companyFolder);
 
-        if ($isImage && $mimeType !== 'image/svg+xml') {
+        if ($isImage && !$isSvg) {
             // تحسين وضغط الصورة بصيغة WebP
             $optimizedData = $this->optimizer->convertToWebp($file);
             
