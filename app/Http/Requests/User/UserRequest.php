@@ -110,7 +110,7 @@ class UserRequest extends FormRequest
             'created_by' => 'nullable|exists:users,id',
             'customer_type' => 'nullable|in:retail,wholesale',
             'roles' => 'nullable|array',
-            'roles.*' => 'string|exists:roles,name',
+            'roles.*' => 'nullable|string',
             'permissions' => 'nullable|array',
             'permissions.*' => 'string|exists:permissions,name',
             'branch_ids' => 'nullable|array',

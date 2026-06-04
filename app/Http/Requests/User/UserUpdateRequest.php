@@ -43,7 +43,7 @@ class UserUpdateRequest extends FormRequest
             'company_ids.*' => 'nullable|exists:companies,id',
             'customer_type' => 'nullable|in:retail,wholesale',
             'roles' => 'nullable|array',
-            'roles.*' => 'string|exists:roles,name',
+            'roles.*' => 'nullable|string',
             'permissions' => 'nullable|array',
             'permissions.*' => 'string|exists:permissions,name',
         ];
