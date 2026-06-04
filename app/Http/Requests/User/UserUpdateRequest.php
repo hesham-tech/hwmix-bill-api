@@ -28,6 +28,7 @@ class UserUpdateRequest extends FormRequest
             'nickname' => 'sometimes|required|string|max:255',
             'username' => 'sometimes|nullable|string|max:255|unique:users,username,' . ($this->route('user')?->id ?? $this->route('user')),
             'phone' => 'sometimes|required|string|max:15|unique:users,phone,' . ($this->route('user')?->id ?? $this->route('user')),
+            'email' => 'sometimes|nullable|email|unique:users,email,' . ($this->route('user')?->id ?? $this->route('user')),
             'password' => 'nullable|string|min:8',
             'position' => 'nullable|string|max:255',
             'settings' => 'nullable|array',

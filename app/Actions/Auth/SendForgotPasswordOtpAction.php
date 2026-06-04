@@ -41,6 +41,11 @@ class SendForgotPasswordOtpAction
         // 4. إرسال البريد الإلكتروني عبر خادم بريد الشركة النشطة أو خادم النظام الافتراضي
         $mailSetting = MailSetting::where('company_id', $user->company_id)->first();
 
+        if (!$mailSetting || empty($mailSetting->mail_host)) {
+            $masterCompanyId = env('SYSTEM_MASTER_COMPANY_ID', 1);
+            $mailSetting = MailSetting::where('company_id', $masterCompanyId)->first();
+        }
+
         if ($mailSetting && !empty($mailSetting->mail_host)) {
             // استخدام المايلر الديناميكي الخاص بالشركة
             $mailer = DynamicMailer::getMailer($mailSetting);
