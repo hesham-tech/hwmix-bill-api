@@ -16,6 +16,7 @@ use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Actions\Auth\SendForgotPasswordOtpAction;
 use App\Actions\Auth\ResetPasswordAction;
+use App\Actions\Auth\VerifyForgotPasswordOtpAction;
 
 /**
  * Class AuthController
@@ -360,7 +361,7 @@ class AuthController extends Controller
             $action->execute($request->email, $request->frontend_url);
             return api_success([], 'تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني بنجاح.');
         } catch (Throwable $e) {
-            return api_exception($e, 500);
+            return api_error($e->getMessage(), 422);
         }
     }
 
@@ -380,7 +381,36 @@ class AuthController extends Controller
             $action->execute($request->email, $request->otp, $request->password);
             return api_success([], 'تم إعادة تعيين كلمة المرور بنجاح، يمكنك الآن تسجيل الدخول.');
         } catch (Throwable $e) {
-            return api_exception($e, 500);
+            return api_error($e->getMessage(), 422);
+        }
+    }
+
+    /**
+     * @group 01. إدارة المصادقة
+     * 
+     * التحقق من رمز الـ OTP وصلاحيته في الخلفية
+     * 
+     * @bodyParam email string required البريد الإلكتروني. Example: user@example.com
+     * @bodyParam otp string required رمز التحقق المكون من 6 أرقام. Example: 123456
+     */
+    public function verifyOtp(\Illuminate\Http\Request $request, VerifyForgotPasswordOtpAction $action): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required|string|size:6',
+        ], [
+            'email.required' => 'البريد الإلكتروني مطلوب.',
+            'email.email' => 'يجب إدخال بريد إلكتروني صالح.',
+            'email.exists' => 'البريد الإلكتروني غير مسجل لدينا.',
+            'otp.required' => 'رمز التحقق مطلوب.',
+            'otp.size' => 'يجب أن يكون رمز التحقق مكوناً من 6 أرقام.',
+        ]);
+
+        try {
+            $action->execute($request->email, $request->otp);
+            return api_success(['valid' => true], 'رمز التحقق صحيح وصالح.');
+        } catch (Throwable $e) {
+            return api_error($e->getMessage(), 422);
         }
     }
 }

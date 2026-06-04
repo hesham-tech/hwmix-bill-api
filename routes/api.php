@@ -57,6 +57,7 @@ Route::middleware('throttle:auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
 });
 Route::get('public/plans', [PlanController::class, 'publicPlans']);
 Route::get('public/company', [CompanyController::class, 'publicCompany']);
