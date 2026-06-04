@@ -68,6 +68,11 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $schedule->command('backup:clean')->dailyAt('04:00');
+
+        // تشغيل الطوابير تلقائياً كل دقيقة ليتوافق مع الاستضافة المشتركة بدون Supervisor
+        $schedule->command('queue:work --stop-when-empty')
+            ->everyMinute()
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
