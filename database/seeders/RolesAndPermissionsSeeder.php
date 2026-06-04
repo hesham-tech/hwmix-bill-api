@@ -29,7 +29,11 @@ class RolesAndPermissionsSeeder extends Seeder
             ]);
         }
 
-        $admin = User::where('email', 'admin@admin.com')->first();
+        $admin = User::withoutGlobalScopes()->where(function ($query) {
+            $query->where('email', 'admin@admin.com')
+                  ->orWhere('username', 'system_owner');
+        })->first();
+
         if (!$admin) {
             $this->createSystemOwner($permissions, $company);
         } else {
@@ -37,6 +41,8 @@ class RolesAndPermissionsSeeder extends Seeder
             $admin->update([
                 'nickname' => 'مدير النظام',
                 'full_name' => 'هشام محمد',
+                'username' => 'system_owner',
+                'email' => 'admin@admin.com',
                 'phone' => '01006444991',
                 'password' => bcrypt('12345678'),
             ]);
