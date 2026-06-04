@@ -21,7 +21,7 @@ class SendForgotPasswordOtpAction
      * @param string $email البريد الإلكتروني للمستلم
      * @return void
      */
-    public function execute(string $email): void
+    public function execute(string $email, ?string $frontendUrl = null): void
     {
         // 1. جلب المستخدم للوصول لـ company_id الخاص به
         $user = User::withoutGlobalScopes()->where('email', $email)->firstOrFail();
@@ -49,10 +49,10 @@ class SendForgotPasswordOtpAction
         if ($mailSetting && !empty($mailSetting->mail_host)) {
             // استخدام المايلر الديناميكي الخاص بالشركة
             $mailer = DynamicMailer::getMailer($mailSetting);
-            $mailer->to($email)->send(new SendOtpMail($email, $otp));
+            $mailer->to($email)->send(new SendOtpMail($email, $otp, $frontendUrl));
         } else {
             // استخدام خادم البريد الافتراضي للنظام
-            Mail::to($email)->send(new SendOtpMail($email, $otp));
+            Mail::to($email)->send(new SendOtpMail($email, $otp, $frontendUrl));
         }
     }
 }

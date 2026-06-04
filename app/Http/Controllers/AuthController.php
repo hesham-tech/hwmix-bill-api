@@ -357,7 +357,7 @@ class AuthController extends Controller
     public function forgotPassword(ForgotPasswordRequest $request, SendForgotPasswordOtpAction $action): JsonResponse
     {
         try {
-            $action->execute($request->email);
+            $action->execute($request->email, $request->frontend_url);
             return api_success([], 'تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
