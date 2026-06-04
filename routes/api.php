@@ -55,6 +55,8 @@ Route::middleware('throttle:auth')->group(function () {
     Route::post('register/customer', [\App\Http\Controllers\Api\Auth\MarketplaceRegisterController::class, 'register']);
     Route::post('register/company', [\App\Http\Controllers\Api\Auth\TenantProvisioningController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
 });
 Route::get('public/plans', [PlanController::class, 'publicPlans']);
 Route::get('public/company', [CompanyController::class, 'publicCompany']);

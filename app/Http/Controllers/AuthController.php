@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException; // استيراد ValidationException
 use Throwable; // استيراد Throwable
+use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Actions\Auth\SendForgotPasswordOtpAction;
+use App\Actions\Auth\ResetPasswordAction;
 
 /**
  * Class AuthController
@@ -338,6 +342,43 @@ class AuthController extends Controller
             $user->tokens()->where('id', '!=', $currentTokenId)->delete();
 
             return api_success([], 'تم تسجيل الخروج من جميع الأجهزة الأخرى بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 01. إدارة المصادقة
+     * 
+     * طلب استعادة كلمة المرور وإرسال رمز OTP
+     * 
+     * @bodyParam email string required البريد الإلكتروني للمستخدم. Example: user@example.com
+     */
+    public function forgotPassword(ForgotPasswordRequest $request, SendForgotPasswordOtpAction $action): JsonResponse
+    {
+        try {
+            $action->execute($request->email);
+            return api_success([], 'تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    /**
+     * @group 01. إدارة المصادقة
+     * 
+     * إعادة تعيين كلمة المرور باستخدام رمز الـ OTP
+     * 
+     * @bodyParam email string required البريد الإلكتروني. Example: user@example.com
+     * @bodyParam otp string required رمز التحقق المكون من 6 أرقام. Example: 123456
+     * @bodyParam password string required كلمة المرور الجديدة. Example: password123
+     * @bodyParam password_confirmation string required تأكيد كلمة المرور الجديدة. Example: password123
+     */
+    public function resetPassword(ResetPasswordRequest $request, ResetPasswordAction $action): JsonResponse
+    {
+        try {
+            $action->execute($request->email, $request->otp, $request->password);
+            return api_success([], 'تم إعادة تعيين كلمة المرور بنجاح، يمكنك الآن تسجيل الدخول.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
