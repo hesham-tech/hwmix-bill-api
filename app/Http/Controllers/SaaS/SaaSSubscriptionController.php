@@ -7,6 +7,7 @@ namespace App\Http\Controllers\SaaS;
 use App\Http\Controllers\Controller;
 use App\Models\CompanySubscription;
 use App\Services\SaaS\LimitResolver;
+use App\Services\SaaS\PricingCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -72,7 +73,7 @@ class SaaSSubscriptionController extends Controller
     }
 
     /**
-     * ترقية أو تغيير باقة الاشتراك للشركة الحالية.
+     * ترقية أو تجديد باقة الاشتراك للشركة الحالية مع تحديد الأشهر والكوبون.
      */
     public function upgrade(Request $request): JsonResponse
     {
@@ -84,9 +85,13 @@ class SaaSSubscriptionController extends Controller
 
             $request->validate([
                 'plan_id' => 'required|integer|exists:plans,id',
+                'months' => 'nullable|integer|min:1',
+                'coupon_code' => 'nullable|string|max:50',
             ]);
 
             $planId = (int) $request->input('plan_id');
+            $months = (int) ($request->input('months') ?? 1);
+            $couponCode = $request->input('coupon_code');
 
             // التحقق من أن الباقة نشطة
             $plan = \App\Models\Plan::where('id', $planId)->where('is_active', true)->first();
@@ -94,7 +99,15 @@ class SaaSSubscriptionController extends Controller
                 return api_error('الباقة المطلوبة غير متوفرة حالياً أو تم تعطيلها.', [], 422);
             }
 
-            // التحقق مما إذا كانت هذه هي الباقة الحالية النشطة
+            // حساب السعر النهائي المطلوب دفعه بعد تطبيق الخصومات والكوبون
+            $pricing = PricingCalculator::calculate($planId, $months, $couponCode);
+            if (!empty($pricing['coupon_error'])) {
+                return api_error($pricing['coupon_error'], [], 422);
+            }
+
+            $totalPrice = (float) $pricing['total_price'];
+
+            // التحقق مما إذا كانت هذه هي الباقة الحالية النشطة بنفس مدتها (لتفادي تكرار التجديد دون داعي)
             $currentSub = CompanySubscription::where('company_id', $companyId)
                 ->whereIn('status', ['active', 'trial'])
                 ->get()
@@ -103,12 +116,13 @@ class SaaSSubscriptionController extends Controller
                 })
                 ->first();
 
-            if ($currentSub && (int) $currentSub->plan_id === $planId) {
-                return api_error('أنت مشترك بالفعل في هذه الباقة.', [], 422);
+            // إذا كان الاشتراك الحالي نشطاً وله نفس الباقة ونفس عدد الأشهر ولم يتم تمرير كوبون جديد، فقد لا يرغب المستخدم في الترقية لنفس الباقة مجدداً إلا إذا كان تجديداً
+            if ($currentSub && (int) $currentSub->plan_id === $planId && $currentSub->months === $months && !$couponCode && $totalPrice > 0) {
+                // نسمح بالتجديد (تأثير التجديد يتمثل في تمديد فترة الانتهاء) ولكن ننبه المستخدم
             }
 
-            // إذا كانت الباقة مدفوعة وليس لها أيام تجربة (trial_days = 0)
-            if ($plan->price > 0 && (int) $plan->trial_days === 0) {
+            // إذا كان السعر الإجمالي بعد الخصومات أكبر من 0 (يتطلب دفعاً إلكترونياً)
+            if ($totalPrice > 0) {
                 $masterCompanyId = (int) config('app.master_company_id', 1);
                 $gateway = \Modules\Payment\Models\PaymentGateway::where('company_id', $masterCompanyId)
                     ->where('is_active', true)
@@ -119,8 +133,8 @@ class SaaSSubscriptionController extends Controller
                     return api_error('بوابات الدفع الإلكتروني غير مهيأة حالياً في النظام لاستقبال الاشتراكات المدفوعة.', [], 422);
                 }
 
-                // تهيئة اشتراك معلق الدفع
-                $pendingSub = \App\Services\SaaS\SubscriptionService::initializePendingSubscription($companyId, $plan->id);
+                // تهيئة اشتراك معلق الدفع بالخيارات الديناميكية
+                $pendingSub = \App\Services\SaaS\SubscriptionService::initializePendingSubscription($companyId, $plan->id, $months, $couponCode);
 
                 // إنشاء معاملة الدفع ورابط الدفع
                 $processPaymentAction = app(\Modules\Payment\Actions\ProcessPaymentAction::class);
@@ -134,7 +148,7 @@ class SaaSSubscriptionController extends Controller
                     'payment_gateway_id' => $gateway->id,
                     'payable_type' => \App\Models\CompanySubscription::class,
                     'payable_id' => $pendingSub->id,
-                    'amount' => $plan->price,
+                    'amount' => $totalPrice,
                     'currency' => $plan->currency ?: 'EGP',
                     'branch_id' => null,
                     'options' => [
@@ -151,8 +165,8 @@ class SaaSSubscriptionController extends Controller
                 ], 'يرجى إتمام عملية الدفع لتفعيل الباقة.');
             }
 
-            // ترقية الباقة مباشرة إذا كانت مجانية أو تملك أيام تجربة
-            \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId);
+            // ترقية الباقة مباشرة إذا كانت مجانية بالكامل أو تم خصم 100% منها عبر الكوبون
+            \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId, $months, $couponCode);
 
             // جلب مصفوفة الاستهلاك الجديدة وإرجاعها
             $matrix = LimitResolver::getSubscriptionUsageMatrix($companyId);
@@ -171,8 +185,8 @@ class SaaSSubscriptionController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                return api_forbidden('هذا الإجراء متاح فقط للمسؤول العام.');
+            if (!$authUser || (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('subscriptions.view_all')))) {
+                return api_forbidden('هذا الإجراء غير مصرح به.');
             }
 
             $masterCompanyId = (int) config('app.master_company_id', 1);
@@ -277,8 +291,8 @@ class SaaSSubscriptionController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
-            if (!$authUser || !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                return api_forbidden('هذا الإجراء متاح فقط للمسؤول العام.');
+            if (!$authUser || (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('subscriptions.update_all')))) {
+                return api_forbidden('هذا الإجراء غير مصرح به.');
             }
 
             $request->validate([

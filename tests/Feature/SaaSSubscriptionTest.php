@@ -221,7 +221,7 @@ class SaaSSubscriptionTest extends TestCase
         $premiumPlan = Plan::create([
             'name' => 'الباقة المميزة للشبكات',
             'code' => 'premium_networks',
-            'price' => 250.00,
+            'price' => 0.00,
             'currency' => 'EGP',
             'duration' => 1,
             'duration_unit' => 'months',
@@ -254,7 +254,7 @@ class SaaSSubscriptionTest extends TestCase
             'company_id' => $newCompany->id,
             'plan_id' => $premiumPlan->id,
             'status' => 'active',
-            'price' => 250.00
+            'price' => 0.00
         ]);
 
         // التحقق من الميزات الجديدة للشركة

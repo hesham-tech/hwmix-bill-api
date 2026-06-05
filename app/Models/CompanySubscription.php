@@ -23,6 +23,7 @@ class CompanySubscription extends Model
         'ends_at' => 'datetime',
         'trial_ends_at' => 'datetime',
         'price' => 'decimal:2',
+        'months' => 'integer',
         'features' => 'array',
         'max_users' => 'integer',
         'max_products' => 'integer',
@@ -93,15 +94,26 @@ class CompanySubscription extends Model
             'ends_at' => $endsAt,
         ]);
         
+        // إذا كان هناك كود كوبون، نزيد عدد الاستخدامات له عند الدفع والتفعيل
+        if ($this->coupon_code) {
+            \Illuminate\Support\Facades\DB::table('coupons')
+                ->where('code', $this->coupon_code)
+                ->increment('used_count');
+        }
+        
         // تحديث السياق للشركة
         \Log::info("SaaS: تم تفعيل الاشتراك #{$this->id} للشركة #{$this->company_id} بعد الدفع بنجاح.");
     }
 
     /**
-     * حساب تاريخ انتهاء الاشتراك بناءً على باقته.
+     * حساب تاريخ انتهاء الاشتراك بناءً على باقته أو الأشهر المختارة.
      */
     protected function calculateEndsAt($startsAt)
     {
+        if ($this->months && $this->months > 0) {
+            return (clone $startsAt)->addMonths($this->months);
+        }
+
         $plan = $this->plan;
         if (!$plan || !$plan->duration || !$plan->duration_unit) {
             return null;

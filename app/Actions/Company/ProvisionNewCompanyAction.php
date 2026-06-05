@@ -94,7 +94,10 @@ class ProvisionNewCompanyAction
                 $originalUser = auth()->user();
                 auth()->setUser($user);
                 
-                \App\Services\SaaS\SubscriptionService::initializeSubscription($company->id, $selectedPlan->id);
+                $months = isset($data['months']) ? (int) $data['months'] : 1;
+                $couponCode = $data['coupon_code'] ?? null;
+                
+                \App\Services\SaaS\SubscriptionService::initializeSubscription($company->id, $selectedPlan->id, $months, $couponCode);
                 
                 if ($originalUser) {
                     auth()->setUser($originalUser);

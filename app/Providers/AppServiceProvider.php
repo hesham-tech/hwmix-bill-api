@@ -34,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
         // Register Observers (Most are registered via #[ObservedBy] attribute in Models)
         Role::observe(RoleObserver::class);
 
+        // Register SaaS Usage Observers to clear cache on resource updates
+        \App\Services\SaaS\CachedUsageCounter::registerObservers();
+
         // Super Admin bypass (Global access if user has 'admin.super' permission)
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
             static $isSuperAdmin = [];

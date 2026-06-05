@@ -49,4 +49,9 @@ class Plan extends Model
     {
         return $this->hasMany(CompanySubscription::class);
     }
+
+    public function pricingTiers()
+    {
+        return $this->hasMany(PlanPricingTier::class);
+    }
 }

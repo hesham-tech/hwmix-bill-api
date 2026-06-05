@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
+// تعليق عربي: سيدر لتهيئة الصلاحيات وربط المستخدم الرئيسي بجميع الصلاحيات الافتراضية للنظام دون تعديل بياناته الحالية.
 class RolesAndPermissionsSeeder extends Seeder
 {
     public function run()
@@ -37,16 +38,6 @@ class RolesAndPermissionsSeeder extends Seeder
         if (!$admin) {
             $this->createSystemOwner($permissions, $company);
         } else {
-            // تحديث بيانات الدخول للتأكد من مطابقتها للسيدر
-            $admin->update([
-                'nickname' => 'مدير النظام',
-                'full_name' => 'هشام محمد',
-                'username' => 'system_owner',
-                'email' => 'admin@admin.com',
-                'phone' => '01006444991',
-                'password' => bcrypt('12345678'),
-            ]);
-
             // إخبار النظام برقم الشركة قبل مزامنة الصلاحيات (Spatie Teams)
             if (config('permission.teams') && $company) {
                 setPermissionsTeamId($company->id);

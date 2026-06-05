@@ -48,6 +48,15 @@ class CheckSaaSResourceLimit
      */
     protected function getResourceLabel(string $resource): string
     {
+        try {
+            $metric = \Illuminate\Support\Facades\DB::table('usage_metrics')
+                ->where('key', $resource)
+                ->first();
+            if ($metric) {
+                return "[{$metric->name}]";
+            }
+        } catch (\Throwable $e) {}
+
         return match ($resource) {
             'users' => '[الموظفين والمستخدمين]',
             'products' => '[المنتجات]',

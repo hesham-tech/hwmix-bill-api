@@ -35,6 +35,7 @@ class PlanResource extends JsonResource
             'creator' => $this->whenLoaded('creator'),
             'updater' => $this->whenLoaded('updater'),
             'subscriptions' => $this->whenLoaded('subscriptions'),
+            'pricing_tiers' => $this->whenLoaded('pricingTiers'),
             // إحصائيات السوبر أدمن
             'active_companies_count' => $this->when(\Illuminate\Support\Facades\Auth::user()?->hasPermissionTo(perm_key('admin.super')), function() {
                 return \App\Models\CompanySubscription::where('plan_id', $this->id)

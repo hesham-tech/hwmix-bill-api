@@ -29,6 +29,8 @@ class ProvisionNewCompanyRequest extends FormRequest
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:8',
             'plan_id' => 'nullable|exists:plans,id',
+            'months' => 'nullable|integer|min:1',
+            'coupon_code' => 'nullable|string|max:50',
         ];
     }
 

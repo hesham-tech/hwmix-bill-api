@@ -326,7 +326,8 @@ class PlanController extends Controller
     {
         try {
             $masterCompanyId = (int) config('app.master_company_id', 1);
-            $plans = Plan::where('is_active', true)
+            $plans = Plan::with('pricingTiers')
+                ->where('is_active', true)
                 ->where('company_id', $masterCompanyId)
                 ->orderBy('price', 'asc')
                 ->get();
