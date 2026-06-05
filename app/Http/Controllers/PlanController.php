@@ -21,6 +21,7 @@ class PlanController extends Controller
         'creator',
         'updater',
         'subscriptions',
+        'pricingTiers',
     ];
 
     /**
@@ -137,7 +138,27 @@ class PlanController extends Controller
                 }
                 $validatedData['company_id'] = $planCompanyId;
 
+                $pricingTiers = $validatedData['pricing_tiers'] ?? null;
+                unset($validatedData['pricing_tiers']);
+
                 $plan = Plan::create($validatedData);
+
+                if ($pricingTiers !== null) {
+                    foreach ($pricingTiers as $tier) {
+                        DB::table('plan_pricing_tiers')->insert([
+                            'plan_id' => $plan->id,
+                            'min_months' => $tier['min_months'],
+                            'max_months' => $tier['max_months'] ?? null,
+                            'price_per_month' => $tier['price_per_month'],
+                            'discount_percent' => $tier['discount_percent'] ?? 0.00,
+                            'company_id' => $plan->company_id,
+                            'created_by' => $authUser->id,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+
                 $plan->load($this->relations);
                 DB::commit();
                 return api_success(new PlanResource($plan), 'تم إنشاء الخطة بنجاح.', 201);
@@ -244,7 +265,31 @@ class PlanController extends Controller
                     unset($validatedData['company_id']);
                 }
 
+                $pricingTiers = $validatedData['pricing_tiers'] ?? null;
+                unset($validatedData['pricing_tiers']);
+
                 $plan->update($validatedData);
+
+                if ($pricingTiers !== null) {
+                    // Delete existing tiers for this plan
+                    DB::table('plan_pricing_tiers')->where('plan_id', $plan->id)->delete();
+
+                    // Insert new tiers
+                    foreach ($pricingTiers as $tier) {
+                        DB::table('plan_pricing_tiers')->insert([
+                            'plan_id' => $plan->id,
+                            'min_months' => $tier['min_months'],
+                            'max_months' => $tier['max_months'] ?? null,
+                            'price_per_month' => $tier['price_per_month'],
+                            'discount_percent' => $tier['discount_percent'] ?? 0.00,
+                            'company_id' => $plan->company_id,
+                            'created_by' => $authUser->id,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+
                 $plan->load($this->relations);
                 DB::commit();
                 return api_success(new PlanResource($plan), 'تم تحديث الخطة بنجاح.');

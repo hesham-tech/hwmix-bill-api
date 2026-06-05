@@ -127,6 +127,9 @@ class SaaSEngine
     protected static function resolveMaxLimit(CompanySubscription $subscription, string $resource): ?int
     {
         $columnName = "max_{$resource}";
+        if ($resource === 'storage_size') {
+            $columnName = 'max_storage_mb';
+        }
 
         // 1. فحص العمود المباشر في كائن الاشتراك
         $limit = $subscription->$columnName ?? null;

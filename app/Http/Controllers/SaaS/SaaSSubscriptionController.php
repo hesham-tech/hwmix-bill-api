@@ -310,7 +310,12 @@ class SaaSSubscriptionController extends Controller
             }
 
             // ترقية أو تغيير باقة الشركة
-            \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId);
+            $subscription = \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId);
+
+            // بما أن التغيير تم يدوياً من السوبر أدمن، يتم تفعيل الاشتراك مباشرة وتجاوز الدفع المعلق
+            if ($subscription->status === 'pending') {
+                $subscription->update(['status' => 'active']);
+            }
 
             return api_success([], 'تم تغيير باقة اشتراك الشركة بنجاح.');
         } catch (\Throwable $e) {

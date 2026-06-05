@@ -27,8 +27,15 @@ class UpdatePlanRequest extends FormRequest
             'max_users' => 'nullable|integer',
             'max_products' => 'nullable|integer',
             'max_invoices' => 'nullable|integer',
+            'max_projects' => 'nullable|integer',
+            'max_storage_mb' => 'nullable|integer',
             'type' => 'nullable|string|max:50',
             'icon' => 'nullable|string|max:255',
+            'pricing_tiers' => 'nullable|array',
+            'pricing_tiers.*.min_months' => 'required|integer|min:1',
+            'pricing_tiers.*.max_months' => 'nullable|integer|min:1',
+            'pricing_tiers.*.price_per_month' => 'required|numeric|min:0',
+            'pricing_tiers.*.discount_percent' => 'nullable|numeric|min:0|max:100',
         ];
     }
 }
