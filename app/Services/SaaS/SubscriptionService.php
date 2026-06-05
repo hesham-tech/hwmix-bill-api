@@ -25,7 +25,7 @@ class SubscriptionService
         $startsAt = Carbon::now();
         $trialDays = $plan->trial_days ?: 0;
         $trialEndsAt = $trialDays > 0 ? Carbon::now()->addDays($trialDays) : null;
-        $status = $trialDays > 0 ? 'trial' : 'active';
+        $status = $trialDays > 0 ? 'trial' : ($totalPrice > 0 ? 'pending' : 'active');
         
         // حساب تاريخ انتهاء الاشتراك بناء على الأشهر المختارة
         $endsAt = Carbon::now()->addMonths($months);

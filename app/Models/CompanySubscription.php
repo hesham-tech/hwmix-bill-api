@@ -11,6 +11,25 @@ use App\Traits\Blameable;
 use App\Traits\Scopes;
 use App\Traits\LogsActivity;
 
+/**
+ * @property int $id
+ * @property int $company_id
+ * @property int $plan_id
+ * @property \Carbon\Carbon|null $starts_at
+ * @property \Carbon\Carbon|null $ends_at
+ * @property \Carbon\Carbon|null $trial_ends_at
+ * @property string|null $price
+ * @property int $months
+ * @property string|null $coupon_code
+ * @property string|null $billing_cycle
+ * @property string $status
+ * @property int|null $max_users
+ * @property int|null $max_products
+ * @property int|null $max_invoices
+ * @property array|null $features
+ * @property bool $auto_renew
+ * @property int $created_by
+ */
 class CompanySubscription extends Model
 {
     use HasFactory, SoftDeletes, Blameable, Scopes, LogsActivity;

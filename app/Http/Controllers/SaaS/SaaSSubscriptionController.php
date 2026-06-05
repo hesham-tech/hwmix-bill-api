@@ -146,7 +146,7 @@ class SaaSSubscriptionController extends Controller
 
                 $paymentResult = $processPaymentAction->handle([
                     'payment_gateway_id' => $gateway->id,
-                    'payable_type' => \App\Models\CompanySubscription::class,
+                    'payable_type' => CompanySubscription::class,
                     'payable_id' => $pendingSub->id,
                     'amount' => $totalPrice,
                     'currency' => $plan->currency ?: 'EGP',
@@ -210,7 +210,7 @@ class SaaSSubscriptionController extends Controller
                 $subscription = CompanySubscription::where('company_id', $company->id)
                     ->whereIn('status', ['active', 'trial'])
                     ->get()
-                    ->filter(function($sub) {
+                    ->filter(function(CompanySubscription $sub) {
                         return $sub->isActive();
                     })
                     ->first();

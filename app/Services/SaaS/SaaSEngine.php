@@ -174,14 +174,17 @@ class SaaSEngine
             ->filter(fn($sub) => $sub->isActive())
             ->first();
 
-        // علاج تلقائي ذاتي للباقة التجريبية في حال عدم وجود اشتراك
+        // علاج تلقائي ذاتي للباقة التجريبية في حال عدم وجود أي اشتراكات سابقة للشركة
         if (!$subscription) {
-            $freePlan = Plan::where('code', 'free_trial')->first();
-            if ($freePlan) {
-                try {
-                    $subscription = SubscriptionService::initializeSubscription($companyId, $freePlan->id);
-                } catch (\Throwable $e) {
-                    Log::error('SaaS self-healing in SaaSEngine failed', ['company_id' => $companyId, 'error' => $e->getMessage()]);
+            $hasAnySubscription = CompanySubscription::where('company_id', $companyId)->exists();
+            if (!$hasAnySubscription) {
+                $freePlan = Plan::where('code', 'free_trial')->first();
+                if ($freePlan) {
+                    try {
+                        $subscription = SubscriptionService::initializeSubscription($companyId, $freePlan->id);
+                    } catch (\Throwable $e) {
+                        Log::error('SaaS self-healing in SaaSEngine failed', ['company_id' => $companyId, 'error' => $e->getMessage()]);
+                    }
                 }
             }
         }
