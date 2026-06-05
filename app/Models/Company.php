@@ -170,6 +170,9 @@ class Company extends Model
         if (!isset($settings['activity_log_retention_unit'])) {
             $settings['activity_log_retention_unit'] = 'years';
         }
+        if (!isset($settings['date_format'])) {
+            $settings['date_format'] = 'dddd D / M / YYYY';
+        }
         return $settings;
     }
 
