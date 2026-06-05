@@ -5,6 +5,10 @@ on:
     branches:
       - restructure-v2 # هذا هو البرانش الذي تعمل عليه حالياً
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,7 +24,7 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
 
       - name: Install Composer Dependencies
-        run: composer install --no-dev --optimize-autoloader
+        run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
 
       - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.9.0
@@ -52,7 +56,7 @@ jobs:
       - name: Run Post-Deployment Commands
         run: |
           ssh -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=15 u715355537@212.107.17.234 << 'EOF'
-            set -e
+            set -euo pipefail
             cd /home/u715355537/domains/hwnix.com/public_html/api-teste
             echo "🚀 Running Database Migrations..."
             php artisan migrate --force
@@ -75,6 +79,11 @@ jobs:
             php artisan optimize
             echo "🚀 Post-deployment finished successfully!"
           EOF
+
+      - name: Run Post-Deployment Health Check
+        run: |
+          echo "🔍 Running API health check on test subdomain..."
+          curl -f -I -k https://api-teste.hwnix.com/api/v1/public/plans || exit 1
 
       - name: Deployment Complete
         run: echo "✅ Deployment successful! Migrations run, caches cleared, and application optimized."

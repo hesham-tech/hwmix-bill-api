@@ -5,10 +5,6 @@ on:
     branches:
       - master
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -24,7 +20,7 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
 
       - name: Install Composer Dependencies
-        run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
+        run: composer install --no-dev --optimize-autoloader
 
       - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.9.0
@@ -58,7 +54,7 @@ jobs:
       - name: Run Post-Deployment Commands
         run: |
           ssh -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=15 u715355537@212.107.17.234 << 'EOF'
-            set -euo pipefail
+            set -e
             cd /home/u715355537/domains/hwnix.com/public_html/bill-api
             echo "🚀 Running Database Migrations..."
             php artisan migrate --force
@@ -81,11 +77,6 @@ jobs:
             php artisan storage:link
             echo "🚀 Post-deployment finished successfully!"
           EOF
-
-      - name: Run Post-Deployment Health Check
-        run: |
-          echo "🔍 Running API health check..."
-          curl -f -I -k https://bill-api.hwnix.com/api/v1/public/plans || exit 1
 
       - name: Deployment Complete
         run: echo "✅ Production Deployment successful!"

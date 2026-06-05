@@ -22,7 +22,12 @@ class SaaSEngine
             return true;
         }
 
-        // 2. جلب الاشتراك الفعال
+        // 2. السوبر أدمن معفى تماماً من القيود والميزات
+        if (auth()->check() && auth()->user()->hasPermissionTo(perm_key('admin.super'))) {
+            return true;
+        }
+
+        // 3. جلب الاشتراك الفعال
         $subscription = self::getActiveSubscription($companyId);
         if (!$subscription) {
             return false;
@@ -49,7 +54,12 @@ class SaaSEngine
             return true;
         }
 
-        // 2. جلب الاشتراك الفعال
+        // 2. السوبر أدمن معفى تماماً من القيود
+        if (auth()->check() && auth()->user()->hasPermissionTo(perm_key('admin.super'))) {
+            return true;
+        }
+
+        // 3. جلب الاشتراك الفعال
         $subscription = self::getActiveSubscription($companyId);
         if (!$subscription) {
             return false;
@@ -103,11 +113,13 @@ class SaaSEngine
             $resources = ['users', 'products', 'invoices', 'warehouses', 'whatsapp_messages', 'api_calls', 'storage_size'];
         }
 
+        $isSuperAdmin = auth()->check() && auth()->user()->hasPermissionTo(perm_key('admin.super'));
+
         foreach ($resources as $resource) {
             $limit = $subscription ? self::resolveMaxLimit($subscription, $resource) : null;
             $current = CachedUsageCounter::get($companyId, $resource);
             
-            $isUnlimited = ($limit === null || (int) $limit === -1);
+            $isUnlimited = $isSuperAdmin || ($limit === null || (int) $limit === -1);
             $maxVal = $isUnlimited ? 'غير محدود' : (int) $limit;
 
             $matrix['limits'][$resource] = [

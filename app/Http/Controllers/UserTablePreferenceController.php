@@ -42,6 +42,9 @@ class UserTablePreferenceController extends Controller
             'name', 'nickname', 'username', 'email', 'position',
             'active_branch_balance', 'created_at', 'updated_at'
         ],
+        'companies.index' => [
+            'name', 'owner_name', 'phone', 'branches_count', 'created_at', 'actions'
+        ],
         'payments.index' => [
             'invoice', 'amount', 'payment_method', 'payment_date', 'actions',
             'method', 'notes', 'is_split', 'created_at', 'updated_at'
