@@ -77,6 +77,7 @@ class UserWithPermissionsResource extends JsonResource
 
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
+            'subscription' => $this->active_company_id ? \App\Services\SaaS\LimitResolver::getSubscriptionUsageMatrix($this->active_company_id) : null,
         ];
     }
 
