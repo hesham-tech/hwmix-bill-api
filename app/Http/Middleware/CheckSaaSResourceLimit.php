@@ -32,11 +32,12 @@ class CheckSaaSResourceLimit
         // التحقق من قيود الباقة الجارية
         if (!LimitResolver::isWithinLimit($companyId, $resource)) {
             $resourceLabel = $this->getResourceLabel($resource);
-            return api_error(
-                "لقد تجاوزت الحد الأقصى المسموح به لإنشاء {$resourceLabel} في باقتك الحالية. يرجى الترقية للاستمرار.",
-                ['resource' => $resource],
-                403
-            );
+            return response()->json([
+                'status' => false,
+                'message' => "لقد تجاوزت الحد الأقصى المسموح به لإنشاء {$resourceLabel} في باقتك الحالية. يرجى الترقية للاستمرار.",
+                'error_code' => 'SUBSCRIPTION_LIMIT_REACHED',
+                'errors' => ['resource' => $resource],
+            ], 403);
         }
 
         return $next($request);
