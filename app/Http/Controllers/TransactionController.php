@@ -447,6 +447,11 @@ class TransactionController extends Controller
 
             $query = Transaction::with($this->relations);
 
+            // تجاوز فلاتر الفروع الصامتة لمديري الشركات والسوبر أدمن لعرض سجل العمليات المالي بالكامل
+            if (safeHasPermission($authUser, perm_key('admin.super')) || safeHasPermission($authUser, perm_key('admin.company')) || safeHasPermission($authUser, perm_key('transactions.view_all'))) {
+                $query->withoutGlobalScope('branch_filter');
+            }
+
             // تطبيق شروط الصلاحيات
             if (safeHasPermission($authUser, perm_key('admin.super'))) {
                 // استرجاع جميع المعاملات (لا قيود إضافية)
@@ -462,6 +467,11 @@ class TransactionController extends Controller
             } else {
                 // العميل: يرى معاملاته الشخصية
                 $query->where('user_id', $authUser->id);
+            }
+
+            // تصفية المعاملات حسب حركات التحويل (الدور الأساسي) أو سجلات المعاملات المحدثة
+            if ($request->has('is_transfer')) {
+                $query->where('is_transfer', $request->boolean('is_transfer'));
             }
 
             // فلاتر البحث

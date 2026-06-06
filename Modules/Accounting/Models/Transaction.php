@@ -35,6 +35,13 @@ class Transaction extends Model
         'amount',
         'balance_before',
         'balance_after',
+        'employee_balance_before',
+        'employee_balance_after',
+        'client_balance_before',
+        'client_balance_after',
+        'source_invoice_id',
+        'source_installment_id',
+        'is_transfer',
         'description',
         'original_transaction_id',
         'branch_id',
@@ -45,7 +52,18 @@ class Transaction extends Model
         static::creating(function ($transaction) {
             $transaction->company_id = $transaction->company_id ?? Auth::user()->active_company_id;
             $transaction->branch_id = $transaction->branch_id ?? config('app.active_branch_id') ?? Auth::user()->branch_id;
+            $transaction->is_transfer = $transaction->is_transfer ?? in_array($transaction->type, ['transfer_out', 'transfer_in', 'reverse_transfer', 'reverse_transfer_out', 'reverse_transfer_in']);
         });
+    }
+
+    public function sourceInvoice(): BelongsTo
+    {
+        return $this->belongsTo(\Modules\Sales\Models\Invoice::class, 'source_invoice_id');
+    }
+
+    public function sourceInstallment(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Installment::class, 'source_installment_id');
     }
 
     public function creator(): BelongsTo

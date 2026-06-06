@@ -164,22 +164,69 @@ class AccountingService
      */
     public function recordPayment(int $companyId, User $staff, ?User $party, float $amount, string $direction, array $options = []): void
     {
-        DB::transaction(function () use ($staff, $party, $amount, $direction, $options) {
+        DB::transaction(function () use ($companyId, $staff, $party, $amount, $direction, $options) {
             $cashBoxId = $options['cash_box_id'] ?? null;
             $partyCashBoxId = $options['party_cash_box_id'] ?? null;
             $description = $options['description'] ?? ($direction === 'in' ? 'قبض نقدي' : 'صرف نقدي');
             // skip_party_balance: يُمرَّر من recordInvoiceCreation عند التعامل مع العميل النقدي
             $skipPartyBalance = $options['skip_party_balance'] ?? false;
 
+            // جلب صناديق النقدية بدون فلاتر الفروع لحساب الأرصدة بدقة
+            $staffBox = \App\Models\CashBox::withoutGlobalScopes()
+                ->where('id', $cashBoxId ?? 0)
+                ->first() ?? \App\Models\CashBox::withoutGlobalScopes()
+                ->where('user_id', $staff->id)
+                ->where('company_id', $companyId)
+                ->where('is_default', true)
+                ->first() ?? \App\Models\CashBox::withoutGlobalScopes()
+                ->where('user_id', $staff->id)
+                ->where('company_id', $companyId)
+                ->where('is_active', true)
+                ->first();
+
+            $partyBox = $party ? (\App\Models\CashBox::withoutGlobalScopes()
+                ->where('id', $partyCashBoxId ?? 0)
+                ->first() ?? \App\Models\CashBox::withoutGlobalScopes()
+                ->where('user_id', $party->id)
+                ->where('company_id', $companyId)
+                ->where('is_default', true)
+                ->first() ?? \App\Models\CashBox::withoutGlobalScopes()
+                ->where('user_id', $party->id)
+                ->where('company_id', $companyId)
+                ->where('is_active', true)
+                ->first()) : null;
+
+            // حساب رصيد الموظف قبل وبعد
+            $staffBalanceBefore = $staffBox ? (float)$staffBox->balance : 0.00;
+            $staffBalanceAfter = $direction === 'in' 
+                ? $staffBalanceBefore + $amount 
+                : $staffBalanceBefore - $amount;
+
+            // حساب رصيد العميل قبل وبعد
+            $partyBalanceBefore = $partyBox ? (float)$partyBox->balance : 0.00;
+            $partyBalanceAfter = $direction === 'in' 
+                ? $partyBalanceBefore - $amount 
+                : $partyBalanceBefore + $amount;
+
+            $logOptions = [
+                'employee_balance_before' => $staffBalanceBefore,
+                'employee_balance_after' => $staffBalanceAfter,
+                'client_balance_before' => $partyBalanceBefore,
+                'client_balance_after' => $partyBalanceAfter,
+                'source_invoice_id' => $options['invoice_id'] ?? null,
+                'source_installment_id' => $options['installment_id'] ?? null,
+                'is_transfer' => false,
+            ];
+
             if ($direction === 'in') {
-                $staff->deposit($amount, $cashBoxId, $description);
+                $staff->deposit($amount, $cashBoxId, $description, true, $logOptions);
                 if ($party && !$skipPartyBalance) {
-                    $party->withdraw($amount, $partyCashBoxId, "دفع مبلغ: {$amount} - {$description}");
+                    $party->withdraw($amount, $partyCashBoxId, "دفع مبلغ: {$amount} - {$description}", true, $logOptions);
                 }
             } else {
-                $staff->withdraw($amount, $cashBoxId, $description);
+                $staff->withdraw($amount, $cashBoxId, $description, true, $logOptions);
                 if ($party && !$skipPartyBalance) {
-                    $party->deposit($amount, $partyCashBoxId, "استلام مبلغ: {$amount} - {$description}");
+                    $party->deposit($amount, $partyCashBoxId, "استلام مبلغ: {$amount} - {$description}", true, $logOptions);
                 }
             }
         });

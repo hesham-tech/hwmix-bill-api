@@ -17,6 +17,9 @@ class LogActivityJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /**
+     * تحديث: تعيين الاتصال بنمط sync ليعمل فوراً دون الحاجة لتشغيل queue worker في الاستضافة المشتركة
+     */
     protected array $data;
 
     /**

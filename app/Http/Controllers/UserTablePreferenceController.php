@@ -33,7 +33,7 @@ class UserTablePreferenceController extends Controller
             'notes', 'reference_number'
         ],
         'users.index' => [
-            'full_name', 'phone', 'roles', 'status', 'actions', 
+            'full_name', 'phone', 'role', 'roles', 'is_active', 'status', 'actions', 
             'name', 'email', 'active', 'created_at', 'updated_at',
             'nickname', 'username', 'position', 'active_branch_balance', 'total_branches_balance'
         ],
@@ -63,7 +63,7 @@ class UserTablePreferenceController extends Controller
             'description', 'period_unit', 'period_value', 'updated_at'
         ],
         'warehouses.index' => [
-            'name', 'location', 'status', 'actions',
+            'name', 'location', 'is_active', 'status', 'actions',
             'manager', 'capacity', 'description', 'created_at', 'updated_at'
         ],
         'dashboard.client' => [
@@ -75,6 +75,54 @@ class UserTablePreferenceController extends Controller
             'salesTrendChart', 'dashboardTasksWidget', 'topProductsChart',
             'quickActions', 'recentInvoices', 'upcomingPayments',
             'upcomingInstallments', 'profitSummaryWidget', 'reportsQuickLinks'
+        ],
+        'branches.index' => [
+            'name', 'phone', 'email', 'address', 'is_default', 'actions'
+        ],
+        'backups.index' => [
+            'filename', 'type', 'size_bytes', 'status', 'completed_at', 'actions'
+        ],
+        'roles.index' => [
+            'name', 'users_count', 'actions'
+        ],
+        'saas_plans.index' => [
+            'name', 'price', 'duration', 'trial_days', 'active_companies_count', 'active_users_count', 'is_active', 'actions'
+        ],
+        'saas_subscriptions.index' => [
+            'company_name', 'owner', 'plan_name', 'subscription_status', 'usage', 'actions'
+        ],
+        'ledger.index' => [
+            'created_at', 'type_label', 'amount', 'balance_after', 'source_id', 'description'
+        ],
+        'financial_transactions.index' => [
+            'type', 'creator', 'user', 'amount', 'reference', 'description', 'created_at'
+        ],
+        'cash_transfers.index' => [
+            'type', 'cash_box', 'customer', 'amount', 'created_at', 'description'
+        ],
+        'cash_boxes.index' => [
+            'name', 'type', 'branch_name', 'balance', 'is_active', 'actions'
+        ],
+        'product_variants.index' => [
+            'product_name', 'sku', 'barcode', 'cost', 'purchase_price', 'retail_price',
+            'wholesale_price', 'profit_margin', 'discount', 'tax', 'quantity', 'min_quantity',
+            'weight', 'dimensions', 'product_slug', 'product_type', 'requires_stock',
+            'sales_count', 'status', 'created_by_name', 'created_at', 'updated_at', 'actions'
+        ],
+        'attributes.index' => [
+            'name', 'values', 'active', 'actions'
+        ],
+        'payment_gateways.index' => [
+            'name', 'driver', 'is_test_mode', 'is_active', 'is_default', 'actions'
+        ],
+        'installment_plans.index' => [
+            'invoice', 'products', 'total_amount', 'start_date', 'installments', 'actions'
+        ],
+        'installments.index' => [
+            'customer', 'installment_number', 'plan', 'due_date', 'amount', 'status', 'actions'
+        ],
+        'installment_payments.index' => [
+            'customer', 'products', 'amount', 'date', 'method', 'notes'
         ],
     ];
 

@@ -24,7 +24,7 @@ trait ManagesBalance
      * @return bool
      * @throws Exception
      */
-    public function withdraw(float $amount, $cashBoxId = null, $description = null, $log = true): bool
+    public function withdraw(float $amount, $cashBoxId = null, $description = null, $log = true, array $options = []): bool
     {
         $amount = floatval($amount);
         $authCompanyId = Auth::user()->active_company_id ?? null;
@@ -35,8 +35,8 @@ trait ManagesBalance
             $cashBox = null;
 
             if ($cashBoxId) {
-                // قيد صارم: لا يمكن استخدام خزنة لا تخص المستخدم
-                $cashBox = CashBox::where('id', $cashBoxId)
+                $cashBox = CashBox::withoutGlobalScopes()
+                    ->where('id', $cashBoxId)
                     ->where('user_id', $this->id)
                     ->first();
             } else {
@@ -44,7 +44,15 @@ trait ManagesBalance
                     DB::rollBack();
                     throw new Exception("لا توجد شركة نشطة للمستخدم الحالي لتحديد الخزنة الافتراضية.");
                 }
-                $cashBox = $this->getDefaultCashBoxForCompany($authCompanyId);
+                $cashBox = CashBox::withoutGlobalScopes()
+                    ->where('user_id', $this->id)
+                    ->where('company_id', $authCompanyId)
+                    ->where('is_default', true)
+                    ->first() ?? CashBox::withoutGlobalScopes()
+                    ->where('user_id', $this->id)
+                    ->where('company_id', $authCompanyId)
+                    ->where('is_active', true)
+                    ->first();
             }
 
             if (!$cashBox) {
@@ -67,6 +75,13 @@ trait ManagesBalance
                     'amount' => $amount,
                     'balance_before' => $balanceBefore,
                     'balance_after' => $balanceAfter,
+                    'employee_balance_before' => $options['employee_balance_before'] ?? null,
+                    'employee_balance_after' => $options['employee_balance_after'] ?? null,
+                    'client_balance_before' => $options['client_balance_before'] ?? null,
+                    'client_balance_after' => $options['client_balance_after'] ?? null,
+                    'source_invoice_id' => $options['source_invoice_id'] ?? null,
+                    'source_installment_id' => $options['source_installment_id'] ?? null,
+                    'is_transfer' => $options['is_transfer'] ?? false,
                     'description' => $description ?? 'سحب نقدي',
                 ]);
             }
@@ -95,7 +110,7 @@ trait ManagesBalance
      * @return bool
      * @throws Exception
      */
-    public function deposit(float $amount, $cashBoxId = null, $description = null, $log = true): bool
+    public function deposit(float $amount, $cashBoxId = null, $description = null, $log = true, array $options = []): bool
     {
         $amount = floatval($amount);
         Transaction::$preventObserverLog = true;
@@ -105,7 +120,8 @@ trait ManagesBalance
         try {
             $cashBox = null;
             if ($cashBoxId) {
-                $cashBox = CashBox::where('id', $cashBoxId)
+                $cashBox = CashBox::withoutGlobalScopes()
+                    ->where('id', $cashBoxId)
                     ->where('user_id', $this->id)
                     ->first();
 
@@ -118,7 +134,15 @@ trait ManagesBalance
                     DB::rollBack();
                     throw new Exception("لا توجد شركة نشطة لتحديد الخزنة الافتراضية للمستخدم {$this->nickname}.");
                 }
-                $cashBox = $this->getDefaultCashBoxForCompany($authCompanyId);
+                $cashBox = CashBox::withoutGlobalScopes()
+                    ->where('user_id', $this->id)
+                    ->where('company_id', $authCompanyId)
+                    ->where('is_default', true)
+                    ->first() ?? CashBox::withoutGlobalScopes()
+                    ->where('user_id', $this->id)
+                    ->where('company_id', $authCompanyId)
+                    ->where('is_active', true)
+                    ->first();
 
                 if (!$cashBox) {
                     DB::rollBack();
@@ -141,6 +165,13 @@ trait ManagesBalance
                     'amount' => $amount,
                     'balance_before' => $balanceBefore,
                     'balance_after' => $balanceAfter,
+                    'employee_balance_before' => $options['employee_balance_before'] ?? null,
+                    'employee_balance_after' => $options['employee_balance_after'] ?? null,
+                    'client_balance_before' => $options['client_balance_before'] ?? null,
+                    'client_balance_after' => $options['client_balance_after'] ?? null,
+                    'source_invoice_id' => $options['source_invoice_id'] ?? null,
+                    'source_installment_id' => $options['source_installment_id'] ?? null,
+                    'is_transfer' => $options['is_transfer'] ?? false,
                     'description' => $description ?? 'إيداع نقدي',
                 ]);
             }

@@ -200,12 +200,22 @@ class TransactionController extends Controller
 
             $query = Transaction::with($this->relations);
 
+            // تجاوز فلاتر الفروع الصامتة لمديري الشركات والسوبر أدمن لعرض سجل العمليات المالي بالكامل
+            if ($authUser->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company'), perm_key('transactions.view_all')])) {
+                $query->withoutGlobalScope('branch_filter');
+            }
+
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 // All
             } elseif ($authUser->hasAnyPermission([perm_key('transactions.view_all'), perm_key('admin.company')])) {
                 $query->where('company_id', $authUser->active_company_id);
             } else {
                 $query->where('user_id', $authUser->id);
+            }
+
+            // تصفية المعاملات حسب حركات التحويل (الدور الأساسي) أو سجلات المعاملات المحدثة
+            if ($request->has('is_transfer')) {
+                $query->where('is_transfer', $request->boolean('is_transfer'));
             }
 
             if ($request->filled('type')) $query->where('type', $request->input('type'));

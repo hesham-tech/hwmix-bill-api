@@ -94,6 +94,23 @@ class TransactionResource extends JsonResource
             'cashbox_name' => $this->getCashboxName(),
             'target_cashbox_name' => $this->getTargetCashboxName(),
             'readable_description' => $this->generateHumanReadableDescription(),
+            'employee_balance_before' => $this->employee_balance_before !== null ? (float) $this->employee_balance_before : null,
+            'employee_balance_after' => $this->employee_balance_after !== null ? (float) $this->employee_balance_after : null,
+            'client_balance_before' => $this->client_balance_before !== null ? (float) $this->client_balance_before : null,
+            'client_balance_after' => $this->client_balance_after !== null ? (float) $this->client_balance_after : null,
+            'source_invoice_id' => $this->source_invoice_id,
+            'source_installment_id' => $this->source_installment_id,
+            'source_invoice' => $this->relationLoaded('sourceInvoice') && $this->sourceInvoice ? [
+                'id' => $this->sourceInvoice->id,
+                'invoice_number' => $this->sourceInvoice->invoice_number,
+            ] : null,
+            'source_installment' => $this->relationLoaded('sourceInstallment') && $this->sourceInstallment ? [
+                'id' => $this->sourceInstallment->id,
+                'due_date' => $this->sourceInstallment->due_date,
+                'installment_plan_id' => $this->sourceInstallment->installment_plan_id,
+            ] : null,
+            'is_transfer' => (bool) $this->is_transfer,
+            'creator' => new \App\Http\Resources\User\UserBasicResource($this->creator),
         ];
     }
 
