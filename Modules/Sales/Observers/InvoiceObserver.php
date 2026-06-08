@@ -36,6 +36,18 @@ class InvoiceObserver
 
     public function updated(Invoice $invoice): void
     {
+        if ($invoice->wasChanged('status') && $invoice->status === 'canceled') {
+            // تسجيل نشاط الإلغاء بشكل صريح في سجل النشاط
+            $invoice->logCanceled($invoice->logLabel());
+
+            // إرسال حدث الإلغاء للأتمتة والإشعارات
+            event(new \App\Events\InvoiceCanceled($invoice));
+
+            $this->dispatchSummaryUpdate($invoice);
+            $this->clearDashboardCache($invoice);
+            return;
+        }
+
         if (
             $invoice->wasChanged('status') &&
             in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])

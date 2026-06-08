@@ -26,6 +26,17 @@ class NotificationWorkflowSubscriber
     }
 
     /**
+     * معالجة حدث إلغاء فاتورة.
+     */
+    public function handleInvoiceCanceled($event)
+    {
+        $invoice = $event->invoice ?? $event;
+        if (!$invoice instanceof Invoice) return;
+
+        $this->triggerWorkflow($invoice->company_id, 'invoice.canceled', $invoice);
+    }
+
+    /**
      * معالجة حدث استلام دفعة.
      */
     public function handlePaymentReceived($event)
@@ -162,6 +173,12 @@ class NotificationWorkflowSubscriber
         $events->listen(
             \App\Events\InvoiceCreated::class,
             [self::class, 'handleInvoiceCreated']
+        );
+
+        // الاستماع لحدث إلغاء الفاتورة
+        $events->listen(
+            \App\Events\InvoiceCanceled::class,
+            [self::class, 'handleInvoiceCanceled']
         );
 
         // الاستماع لحدث استلام الدفعة
