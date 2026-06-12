@@ -47,6 +47,21 @@ class ProductResource extends JsonResource
             'price_range' => $this->relationLoaded('variants') 
                 ? (float) ($this->variants->sortByDesc('id')->first()?->retail_price ?? 0)
                 : (float) (ProductVariant::where('product_id', $this->id)->latest('id')->value('retail_price') ?? 0),
+            'avg_purchase_price' => $this->when(
+                auth()->user()?->hasAnyPermission([perm_key('products.view_purchase_price'), 'admin.super', 'admin.company']),
+                (float) ($this->relationLoaded('variants') 
+                    ? $this->variants->avg('purchase_price') 
+                    : $this->variants()->avg('purchase_price') ?? 0)
+            ),
+            'avg_wholesale_price' => $this->when(
+                auth()->user()?->hasAnyPermission([perm_key('products.view_wholesale_price'), 'admin.super', 'admin.company']),
+                (float) ($this->relationLoaded('variants') 
+                    ? $this->variants->avg('wholesale_price') 
+                    : $this->variants()->avg('wholesale_price') ?? 0)
+            ),
+            'avg_retail_price' => (float) ($this->relationLoaded('variants') 
+                ? $this->variants->avg('retail_price') 
+                : $this->variants()->avg('retail_price') ?? 0),
             'company' => new CompanyResource($this->whenLoaded('company')),
             'installment_plan' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
