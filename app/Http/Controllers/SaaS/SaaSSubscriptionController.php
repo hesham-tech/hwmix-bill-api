@@ -121,8 +121,10 @@ class SaaSSubscriptionController extends Controller
                 // نسمح بالتجديد (تأثير التجديد يتمثل في تمديد فترة الانتهاء) ولكن ننبه المستخدم
             }
 
-            // إذا كان السعر الإجمالي بعد الخصومات أكبر من 0 (يتطلب دفعاً إلكترونياً)
-            if ($totalPrice > 0) {
+            // يتطلب دفعاً فورياً إذا كان السعر الإجمالي أكبر من 0 ولم تكن هناك أيام تجربة للباقة
+            $requiresImmediatePayment = $totalPrice > 0 && (int) $plan->trial_days === 0;
+
+            if ($requiresImmediatePayment) {
                 $masterCompanyId = (int) config('app.master_company_id', 1);
                 $gateway = \Modules\Payment\Models\PaymentGateway::where('company_id', $masterCompanyId)
                     ->where('is_active', true)
@@ -165,8 +167,8 @@ class SaaSSubscriptionController extends Controller
                 ], 'يرجى إتمام عملية الدفع لتفعيل الباقة.');
             }
 
-            // ترقية الباقة مباشرة إذا كانت مجانية بالكامل أو تم خصم 100% منها عبر الكوبون
-            \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId, $months, $couponCode);
+            // ترقية الباقة مباشرة إذا كانت مجانية بالكامل أو تملك فترة تجريبية مجانية
+            \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId, $months, $couponCode, false);
 
             // جلب مصفوفة الاستهلاك الجديدة وإرجاعها
             $matrix = LimitResolver::getSubscriptionUsageMatrix($companyId);
