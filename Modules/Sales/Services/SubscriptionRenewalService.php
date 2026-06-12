@@ -1,5 +1,5 @@
 <?php
-
+// تعليق عربي: خدمة لتجديد الاشتراكات الخدمية وحساب فترات التمديد وتسجيل الحركات النقدية
 namespace Modules\Sales\Services;
 
 use Modules\Sales\Models\Subscription;
@@ -83,29 +83,14 @@ class SubscriptionRenewalService
 
     private function recordCashTransaction(SubscriptionPayment $payment)
     {
-        $cashBox = CashBox::find($payment->cash_box_id);
-        if (!$cashBox) return;
+        $user = \App\Models\User::withoutGlobalScopes()->find($payment->user_id);
+        if (!$user) return;
 
-        Transaction::$preventObserverLog = true;
-        try {
-            $balanceBefore = (float)$cashBox->balance;
-            $balanceAfter = $balanceBefore + (float)$payment->amount;
+        $description = "تجديد اشتراك: " . ($payment->subscription->service->name ?? 'خدمة');
 
-            Transaction::create([
-                'cashbox_id' => $payment->cash_box_id,
-                'user_id' => $payment->user_id,
-                'company_id' => $payment->company_id,
-                'amount' => $payment->amount,
-                'balance_before' => $balanceBefore,
-                'balance_after' => $balanceAfter,
-                'type' => 'deposit',
-                'description' => "تجديد اشتراك: " . ($payment->subscription->service->name ?? 'خدمة') . " - " . ($payment->subscription->user->nickname ?? $payment->subscription->user->full_name ?? 'عميل'),
-                'created_by' => $payment->created_by,
-            ]);
-
-            $cashBox->increment('balance', (float) $payment->amount);
-        } finally {
-            Transaction::$preventObserverLog = false;
-        }
+        $user->deposit((float) $payment->amount, $payment->cash_box_id, $description, true, [
+            'created_by' => $payment->created_by,
+            'company_id' => $payment->company_id,
+        ]);
     }
 }

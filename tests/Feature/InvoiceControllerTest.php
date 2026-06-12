@@ -49,7 +49,7 @@ class InvoiceControllerTest extends TestCase
         $this->user->givePermissionTo('admin.super');
 
         // Setup financial data for the user
-        $cashBoxType = \App\Models\CashBoxType::factory()->create(['name' => 'Cash']);
+        $cashBoxType = \App\Models\CashBoxType::factory()->create(['name' => 'نقدي']);
         $this->cashBox = CashBox::factory()->create([
             'user_id' => $this->user->id,
             'company_id' => $this->company->id,

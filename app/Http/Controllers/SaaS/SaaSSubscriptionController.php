@@ -309,13 +309,14 @@ class SaaSSubscriptionController extends Controller
                 return api_error('الباقة المطلوبة غير متوفرة حالياً أو تم تعطيلها.', [], 422);
             }
 
-            // ترقية أو تغيير باقة الشركة
-            $subscription = \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId);
+            // ترقية أو تغيير باقة الشركة مع تخطي الفترة التجريبية
+            $subscription = \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId, 1, null, true);
 
-            // بما أن التغيير تم يدوياً من السوبر أدمن، يتم تفعيل الاشتراك مباشرة وتجاوز الدفع المعلق
-            if ($subscription->status === 'pending') {
-                $subscription->update(['status' => 'active']);
-            }
+            // تفعيل الاشتراك مباشرة وتجاوز الدفع المعلق وتأكيد إلغاء فترة التجربة
+            $subscription->update([
+                'status' => 'active',
+                'trial_ends_at' => null,
+            ]);
 
             return api_success([], 'تم تغيير باقة اشتراك الشركة بنجاح.');
         } catch (\Throwable $e) {

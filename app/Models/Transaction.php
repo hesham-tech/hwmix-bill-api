@@ -1,5 +1,5 @@
 <?php
-
+// تعليق عربي: موديل يمثل المعاملات والقيود المالية لحساب الأرصدة وتتبع حركات الخزن - تم التحديث لتنشيط الـ IDE
 namespace App\Models;
 
 use Exception;
@@ -36,7 +36,7 @@ class Transaction extends Model
         'source_installment_id',
         'is_transfer',
         'description',
-        'original_transaction_id', // تمت إضافته
+        'original_transaction_id',
         'branch_id',
     ];
 
@@ -69,7 +69,7 @@ class Transaction extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function user(): BelongsTo // Keep as alias if needed, but the standard is customer
+    public function user(): BelongsTo
     {
         return $this->customer();
     }
@@ -174,10 +174,66 @@ class Transaction extends Model
     }
 
     /**
-     * Label for activity logs.
+     * تعليق عربي: تسمية المعاملة وعرض تفاصيلها المحاسبية
      */
     public function logLabel()
     {
-        return "المعاملة #{$this->id} ({$this->type})";
+        $customerName = $this->customer?->nickname ?? $this->customer?->name ?? 'غير محدد';
+        $amountFormatted = number_format($this->amount, 2);
+        
+        $actionWord = match ($this->type) {
+            'deposit' => 'إضافة',
+            'withdraw' => 'سحب',
+            'transfer_out' => 'تحويل صادر بقيمة',
+            'transfer_in' => 'تحويل وارد بقيمة',
+            default => 'حركة مالية بمبلغ'
+        };
+
+        return "{$actionWord} مبلغ {$amountFormatted} ج من رصيد الحساب ({$customerName}) بسبب: {$this->description}";
+    }
+
+    /**
+     * تعليق عربي: تجاوز دالة logCreated لكتابة صيغة مبنية للمجهول واضحة وتلقائية
+     */
+    public function logCreated($text)
+    {
+        $customerName = $this->customer?->nickname ?? $this->customer?->name ?? 'غير محدد';
+        $amountFormatted = number_format($this->amount, 2);
+        
+        if ($this->type === 'deposit') {
+            $description = "تم إضافة مبلغ {$amountFormatted} ج إلى رصيد الحساب ({$customerName}) بسبب: {$this->description}";
+        } elseif ($this->type === 'withdraw') {
+            $description = "تم سحب مبلغ {$amountFormatted} ج من رصيد الحساب ({$customerName}) بسبب: {$this->description}";
+        } elseif ($this->type === 'transfer_out') {
+            $targetName = $this->targetCustomer?->nickname ?? $this->targetCustomer?->name ?? 'غير محدد';
+            $description = "تم تحويل مبلغ {$amountFormatted} ج من رصيد الحساب ({$customerName}) إلى حساب ({$targetName}) بسبب: {$this->description}";
+        } elseif ($this->type === 'transfer_in') {
+            $targetName = $this->targetCustomer?->nickname ?? $this->targetCustomer?->name ?? 'غير محدد';
+            $description = "تم استلام تحويل بمبلغ {$amountFormatted} ج لحساب ({$customerName}) من حساب ({$targetName}) بسبب: {$this->description}";
+        } else {
+            $description = "تم تسجيل حركة مالية بمبلغ {$amountFormatted} ج على حساب ({$customerName}) بسبب: {$this->description}";
+        }
+
+        $this->recordActivity('انشاء', $description, null, $this->getAttributes());
+    }
+
+    /**
+     * تعليق عربي: تجاوز دالة logUpdated عند التعديل
+     */
+    public function logUpdated($text)
+    {
+        $customerName = $this->customer?->nickname ?? $this->customer?->name ?? 'غير محدد';
+        $description = "تم تعديل المعاملة المالية رقم #{$this->id} الخاصة بـ ({$customerName})";
+        $this->recordActivity('تعديل', $description, $this->getOriginal(), $this->getChanges());
+    }
+
+    /**
+     * تعليق عربي: تجاوز دالة logDeleted عند الحذف
+     */
+    public function logDeleted($text)
+    {
+        $customerName = $this->customer?->nickname ?? $this->customer?->name ?? 'غير محدد';
+        $description = "تم حذف المعاملة المالية رقم #{$this->id} الخاصة بـ ({$customerName})";
+        $this->recordActivity('حذف', $description, $this->getAttributes(), null);
     }
 }

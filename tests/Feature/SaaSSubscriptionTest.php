@@ -340,5 +340,61 @@ class SaaSSubscriptionTest extends TestCase
             'price' => 500.00
         ]);
     }
+
+    /** @test */
+    public function test_change_plan_by_super_admin_bypasses_trial()
+    {
+        // 1. إنشاء شركة جديدة
+        $payload = [
+            'company_name' => 'شركة التجربة والترقية',
+            'full_name' => 'كامل التجربة',
+            'phone' => '01099999999',
+            'password' => 'password123',
+        ];
+        $this->postJson('/api/v1/register/company', $payload);
+        $company = Company::where('name', 'شركة التجربة والترقية')->first();
+
+        // 2. إنشاء باقة جديدة تحتوي على أيام تجريبية (مثلاً 15 يوم)
+        $masterCompanyId = (int) config('app.master_company_id', 1);
+        $planWithTrial = Plan::create([
+            'name' => 'باقة مع فترة تجربة',
+            'code' => 'plan_with_trial',
+            'price' => 150.00,
+            'currency' => 'EGP',
+            'duration' => 1,
+            'duration_unit' => 'months',
+            'trial_days' => 15, // الباقة تمتلك 15 يوم تجربة مجانية
+            'is_active' => true,
+            'company_id' => $masterCompanyId,
+            'features' => [],
+            'max_users' => 5,
+        ]);
+
+        // 3. إنشاء مستخدم سوبر أدمن
+        $superAdmin = User::create([
+            'phone' => '01088888888',
+            'full_name' => 'سوبر تجربة',
+            'username' => 'superadmin_trial_test',
+            'password' => bcrypt('password123'),
+        ]);
+        $permission = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'admin.super', 'guard_name' => 'web']);
+        $superAdmin->givePermissionTo($permission);
+
+        // 4. تغيير باقة الشركة بواسطة السوبر أدمن
+        $this->actingAs($superAdmin);
+        $response = $this->postJson('/api/v1/saas/companies-subscriptions/change-plan', [
+            'company_id' => $company->id,
+            'plan_id' => $planWithTrial->id
+        ]);
+        $response->assertStatus(200);
+
+        // 5. التحقق من أن الاشتراك تفعل مباشرة وتخطى الفترة التجريبية (trial_ends_at = null وحالته active)
+        $this->assertDatabaseHas('company_subscriptions', [
+            'company_id' => $company->id,
+            'plan_id' => $planWithTrial->id,
+            'status' => 'active', // يجب أن تكون active مباشرة وليست trial
+            'trial_ends_at' => null, // يجب إلغاء تاريخ انتهاء التجربة
+        ]);
+    }
 }
 

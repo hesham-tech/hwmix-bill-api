@@ -1,5 +1,5 @@
 <?php
-
+// تعليق عربي: خدمة تجديد الاشتراكات العامة وإدارة فترات الصلاحية وتسجيل الأرصدة
 namespace App\Services;
 
 use App\Models\Subscription;
@@ -25,22 +25,17 @@ class SubscriptionRenewalService
 
             $pricePerPeriod = $subscription->price;
             if ($pricePerPeriod <= 0) {
-                // If price is 0, we just renew for one period if amount is 0, 
-                // but usually price should be defined in the subscription or service.
                 $pricePerPeriod = $subscription->service->default_price ?? 0;
             }
 
             $currentBalance = $subscription->partial_payment;
             $totalAvailable = $amount + $currentBalance;
 
-            // Calculate how many periods can be renewed
-            // For now, let's assume 1 period per pricePerPeriod
-            // We can make this more complex later if needed
             $periodsToRenew = 0;
             if ($pricePerPeriod > 0) {
                 $periodsToRenew = floor($totalAvailable / $pricePerPeriod);
             } else {
-                $periodsToRenew = 1; // Default to 1 if free?
+                $periodsToRenew = 1;
             }
 
             $newBalance = $totalAvailable;
@@ -49,11 +44,9 @@ class SubscriptionRenewalService
                 $cost = $periodsToRenew * $pricePerPeriod;
                 $newBalance = $totalAvailable - $cost;
 
-                // Update expiry date
                 $currentExpiry = $subscription->ends_at ?: $subscription->next_billing_date;
                 $startDate = Carbon::now();
 
-                // If not expired yet, extend from current expiry
                 if ($currentExpiry && Carbon::parse($currentExpiry)->isFuture()) {
                     $startDate = Carbon::parse($currentExpiry);
                 }
@@ -71,7 +64,6 @@ class SubscriptionRenewalService
             $subscription->partial_payment = $newBalance;
             $subscription->save();
 
-            // Record Payment
             $payment = SubscriptionPayment::create([
                 'subscription_id' => $subscription->id,
                 'company_id' => $subscription->company_id,
@@ -86,7 +78,6 @@ class SubscriptionRenewalService
                 'notes' => $notes,
             ]);
 
-            // If cash box is provided, create a transaction
             if ($cashBoxId && $amount > 0) {
                 $this->recordCashTransaction($payment);
             }
@@ -117,32 +108,14 @@ class SubscriptionRenewalService
 
     private function recordCashTransaction(SubscriptionPayment $payment)
     {
-        $cashBox = CashBox::find($payment->cash_box_id);
-        if (!$cashBox)
-            return;
+        $user = \App\Models\User::withoutGlobalScopes()->find($payment->user_id);
+        if (!$user) return;
 
-        Transaction::$preventObserverLog = true;
-        try {
-            $balanceBefore = (float)$cashBox->balance;
-            $balanceAfter = $balanceBefore + (float)$payment->amount;
-
-            // Create transaction record
-            Transaction::create([
-                'cashbox_id' => $payment->cash_box_id,
-                'user_id' => $payment->user_id,
-                'company_id' => $payment->company_id,
-                'amount' => $payment->amount,
-                'balance_before' => $balanceBefore,
-                'balance_after' => $balanceAfter,
-                'type' => 'deposit',
-                'description' => "تجديد اشتراك: " . ($payment->subscription->service->name ?? 'خدمة') . " - " . ($payment->subscription->user->nickname ?? $payment->subscription->user->full_name ?? 'عميل'),
-                'created_by' => $payment->created_by,
-            ]);
-
-            // Update cash box balance
-            $cashBox->increment('balance', (float) $payment->amount);
-        } finally {
-            Transaction::$preventObserverLog = false;
-        }
+        $description = "تجديد اشتراك: " . ($payment->subscription->service->name ?? 'خدمة');
+        
+        $user->deposit((float) $payment->amount, $payment->cash_box_id, $description, true, [
+            'created_by' => $payment->created_by,
+            'company_id' => $payment->company_id,
+        ]);
     }
 }

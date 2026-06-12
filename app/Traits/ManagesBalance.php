@@ -28,6 +28,7 @@ trait ManagesBalance
     {
         $amount = floatval($amount);
         $authCompanyId = Auth::user()->active_company_id ?? null;
+        $companyId = $options['company_id'] ?? $authCompanyId;
 
         Transaction::$preventObserverLog = true;
         DB::beginTransaction();
@@ -40,24 +41,24 @@ trait ManagesBalance
                     ->where('user_id', $this->id)
                     ->first();
             } else {
-                if (is_null($authCompanyId)) {
+                if (is_null($companyId)) {
                     DB::rollBack();
-                    throw new Exception("لا توجد شركة نشطة للمستخدم الحالي لتحديد الخزنة الافتراضية.");
+                    throw new Exception("لا توجد شركة نشطة لتحديد الخزنة الافتراضية للمستخدم: {$this->nickname}");
                 }
                 $cashBox = CashBox::withoutGlobalScopes()
                     ->where('user_id', $this->id)
-                    ->where('company_id', $authCompanyId)
+                    ->where('company_id', $companyId)
                     ->where('is_default', true)
                     ->first() ?? CashBox::withoutGlobalScopes()
                     ->where('user_id', $this->id)
-                    ->where('company_id', $authCompanyId)
+                    ->where('company_id', $companyId)
                     ->where('is_active', true)
                     ->first();
             }
 
             if (!$cashBox) {
                 DB::rollBack();
-                throw new Exception("لم يتم العثور على خزنة مناسبة للمستخدم : {$this->nickname}");
+                throw new Exception("لم يتم العثور على خزنة مناسبة للمستخدم: {$this->nickname}");
             }
 
             $balanceBefore = $cashBox->balance;
@@ -69,7 +70,7 @@ trait ManagesBalance
                 Transaction::create([
                     'user_id' => $this->id,
                     'cashbox_id' => $cashBox->id,
-                    'created_by' => Auth::id() ?? $this->id,
+                    'created_by' => $options['created_by'] ?? Auth::id() ?? $this->id,
                     'company_id' => $cashBox->company_id,
                     'type' => 'withdraw',
                     'amount' => $amount,
@@ -116,6 +117,7 @@ trait ManagesBalance
         Transaction::$preventObserverLog = true;
         DB::beginTransaction();
         $authCompanyId = Auth::user()->active_company_id ?? null;
+        $companyId = $options['company_id'] ?? $authCompanyId;
 
         try {
             $cashBox = null;
@@ -130,17 +132,17 @@ trait ManagesBalance
                     throw new Exception("معرف الخزنة {$cashBoxId} غير صالح أو لا ينتمي للمستخدم {$this->nickname}.");
                 }
             } else {
-                if (is_null($authCompanyId)) {
+                if (is_null($companyId)) {
                     DB::rollBack();
                     throw new Exception("لا توجد شركة نشطة لتحديد الخزنة الافتراضية للمستخدم {$this->nickname}.");
                 }
                 $cashBox = CashBox::withoutGlobalScopes()
                     ->where('user_id', $this->id)
-                    ->where('company_id', $authCompanyId)
+                    ->where('company_id', $companyId)
                     ->where('is_default', true)
                     ->first() ?? CashBox::withoutGlobalScopes()
                     ->where('user_id', $this->id)
-                    ->where('company_id', $authCompanyId)
+                    ->where('company_id', $companyId)
                     ->where('is_active', true)
                     ->first();
 
@@ -159,7 +161,7 @@ trait ManagesBalance
                 Transaction::create([
                     'user_id' => $this->id,
                     'cashbox_id' => $cashBox->id,
-                    'created_by' => Auth::id() ?? $this->id,
+                    'created_by' => $options['created_by'] ?? Auth::id() ?? $this->id,
                     'company_id' => $cashBox->company_id,
                     'type' => 'deposit',
                     'amount' => $amount,

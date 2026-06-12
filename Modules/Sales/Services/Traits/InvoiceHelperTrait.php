@@ -290,6 +290,12 @@ trait InvoiceHelperTrait
 
                 $remaining = $item->quantity;
                 $itemWarehouseId = $item->warehouse_id ?? $invoice->warehouse_id;
+                if (is_null($itemWarehouseId) && $invoice->company_id) {
+                    $itemWarehouseId = \Modules\Inventory\Models\Warehouse::where('company_id', $invoice->company_id)
+                        ->where('is_default', true)
+                        ->value('id') 
+                        ?? \Modules\Inventory\Models\Warehouse::where('company_id', $invoice->company_id)->value('id');
+                }
 
                 $stock = $variant->stocks()
                     ->where('status', 'available')
@@ -327,6 +333,13 @@ trait InvoiceHelperTrait
 
             foreach ($items as $item) {
                 $itemWarehouseId = $item['warehouse_id'] ?? $warehouseId;
+                if (is_null($itemWarehouseId) && $companyId) {
+                    $itemWarehouseId = \Modules\Inventory\Models\Warehouse::where('company_id', $companyId)
+                        ->where('is_default', true)
+                        ->value('id') 
+                        ?? \Modules\Inventory\Models\Warehouse::where('company_id', $companyId)->value('id');
+                }
+
                 $variant = ProductVariant::find($item['variant_id'] ?? null);
                 if (!$variant) continue;
                 if (!$variant->product?->requiresStock()) continue;

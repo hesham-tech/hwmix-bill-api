@@ -14,7 +14,7 @@ class SubscriptionService
     /**
      * تفعيل واشتراك باقة جديدة لشركة مع خيار تحديد الأشهر والكوبون.
      */
-    public static function initializeSubscription(int $companyId, int $planId, int $months = 1, ?string $couponCode = null): CompanySubscription
+    public static function initializeSubscription(int $companyId, int $planId, int $months = 1, ?string $couponCode = null, bool $skipTrial = false): CompanySubscription
     {
         $plan = Plan::findOrFail($planId);
         
@@ -23,7 +23,7 @@ class SubscriptionService
         $totalPrice = $pricing['total_price'] ?: 0.00;
 
         $startsAt = Carbon::now();
-        $trialDays = $plan->trial_days ?: 0;
+        $trialDays = $skipTrial ? 0 : ($plan->trial_days ?: 0);
         $trialEndsAt = $trialDays > 0 ? Carbon::now()->addDays($trialDays) : null;
         $status = $trialDays > 0 ? 'trial' : ($totalPrice > 0 ? 'pending' : 'active');
         
@@ -71,10 +71,10 @@ class SubscriptionService
     /**
      * ترقية الباقة لشركة حالية مع تحديد الأشهر والكوبون.
      */
-    public static function upgradePlan(int $companyId, int $newPlanId, int $months = 1, ?string $couponCode = null): CompanySubscription
+    public static function upgradePlan(int $companyId, int $newPlanId, int $months = 1, ?string $couponCode = null, bool $skipTrial = true): CompanySubscription
     {
-        // نقوم بإنشاء اشتراك جديد بالباقة الجديدة تلقائياً
-        return self::initializeSubscription($companyId, $newPlanId, $months, $couponCode);
+        // نقوم بإنشاء اشتراك جديد بالباقة الجديدة تلقائياً مع خيار تخطي التجربة
+        return self::initializeSubscription($companyId, $newPlanId, $months, $couponCode, $skipTrial);
     }
 
     /**
