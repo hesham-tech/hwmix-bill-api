@@ -232,7 +232,7 @@ class TransactionController extends Controller
             $perPage = max(1, $request->get('per_page', 10));
             $transactions = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-            return api_success($transactions, 'تم استرداد المعاملات بنجاح.');
+            return api_success(TransactionResource::collection($transactions), 'تم استرداد المعاملات بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }
