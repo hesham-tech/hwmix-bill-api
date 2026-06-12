@@ -148,10 +148,12 @@ class CashBoxControllerTest extends TestCase
 
         $this->assertDatabaseHas('transactions', [
             'cashbox_id' => $sourceBox->id,
-            'amount' => -500
+            'type' => 'transfer_out',
+            'amount' => 500
         ]);
         $this->assertDatabaseHas('transactions', [
             'cashbox_id' => $targetBox->id,
+            'type' => 'transfer_in',
             'amount' => 500
         ]);
     }
@@ -204,5 +206,142 @@ class CashBoxControllerTest extends TestCase
 
         $response = $this->deleteJson("/api/v1/cash-boxes/{$otherBox->id}");
         $response->assertStatus(404);
+    }
+
+    public function test_admin_cannot_see_other_boxes_by_default()
+    {
+        $this->actingAs($this->admin);
+
+        // My box
+        $myBox = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'user_id' => $this->admin->id
+        ]);
+
+        // Other user's box
+        $otherUser = User::factory()->create(['company_id' => $this->company->id]);
+        $otherBox = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'user_id' => $otherUser->id
+        ]);
+
+        $response = $this->getJson('/api/v1/cash-boxes');
+        $response->assertStatus(200);
+
+        $boxIds = collect($response->json('data'))->pluck('id');
+        $this->assertTrue($boxIds->contains($myBox->id));
+        $this->assertFalse($boxIds->contains($otherBox->id));
+    }
+
+    public function test_admin_can_see_all_boxes_with_parameter()
+    {
+        $this->actingAs($this->admin);
+
+        // My box
+        $myBox = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'user_id' => $this->admin->id
+        ]);
+
+        // Other user's box
+        $otherUser = User::factory()->create(['company_id' => $this->company->id]);
+        $otherBox = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'user_id' => $otherUser->id
+        ]);
+
+        $response = $this->getJson('/api/v1/cash-boxes?all_company_boxes=true');
+        $response->assertStatus(200);
+
+        $boxIds = collect($response->json('data'))->pluck('id');
+        $this->assertTrue($boxIds->contains($myBox->id));
+        $this->assertTrue($boxIds->contains($otherBox->id));
+    }
+
+    public function test_regular_user_cannot_see_all_boxes_even_with_parameter()
+    {
+        $branch = \Modules\Companies\Models\Branch::create([
+            'name' => 'Branch 1',
+            'company_id' => $this->company->id,
+            'is_default' => true,
+            'email' => 'branch1@test.com',
+            'created_by' => $this->admin->id
+        ]);
+
+        $regularUser = User::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $branch->id
+        ]);
+        $this->actingAs($regularUser);
+
+        // My box
+        $myBox = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $branch->id,
+            'user_id' => $regularUser->id
+        ]);
+
+        // Other user's box
+        $otherUser = User::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $branch->id
+        ]);
+        $otherBox = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $branch->id,
+            'user_id' => $otherUser->id
+        ]);
+
+        $response = $this->getJson('/api/v1/cash-boxes?all_company_boxes=true');
+        $response->assertStatus(200);
+
+        $boxIds = collect($response->json('data'))->pluck('id');
+        $this->assertTrue($boxIds->contains($myBox->id));
+        $this->assertFalse($boxIds->contains($otherBox->id));
+    }
+
+    public function test_can_create_multiple_default_boxes_across_branches()
+    {
+        $this->actingAs($this->admin);
+
+        $branch1 = \Modules\Companies\Models\Branch::create([
+            'name' => 'Branch 1',
+            'company_id' => $this->company->id,
+            'is_default' => true,
+            'email' => 'b1@test.com',
+            'created_by' => $this->admin->id
+        ]);
+        $branch2 = \Modules\Companies\Models\Branch::create([
+            'name' => 'Branch 2',
+            'company_id' => $this->company->id,
+            'is_default' => false,
+            'email' => 'b2@test.com',
+            'created_by' => $this->admin->id
+        ]);
+
+        // Box 1 in Branch 1 as default
+        $box1 = CashBox::create([
+            'name' => 'Box Branch 1',
+            'cash_box_type_id' => $this->boxType->id,
+            'company_id' => $this->company->id,
+            'branch_id' => $branch1->id,
+            'user_id' => $this->admin->id,
+            'is_default' => true,
+            'created_by' => $this->admin->id
+        ]);
+
+        // Box 2 in Branch 2 as default (different branch) should succeed now
+        $box2 = CashBox::create([
+            'name' => 'Box Branch 2',
+            'cash_box_type_id' => $this->boxType->id,
+            'company_id' => $this->company->id,
+            'branch_id' => $branch2->id,
+            'user_id' => $this->admin->id,
+            'is_default' => true,
+            'created_by' => $this->admin->id
+        ]);
+
+        $this->assertTrue((bool)$box1->fresh()->is_default);
+        $this->assertTrue((bool)$box2->fresh()->is_default);
     }
 }

@@ -42,8 +42,17 @@ class CashBoxController extends Controller
 
             $cashBoxQuery = CashBox::query()->with($this->relations);
             
-            // تطبيق منطق الصلاحيات: كل مستخدم يرى صناديقه فقط بناءً على طلب العميل
-            $cashBoxQuery->where('user_id', $authUser->id);
+            // تطبيق منطق الصلاحيات: 
+            // 1. افتراضياً: يرى كل مستخدم (حتى السوبر أدمن) صناديقه الخاصة فقط لتفادي الأخطاء.
+            // 2. اختيارياً: إذا تم إرسال المعامل all_company_boxes وكان المستخدم يملك صلاحيات إدارية؛ يتم جلب كل صناديق الشركة.
+            $showAllBoxes = $request->boolean('all_company_boxes') && 
+                ($authUser->hasPermissionTo(perm_key('admin.super')) || 
+                 $authUser->hasPermissionTo(perm_key('admin.company')) || 
+                 $authUser->hasPermissionTo(perm_key('cash_boxes.view_all')));
+
+            if (!$showAllBoxes) {
+                $cashBoxQuery->where('user_id', $authUser->id);
+            }
 
             if (!empty($request->get('name'))) {
                 $cashBoxQuery->where('name', 'like', '%' . $request->get('name') . '%');
@@ -107,6 +116,19 @@ class CashBoxController extends Controller
                 }
 
                 $validatedData['created_by'] = $authUser->id;
+
+                // إذا تم تعيين هذه الخزنة كافتراضية، قم بإزالة الصفة عن باقي الخزائن لنفس المستخدم والشركة ونوع الخزنة أولاً لمنع أخطاء القيود الفريدة
+                if (isset($validatedData['is_default']) && $validatedData['is_default']) {
+                    $typeId = $validatedData['cash_box_type_id'] ?? null;
+                    if ($typeId) {
+                        CashBox::where('company_id', $validatedData['company_id'])
+                            ->where('user_id', $validatedData['user_id'])
+                            ->where('cash_box_type_id', $typeId)
+                            ->where('is_default', true)
+                            ->update(['is_default' => false]);
+                    }
+                }
+
                 $cashBox = CashBox::create($validatedData);
                 $cashBox->load($this->relations);
                 DB::commit();
@@ -170,6 +192,22 @@ class CashBoxController extends Controller
             DB::beginTransaction();
             try {
                 $validatedData = $request->validated();
+
+                // إذا تم تعيين هذه الخزنة كافتراضية، قم بإزالة الصفة عن باقي الخزائن لنفس المستخدم والشركة ونوع الخزنة أولاً لمنع أخطاء القيود الفريدة
+                if (isset($validatedData['is_default']) && $validatedData['is_default']) {
+                    $typeId = $validatedData['cash_box_type_id'] ?? $cashBox->cash_box_type_id;
+                    $userId = $validatedData['user_id'] ?? $cashBox->user_id;
+                    $companyId = $validatedData['company_id'] ?? $cashBox->company_id;
+                    if ($typeId) {
+                        CashBox::where('company_id', $companyId)
+                            ->where('user_id', $userId)
+                            ->where('cash_box_type_id', $typeId)
+                            ->where('is_default', true)
+                            ->where('id', '!=', $cashBox->id)
+                            ->update(['is_default' => false]);
+                    }
+                }
+
                 $cashBox->update($validatedData);
                 $cashBox->load($this->relations);
                 DB::commit();

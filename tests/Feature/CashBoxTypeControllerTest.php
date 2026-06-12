@@ -36,7 +36,7 @@ class CashBoxTypeControllerTest extends TestCase
             'company_id' => $this->company->id,
         ]);
 
-        $response = $this->getJson('/api/cashBoxTypes');
+        $response = $this->getJson('/api/v1/cash-box-types');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'total']);
@@ -51,7 +51,7 @@ class CashBoxTypeControllerTest extends TestCase
             'description' => 'Standard safe box type',
         ];
 
-        $response = $this->postJson('/api/cashBoxType', $payload);
+        $response = $this->postJson('/api/v1/cash-box-types', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('cash_box_types', ['name' => 'Safe Box']);
@@ -65,7 +65,7 @@ class CashBoxTypeControllerTest extends TestCase
             'company_id' => $this->company->id,
         ]);
 
-        $response = $this->getJson("/api/cashBoxType/{$type->id}");
+        $response = $this->getJson("/api/v1/cash-box-types/{$type->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $type->id);
@@ -84,7 +84,7 @@ class CashBoxTypeControllerTest extends TestCase
             'description' => 'Updated Description',
         ];
 
-        $response = $this->putJson("/api/cashBoxType/{$type->id}", $payload);
+        $response = $this->putJson("/api/v1/cash-box-types/{$type->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('cash_box_types', [
@@ -102,7 +102,7 @@ class CashBoxTypeControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->patchJson("/api/cashBoxType/{$type->id}/toggle");
+        $response = $this->patchJson("/api/v1/cash-box-types/{$type->id}/toggle");
 
         $response->assertStatus(200);
         $this->assertEquals(false, $type->fresh()->is_active);
@@ -116,7 +116,7 @@ class CashBoxTypeControllerTest extends TestCase
             'company_id' => $this->company->id,
         ]);
 
-        $response = $this->deleteJson("/api/cashBoxType/{$type->id}", [
+        $response = $this->deleteJson("/api/v1/cash-box-types/{$type->id}", [
             'item_ids' => [$type->id]
         ]);
 

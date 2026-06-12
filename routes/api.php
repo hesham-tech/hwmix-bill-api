@@ -10,7 +10,6 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\ProfitController;
 use App\Http\Controllers\ArtisanController;
-use App\Http\Controllers\CashBoxController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
