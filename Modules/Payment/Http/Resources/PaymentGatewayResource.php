@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Http\Resources;
 
-// تعليق عربي: مورد بيانات بوابة الدفع لتحويل الكائن إلى استجابة JSON مع إخفاء وتغطية المفاتيح السرية الحساسة.
+//   مورد بيانات بوابة الدفع لتحويل الكائن إلى استجابة JSON مع إخفاء وتغطية المفاتيح السرية الحساسة.
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,7 +13,7 @@ class PaymentGatewayResource extends JsonResource
         // فك تشفير الإعدادات وعرض حقول معينة بشكل مقنع (Masked) للحفاظ على الأمان
         $rawConfig = $this->config;
         $maskedConfig = [];
-        
+
         if (is_array($rawConfig)) {
             foreach ($rawConfig as $key => $val) {
                 try {
@@ -25,7 +25,7 @@ class PaymentGatewayResource extends JsonResource
                 // إخفاء الحقول التي تحتوي على كلمات سر أو رموز سرية
                 if (in_array(strtolower($key), ['secret_key', 'api_key', 'password', 'token', 'private_key'])) {
                     $length = strlen($decrypted);
-                    $maskedConfig[$key] = $length > 8 
+                    $maskedConfig[$key] = $length > 8
                         ? substr($decrypted, 0, 4) . '****************' . substr($decrypted, -4)
                         : '********';
                 } else {

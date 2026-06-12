@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Http\Controllers;
 
-// تعليق عربي: متحكم لإدارة قوالب الإشعارات (إضافة، تعديل، عرض، وحذف) للشركة الحالية أو العامة مع التصفية التلقائية.
+//   متحكم لإدارة قوالب الإشعارات (إضافة، تعديل، عرض، وحذف) للشركة الحالية أو العامة مع التصفية التلقائية.
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -61,7 +61,7 @@ class NotificationTemplateController extends Controller
         try {
             $template = NotificationTemplate::findOrFail($id);
             if ($template->is_global && (!Auth::user() || !Auth::user()->hasPermissionTo(perm_key('admin.super')))) {
-                return api_error('غير مسموح بتعديل السجلات العامة للسيستم.', 403);
+                return api_error('غير مسموح بتعديل السجلات العامة للسيستم.', [], 403);
             }
 
             $data = array_merge($request->validated(), ['id' => $id]);
@@ -80,7 +80,7 @@ class NotificationTemplateController extends Controller
         try {
             $template = NotificationTemplate::findOrFail($id);
             if ($template->is_global && (!Auth::user() || !Auth::user()->hasPermissionTo(perm_key('admin.super')))) {
-                return api_error('غير مسموح بحذف السجلات العامة للسيستم.', 403);
+                return api_error('غير مسموح بحذف السجلات العامة للسيستم.', [], 403);
             }
 
             $template->delete();

@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Services;
 
-// تعليق عربي: خدمة البريد الإلكتروني الديناميكية لبناء Mailer مخصص لكل شركة في وقت التشغيل.
+//   خدمة البريد الإلكتروني الديناميكية لبناء Mailer مخصص لكل شركة في وقت التشغيل.
 
 use Modules\Notification\Models\MailSetting;
 use Illuminate\Support\Facades\Mail;

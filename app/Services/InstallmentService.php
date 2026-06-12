@@ -133,7 +133,7 @@ class InstallmentService
      * @return float إجمالي المبالغ المدفوعة للأقساط الفردية التي تم عكسها.
      * @throws \Throwable
      */
-    public function cancelInstallments(Invoice $invoice): float
+    public function cancelInstallments(\App\Models\Invoice|\Modules\Sales\Models\Invoice $invoice): float
     {
         Log::info('InstallmentService: بدء إلغاء الأقساط للفاتورة رقم: ' . $invoice->id);
         $totalReversedAmount = 0;

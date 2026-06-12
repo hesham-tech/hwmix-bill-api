@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Contracts;
 
-// تعليق عربي: واجهة بوابة الدفع (Strategy Pattern) لتوحيد المعالجة لكل البوابات (Stripe, Paymob).
+//   واجهة بوابة الدفع (Strategy Pattern) لتوحيد المعالجة لكل البوابات (Stripe, Paymob).
 
 use Modules\Payment\Models\PaymentTransaction;
 

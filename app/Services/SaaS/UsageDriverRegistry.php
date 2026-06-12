@@ -5,7 +5,7 @@ namespace App\Services\SaaS;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-// تعليق عربي: سجل ديناميكي لإدارة وتحميل كلاسات حساب الموارد (Drivers) من قاعدة البيانات مع وجود معالجة تلقائية للحالات الافتراضية.
+//   سجل ديناميكي لإدارة وتحميل كلاسات حساب الموارد (Drivers) من قاعدة البيانات مع وجود معالجة تلقائية للحالات الافتراضية.
 class UsageDriverRegistry
 {
     /**

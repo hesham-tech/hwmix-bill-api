@@ -4,7 +4,7 @@ namespace App\Services\SaaS\Drivers;
 
 use App\Services\SaaS\Contracts\UsageDriverInterface;
 
-// تعليق عربي: كلاس حساب عدد طلبات واستدعاءات واجهات برمجة التطبيقات (API Calls) المستهلكة شهرياً.
+//   كلاس حساب عدد طلبات واستدعاءات واجهات برمجة التطبيقات (API Calls) المستهلكة شهرياً.
 class ApiCallsUsageDriver implements UsageDriverInterface
 {
     /**

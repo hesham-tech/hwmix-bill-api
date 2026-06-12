@@ -4,7 +4,7 @@ namespace App\Http\Requests\SaaS;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-// تعليق عربي: طلب التحقق والتحصيل لمدخلات التحقق من صلاحية كوبونات وأكواد الخصم.
+//   طلب التحقق والتحصيل لمدخلات التحقق من صلاحية كوبونات وأكواد الخصم.
 class ValidateCouponRequest extends FormRequest
 {
     /**

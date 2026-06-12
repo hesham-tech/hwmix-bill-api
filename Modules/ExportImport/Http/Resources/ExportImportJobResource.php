@@ -2,7 +2,7 @@
 
 namespace Modules\ExportImport\Http\Resources;
 
-// تعليق عربي: مورد بيانات لتغليف وعرض تفاصيل مهام التصدير والاستيراد بشكل JSON موحد وآمن.
+//   مورد بيانات لتغليف وعرض تفاصيل مهام التصدير والاستيراد بشكل JSON موحد وآمن.
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -18,8 +18,8 @@ class ExportImportJobResource extends JsonResource
             'status' => $this->status,
             'progress' => $this->progress,
             // توفير رابط التحميل الآمن فقط إذا كانت المهمة مكتملة ومسار الملف موجود
-            'download_url' => ($this->status === 'completed' && $this->file_path) 
-                ? route('export-import.download', ['id' => $this->id]) 
+            'download_url' => ($this->status === 'completed' && $this->file_path)
+                ? route('export-import.download', ['id' => $this->id])
                 : null,
             'errors' => $this->errors,
             'company_id' => $this->company_id,

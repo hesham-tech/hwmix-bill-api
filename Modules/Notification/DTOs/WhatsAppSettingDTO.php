@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\DTOs;
 
-// تعليق عربي: كائن نقل البيانات (DTO) لإعدادات الواتساب لتوحيد نقل البيانات وحمايتها بين المتحكم والأكشن.
+//   كائن نقل البيانات (DTO) لإعدادات الواتساب لتوحيد نقل البيانات وحمايتها بين المتحكم والأكشن.
 
 class WhatsAppSettingDTO
 {
@@ -15,7 +15,8 @@ class WhatsAppSettingDTO
         public bool $is_active = true,
         public bool $is_default = false,
         public bool $is_global = false
-    ) {}
+    ) {
+    }
 
     /**
      * إنشاء DTO من مصفوفة البيانات القادمة من الطلب (Request).

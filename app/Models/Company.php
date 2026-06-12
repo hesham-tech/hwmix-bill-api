@@ -27,7 +27,7 @@ use App\Observers\CompanyObserver;
 
 // #[ScopedBy([CompanyScope::class])]
 /**
- * تعليق عربي: كلاس الشركة للنظام ويمثل المستأجر (Tenant) الأساسي في بيئة الـ Multi-Tenant.
+ *   كلاس الشركة للنظام ويمثل المستأجر (Tenant) الأساسي في بيئة الـ Multi-Tenant.
  */
 #[ObservedBy([CompanyObserver::class])]
 class Company extends Model
@@ -203,7 +203,7 @@ class Company extends Model
      */
     public function getAutoUpdatePurchasePriceAttribute(): bool
     {
-        return (bool)($this->settings['auto_update_purchase_price'] ?? true);
+        return (bool) ($this->settings['auto_update_purchase_price'] ?? true);
     }
 
     /**

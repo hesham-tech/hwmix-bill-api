@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-// تعليق عربي: سيدر لتهيئة الموارد والحدود الأساسية للساس (Usage Metrics) وشرائح الأسعار للباقات والكوبونات للتشغيل والتحقق محلياً.
+//   سيدر لتهيئة الموارد والحدود الأساسية للساس (Usage Metrics) وشرائح الأسعار للباقات والكوبونات للتشغيل والتحقق محلياً.
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;

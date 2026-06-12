@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Http\Controllers;
 
-// تعليق عربي: متحكم لإدارة قائمة حسابات البريد الإلكتروني المتعددة للشركة (إضافة، تعديل، حذف، تفعيل، تعيين افتراضي واختبار اتصال).
+//   متحكم لإدارة قائمة حسابات البريد الإلكتروني المتعددة للشركة (إضافة، تعديل، حذف، تفعيل، تعيين افتراضي واختبار اتصال).
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -63,7 +63,7 @@ class MailSettingController extends Controller
         try {
             $setting = MailSetting::findOrFail($id);
             if ($setting->is_global && (!Auth::user() || !Auth::user()->hasPermissionTo(perm_key('admin.super')))) {
-                return api_error('غير مسموح بتعديل السجلات العامة للسيستم.', 403);
+                return api_error('غير مسموح بتعديل السجلات العامة للسيستم.', [], 403);
             }
 
             $data = array_merge($request->validated(), ['id' => $id]);
@@ -82,7 +82,7 @@ class MailSettingController extends Controller
         try {
             $setting = MailSetting::findOrFail($id);
             if ($setting->is_global && (!Auth::user() || !Auth::user()->hasPermissionTo(perm_key('admin.super')))) {
-                return api_error('غير مسموح بحذف السجلات العامة للسيستم.', 403);
+                return api_error('غير مسموح بحذف السجلات العامة للسيستم.', [], 403);
             }
 
             // نمنع حذف الحساب الافتراضي إذا وجد غيره، لحماية الإرسال بالخلفية
@@ -110,7 +110,7 @@ class MailSettingController extends Controller
         try {
             $setting = MailSetting::findOrFail($id);
             if ($setting->is_global && (!Auth::user() || !Auth::user()->hasPermissionTo(perm_key('admin.super')))) {
-                return api_error('غير مسموح بتعيين حساب سيستم عام كافتراضي مباشرة.', 403);
+                return api_error('غير مسموح بتعيين حساب سيستم عام كافتراضي مباشرة.', [], 403);
             }
 
             $companyId = Auth::user()->active_company_id;
@@ -147,11 +147,15 @@ class MailSettingController extends Controller
             // بناء الموزع الديناميكي واختبار الإرسال
             $mailer = DynamicMailer::getMailer($setting);
 
-            $mailer->html('<h3>تهانينا!</h3><p>هذا البريد تم إرساله تلقائياً لاختبار إعدادات SMTP/Mailgun المحددة لشركتكم على منصة HWNix ERP.</p>', function ($message) use ($request, $setting) {
-                $message->to($request->recipient)
+            $mailer->send(
+                ['html' => new \Illuminate\Support\HtmlString('<h3>تهانينا!</h3><p>هذا البريد تم إرساله تلقائياً لاختبار إعدادات SMTP/Mailgun المحددة لشركتكم على منصة HWNix ERP.</p>')],
+                [],
+                function ($message) use ($request, $setting) {
+                    $message->to($request->recipient)
                         ->subject('بريد تجريبي - اختبار الاتصال منصة HWNix ERP')
                         ->from($setting->mail_from_address, $setting->mail_from_name);
-            });
+                }
+            );
 
             return api_success(null, 'تم إرسال البريد التجريبي بنجاح، يرجى التحقق من صندوق الوارد.');
         } catch (\Throwable $e) {

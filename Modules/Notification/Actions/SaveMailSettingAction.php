@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Actions;
 
-// تعليق عربي: أكشن لحفظ أو تحديث إعدادات البريد الإلكتروني (SMTP/Mailgun) الخاصة بالشركة مع عزل كامل لكل شركة.
+//   أكشن لحفظ أو تحديث إعدادات البريد الإلكتروني (SMTP/Mailgun) الخاصة بالشركة مع عزل كامل لكل شركة.
 
 use Modules\Core\Actions\BaseAction;
 use Modules\Notification\Models\MailSetting;
@@ -16,12 +16,12 @@ class SaveMailSettingAction extends BaseAction
 
         $companyId = Auth::user()->active_company_id;
         $id = $data['id'] ?? null;
-        
-        $isDefault = isset($data['is_default']) ? (bool)$data['is_default'] : false;
+
+        $isDefault = isset($data['is_default']) ? (bool) $data['is_default'] : false;
 
         // التحقق مما إذا كان هذا هو الحساب الوحيد للشركة، لجعله افتراضياً تلقائياً
         $hasOtherConfigs = MailSetting::where('company_id', $companyId)
-            ->when($id, function($q) use ($id) {
+            ->when($id, function ($q) use ($id) {
                 return $q->where('id', '!=', $id);
             })
             ->exists();
@@ -39,13 +39,13 @@ class SaveMailSettingAction extends BaseAction
             'mail_encryption' => $data['mail_encryption'] ?? null,
             'mail_from_address' => $data['mail_from_address'] ?? null,
             'mail_from_name' => $data['mail_from_name'] ?? null,
-            'is_active' => isset($data['is_active']) ? (bool)$data['is_active'] : true,
+            'is_active' => isset($data['is_active']) ? (bool) $data['is_active'] : true,
             'is_default' => $isDefault,
             'company_id' => $companyId,
         ];
 
         if (isset($data['is_global']) && Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
-            $settingData['is_global'] = (bool)$data['is_global'];
+            $settingData['is_global'] = (bool) $data['is_global'];
         }
 
         // نقوم بإضافة وتشفير كلمة السر فقط في حال تمريرها لتجنب الكتابة فوقها بقيمة فارغة

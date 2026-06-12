@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Models;
 
-// تعليق عربي: موديل أتمتة الإشعارات (Workflow) لتخزين تشغيل/تعطيل قواعد الإشعارات المخصصة لكل شركة.
+//   موديل أتمتة الإشعارات (Workflow) لتخزين تشغيل/تعطيل قواعد الإشعارات المخصصة لكل شركة.
 
 use App\Traits\Blameable;
 use App\Traits\FilterableByCompanyOrGlobal;

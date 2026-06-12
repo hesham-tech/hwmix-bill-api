@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Http\Resources;
 
-// تعليق عربي: مورد بيانات قوالب الإشعارات لتحويل الكيان لاستجابة JSON منسقة وآمنة.
+//   مورد بيانات قوالب الإشعارات لتحويل الكيان لاستجابة JSON منسقة وآمنة.
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,7 +17,7 @@ class NotificationTemplateResource extends JsonResource
             'channel' => $this->channel,
             'subject' => $this->subject,
             'body' => $this->body,
-            'is_active' => (bool)$this->is_active,
+            'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -120,7 +120,7 @@ class CompanyUser extends Pivot
 
     /**
      * الحصول على رصيد الفرع النشط (Active Branch Balance)
-     * تعليق عربي: يرجع رصيد الخزنة المرتبطة بالفرع النشط للمستخدم.
+     *   يرجع رصيد الخزنة المرتبطة بالفرع النشط للمستخدم.
      */
     public function getActiveBranchBalanceAttribute(): float
     {
@@ -129,7 +129,7 @@ class CompanyUser extends Pivot
 
     /**
      * الحصول على إجمالي الفروع المنتمي إليها
-     * تعليق عربي: يرجع إجمالي الأرصدة في كل الفروع إذا كانت متعددة.
+     *   يرجع إجمالي الأرصدة في كل الفروع إذا كانت متعددة.
      */
     public function getTotalBranchesBalanceAttribute(): ?float
     {

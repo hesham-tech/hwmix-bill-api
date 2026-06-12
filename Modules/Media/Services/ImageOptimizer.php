@@ -2,7 +2,7 @@
 
 namespace Modules\Media\Services;
 
-// تعليق عربي: خدمة معالجة وتحسين الصور تلقائياً وتحويلها لصيغة WebP لتقليص المساحة وزيادة سرعة النظام.
+//   خدمة معالجة وتحسين الصور تلقائياً وتحويلها لصيغة WebP لتقليص المساحة وزيادة سرعة النظام.
 
 use Illuminate\Http\UploadedFile;
 
@@ -19,7 +19,7 @@ class ImageOptimizer
     public function convertToWebp(UploadedFile $file, int $quality = 80, ?int $maxWidth = 1920): string|false
     {
         $mimeType = $file->getMimeType();
-        
+
         // التحقق من أن الملف صورة مدعومة من مكتبة GD
         if (!in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
             return false;
@@ -60,13 +60,13 @@ class ImageOptimizer
         if ($maxWidth && $width > $maxWidth) {
             $newWidth = $maxWidth;
             $newHeight = intval(($height / $width) * $maxWidth);
-            
+
             $resizedImage = imagecreatetruecolor($newWidth, $newHeight);
-            
+
             // الحفاظ على الشفافية في الصورة الجديدة
             imagealphablending($resizedImage, false);
             imagesavealpha($resizedImage, true);
-            
+
             imagecopyresampled($resizedImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
             imagedestroy($image);
             $image = $resizedImage;
@@ -76,7 +76,7 @@ class ImageOptimizer
         ob_start();
         $success = imagewebp($image, null, $quality);
         $webpBinary = ob_get_clean();
-        
+
         imagedestroy($image);
 
         return $success ? $webpBinary : false;

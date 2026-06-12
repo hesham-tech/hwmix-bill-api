@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Http\Controllers;
 
-// تعليق عربي: متحكم عمليات الدفع الإلكتروني واستقبال تنبيهات الـ Webhooks لتحديث حالة الدفع تلقائياً.
+//   متحكم عمليات الدفع الإلكتروني واستقبال تنبيهات الـ Webhooks لتحديث حالة الدفع تلقائياً.
 
 use App\Http\Controllers\Controller;
 use Modules\Payment\Http\Requests\ProcessPaymentRequest;

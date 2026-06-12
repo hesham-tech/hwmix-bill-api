@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Services\Gateways;
 
-// تعليق عربي: خدمة معالجة الدفع عبر Stripe باستخدام HTTP Client التابع لـ Laravel.
+//   خدمة معالجة الدفع عبر Stripe باستخدام HTTP Client التابع لـ Laravel.
 
 use Modules\Payment\Contracts\PaymentGatewayInterface;
 use Modules\Payment\Models\PaymentTransaction;
@@ -21,7 +21,7 @@ class StripeGateway implements PaymentGatewayInterface
     public function purchase(PaymentTransaction $transaction, array $options = []): array
     {
         $apiKey = $this->config['secret_key'] ?? '';
-        
+
         try {
             // إنشاء Checkout Session على Stripe
             $response = Http::withToken($apiKey)
@@ -106,7 +106,7 @@ class StripeGateway implements PaymentGatewayInterface
     public function refund(PaymentTransaction $transaction, float $amount): array
     {
         $apiKey = $this->config['secret_key'] ?? '';
-        
+
         try {
             $response = Http::withToken($apiKey)
                 ->asForm()

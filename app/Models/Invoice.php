@@ -15,7 +15,7 @@ use App\Observers\InvoiceObserver;
 use App\Traits\SmartSearch;
 
 /**
- * تعليق عربي: كلاس يمثل الفواتير بمختلف أنواعها (بيع، شراء، مرتجعات) داخل النظام.
+ *   كلاس يمثل الفواتير بمختلف أنواعها (بيع، شراء، مرتجعات) داخل النظام.
  */
 #[ObservedBy([InvoiceObserver::class])]
 class Invoice extends Model
@@ -82,14 +82,18 @@ class Invoice extends Model
     protected static function booted()
     {
         static::creating(function ($invoice) {
-            if (empty($invoice->invoice_number)) {
-                $type = InvoiceType::find($invoice->invoice_type_id);
-                $companyId = Auth::user()->active_company_id;
+            $type = InvoiceType::find($invoice->invoice_type_id);
+            if ($type) {
+                $invoice->invoice_type_code = $invoice->invoice_type_code ?? $type->code;
+            }
+
+            if (empty($invoice->invoice_number) && $type) {
+                $companyId = Auth::user() ? Auth::user()->active_company_id : ($invoice->company_id ?? null);
                 $invoice->invoice_number = self::generateInvoiceNumber($type->code, $companyId);
             }
 
-            $invoice->company_id = $invoice->company_id ?? Auth::user()->active_company_id;
-            $invoice->branch_id = $invoice->branch_id ?? config('app.active_branch_id') ?? Auth::user()->branch_id;
+            $invoice->company_id = $invoice->company_id ?? (Auth::user() ? Auth::user()->active_company_id : null);
+            $invoice->branch_id = $invoice->branch_id ?? config('app.active_branch_id') ?? (Auth::user() ? Auth::user()->branch_id : null);
             $invoice->created_by = $invoice->created_by ?? Auth::id();
 
             // تعيين تاريخ الإصدار إذا لم يحدد

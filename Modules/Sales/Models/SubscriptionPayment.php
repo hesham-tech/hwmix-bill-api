@@ -14,7 +14,7 @@ use App\Models\CashBox;
 use App\Traits\LogsActivity;
 
 /**
- * تعليق عربي: كلاس يمثل سجلات تحصيل وإثبات دفع مبالغ الاشتراكات للعملاء داخل موديول المبيعات.
+ *   كلاس يمثل سجلات تحصيل وإثبات دفع مبالغ الاشتراكات للعملاء داخل موديول المبيعات.
  */
 class SubscriptionPayment extends Model
 {

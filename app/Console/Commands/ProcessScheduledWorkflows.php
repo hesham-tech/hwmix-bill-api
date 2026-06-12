@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-// تعليق عربي: أمر مجدول لتشغيل وفحص قواعد الإشعارات المجدولة (مثل فواتير الاستحقاق والمستحقات المتأخرة) لجميع الشركات وإرسال التنبيهات.
+//   أمر مجدول لتشغيل وفحص قواعد الإشعارات المجدولة (مثل فواتير الاستحقاق والمستحقات المتأخرة) لجميع الشركات وإرسال التنبيهات.
 
 use Illuminate\Console\Command;
 use Modules\Notification\Models\NotificationWorkflow;
@@ -39,7 +39,8 @@ class ProcessScheduledWorkflows extends Command
 
         foreach ($workflows as $workflow) {
             foreach ($workflow->steps as $step) {
-                if (!$step->is_active || !$step->template) continue;
+                if (!$step->is_active || !$step->template)
+                    continue;
 
                 // حساب تاريخ الاستحقاق المستهدف للفحص بناءً على الإزاحة delay_days
                 // إذا كان التأخير -3 أيام (قبل الاستحقاق)، فالتاريخ المستهدف هو اليوم + 3

@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Models;
 
-// تعليق عربي: موديل سجل التنبيهات لمراقبة التنبيهات المرسلة وحالتها.
+//   موديل سجل التنبيهات لمراقبة التنبيهات المرسلة وحالتها.
 
 use App\Traits\Blameable;
 use App\Traits\FilterableByCompany;

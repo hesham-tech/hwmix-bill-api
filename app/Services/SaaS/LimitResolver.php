@@ -2,7 +2,7 @@
 
 namespace App\Services\SaaS;
 
-// تعليق عربي: كلاس المحاذاة والتوافق الخلفي (Backward Compatibility) لتوجيه الاستعلامات إلى SaaSEngine الجديد.
+//   كلاس المحاذاة والتوافق الخلفي (Backward Compatibility) لتوجيه الاستعلامات إلى SaaSEngine الجديد.
 class LimitResolver
 {
     /**

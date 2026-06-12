@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Http\Resources;
 
-// تعليق عربي: مورد بيانات إعدادات الواتساب لتحويل النموذج إلى استجابة JSON آمنة مع إخفاء رمز الوصول الحساس (Access Token).
+//   مورد بيانات إعدادات الواتساب لتحويل النموذج إلى استجابة JSON آمنة مع إخفاء رمز الوصول الحساس (Access Token).
 
 use Illuminate\Http\Resources\Json\JsonResource;
 

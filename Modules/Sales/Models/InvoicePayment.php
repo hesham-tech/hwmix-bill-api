@@ -17,7 +17,7 @@ use App\Models\User;
 use App\Traits\LogsActivity;
 
 /**
- * تعليق عربي: كلاس يمثل سجلات سداد الفواتير والمدفوعات المالية المرتبطة بالفاتورة داخل موديول المبيعات.
+ *   كلاس يمثل سجلات سداد الفواتير والمدفوعات المالية المرتبطة بالفاتورة داخل موديول المبيعات.
  */
 #[ObservedBy([PaymentObserver::class])]
 class InvoicePayment extends Model

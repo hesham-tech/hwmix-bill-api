@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Http\Requests;
 
-// تعليق عربي: طلب التحقق من صحة المدخلات لمعالجة دفع فاتورة أو معاملة مالية.
+//   طلب التحقق من صحة المدخلات لمعالجة دفع فاتورة أو معاملة مالية.
 
 use Illuminate\Foundation\Http\FormRequest;
 

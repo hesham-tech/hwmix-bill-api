@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\SaaS;
 
-// تعليق عربي: متحكم إدارة تفاصيل اشتراكات الشركات المستأجرة بالساس وتفعيل خيار التجديد التلقائي للشركة.
+//   متحكم إدارة تفاصيل اشتراكات الشركات المستأجرة بالساس وتفعيل خيار التجديد التلقائي للشركة.
 
 use App\Http\Controllers\Controller;
 use App\Models\CompanySubscription;
@@ -26,7 +26,7 @@ class SaaSSubscriptionController extends Controller
             }
 
             $matrix = LimitResolver::getSubscriptionUsageMatrix($companyId);
-            
+
             return api_success($matrix, 'تم جلب تفاصيل الاشتراك بنجاح.');
         } catch (\Throwable $e) {
             return api_exception($e);
@@ -51,7 +51,7 @@ class SaaSSubscriptionController extends Controller
             $subscription = CompanySubscription::where('company_id', $companyId)
                 ->whereIn('status', ['active', 'trial'])
                 ->get()
-                ->filter(function($sub) {
+                ->filter(function ($sub) {
                     return $sub->isActive();
                 })
                 ->first();
@@ -111,7 +111,7 @@ class SaaSSubscriptionController extends Controller
             $currentSub = CompanySubscription::where('company_id', $companyId)
                 ->whereIn('status', ['active', 'trial'])
                 ->get()
-                ->filter(function($sub) {
+                ->filter(function ($sub) {
                     return $sub->isActive();
                 })
                 ->first();
@@ -140,7 +140,7 @@ class SaaSSubscriptionController extends Controller
 
                 // إنشاء معاملة الدفع ورابط الدفع
                 $processPaymentAction = app(\Modules\Payment\Actions\ProcessPaymentAction::class);
-                
+
                 // تحديد روابط النجاح والفشل للعودة للفرونت إند
                 $frontendUrl = $request->input('redirect_url') ?? 'http://localhost:5173/app/my-subscription';
                 $successUrl = $frontendUrl . '?payment_status=success&sub_id=' . $pendingSub->id;
@@ -199,8 +199,8 @@ class SaaSSubscriptionController extends Controller
                 $search = $request->input('search');
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('phone', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
                 });
             }
 
@@ -212,7 +212,7 @@ class SaaSSubscriptionController extends Controller
                 $subscription = CompanySubscription::where('company_id', $company->id)
                     ->whereIn('status', ['active', 'trial'])
                     ->get()
-                    ->filter(function(CompanySubscription $sub) {
+                    ->filter(function (CompanySubscription $sub) {
                         return $sub->isActive();
                     })
                     ->first();

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsActivity;
 
 /**
- * تعليق عربي: كلاس يمثل سجلات تحصيل وإثبات دفع مبالغ الاشتراكات للعملاء.
+ *   كلاس يمثل سجلات تحصيل وإثبات دفع مبالغ الاشتراكات للعملاء.
  */
 class SubscriptionPayment extends Model
 {

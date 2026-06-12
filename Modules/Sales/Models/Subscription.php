@@ -16,7 +16,7 @@ use App\Models\Plan;
 use App\Traits\LogsActivity;
 
 /**
- * تعليق عربي: كلاس يمثل اشتراكات العملاء في الخدمات والخطط المختلفة والتحكم في حالتها داخل موديول المبيعات.
+ *   كلاس يمثل اشتراكات العملاء في الخدمات والخطط المختلفة والتحكم في حالتها داخل موديول المبيعات.
  */
 class Subscription extends Model
 {
@@ -87,7 +87,8 @@ class Subscription extends Model
 
     public function isExpired(): bool
     {
-        if (!$this->next_billing_date) return false;
+        if (!$this->next_billing_date)
+            return false;
         return \Carbon\Carbon::parse($this->next_billing_date)->isPast();
     }
 }

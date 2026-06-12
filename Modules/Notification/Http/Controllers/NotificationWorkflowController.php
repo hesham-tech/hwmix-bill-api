@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Http\Controllers;
 
-// تعليق عربي: متحكم لإدارة قواعد أتمتة الإشعارات والخطوات المجدولة وتشغيلها يدوياً للشركة الحالية أو العامة مع عزل كامل.
+//   متحكم لإدارة قواعد أتمتة الإشعارات والخطوات المجدولة وتشغيلها يدوياً للشركة الحالية أو العامة مع عزل كامل.
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -111,7 +111,8 @@ class NotificationWorkflowController extends Controller
 
             if (in_array($workflow->event_type, ['invoice.due_soon', 'invoice.overdue'])) {
                 foreach ($workflow->steps as $step) {
-                    if (!$step->is_active || !$step->template) continue;
+                    if (!$step->is_active || !$step->template)
+                        continue;
 
                     // حساب تاريخ الاستحقاق المستهدف بناءً على الإزاحة delay_days
                     $targetDate = Carbon::today()->subDays($step->delay_days)->toDateString();

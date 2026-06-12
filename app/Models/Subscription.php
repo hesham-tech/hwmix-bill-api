@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsActivity;
 
 /**
- * تعليق عربي: كلاس يمثل اشتراكات العملاء في الخدمات والخطط المختلفة والتحكم في تجديدها وتواريخ الفواتير.
+ *   كلاس يمثل اشتراكات العملاء في الخدمات والخطط المختلفة والتحكم في تجديدها وتواريخ الفواتير.
  */
 class Subscription extends Model
 {

@@ -19,7 +19,7 @@ class InvoiceCreatedMail extends Mailable implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(Invoice $invoice)
+    public function __construct(\App\Models\Invoice|\Modules\Sales\Models\Invoice $invoice)
     {
         $this->invoice = $invoice;
     }

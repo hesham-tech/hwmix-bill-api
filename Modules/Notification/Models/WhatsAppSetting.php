@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Models;
 
-// تعليق عربي: موديل إعدادات الواتساب لتخزين وحماية تفاصيل الربط بـ Meta Cloud API لكل شركة.
+//   موديل إعدادات الواتساب لتخزين وحماية تفاصيل الربط بـ Meta Cloud API لكل شركة.
 
 use App\Traits\Blameable;
 use App\Traits\FilterableByCompanyOrGlobal;

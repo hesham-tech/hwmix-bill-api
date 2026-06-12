@@ -12,7 +12,7 @@ use App\Observers\PaymentObserver;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * تعليق عربي: كلاس يمثل سجلات سداد الفواتير والمدفوعات المالية المرتبطة بالفاتورة.
+ *   كلاس يمثل سجلات سداد الفواتير والمدفوعات المالية المرتبطة بالفاتورة.
  */
 #[ObservedBy([PaymentObserver::class])]
 class InvoicePayment extends Model

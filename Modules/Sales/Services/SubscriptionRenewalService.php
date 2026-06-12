@@ -1,5 +1,5 @@
 <?php
-// تعليق عربي: خدمة لتجديد الاشتراكات الخدمية وحساب فترات التمديد وتسجيل الحركات النقدية
+//   خدمة لتجديد الاشتراكات الخدمية وحساب فترات التمديد وتسجيل الحركات النقدية
 namespace Modules\Sales\Services;
 
 use Modules\Sales\Models\Subscription;
@@ -60,7 +60,8 @@ class SubscriptionRenewalService
                 'notes' => $notes,
             ]);
 
-            if ($cashBoxId && $amount > 0) $this->recordCashTransaction($payment);
+            if ($cashBoxId && $amount > 0)
+                $this->recordCashTransaction($payment);
 
             return [
                 'subscription' => $subscription,
@@ -84,7 +85,8 @@ class SubscriptionRenewalService
     private function recordCashTransaction(SubscriptionPayment $payment)
     {
         $user = \App\Models\User::withoutGlobalScopes()->find($payment->user_id);
-        if (!$user) return;
+        if (!$user)
+            return;
 
         $description = "تجديد اشتراك: " . ($payment->subscription->service->name ?? 'خدمة');
 

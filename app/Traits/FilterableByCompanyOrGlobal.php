@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-// تعليق عربي: ترايت مخصص لتصفية وعرض السجلات الخاصة بالشركة بالإضافة للسجلات العامة المشتركة للنظام
+//   ترايت مخصص لتصفية وعرض السجلات الخاصة بالشركة بالإضافة للسجلات العامة المشتركة للنظام
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -22,7 +22,7 @@ trait FilterableByCompanyOrGlobal
                     $table = $builder->getQuery()->from;
                     $builder->where(function (Builder $query) use ($table, $activeCompanyId) {
                         $query->where($table . '.company_id', $activeCompanyId)
-                              ->orWhere($table . '.is_global', true);
+                            ->orWhere($table . '.is_global', true);
                     });
                 } elseif (!$user->hasPermissionTo(perm_key('admin.super'))) {
                     // Non-superadmins without active company see nothing

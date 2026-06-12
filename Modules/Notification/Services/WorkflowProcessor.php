@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Services;
 
-// تعليق عربي: معالج أتمتة الإشعارات للتعامل مع تبديل المتغيرات الديناميكية وإرسال الرسائل عبر البريد والواتساب بشكل معزول لكل شركة.
+//   معالج أتمتة الإشعارات للتعامل مع تبديل المتغيرات الديناميكية وإرسال الرسائل عبر البريد والواتساب بشكل معزول لكل شركة.
 
 use Modules\Notification\Models\NotificationWorkflow;
 use Modules\Notification\Models\NotificationWorkflowStep;
@@ -40,7 +40,8 @@ class WorkflowProcessor
     public function executeStep(NotificationWorkflowStep $step, $entity)
     {
         $template = $step->template;
-        if (!$template || !$template->is_active) return;
+        if (!$template || !$template->is_active)
+            return;
 
         $companyId = $step->workflow->company_id;
 
@@ -55,7 +56,7 @@ class WorkflowProcessor
         $hasEmail = \Modules\Notification\Models\MailSetting::withoutGlobalScopes()
             ->where(function ($query) use ($companyId) {
                 $query->where('company_id', $companyId)
-                      ->orWhere('is_global', true);
+                    ->orWhere('is_global', true);
             })
             ->where('is_active', true)
             ->exists();
@@ -63,7 +64,7 @@ class WorkflowProcessor
         $hasWhatsApp = \Modules\Notification\Models\WhatsAppSetting::withoutGlobalScopes()
             ->where(function ($query) use ($companyId) {
                 $query->where('company_id', $companyId)
-                      ->orWhere('is_global', true);
+                    ->orWhere('is_global', true);
             })
             ->where('is_active', true)
             ->exists();
@@ -76,7 +77,7 @@ class WorkflowProcessor
         if (is_string($rawChannel)) {
             // دعم القيم القديمة: 'both', 'email', 'whatsapp'
             $channels = match ($rawChannel) {
-                'both'  => ['email', 'whatsapp'],
+                'both' => ['email', 'whatsapp'],
                 default => [$rawChannel],
             };
         } else {
@@ -164,23 +165,23 @@ class WorkflowProcessor
 
         if ($entity instanceof Invoice) {
             $variables['{invoice_number}'] = $entity->invoice_number;
-            $variables['{invoice_amount}'] = number_format((float)$entity->net_amount, 2);
-            $variables['{remaining_amount}'] = number_format((float)$entity->remaining_amount, 2);
+            $variables['{invoice_amount}'] = number_format((float) $entity->net_amount, 2);
+            $variables['{remaining_amount}'] = number_format((float) $entity->remaining_amount, 2);
             $variables['{due_date}'] = $entity->due_date ? $entity->due_date->toDateString() : '';
             $variables['{invoice_date}'] = $entity->created_at ? $entity->created_at->toDateString() : '';
         }
 
         if ($entity instanceof InvoicePayment) {
-            $variables['{payment_amount}'] = number_format((float)$entity->amount, 2);
+            $variables['{payment_amount}'] = number_format((float) $entity->amount, 2);
             $variables['{invoice_number}'] = $entity->invoice?->invoice_number ?? '';
-            $variables['{remaining_amount}'] = number_format((float)($entity->invoice?->remaining_amount ?? 0), 2);
+            $variables['{remaining_amount}'] = number_format((float) ($entity->invoice?->remaining_amount ?? 0), 2);
             $variables['{payment_date}'] = $entity->created_at ? $entity->created_at->toDateString() : '';
         }
 
         if ($entity instanceof \App\Models\Transaction) {
             $variables['{transaction_id}'] = $entity->id;
             $variables['{transaction_type}'] = $entity->type;
-            $variables['{transaction_amount}'] = number_format((float)$entity->amount, 2);
+            $variables['{transaction_amount}'] = number_format((float) $entity->amount, 2);
             $variables['{transaction_description}'] = $entity->description ?? '';
             $variables['{transaction_date}'] = $entity->created_at ? $entity->created_at->toDateString() : '';
         }
@@ -197,57 +198,57 @@ class WorkflowProcessor
         if ($entity instanceof \Modules\Inventory\Models\Product) {
             $variables['{product_name}'] = $entity->name;
             $variables['{product_sku}'] = $entity->variants()->first()?->sku ?? '';
-            $variables['{product_price}'] = number_format((float)($entity->variants()->first()?->retail_price ?? 0), 2);
+            $variables['{product_price}'] = number_format((float) ($entity->variants()->first()?->retail_price ?? 0), 2);
         }
 
         if ($entity instanceof \Modules\Inventory\Models\Stock) {
             $variables['{product_name}'] = $entity->variant?->product?->name ?? '';
             $variables['{product_sku}'] = $entity->variant?->sku ?? '';
             $variables['{stock_quantity}'] = $entity->quantity;
-            $variables['{product_price}'] = number_format((float)($entity->variant?->retail_price ?? 0), 2);
+            $variables['{product_price}'] = number_format((float) ($entity->variant?->retail_price ?? 0), 2);
         }
 
         if ($entity instanceof \App\Models\CashBox || $entity instanceof \Modules\Accounting\Models\CashBox) {
             $variables['{cashbox_name}'] = $entity->name;
-            $variables['{cashbox_balance}'] = number_format((float)$entity->balance, 2);
+            $variables['{cashbox_balance}'] = number_format((float) $entity->balance, 2);
         }
 
         if ($entity instanceof \App\Models\Installment) {
             $variables['{installment_plan_name}'] = $entity->installmentPlan?->name ?? '';
-            $variables['{installment_amount}'] = number_format((float)$entity->amount, 2);
-            $variables['{installment_remaining_amount}'] = number_format((float)$entity->remaining, 2);
+            $variables['{installment_amount}'] = number_format((float) $entity->amount, 2);
+            $variables['{installment_remaining_amount}'] = number_format((float) $entity->remaining, 2);
             $variables['{installment_number}'] = $entity->installment_number;
             $variables['{installment_due_date}'] = $entity->due_date ? $entity->due_date->toDateString() : '';
             $variables['{installment_paid_at}'] = $entity->paid_at ? $entity->paid_at->toDateString() : '';
             $variables['{installment_status}'] = $entity->status ?? '';
             $variables['{installment_invoice_number}'] = $entity->installmentPlan?->invoice?->invoice_number ?? '';
-            $variables['{installment_plan_total}'] = number_format((float)($entity->installmentPlan?->total_amount ?? 0), 2);
-            $variables['{installment_plan_collected}'] = number_format((float)($entity->installmentPlan?->total_collected ?? 0), 2);
+            $variables['{installment_plan_total}'] = number_format((float) ($entity->installmentPlan?->total_amount ?? 0), 2);
+            $variables['{installment_plan_collected}'] = number_format((float) ($entity->installmentPlan?->total_collected ?? 0), 2);
             $variables['{installment_plan_progress}'] = ($entity->installmentPlan?->payment_progress ?? 0) . '%';
             $variables['{total_installments}'] = $entity->installmentPlan?->number_of_installments ?? 0;
             $variables['{paid_installments}'] = $entity->installmentPlan?->installments()->where('status', 'paid')->count() ?? 0;
             $variables['{remaining_installments}'] = $entity->installmentPlan?->installments()->where('status', '!=', 'paid')->count() ?? 0;
-            $variables['{remaining_total_amount}'] = number_format((float)($entity->installmentPlan?->remaining_amount ?? 0), 2);
+            $variables['{remaining_total_amount}'] = number_format((float) ($entity->installmentPlan?->remaining_amount ?? 0), 2);
         }
 
         if ($entity instanceof \App\Models\InstallmentPlan) {
             $variables['{installment_plan_name}'] = $entity->name;
             $variables['{total_installments}'] = $entity->number_of_installments;
-            $variables['{remaining_total_amount}'] = number_format((float)$entity->remaining_amount, 2);
-            $variables['{installment_amount}'] = number_format((float)$entity->installment_amount, 2);
+            $variables['{remaining_total_amount}'] = number_format((float) $entity->remaining_amount, 2);
+            $variables['{installment_amount}'] = number_format((float) $entity->installment_amount, 2);
             $variables['{installment_start_date}'] = $entity->start_date ? $entity->start_date->toDateString() : '';
         }
 
         if ($entity instanceof \App\Models\InstallmentPayment) {
-            $variables['{installment_payment_amount}'] = number_format((float)$entity->amount_paid, 2);
+            $variables['{installment_payment_amount}'] = number_format((float) $entity->amount_paid, 2);
             $variables['{installment_payment_date}'] = $entity->payment_date ? \Carbon\Carbon::parse($entity->payment_date)->toDateString() : '';
             $variables['{installment_payment_method}'] = $entity->payment_method ?? '';
             $variables['{installment_payment_reference}'] = $entity->reference_number ?? '';
             $variables['{installment_plan_name}'] = $entity->plan?->name ?? '';
             $variables['{installment_invoice_number}'] = $entity->plan?->invoice?->invoice_number ?? '';
-            $variables['{installment_plan_total}'] = number_format((float)($entity->plan?->total_amount ?? 0), 2);
-            $variables['{installment_plan_collected}'] = number_format((float)($entity->plan?->total_collected ?? 0), 2);
-            $variables['{installment_plan_remaining}'] = number_format((float)($entity->plan?->remaining_amount ?? 0), 2);
+            $variables['{installment_plan_total}'] = number_format((float) ($entity->plan?->total_amount ?? 0), 2);
+            $variables['{installment_plan_collected}'] = number_format((float) ($entity->plan?->total_collected ?? 0), 2);
+            $variables['{installment_plan_remaining}'] = number_format((float) ($entity->plan?->remaining_amount ?? 0), 2);
             $variables['{installment_plan_progress}'] = ($entity->plan?->payment_progress ?? 0) . '%';
         }
 

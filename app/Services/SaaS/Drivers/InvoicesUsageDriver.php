@@ -6,7 +6,7 @@ use App\Services\SaaS\Contracts\UsageDriverInterface;
 use App\Models\Invoice;
 use Carbon\Carbon;
 
-// تعليق عربي: كلاس حساب عدد الفواتير الصادرة خلال الشهر الحالي للشركة المشتركة لمتابعة حدود الاستهلاك المتجدد.
+//   كلاس حساب عدد الفواتير الصادرة خلال الشهر الحالي للشركة المشتركة لمتابعة حدود الاستهلاك المتجدد.
 class InvoicesUsageDriver implements UsageDriverInterface
 {
     /**

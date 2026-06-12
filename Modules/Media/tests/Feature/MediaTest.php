@@ -2,7 +2,7 @@
 
 namespace Modules\Media\tests\Feature;
 
-// تعليق عربي: اختبارات التحقق من صحة وأمان رفع الصور وضغطها وإدارة الملفات وعزلها بين الشركات.
+//   اختبارات التحقق من صحة وأمان رفع الصور وضغطها وإدارة الملفات وعزلها بين الشركات.
 
 use App\Models\User;
 use App\Models\Company;
@@ -58,11 +58,11 @@ class MediaTest extends TestCase
 
         $mediaFile = MediaFile::where('company_id', $this->company->id)->first();
         $this->assertNotNull($mediaFile);
-        
+
         // التحقق من تحويل الملف إلى WebP وتغيير اسمه ونوعه
         $this->assertEquals('image/webp', $mediaFile->mime_type);
         $this->assertStringEndsWith('.webp', $mediaFile->filename);
-        
+
         Storage::disk('public')->assertExists($mediaFile->file_path);
     }
 
@@ -85,11 +85,11 @@ class MediaTest extends TestCase
 
         $mediaFile = MediaFile::where('company_id', $this->company->id)->first();
         $this->assertNotNull($mediaFile);
-        
+
         // التحقق من بقاء التنسيق الأصلي للملف
         $this->assertEquals('application/pdf', $mediaFile->mime_type);
         $this->assertEquals('report.pdf', $mediaFile->original_name);
-        
+
         Storage::disk('public')->assertExists($mediaFile->file_path);
     }
 

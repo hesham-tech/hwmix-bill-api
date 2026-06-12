@@ -2,7 +2,7 @@
 
 namespace Modules\ExportImport\Jobs;
 
-// تعليق عربي: وظيفة خلفية لمعالجة استيراد البيانات من ملفات CSV بالخلفية وإدراج السجلات مع تتبع الأخطاء.
+//   وظيفة خلفية لمعالجة استيراد البيانات من ملفات CSV بالخلفية وإدراج السجلات مع تتبع الأخطاء.
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -47,12 +47,12 @@ class QueuedImportJob implements ShouldQueue
 
             $file = fopen($filePath, 'r');
             $bom = fread($file, 3);
-            if ($bom !== chr(0xEF).chr(0xBB).chr(0xBF)) {
+            if ($bom !== chr(0xEF) . chr(0xBB) . chr(0xBF)) {
                 rewind($file);
             }
 
             $header = fgetcsv($file);
-            
+
             $failedRows = [];
             $successCount = 0;
             $rowCount = 0;
@@ -64,7 +64,7 @@ class QueuedImportJob implements ShouldQueue
             }
             rewind($file);
             $bom = fread($file, 3);
-            if ($bom !== chr(0xEF).chr(0xBB).chr(0xBF)) {
+            if ($bom !== chr(0xEF) . chr(0xBB) . chr(0xBF)) {
                 rewind($file);
             }
             fgetcsv($file); // تجاوز العناوين
@@ -76,7 +76,7 @@ class QueuedImportJob implements ShouldQueue
             if (strtolower($importJob->model_type) === 'products') {
                 while (($row = fgetcsv($file)) !== false) {
                     $rowCount++;
-                    
+
                     if (count($row) < 2 || empty($row[1])) {
                         $failedRows[] = [
                             'row' => $rowCount,
@@ -91,12 +91,12 @@ class QueuedImportJob implements ShouldQueue
                             $name = $row[1];
                             $desc = $row[2] ?? null;
                             $isActive = (isset($row[3]) && ($row[3] === 'نعم' || $row[3] === '1' || $row[3] === 'yes')) ? 1 : 0;
-                            
+
                             // توليد slug فريد
                             $baseSlug = preg_replace('/[^\p{Arabic}a-z0-9\s-]/u', '', strtolower($name));
                             $baseSlug = preg_replace('/\s+/', '-', trim($baseSlug));
                             $slug = $baseSlug ?: 'product';
-                            
+
                             // ضمان تفرد الـ slug عن طريق التحقق في قاعدة البيانات وإضافة معرف فريد
                             $originalSlug = $slug;
                             $i = 1;

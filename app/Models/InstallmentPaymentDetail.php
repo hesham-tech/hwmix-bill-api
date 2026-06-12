@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * تعليق عربي: كلاس يمثل تفاصيل المبالغ المسددة لكل قسط فردي ضمن دفعة السداد، ويدعم العزل غير المباشر بالتبعية لدفعة القسط.
+ *   كلاس يمثل تفاصيل المبالغ المسددة لكل قسط فردي ضمن دفعة السداد، ويدعم العزل غير المباشر بالتبعية لدفعة القسط.
  */
 class InstallmentPaymentDetail extends Model
 {

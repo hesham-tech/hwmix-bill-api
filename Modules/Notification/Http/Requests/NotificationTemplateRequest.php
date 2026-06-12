@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Http\Requests;
 
-// تعليق عربي: طلب التحقق من صحة مدخلات قالب الإشعارات.
+//   طلب التحقق من صحة مدخلات قالب الإشعارات.
 
 use Illuminate\Foundation\Http\FormRequest;
 

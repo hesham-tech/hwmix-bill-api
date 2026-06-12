@@ -14,12 +14,12 @@ class InvoiceCreated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public Invoice $invoice;
+    public \App\Models\Invoice|\Modules\Sales\Models\Invoice $invoice;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(Invoice $invoice)
+    public function __construct(\App\Models\Invoice|\Modules\Sales\Models\Invoice $invoice)
     {
         $this->invoice = $invoice;
     }

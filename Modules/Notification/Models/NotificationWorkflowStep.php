@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Models;
 
-// تعليق عربي: موديل خطوات أتمتة الإشعار لتخزين تفاصيل الإزاحة الزمنية والقوالب وقنوات الإرسال المحددة للخطوة.
+//   موديل خطوات أتمتة الإشعار لتخزين تفاصيل الإزاحة الزمنية والقوالب وقنوات الإرسال المحددة للخطوة.
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,10 +19,10 @@ class NotificationWorkflowStep extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'is_active'   => 'boolean',
+        'is_active' => 'boolean',
         'step_number' => 'integer',
-        'delay_days'  => 'integer',
-        'channel'     => 'array', // قائمة القنوات المختارة ['email', 'whatsapp']
+        'delay_days' => 'integer',
+        'channel' => 'array', // قائمة القنوات المختارة ['email', 'whatsapp']
     ];
 
     /**

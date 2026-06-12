@@ -1,6 +1,6 @@
 <?php
 
-// تعليق عربي: هجرة لإنشاء جدول إعدادات حسابات الواتساب لتخزين بيانات الربط بـ Meta Cloud API لكل شركة.
+//   هجرة لإنشاء جدول إعدادات حسابات الواتساب لتخزين بيانات الربط بـ Meta Cloud API لكل شركة.
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;

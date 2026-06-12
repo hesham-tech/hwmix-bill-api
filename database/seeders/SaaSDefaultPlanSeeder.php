@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-// تعليق عربي: سيدر لتهيئة الباقة التجريبية المجانية الافتراضية للساس (SaaS Free Trial) لتمكين العملاء من تجربة المنصة بحدود ضيقة.
+//   سيدر لتهيئة الباقة التجريبية المجانية الافتراضية للساس (SaaS Free Trial) لتمكين العملاء من تجربة المنصة بحدود ضيقة.
 
 use Illuminate\Database\Seeder;
 use App\Models\Plan;

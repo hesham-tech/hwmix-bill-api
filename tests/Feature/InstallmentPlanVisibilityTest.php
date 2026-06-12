@@ -24,12 +24,14 @@ class InstallmentPlanVisibilityTest extends TestCase
     {
         parent::setUp();
 
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
         $this->seed(AddPermissionsSeeder::class);
 
         $this->companyA = Company::factory()->create();
         $this->companyB = Company::factory()->create();
 
         $this->staff = User::factory()->create(['company_id' => $this->companyA->id]);
+        setPermissionsTeamId($this->companyA->id);
         $this->staff->givePermissionTo(perm_key('installment_plans.view_all'));
 
         // Customer primarily in Company B
@@ -63,14 +65,14 @@ class InstallmentPlanVisibilityTest extends TestCase
         $this->actingAs($this->staff);
 
         // 1. Check index response
-        $response = $this->getJson('/api/installment-plans');
+        $response = $this->getJson('/api/v1/installment-plans');
         $response->assertStatus(200);
 
         $planIds = collect($response->json('data'))->pluck('id');
         $this->assertTrue($planIds->contains($plan->id), "Staff cannot see plan ID {$plan->id} in index");
 
         // 2. Check search logic
-        $searchResponse = $this->getJson('/api/installment-plans?search=Nadi');
+        $searchResponse = $this->getJson('/api/v1/installment-plans?search=Nadi');
         $searchResponse->assertStatus(200);
 
         $searchPlanIds = collect($searchResponse->json('data'))->pluck('id');
@@ -88,7 +90,7 @@ class InstallmentPlanVisibilityTest extends TestCase
 
         $this->actingAs($this->staff);
 
-        $response = $this->getJson('/api/installment-plans');
+        $response = $this->getJson('/api/v1/installment-plans');
         $response->assertStatus(200);
 
         $planIds = collect($response->json('data'))->pluck('id');

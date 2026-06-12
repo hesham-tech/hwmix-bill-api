@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Http\Requests;
 
-// تعليق عربي: طلب التحقق من صحة مدخلات إعدادات البريد الإلكتروني للشركة.
+//   طلب التحقق من صحة مدخلات إعدادات البريد الإلكتروني للشركة.
 
 use Illuminate\Foundation\Http\FormRequest;
 

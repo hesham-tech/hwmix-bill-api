@@ -6,7 +6,7 @@ use App\Models\Plan;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-// تعليق عربي: محرك حساب وتسعير اشتراكات SaaS المتقدم، يقوم باحتساب تكلفة الاشتراك وخصومات الشرائح التدريجية وتطبيق أكواد الخصم والكوبونات.
+//   محرك حساب وتسعير اشتراكات SaaS المتقدم، يقوم باحتساب تكلفة الاشتراك وخصومات الشرائح التدريجية وتطبيق أكواد الخصم والكوبونات.
 class PricingCalculator
 {
     /**
@@ -20,13 +20,13 @@ class PricingCalculator
 
         // 1. فحص شريحة الخصم المناسبة للمدة المحددة (Tiered Pricing)
         $tierPricePerMonth = $basePricePerMonth;
-        
+
         $tier = DB::table('plan_pricing_tiers')
             ->where('plan_id', $planId)
             ->where('min_months', '<=', $months)
             ->where(function ($query) use ($months) {
                 $query->whereNull('max_months')
-                      ->orWhere('max_months', '>=', $months);
+                    ->orWhere('max_months', '>=', $months);
             })
             ->first();
 
@@ -37,7 +37,7 @@ class PricingCalculator
                 $tierPricePerMonth = $basePricePerMonth * (1 - ((float) $tier->discount_percent / 100));
             }
         }
-        
+
         $tieredPrice = $tierPricePerMonth * $months;
         $tieredDiscountAmount = $subtotal - $tieredPrice;
 
@@ -87,7 +87,7 @@ class PricingCalculator
             'base_price_per_month' => round($basePricePerMonth, 2),
             'tiered_price_per_month' => round($tierPricePerMonth, 2),
             'effective_price_per_month' => $months > 0 ? round($totalPrice / $months, 2) : 0.00,
-            
+
             // تفاصيل المبلغ والفروقات
             'subtotal' => round($subtotal, 2),
             'tiered_discount_amount' => round($tieredDiscountAmount, 2),
@@ -95,7 +95,7 @@ class PricingCalculator
             'total_discount_amount' => round($totalDiscountAmount, 2),
             'total_price' => round($totalPrice, 2),
             'savings' => round($savings, 2),
-            
+
             'coupon' => $coupon ? [
                 'code' => $coupon->code,
                 'discount_type' => $coupon->discount_type,

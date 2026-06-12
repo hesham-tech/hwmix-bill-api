@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Services\Gateways;
 
-// تعليق عربي: خدمة معالجة الدفع عبر بوابة Paymob الإلكترونية باستخدام HTTP Client المدمج.
+//   خدمة معالجة الدفع عبر بوابة Paymob الإلكترونية باستخدام HTTP Client المدمج.
 
 use Modules\Payment\Contracts\PaymentGatewayInterface;
 use Modules\Payment\Models\PaymentTransaction;
@@ -131,7 +131,7 @@ class PaymobGateway implements PaymentGatewayInterface
             }
 
             $order = $response->json();
-            
+
             // التحقق من حالة المعاملة
             $success = $data['success'] ?? ($order['is_paid'] ?? false);
             if ($success === true || $success === 'true' || ($order['is_paid'] ?? false) === true) {

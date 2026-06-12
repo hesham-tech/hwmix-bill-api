@@ -1,6 +1,6 @@
 <?php
 
-// تعليق عربي: هجرة لتغيير عمود channel في جدول خطوات الأتمتة من نص عادي إلى JSON لدعم اختيار أكثر من قناة إرسال في الخطوة الواحدة.
+//   هجرة لتغيير عمود channel في جدول خطوات الأتمتة من نص عادي إلى JSON لدعم اختيار أكثر من قناة إرسال في الخطوة الواحدة.
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,10 +16,10 @@ return new class extends Migration {
         // whatsapp => ["whatsapp"]
         DB::table('notification_workflow_steps')->get()->each(function ($step) {
             $channels = match ($step->channel) {
-                'both'     => json_encode(['email', 'whatsapp']),
-                'email'    => json_encode(['email']),
+                'both' => json_encode(['email', 'whatsapp']),
+                'email' => json_encode(['email']),
                 'whatsapp' => json_encode(['whatsapp']),
-                default    => json_encode(array_filter(explode(',', $step->channel))),
+                default => json_encode(array_filter(explode(',', $step->channel))),
             };
             DB::table('notification_workflow_steps')
                 ->where('id', $step->id)

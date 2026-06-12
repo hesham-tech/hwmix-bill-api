@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Http\Requests;
 
-// تعليق عربي: طلب التحقق من صحة المدخلات لإضافة وتحديث بوابات الدفع الإلكتروني.
+//   طلب التحقق من صحة المدخلات لإضافة وتحديث بوابات الدفع الإلكتروني.
 
 use Illuminate\Foundation\Http\FormRequest;
 

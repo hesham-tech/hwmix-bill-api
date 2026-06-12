@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Models;
 
-// تعليق عربي: موديل إعدادات البريد الإلكتروني لتخزين وحماية تفاصيل SMTP/Mailgun لكل شركة.
+//   موديل إعدادات البريد الإلكتروني لتخزين وحماية تفاصيل SMTP/Mailgun لكل شركة.
 
 use App\Traits\Blameable;
 use App\Traits\FilterableByCompanyOrGlobal;

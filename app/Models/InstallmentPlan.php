@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes; // ← ✅ استيراد السو
 use App\Traits\SmartSearch;
 
 /**
- * تعليق عربي: كلاس يمثل خطط التقسيط للعملاء في النظام مع دعم العزل الكامل حسب الشركة.
+ *   كلاس يمثل خطط التقسيط للعملاء في النظام مع دعم العزل الكامل حسب الشركة.
  */
 class InstallmentPlan extends Model
 {
@@ -143,5 +143,14 @@ class InstallmentPlan extends Model
 
         $factualRate = bcdiv(bcmul($rate, $months, 4), '12', 4);
         return bcmul($net, bcdiv($factualRate, '100', 4), 2);
+    }
+
+    /**
+     * Resolve the route binding for the model.
+     *   تجاوز الفلترة بالشركة عند جلب خطة التقسيط عبر الروابط لتمكين التحكم بالصلاحيات داخل الكنترولر.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->withoutGlobalScopes()->where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 }

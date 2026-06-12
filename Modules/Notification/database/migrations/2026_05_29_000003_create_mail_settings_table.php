@@ -1,6 +1,6 @@
 <?php
 
-// تعليق عربي: هجرة لإنشاء جدول إعدادات البريد الإلكتروني الديناميكية لكل شركة (SMTP/Mailgun).
+//   هجرة لإنشاء جدول إعدادات البريد الإلكتروني الديناميكية لكل شركة (SMTP/Mailgun).
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -14,7 +14,7 @@ return new class extends Migration {
     {
         Schema::create('mail_settings', function (Blueprint $table) {
             $table->id();
-            
+
             $table->string('mail_transport')->default('smtp'); // smtp, mailgun, ses
             $table->string('mail_host')->nullable();
             $table->integer('mail_port')->nullable();
@@ -29,7 +29,7 @@ return new class extends Migration {
 
             $table->softDeletes();
             $table->timestamps();
-            
+
             $table->index('company_id');
         });
     }

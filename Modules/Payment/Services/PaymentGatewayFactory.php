@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Services;
 
-// تعليق عربي: مصنع بوابات الدفع لإنشاء كائن معالج البوابة المحدد بناءً على إعدادات الشركة المشفرة.
+//   مصنع بوابات الدفع لإنشاء كائن معالج البوابة المحدد بناءً على إعدادات الشركة المشفرة.
 
 use Modules\Payment\Contracts\PaymentGatewayInterface;
 use Modules\Payment\Models\PaymentGateway;
@@ -27,7 +27,7 @@ class PaymentGatewayFactory
             }
         } elseif (is_array($config)) {
             // فك التشفير لكل قيمة نصية مشفرة في الإعدادات
-            $config = array_map(function($val) {
+            $config = array_map(function ($val) {
                 if (is_string($val)) {
                     try {
                         return Crypt::decryptString($val);

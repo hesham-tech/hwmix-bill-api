@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Http\Controllers;
 
-// تعليق عربي: متحكم إدارة بوابات الدفع الإلكتروني المخصصة للشركة لتمكين إدارة الإعدادات والربط.
+//   متحكم إدارة بوابات الدفع الإلكتروني المخصصة للشركة لتمكين إدارة الإعدادات والربط.
 
 use App\Http\Controllers\Controller;
 use Modules\Payment\Http\Requests\PaymentGatewayRequest;
@@ -91,13 +91,13 @@ class PaymentGatewayController extends Controller
     {
         try {
             $gateway = PaymentGateway::findOrFail($id);
-            
-            \Illuminate\Support\Facades\DB::transaction(function() use ($gateway) {
+
+            \Illuminate\Support\Facades\DB::transaction(function () use ($gateway) {
                 // إلغاء الافتراضية للبوابات الأخرى لنفس الشركة
                 PaymentGateway::where('company_id', $gateway->company_id)
                     ->where('id', '!=', $gateway->id)
                     ->update(['is_default' => false]);
-                
+
                 // تعيين البوابة الحالية كافتراضية
                 $gateway->update(['is_default' => true]);
             });

@@ -39,7 +39,7 @@ use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 
 
 /**
- * تعليق عربي: كلاس المستخدم للنظام ويمثل الحساب الموحد للهوية الصالحة للعملاء، الموردين، والموظفين.
+ *   كلاس المستخدم للنظام ويمثل الحساب الموحد للهوية الصالحة للعملاء، الموردين، والموظفين.
  */
 /**
  * @method void deposit(float|int $amount)
@@ -177,26 +177,26 @@ class User extends Authenticatable
                     ->where('branch_id', $activeBranchId)
                     ->firstWhere('is_default', true)
                     ?? collect($this->cashBoxes)
-                    ->where('company_id', $companyId)
-                    ->where('branch_id', $activeBranchId)
-                    ->firstWhere('is_default', 1)
+                        ->where('company_id', $companyId)
+                        ->where('branch_id', $activeBranchId)
+                        ->firstWhere('is_default', 1)
                     ?? collect($this->cashBoxes)
-                    ->where('company_id', $companyId)
-                    ->where('is_active', true)
-                    ->where('branch_id', $activeBranchId)
-                    ->first();
+                        ->where('company_id', $companyId)
+                        ->where('is_active', true)
+                        ->where('branch_id', $activeBranchId)
+                        ->first();
             }
             if (!$cashBox) {
                 $cashBox = collect($this->cashBoxes)
                     ->where('company_id', $companyId)
                     ->firstWhere('is_default', true)
                     ?? collect($this->cashBoxes)
-                    ->where('company_id', $companyId)
-                    ->firstWhere('is_default', 1)
+                        ->where('company_id', $companyId)
+                        ->firstWhere('is_default', 1)
                     ?? collect($this->cashBoxes)
-                    ->where('company_id', $companyId)
-                    ->where('is_active', true)
-                    ->first();
+                        ->where('company_id', $companyId)
+                        ->where('is_active', true)
+                        ->first();
             }
         }
 
@@ -438,7 +438,7 @@ class User extends Authenticatable
     public function branches(): BelongsToMany
     {
         return $this->belongsToMany(\Modules\Companies\Models\Branch::class, 'branch_user', 'user_id', 'branch_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -595,6 +595,9 @@ class User extends Authenticatable
         // even if the permission is seeded within a specific company.
         if ($permission === $superAdminKey || (is_object($permission) && $permission->name === $superAdminKey)) {
             static $isSuperAdmin = [];
+            if (app()->runningUnitTests()) {
+                $isSuperAdmin = [];
+            }
             if (!isset($isSuperAdmin[$this->id])) {
                 // Check direct permissions (team-blind)
                 $hasDirect = \DB::table('model_has_permissions')
@@ -691,7 +694,7 @@ class User extends Authenticatable
 
     /**
      * Resolve the route binding for the model.
-     * تعليق عربي: تجاوز الفلترة بالشركة عند جلب المستخدم عبر الروابط لتمكين التحكم بالصلاحيات داخل الكنترولر.
+     *   تجاوز الفلترة بالشركة عند جلب المستخدم عبر الروابط لتمكين التحكم بالصلاحيات داخل الكنترولر.
      */
     public function resolveRouteBinding($value, $field = null)
     {
@@ -700,7 +703,7 @@ class User extends Authenticatable
 
     /**
      * الحصول على رصيد خزنة الفرع النشط (Active Branch Safe Balance)
-     * تعليق عربي: يرجع رصيد الخزنة المرتبطة بالفرع النشط الحالي للمستخدم.
+     *   يرجع رصيد الخزنة المرتبطة بالفرع النشط الحالي للمستخدم.
      */
     public function getActiveBranchBalanceAttribute(): float
     {
@@ -715,7 +718,7 @@ class User extends Authenticatable
 
     /**
      * الحصول على إجمالي أرصدة الصناديق في الفروع المنتمي إليها بشرط أن يكون مرتبطاً بأكثر من فرع
-     * تعليق عربي: يرجع مجموع أرصدة كل خزن فروع المستخدم بشرط ارتباطه بأكثر من فرع.
+     *   يرجع مجموع أرصدة كل خزن فروع المستخدم بشرط ارتباطه بأكثر من فرع.
      */
     public function getTotalBranchesBalanceAttribute(): ?float
     {
@@ -752,7 +755,7 @@ class User extends Authenticatable
     }
 
     /**
-     * تعليق عربي: تعيين معرف الشركة النشطة تلقائياً عند تمرير company_id لضمان التوافقية مع الجداول والاختبارات.
+     *   تعيين معرف الشركة النشطة تلقائياً عند تمرير company_id لضمان التوافقية مع الجداول والاختبارات.
      */
     public function setCompanyIdAttribute($value)
     {
@@ -812,7 +815,7 @@ class User extends Authenticatable
         }
 
         $company = \App\Models\Company::find($companyId);
-        return $company && (int)$company->default_cash_customer_id === (int)$this->id;
+        return $company && (int) $company->default_cash_customer_id === (int) $this->id;
     }
 
     /**

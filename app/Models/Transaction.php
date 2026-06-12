@@ -1,5 +1,5 @@
 <?php
-// تعليق عربي: موديل يمثل المعاملات والقيود المالية لحساب الأرصدة وتتبع حركات الخزن - تم التحديث لتنشيط الـ IDE
+//   موديل يمثل المعاملات والقيود المالية لحساب الأرصدة وتتبع حركات الخزن - تم التحديث لتنشيط الـ IDE
 namespace App\Models;
 
 use Exception;
@@ -174,13 +174,13 @@ class Transaction extends Model
     }
 
     /**
-     * تعليق عربي: تسمية المعاملة وعرض تفاصيلها المحاسبية
+     *   تسمية المعاملة وعرض تفاصيلها المحاسبية
      */
     public function logLabel()
     {
         $customerName = $this->customer?->nickname ?? $this->customer?->name ?? 'غير محدد';
         $amountFormatted = number_format($this->amount, 2);
-        
+
         $actionWord = match ($this->type) {
             'deposit' => 'إضافة',
             'withdraw' => 'سحب',
@@ -193,13 +193,13 @@ class Transaction extends Model
     }
 
     /**
-     * تعليق عربي: تجاوز دالة logCreated لكتابة صيغة مبنية للمجهول واضحة وتلقائية
+     *   تجاوز دالة logCreated لكتابة صيغة مبنية للمجهول واضحة وتلقائية
      */
     public function logCreated($text)
     {
         $customerName = $this->customer?->nickname ?? $this->customer?->name ?? 'غير محدد';
         $amountFormatted = number_format($this->amount, 2);
-        
+
         if ($this->type === 'deposit') {
             $description = "تم إضافة مبلغ {$amountFormatted} ج إلى رصيد الحساب ({$customerName}) بسبب: {$this->description}";
         } elseif ($this->type === 'withdraw') {
@@ -218,7 +218,7 @@ class Transaction extends Model
     }
 
     /**
-     * تعليق عربي: تجاوز دالة logUpdated عند التعديل
+     *   تجاوز دالة logUpdated عند التعديل
      */
     public function logUpdated($text)
     {
@@ -228,7 +228,7 @@ class Transaction extends Model
     }
 
     /**
-     * تعليق عربي: تجاوز دالة logDeleted عند الحذف
+     *   تجاوز دالة logDeleted عند الحذف
      */
     public function logDeleted($text)
     {

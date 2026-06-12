@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Http\Resources;
 
-// تعليق عربي: مورد بيانات إعدادات البريد لتحويل الكائن لاستجابة JSON آمنة مع إخفاء كلمة مرور SMTP.
+//   مورد بيانات إعدادات البريد لتحويل الكائن لاستجابة JSON آمنة مع إخفاء كلمة مرور SMTP.
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,7 +17,6 @@ class MailSettingResource extends JsonResource
             'mail_host' => $this->mail_host,
             'mail_port' => $this->mail_port,
             'mail_username' => $this->mail_username,
-            'mail_password' => $this->mail_password,
             'mail_password_configured' => !empty($this->mail_password),
             'mail_encryption' => $this->mail_encryption,
             'mail_from_address' => $this->mail_from_address,

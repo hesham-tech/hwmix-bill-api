@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsActivity;
 
 /**
- * تعليق عربي: كلاس يمثل أنواع الفواتير المختلفة المتاحة في النظام (مثل فواتير بيع، شراء، مرتجع، إلخ).
+ *   كلاس يمثل أنواع الفواتير المختلفة المتاحة في النظام (مثل فواتير بيع، شراء، مرتجع، إلخ).
  */
 class InvoiceType extends Model
 {

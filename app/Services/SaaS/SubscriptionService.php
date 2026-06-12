@@ -2,7 +2,7 @@
 
 namespace App\Services\SaaS;
 
-// تعليق عربي: خدمة إدارة اشتراكات الساس (SaaS Subscriptions) للشركات لتسجيل الباقة، حساب التواريخ وفترة التجربة والترقيات.
+//   خدمة إدارة اشتراكات الساس (SaaS Subscriptions) للشركات لتسجيل الباقة، حساب التواريخ وفترة التجربة والترقيات.
 
 use App\Models\Plan;
 use App\Models\CompanySubscription;
@@ -17,7 +17,7 @@ class SubscriptionService
     public static function initializeSubscription(int $companyId, int $planId, int $months = 1, ?string $couponCode = null, bool $skipTrial = false): CompanySubscription
     {
         $plan = Plan::findOrFail($planId);
-        
+
         // 1. حساب السعر والخصومات والكوبونات بدقة عبرPricingCalculator
         $pricing = PricingCalculator::calculate($planId, $months, $couponCode);
         $totalPrice = $pricing['total_price'] ?: 0.00;
@@ -26,10 +26,10 @@ class SubscriptionService
         $trialDays = $skipTrial ? 0 : ($plan->trial_days ?: 0);
         $trialEndsAt = $trialDays > 0 ? Carbon::now()->addDays($trialDays) : null;
         $status = $trialDays > 0 ? 'trial' : ($totalPrice > 0 ? 'pending' : 'active');
-        
+
         // حساب تاريخ انتهاء الاشتراك بناء على الأشهر المختارة
         $endsAt = Carbon::now()->addMonths($months);
-        
+
         // في حال وجود تجربة، يبدأ وقت انتهاء الاشتراك الفعلي بعد انتهاء التجربة
         if ($trialEndsAt) {
             $endsAt->addDays($trialDays);
@@ -83,7 +83,7 @@ class SubscriptionService
     public static function initializePendingSubscription(int $companyId, int $planId, int $months = 1, ?string $couponCode = null): CompanySubscription
     {
         $plan = Plan::findOrFail($planId);
-        
+
         // حساب السعر والكوبونات بدقة للطلب المعلق
         $pricing = PricingCalculator::calculate($planId, $months, $couponCode);
         $totalPrice = $pricing['total_price'] ?: 0.00;

@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Actions;
 
-// تعليق عربي: أكشن لحفظ أو تحديث قوالب الإشعارات الخاصة بالشركة مع ضمان عزل البيانات.
+//   أكشن لحفظ أو تحديث قوالب الإشعارات الخاصة بالشركة مع ضمان عزل البيانات.
 
 use Modules\Core\Actions\BaseAction;
 use Modules\Notification\Models\NotificationTemplate;
@@ -25,12 +25,12 @@ class SaveNotificationTemplateAction extends BaseAction
             'channel' => $data['channel'],
             'subject' => $data['subject'] ?? null,
             'body' => $data['body'],
-            'is_active' => isset($data['is_active']) ? (bool)$data['is_active'] : true,
+            'is_active' => isset($data['is_active']) ? (bool) $data['is_active'] : true,
             'company_id' => $companyId,
         ];
 
         if (isset($data['is_global']) && Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
-            $templateData['is_global'] = (bool)$data['is_global'];
+            $templateData['is_global'] = (bool) $data['is_global'];
         }
 
         if ($id) {

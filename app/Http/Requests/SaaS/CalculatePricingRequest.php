@@ -4,7 +4,7 @@ namespace App\Http\Requests\SaaS;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-// تعليق عربي: طلب التحقق والتحصيل لمدخلات حاسبة أسعار اشتراك باقات الساس.
+//   طلب التحقق والتحصيل لمدخلات حاسبة أسعار اشتراك باقات الساس.
 class CalculatePricingRequest extends FormRequest
 {
     /**

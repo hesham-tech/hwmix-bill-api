@@ -1,6 +1,6 @@
 <?php
 
-// تعليق عربي: هجرة تعديل جدول اشتراكات الشركات لإضافة خيار التجديد التلقائي للاشتراك.
+//   هجرة تعديل جدول اشتراكات الشركات لإضافة خيار التجديد التلقائي للاشتراك.
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;

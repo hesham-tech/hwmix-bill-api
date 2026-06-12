@@ -4,7 +4,7 @@ namespace App\Services\SaaS\Drivers;
 
 use App\Services\SaaS\Contracts\UsageDriverInterface;
 
-// تعليق عربي: كلاس حساب عدد رسائل الواتساب المرسلة شهرياً لمتابعة استهلاك خدمة الإشعارات التلقائية.
+//   كلاس حساب عدد رسائل الواتساب المرسلة شهرياً لمتابعة استهلاك خدمة الإشعارات التلقائية.
 class WhatsappMessagesUsageDriver implements UsageDriverInterface
 {
     /**

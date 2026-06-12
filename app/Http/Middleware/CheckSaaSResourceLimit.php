@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-// تعليق عربي: وسيط برمجية (Middleware) للتحقق من عدم تجاوز الشركة المشتركة للحد الأقصى المسموح به في الباقة قبل إنشاء أي مورد جديد.
+//   وسيط برمجية (Middleware) للتحقق من عدم تجاوز الشركة المشتركة للحد الأقصى المسموح به في الباقة قبل إنشاء أي مورد جديد.
 
 use Closure;
 use Illuminate\Http\Request;
@@ -55,7 +55,8 @@ class CheckSaaSResourceLimit
             if ($metric) {
                 return "[{$metric->name}]";
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         return match ($resource) {
             'users' => '[الموظفين والمستخدمين]',

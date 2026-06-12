@@ -2,7 +2,7 @@
 
 namespace Modules\ExportImport\Models;
 
-// تعليق عربي: موديل لتتبع تفاصيل وسجلات مهام التصدير والاستيراد مع الدعم الكامل لعزل الشركات والفروع.
+//   موديل لتتبع تفاصيل وسجلات مهام التصدير والاستيراد مع الدعم الكامل لعزل الشركات والفروع.
 
 use App\Traits\Blameable;
 use App\Traits\FilterableByCompany;

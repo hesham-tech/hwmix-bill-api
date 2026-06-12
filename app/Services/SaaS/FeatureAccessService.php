@@ -2,7 +2,7 @@
 
 namespace App\Services\SaaS;
 
-// تعليق عربي: خدمة التحقق من صلاحيات الباقة وميزات النظام المتاحة بالتوافق مع SaaSEngine الجديد.
+//   خدمة التحقق من صلاحيات الباقة وميزات النظام المتاحة بالتوافق مع SaaSEngine الجديد.
 class FeatureAccessService
 {
     /**

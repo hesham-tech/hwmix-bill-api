@@ -2,7 +2,7 @@
 
 namespace Modules\ExportImport\Http\Controllers;
 
-// تعليق عربي: متحكم لإدارة وجدولة وتنزيل ملفات التصدير والاستيراد بالخلفية لكل شركة.
+//   متحكم لإدارة وجدولة وتنزيل ملفات التصدير والاستيراد بالخلفية لكل شركة.
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -58,7 +58,7 @@ class ExportImportController extends Controller
 
         try {
             $modelType = $request->model_type;
-            
+
             // التحقق من الصلاحيات حسب نوع الكيان
             if ($modelType === 'products' && !Auth::user()->hasPermissionTo(perm_key('products.export')) && !Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
                 return api_forbidden('غير مصرح لك بتصدير المنتجات.');

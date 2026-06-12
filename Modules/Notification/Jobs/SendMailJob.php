@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Jobs;
 
-// تعليق عربي: وظيفة خلفية (Job) لإرسال رسائل البريد الإلكتروني بشكل غير متزامن باستخدام الإعدادات الخاصة بالشركة.
+//   وظيفة خلفية (Job) لإرسال رسائل البريد الإلكتروني بشكل غير متزامن باستخدام الإعدادات الخاصة بالشركة.
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -76,7 +76,7 @@ class SendMailJob implements ShouldQueue
             if ($setting) {
                 // استخدام الموزع الديناميكي المخصص للشركة أو النظام
                 $mailer = DynamicMailer::getMailer($setting);
-                
+
                 $mailer->html($this->body, function ($message) {
                     $message->to($this->recipient)->subject($this->subject);
                 });

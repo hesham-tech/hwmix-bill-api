@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsActivity;
 
 /**
- * تعليق عربي: كلاس يمثل عمليات الدفع العامة غير المرتبطة مباشرة بفاتورة مبيعات واحدة.
+ *   كلاس يمثل عمليات الدفع العامة غير المرتبطة مباشرة بفاتورة مبيعات واحدة.
  */
 class Payment extends Model
 {

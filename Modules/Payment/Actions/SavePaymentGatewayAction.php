@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Actions;
 
-// تعليق عربي: أكشن لحفظ أو تحديث إعدادات بوابة الدفع للشركة الحالية مع تشفير الحقول السرية.
+//   أكشن لحفظ أو تحديث إعدادات بوابة الدفع للشركة الحالية مع تشفير الحقول السرية.
 
 use Modules\Core\Actions\BaseAction;
 use Modules\Payment\DTOs\PaymentGatewayDTO;
@@ -27,7 +27,7 @@ class SavePaymentGatewayAction extends BaseAction
         }
 
         // تشفير الحقول السرية الحساسة قبل الحفظ لضمان الأمان وعدم تسريب المفاتيح
-        $encryptedConfig = array_map(function($value) {
+        $encryptedConfig = array_map(function ($value) {
             if (is_string($value) && !empty($value)) {
                 return Crypt::encryptString($value);
             }
@@ -46,10 +46,10 @@ class SavePaymentGatewayAction extends BaseAction
             'company_id' => $companyId,
         ];
 
-        return \Illuminate\Support\Facades\DB::transaction(function() use ($gatewayId, $gatewayData, $companyId, $dto) {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($gatewayId, $gatewayData, $companyId, $dto) {
             if ($dto->isDefault) {
                 PaymentGateway::where('company_id', $companyId)
-                    ->when($gatewayId, function($q) use ($gatewayId) {
+                    ->when($gatewayId, function ($q) use ($gatewayId) {
                         $q->where('id', '!=', $gatewayId);
                     })
                     ->update(['is_default' => false]);

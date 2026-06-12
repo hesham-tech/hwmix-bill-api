@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\Company;
 use Illuminate\Database\Seeder;
 
-// تعليق عربي: سيدر لإنشاء الشركة الافتراضية الأولى للنظام في حالة عدم وجود أي شركات مسبقاً.
+//   سيدر لإنشاء الشركة الافتراضية الأولى للنظام في حالة عدم وجود أي شركات مسبقاً.
 class CompanySeeder extends Seeder
 {
     public function run(): void

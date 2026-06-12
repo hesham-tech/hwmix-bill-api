@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsActivity;
 
 /**
- * تعليق عربي: كلاس يمثل الطلبات (أوامر البيع والشراء) في النظام وقيمها وحالتها الحالية.
+ *   كلاس يمثل الطلبات (أوامر البيع والشراء) في النظام وقيمها وحالتها الحالية.
  */
 class Order extends Model
 {

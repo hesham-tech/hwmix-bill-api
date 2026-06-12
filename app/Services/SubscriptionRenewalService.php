@@ -1,5 +1,5 @@
 <?php
-// تعليق عربي: خدمة تجديد الاشتراكات العامة وإدارة فترات الصلاحية وتسجيل الأرصدة
+//   خدمة تجديد الاشتراكات العامة وإدارة فترات الصلاحية وتسجيل الأرصدة
 namespace App\Services;
 
 use App\Models\Subscription;
@@ -109,10 +109,11 @@ class SubscriptionRenewalService
     private function recordCashTransaction(SubscriptionPayment $payment)
     {
         $user = \App\Models\User::withoutGlobalScopes()->find($payment->user_id);
-        if (!$user) return;
+        if (!$user)
+            return;
 
         $description = "تجديد اشتراك: " . ($payment->subscription->service->name ?? 'خدمة');
-        
+
         $user->deposit((float) $payment->amount, $payment->cash_box_id, $description, true, [
             'created_by' => $payment->created_by,
             'company_id' => $payment->company_id,

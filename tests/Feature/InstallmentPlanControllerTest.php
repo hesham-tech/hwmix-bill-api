@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\InstallmentPlan;
 use App\Models\Invoice;
+use App\Models\InvoiceType;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,13 +24,19 @@ class InstallmentPlanControllerTest extends TestCase
     {
         parent::setUp();
 
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
         $this->seed(AddPermissionsSeeder::class);
         $this->company = Company::factory()->create();
         $this->admin = User::factory()->create(['company_id' => $this->company->id]);
         $this->admin->givePermissionTo('admin.super');
 
         $this->customer = User::factory()->create(['company_id' => $this->company->id]);
-        $this->invoice = Invoice::factory()->create(['company_id' => $this->company->id]);
+        
+        $type = InvoiceType::factory()->create(['code' => 'installment_sale']);
+        $this->invoice = Invoice::factory()->create([
+            'company_id' => $this->company->id,
+            'invoice_type_id' => $type->id,
+        ]);
     }
 
     /** @test */
@@ -44,7 +51,7 @@ class InstallmentPlanControllerTest extends TestCase
             'invoice_id' => $this->invoice->id,
         ]);
 
-        $response = $this->getJson('/api/installment-plans');
+        $response = $this->getJson('/api/v1/installment-plans');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'message']);
@@ -72,7 +79,7 @@ class InstallmentPlanControllerTest extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->postJson('/api/installment-plan', $payload);
+        $response = $this->postJson('/api/v1/installment-plans', $payload);
 
         dump($response->json());
         $response->assertStatus(201);
@@ -94,7 +101,7 @@ class InstallmentPlanControllerTest extends TestCase
             'invoice_id' => $this->invoice->id,
         ]);
 
-        $response = $this->getJson("/api/installment-plan/{$plan->id}");
+        $response = $this->getJson("/api/v1/installment-plans/{$plan->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $plan->id);
@@ -117,7 +124,7 @@ class InstallmentPlanControllerTest extends TestCase
             'notes' => 'Updated notes'
         ];
 
-        $response = $this->putJson("/api/installment-plan/{$plan->id}", $payload);
+        $response = $this->putJson("/api/v1/installment-plans/{$plan->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('installment_plans', [
@@ -139,7 +146,7 @@ class InstallmentPlanControllerTest extends TestCase
             'invoice_id' => $this->invoice->id,
         ]);
 
-        $response = $this->deleteJson("/api/installment-plan/delete/{$plan->id}");
+        $response = $this->deleteJson("/api/v1/installment-plans/{$plan->id}");
 
         $response->assertStatus(200);
         $this->assertSoftDeleted('installment_plans', ['id' => $plan->id]);

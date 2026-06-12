@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Http\Controllers;
 
-// تعليق عربي: متحكم لإدارة إعدادات حسابات الواتساب المتعددة للشركة أو العامة (عرض، إضافة، تعديل، حذف، تفعيل، تعيين افتراضي، واختبار الاتصال).
+//   متحكم لإدارة إعدادات حسابات الواتساب المتعددة للشركة أو العامة (عرض، إضافة، تعديل، حذف، تفعيل، تعيين افتراضي، واختبار الاتصال).
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -149,7 +149,7 @@ class WhatsAppSettingController extends Controller
             $whatsappService = new WhatsAppService($setting);
 
             $message = "أهلاً بك! هذه الرسالة تم إرسالها تلقائياً لاختبار ربط إعدادات WhatsApp Cloud API الخاصة بشركتكم بنجاح على منصة HWNix ERP.";
-            
+
             $result = $whatsappService->sendMessage($request->recipient, $message);
 
             if (!$result['success']) {

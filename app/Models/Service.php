@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsActivity;
 
 /**
- * تعليق عربي: كلاس يمثل الخدمات المتاحة للاشتراك بداخل النظام وتفاصيل تسعيرها ومدتها الافتراضية.
+ *   كلاس يمثل الخدمات المتاحة للاشتراك بداخل النظام وتفاصيل تسعيرها ومدتها الافتراضية.
  */
 class Service extends Model
 {

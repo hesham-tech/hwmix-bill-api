@@ -7,6 +7,7 @@ use App\Http\Requests\InstallmentPlan\StoreInstallmentPlanRequest;
 use App\Http\Requests\InstallmentPlan\UpdateInstallmentPlanRequest;
 use App\Http\Resources\InstallmentPlan\InstallmentPlanResource;
 use App\Models\InstallmentPlan;
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -54,6 +55,7 @@ class InstallmentPlanController extends Controller
             // 🔒 تطبيق فلترة الصلاحيات بناءً على صلاحيات العرض
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 // المسؤول العام يرى جميع خطط التقسيط (لا توجد قيود إضافية على الاستعلام)
+                $query->withoutGlobalScopes();
             } elseif ($authUser->hasAnyPermission([perm_key('installment_plans.view_all'), perm_key('admin.company')])) {
                 $query->whereCompanyIsCurrent();
             } elseif ($authUser->hasPermissionTo(perm_key('installment_plans.view_children'))) {
@@ -194,6 +196,18 @@ class InstallmentPlanController extends Controller
                 }
                 $validatedData['company_id'] = $companyId; // التأكد من ربط خطة التقسيط بالشركة النشطة
 
+                // الحسابات والتجهيزات لـ InstallmentPlan
+                $validatedData['net_amount'] = $request->input('net_amount', bcsub((string)$validatedData['total_amount'], (string)($validatedData['down_payment'] ?? 0), 2));
+                $validatedData['remaining_amount'] = $request->input('remaining_amount', bcsub((string)$validatedData['total_amount'], (string)($validatedData['down_payment'] ?? 0), 2));
+                $validatedData['number_of_installments'] = $validatedData['installment_count'];
+                
+                $startDate = \Carbon\Carbon::parse($validatedData['start_date']);
+                $validatedData['end_date'] = $request->input('end_date', $startDate->copy()->addMonths((int)$validatedData['installment_count'])->toDateString());
+
+                $invoice = Invoice::find($validatedData['invoice_id']);
+                $validatedData['name'] = $request->input('name', $request->input('name', 'خطة تقسيط - فاتورة رقم ' . ($invoice->invoice_number ?? '')));
+                $validatedData['status'] = $request->input('status', 'active');
+
                 $plan = InstallmentPlan::create($validatedData);
                 $plan->load($this->relations);
                 DB::commit();
@@ -240,7 +254,10 @@ class InstallmentPlanController extends Controller
                 'customer',
                 'creator',
                 'invoice.items.variant',
-                'installments' => function ($query) {
+                'installments' => function ($query) use ($authUser) {
+                    if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                        $query->withoutGlobalScopes();
+                    }
                     $query->orderByPriority();
                 },
                 'company',
@@ -388,6 +405,7 @@ class InstallmentPlanController extends Controller
                     $service = \App\Services\ServiceResolver::resolve($invoice->invoice_type_code);
                     $service->cancel($invoice);
                     
+                    $plan->delete();
                     $message = 'تم حذف خطة التقسيط والفاتورة المرتبطة بها بنجاح.';
                 } else {
                     // في حال كانت الخطة "يتيمة" (حالة نادرة)، نحذف الأقساط والخطة فقط

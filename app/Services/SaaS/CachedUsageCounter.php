@@ -4,7 +4,7 @@ namespace App\Services\SaaS;
 
 use Illuminate\Support\Facades\Cache;
 
-// تعليق عربي: كلاس لإدارة الكاش السريع لاستهلاك الموارد وتحديثه تلقائياً لتقليل استهلاك موارد قاعدة البيانات.
+//   كلاس لإدارة الكاش السريع لاستهلاك الموارد وتحديثه تلقائياً لتقليل استهلاك موارد قاعدة البيانات.
 class CachedUsageCounter
 {
     protected static int $cacheTtl = 300; // 5 دقائق كاش افتراضي
@@ -68,7 +68,8 @@ class CachedUsageCounter
                     self::clear((int) $invoice->company_id, 'invoices');
                 });
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         // 2. مراقبة المنتجات
         try {
@@ -80,7 +81,8 @@ class CachedUsageCounter
                     self::clear((int) $product->company_id, 'products');
                 });
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         // 3. مراقبة المستخدمين والموظفين
         try {
@@ -92,7 +94,8 @@ class CachedUsageCounter
                     self::clear((int) $companyUser->company_id, 'users');
                 });
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         // 4. مراقبة المستودعات والمخازن
         try {
@@ -104,6 +107,7 @@ class CachedUsageCounter
                     self::clear((int) $warehouse->company_id, 'warehouses');
                 });
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
     }
 }

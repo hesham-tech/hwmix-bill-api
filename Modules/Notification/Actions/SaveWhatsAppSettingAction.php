@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Actions;
 
-// تعليق عربي: أكشن لحفظ أو تحديث إعدادات حساب الواتساب (Meta Cloud API) الخاص بالشركة مع العزل الكامل وضمان وجود حساب افتراضي واحد للشركة.
+//   أكشن لحفظ أو تحديث إعدادات حساب الواتساب (Meta Cloud API) الخاص بالشركة مع العزل الكامل وضمان وجود حساب افتراضي واحد للشركة.
 
 use Modules\Core\Actions\BaseAction;
 use Modules\Notification\Models\WhatsAppSetting;
@@ -17,9 +17,9 @@ class SaveWhatsAppSettingAction extends BaseAction
         $this->authorize('companies.update_self');
 
         $companyId = Auth::user()->active_company_id;
-        
+
         $dto = WhatsAppSettingDTO::fromRequest($data);
-        
+
         return DB::transaction(function () use ($companyId, $dto) {
             $id = $dto->id;
             $isDefault = $dto->is_default;

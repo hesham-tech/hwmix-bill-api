@@ -2,7 +2,7 @@
 
 namespace Modules\Media\Http\Resources;
 
-// تعليق عربي: مورد بيانات لتغليف وعرض تفاصيل ملفات الوسائط وتوليد الروابط المباشرة للوصول إليها.
+//   مورد بيانات لتغليف وعرض تفاصيل ملفات الوسائط وتوليد الروابط المباشرة للوصول إليها.
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;

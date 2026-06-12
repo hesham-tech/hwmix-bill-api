@@ -2,7 +2,7 @@
 
 namespace Modules\ExportImport\tests\Feature;
 
-// تعليق عربي: اختبارات التحقق من صحة وجدولة وأمان عمليات التصدير والاستيراد بالخلفية.
+//   اختبارات التحقق من صحة وجدولة وأمان عمليات التصدير والاستيراد بالخلفية.
 
 use App\Models\User;
 use App\Models\Company;
@@ -125,7 +125,7 @@ class ExportImportTest extends TestCase
         // التحقق من وجود الملف في التخزين المزيّف ومحتوياته
         Storage::disk('public')->assertExists($updatedJob->file_path);
         $content = Storage::disk('public')->get($updatedJob->file_path);
-        
+
         $this->assertStringContainsString('Product A', $content);
         $this->assertStringContainsString('Description A', $content);
         $this->assertStringContainsString('Product B', $content);
@@ -197,7 +197,7 @@ class ExportImportTest extends TestCase
 
         $fileName = 'imports/' . $this->company->id . '/test_import.csv';
         // إضافة ترميز BOM
-        $content = chr(0xEF).chr(0xBB).chr(0xBF) . "ID,الاسم,الوصف,مفعل\n1,Product Import Test,Import Test Description,نعم";
+        $content = chr(0xEF) . chr(0xBB) . chr(0xBF) . "ID,الاسم,الوصف,مفعل\n1,Product Import Test,Import Test Description,نعم";
         Storage::disk('public')->put($fileName, $content);
 
         $job = ExportImportJob::create([

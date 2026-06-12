@@ -2,7 +2,7 @@
 
 namespace Modules\Media\Http\Controllers;
 
-// تعليق عربي: متحكم لإدارة رفع وحذف واستعراض مكتبة الوسائط والصور المخصصة للشركة.
+//   متحكم لإدارة رفع وحذف واستعراض مكتبة الوسائط والصور المخصصة للشركة.
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -31,9 +31,11 @@ class MediaController extends Controller
             $query = MediaFile::query();
 
             // إذا لم يكن سوبر أدمن ولا مدير شركة ولا يملك صلاحية عرض جميع الصور
-            if (!Auth::user()->hasPermissionTo(perm_key('images.view_all')) && 
-                !Auth::user()->hasPermissionTo(perm_key('admin.super')) && 
-                !Auth::user()->hasPermissionTo(perm_key('admin.company'))) {
+            if (
+                !Auth::user()->hasPermissionTo(perm_key('images.view_all')) &&
+                !Auth::user()->hasPermissionTo(perm_key('admin.super')) &&
+                !Auth::user()->hasPermissionTo(perm_key('admin.company'))
+            ) {
                 // يعرض فقط الصور التي قام برفعها بنفسه
                 $query->where('created_by', Auth::id());
             }
@@ -41,8 +43,8 @@ class MediaController extends Controller
             // استثناء ملفات الوسائط المستخدمة بالفعل في جدول images
             $query->whereNotExists(function ($q) {
                 $q->select(\DB::raw(1))
-                  ->from('images')
-                  ->whereRaw("images.url LIKE CONCAT('%', media_files.file_path)");
+                    ->from('images')
+                    ->whereRaw("images.url LIKE CONCAT('%', media_files.file_path)");
             });
 
             // يتم الفرز scoped بالشركة النشطة تلقائياً بفضل FilterableByCompany
@@ -82,9 +84,11 @@ class MediaController extends Controller
             $mediaFile = MediaFile::findOrFail($id);
 
             // التحقق من الصلاحيات
-            if (!Auth::user()->hasPermissionTo(perm_key('images.delete_all')) && 
-                !Auth::user()->hasPermissionTo(perm_key('admin.super')) && 
-                !Auth::user()->hasPermissionTo(perm_key('admin.company'))) {
+            if (
+                !Auth::user()->hasPermissionTo(perm_key('images.delete_all')) &&
+                !Auth::user()->hasPermissionTo(perm_key('admin.super')) &&
+                !Auth::user()->hasPermissionTo(perm_key('admin.company'))
+            ) {
                 // إذا لم يكن لديه صلاحية حذف الكل، نتحقق مما إذا كان هو من أنشأه
                 if ($mediaFile->created_by !== Auth::id()) {
                     return api_forbidden('غير مصرح لك بحذف هذا الملف.');

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-// تعليق عربي: سيدر لتهيئة الصلاحيات وربط المستخدم الرئيسي بجميع الصلاحيات الافتراضية للنظام دون تعديل بياناته الحالية.
+//   سيدر لتهيئة الصلاحيات وربط المستخدم الرئيسي بجميع الصلاحيات الافتراضية للنظام دون تعديل بياناته الحالية.
 class RolesAndPermissionsSeeder extends Seeder
 {
     public function run()
@@ -32,7 +32,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $admin = User::withoutGlobalScopes()->where(function ($query) {
             $query->where('email', 'admin@admin.com')
-                  ->orWhere('username', 'system_owner');
+                ->orWhere('username', 'system_owner');
         })->first();
 
         if (!$admin) {
@@ -76,9 +76,11 @@ class RolesAndPermissionsSeeder extends Seeder
                 'created_by' => $user->id,
                 'status' => 'active',
             ];
-            if ($hasNickname) $data['nickname_in_company'] = $user->nickname;
-            if ($hasFullName) $data['full_name_in_company'] = $user->full_name;
-            
+            if ($hasNickname)
+                $data['nickname_in_company'] = $user->nickname;
+            if ($hasFullName)
+                $data['full_name_in_company'] = $user->full_name;
+
             $pivotData[$companyId] = $data;
         }
         $user->companies()->sync($pivotData);

@@ -1,6 +1,6 @@
 <?php
 
-// تعليق عربي: هجرة لإضافة حقل البوابة الافتراضية (is_default) لجدول بوابات الدفع الإلكتروني.
+//   هجرة لإضافة حقل البوابة الافتراضية (is_default) لجدول بوابات الدفع الإلكتروني.
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;

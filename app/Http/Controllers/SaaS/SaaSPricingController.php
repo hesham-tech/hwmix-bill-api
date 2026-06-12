@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\SaaS;
 
-// تعليق عربي: متحكم لإدارة تسعيرة اشتراكات الساس وحساب تكلفة الباقات بناءً على الشهور والكوبونات المدخلة.
+//   متحكم لإدارة تسعيرة اشتراكات الساس وحساب تكلفة الباقات بناءً على الشهور والكوبونات المدخلة.
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaaS\CalculatePricingRequest;

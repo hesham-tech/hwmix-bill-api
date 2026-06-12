@@ -2,7 +2,7 @@
 
 namespace Modules\Media\Services;
 
-// تعليق عربي: خدمة لإدارة وتخزين وحذف ملفات الوسائط والصور محلياً مع ربطها بالشركة والمستخدم الموثق.
+//   خدمة لإدارة وتخزين وحذف ملفات الوسائط والصور محلياً مع ربطها بالشركة والمستخدم الموثق.
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -31,21 +31,21 @@ class MediaStorageService
         $originalName = $file->getClientOriginalName();
         $mimeType = $file->getMimeType();
         $extension = strtolower($file->getClientOriginalExtension());
-        
+
         $isImage = str_starts_with($mimeType, 'image/');
         $isSvg = ($mimeType === 'image/svg+xml' || $extension === 'svg');
-        
+
         $companyFolder = 'media/' . $companyId;
         Storage::disk('public')->makeDirectory($companyFolder);
 
         if ($isImage && !$isSvg) {
             // تحسين وضغط الصورة بصيغة WebP
             $optimizedData = $this->optimizer->convertToWebp($file);
-            
+
             if ($optimizedData !== false) {
                 $filename = uniqid() . '.webp';
                 $path = $companyFolder . '/' . $filename;
-                
+
                 Storage::disk('public')->put($path, $optimizedData);
                 $fileSize = Storage::disk('public')->size($path);
                 $mimeType = 'image/webp';
@@ -87,7 +87,7 @@ class MediaStorageService
             if (Storage::disk('public')->exists($mediaFile->file_path)) {
                 Storage::disk('public')->delete($mediaFile->file_path);
             }
-            
+
             // حذف السجل من قاعدة البيانات (Soft Delete)
             return $mediaFile->delete();
         } catch (\Exception $e) {

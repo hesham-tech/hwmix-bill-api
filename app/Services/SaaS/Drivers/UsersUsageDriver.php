@@ -5,7 +5,7 @@ namespace App\Services\SaaS\Drivers;
 use App\Services\SaaS\Contracts\UsageDriverInterface;
 use App\Models\CompanyUser;
 
-// تعليق عربي: كلاس حساب عدد الموظفين والمستخدمين النشطين المرتبطين بالشركة المشتركة.
+//   كلاس حساب عدد الموظفين والمستخدمين النشطين المرتبطين بالشركة المشتركة.
 class UsersUsageDriver implements UsageDriverInterface
 {
     /**

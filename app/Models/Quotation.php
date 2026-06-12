@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsActivity;
 
 /**
- * تعليق عربي: كلاس يمثل عروض الأسعار المقدمة للعملاء وقيمها وحالتها الحالية.
+ *   كلاس يمثل عروض الأسعار المقدمة للعملاء وقيمها وحالتها الحالية.
  */
 class Quotation extends Model
 {

@@ -53,6 +53,7 @@ class InstallmentController extends Controller
             // تطبيق فلترة الصلاحيات بناءً على صلاحيات العرض
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
                 // المسؤول العام يرى جميع الأقساط (لا توجد قيود إضافية على الاستعلام)
+                $query->withoutGlobalScopes();
             } elseif ($authUser->hasAnyPermission([perm_key('installments.view_all'), perm_key('admin.company')])) {
                 // يرى جميع الأقساط الخاصة بالشركة النشطة (بما في ذلك مديرو الشركة)
                 $query->whereCompanyIsCurrent();
@@ -219,7 +220,11 @@ class InstallmentController extends Controller
                 return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
-            $installment = Installment::with($this->relations)->findOrFail($id);
+            $installmentQuery = Installment::with($this->relations);
+            if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                $installmentQuery->withoutGlobalScopes();
+            }
+            $installment = $installmentQuery->findOrFail($id);
 
             // التحقق من صلاحيات العرض
             $canView = false;

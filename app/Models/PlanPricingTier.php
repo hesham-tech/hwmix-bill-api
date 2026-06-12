@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-// تعليق عربي: موديل شرائح أسعار الباقات لإدارة خصومات المدد الطويلة.
+//   موديل شرائح أسعار الباقات لإدارة خصومات المدد الطويلة.
 class PlanPricingTier extends Model
 {
     use \Illuminate\Database\Eloquent\Factories\HasFactory;

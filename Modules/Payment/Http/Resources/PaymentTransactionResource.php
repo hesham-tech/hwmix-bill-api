@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Http\Resources;
 
-// تعليق عربي: مورد بيانات معاملة الدفع الإلكتروني لتحويل الكائن إلى استجابة JSON للعملاء أو الداشبورد.
+//   مورد بيانات معاملة الدفع الإلكتروني لتحويل الكائن إلى استجابة JSON للعملاء أو الداشبورد.
 
 use Illuminate\Http\Resources\Json\JsonResource;
 

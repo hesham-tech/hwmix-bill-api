@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Models;
 
-// تعليق عربي: موديل بوابة الدفع الإلكتروني لتخزين إعدادات الربط للشركات.
+//   موديل بوابة الدفع الإلكتروني لتخزين إعدادات الربط للشركات.
 
 use App\Traits\Blameable;
 use App\Traits\FilterableByCompany;

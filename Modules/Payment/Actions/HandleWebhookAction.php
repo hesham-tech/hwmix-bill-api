@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Actions;
 
-// تعليق عربي: أكشن لمعالجة الـ Webhooks الواردة من بوابات الدفع الخارجية وتحديث حالة المعاملة.
+//   أكشن لمعالجة الـ Webhooks الواردة من بوابات الدفع الخارجية وتحديث حالة المعاملة.
 
 use Modules\Core\Actions\BaseAction;
 use Modules\Payment\Models\PaymentTransaction;
@@ -58,10 +58,10 @@ class HandleWebhookAction extends BaseAction
         }
 
         $driver = PaymentGatewayFactory::create($gateway);
-        
+
         // التحقق الفعلي من الطلب
-        $verificationData = $driverName === 'stripe' 
-            ? ['session_id' => $gatewayReference] 
+        $verificationData = $driverName === 'stripe'
+            ? ['session_id' => $gatewayReference]
             : ['order' => $gatewayReference, 'success' => $payload['obj']['success'] ?? false];
 
         $verifyResult = $driver->verify($verificationData);
@@ -71,9 +71,9 @@ class HandleWebhookAction extends BaseAction
         }
 
         // 3. تحديث حالة المعاملة في قاعدة البيانات ضمن Transaction
-        DB::transaction(function() use ($transaction, $verifyResult, $payload) {
+        DB::transaction(function () use ($transaction, $verifyResult, $payload) {
             $status = $verifyResult['status']; // completed, failed, etc.
-            
+
             $transaction->update([
                 'status' => $status,
                 'payload' => array_merge($transaction->payload ?? [], [
@@ -90,7 +90,7 @@ class HandleWebhookAction extends BaseAction
                     // إذا كان الكائن المرتبط يدعم التحديث التلقائي كمدفوع
                     $payable->markAsPaid($transaction);
                 }
-                
+
                 // هنا يمكن إثارة Event: event(new PaymentReceivedEvent($transaction));
             }
         });

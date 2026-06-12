@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Jobs;
 
-// تعليق عربي: وظيفة خلفية (Job) لإرسال تنبيهات الواتساب بشكل غير متزامن باستخدام WhatsApp Cloud API.
+//   وظيفة خلفية (Job) لإرسال تنبيهات الواتساب بشكل غير متزامن باستخدام WhatsApp Cloud API.
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -51,7 +51,7 @@ class SendWhatsAppJob implements ShouldQueue
         try {
             // إعداد الخدمة بناءً على الإعدادات المخصصة للشركة أو الافتراضية
             $service = new WhatsAppService($this->gatewayConfig);
-            
+
             $result = $service->sendMessage(
                 $this->recipient,
                 $this->messageOrTemplate,

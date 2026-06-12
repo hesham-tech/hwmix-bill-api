@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Actions;
 
-// تعليق عربي: أكشن لحفظ أو تحديث قواعد أتمتة الإشعارات (Workflows) مع خطواتها المجدولة لكل شركة بشكل مستقل ومحمي داخل DB Transaction.
+//   أكشن لحفظ أو تحديث قواعد أتمتة الإشعارات (Workflows) مع خطواتها المجدولة لكل شركة بشكل مستقل ومحمي داخل DB Transaction.
 
 use Modules\Core\Actions\BaseAction;
 use Modules\Notification\Models\NotificationWorkflow;
@@ -25,20 +25,20 @@ class SaveNotificationWorkflowAction extends BaseAction
         // التحقق من توافر قنوات الاتصال والربط النشطة للشركة أو النظام العام
         $hasEmail = \Modules\Notification\Models\MailSetting::where(function ($query) use ($companyId) {
             $query->where('company_id', $companyId)
-                  ->orWhere('is_global', true);
+                ->orWhere('is_global', true);
         })
-        ->where('is_active', true)
-        ->exists();
+            ->where('is_active', true)
+            ->exists();
 
         $hasWhatsApp = \Modules\Notification\Models\WhatsAppSetting::where(function ($query) use ($companyId) {
             $query->where('company_id', $companyId)
-                  ->orWhere('is_global', true);
+                ->orWhere('is_global', true);
         })
-        ->where('is_active', true)
-        ->exists();
+            ->where('is_active', true)
+            ->exists();
 
         // 1. إذا تم طلب تفعيل القاعدة بالكامل
-        if (isset($data['is_active']) && (bool)$data['is_active']) {
+        if (isset($data['is_active']) && (bool) $data['is_active']) {
             if (!$hasEmail && !$hasWhatsApp) {
                 throw new \Exception('لا يمكن تفعيل قاعدة الأتمتة لعدم وجود قنوات اتصال مفعلة ونشطة للشركة (بريد إلكتروني أو واتساب). يرجى تهيئة الخدمات أولاً.');
             }
@@ -47,7 +47,7 @@ class SaveNotificationWorkflowAction extends BaseAction
         // 2. التحقق من قنوات خطوات الإرسال (channel الآن array مثل ['email', 'whatsapp'])
         if (isset($data['steps']) && is_array($data['steps'])) {
             foreach ($data['steps'] as $index => $stepData) {
-                $stepActive = isset($stepData['is_active']) ? (bool)$stepData['is_active'] : true;
+                $stepActive = isset($stepData['is_active']) ? (bool) $stepData['is_active'] : true;
                 if ($stepActive) {
                     $stepNum = $stepData['step_number'] ?? ($index + 1);
 
@@ -75,12 +75,12 @@ class SaveNotificationWorkflowAction extends BaseAction
         return DB::transaction(function () use ($companyId, $id, $data) {
             $workflowData = [
                 'event_type' => $data['event_type'],
-                'is_active' => isset($data['is_active']) ? (bool)$data['is_active'] : false,
+                'is_active' => isset($data['is_active']) ? (bool) $data['is_active'] : false,
                 'company_id' => $companyId,
             ];
 
             if (isset($data['is_global']) && Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
-                $workflowData['is_global'] = (bool)$data['is_global'];
+                $workflowData['is_global'] = (bool) $data['is_global'];
             }
 
             if ($id) {
@@ -118,7 +118,7 @@ class SaveNotificationWorkflowAction extends BaseAction
                     'delay_days' => (int) $stepData['delay_days'],
                     'channel' => is_array($stepData['channel']) ? $stepData['channel'] : [$stepData['channel']],
                     'template_id' => $stepData['template_id'],
-                    'is_active' => isset($stepData['is_active']) ? (bool)$stepData['is_active'] : true,
+                    'is_active' => isset($stepData['is_active']) ? (bool) $stepData['is_active'] : true,
                 ];
 
                 $stepId = $stepData['id'] ?? null;

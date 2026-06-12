@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-// تعليق عربي: اختبارات التحقق من قيود ساس واشتراكات الشركات والتسجيل بالشركة الأم والتحكم في التجديد التلقائي.
+//   اختبارات التحقق من قيود ساس واشتراكات الشركات والتسجيل بالشركة الأم والتحكم في التجديد التلقائي.
 
 use App\Models\User;
 use App\Models\Company;
@@ -298,7 +298,7 @@ class SaaSSubscriptionTest extends TestCase
             'username' => 'superadmin_test',
             'password' => bcrypt('password123'),
         ]);
-        
+
         // إسناد صلاحية admin.super له
         $permission = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'admin.super', 'guard_name' => 'web']);
         $superAdmin->givePermissionTo($permission);
@@ -306,10 +306,10 @@ class SaaSSubscriptionTest extends TestCase
         // 4. اختبار الوصول كمستخدم عادي (مازن النيل)
         $normalUser = User::where('phone', '01012345679')->first();
         $this->actingAs($normalUser);
-        
+
         $this->getJson('/api/v1/saas/companies-subscriptions')
             ->assertStatus(403);
-            
+
         $this->postJson('/api/v1/saas/companies-subscriptions/change-plan', [
             'company_id' => $newCompany->id,
             'plan_id' => $premiumPlan->id
@@ -317,7 +317,7 @@ class SaaSSubscriptionTest extends TestCase
 
         // 5. اختبار الوصول كسوبر أدمن
         $this->actingAs($superAdmin);
-        
+
         // أ) جلب قائمة اشتراكات الشركات
         $responseList = $this->getJson('/api/v1/saas/companies-subscriptions');
         $responseList->assertStatus(200);

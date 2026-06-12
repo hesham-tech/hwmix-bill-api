@@ -1,5 +1,5 @@
 <?php
-// تعليق عربي: تريت لإدارة حركات الأرصدة للمستخدم وحماية عمليات السحب والإيداع والتحويل
+//   تريت لإدارة حركات الأرصدة للمستخدم وحماية عمليات السحب والإيداع والتحويل
 namespace App\Traits;
 
 use App\Models\CashBox;
@@ -50,10 +50,10 @@ trait ManagesBalance
                     ->where('company_id', $companyId)
                     ->where('is_default', true)
                     ->first() ?? CashBox::withoutGlobalScopes()
-                    ->where('user_id', $this->id)
-                    ->where('company_id', $companyId)
-                    ->where('is_active', true)
-                    ->first();
+                        ->where('user_id', $this->id)
+                        ->where('company_id', $companyId)
+                        ->where('is_active', true)
+                        ->first();
             }
 
             if (!$cashBox) {
@@ -141,10 +141,10 @@ trait ManagesBalance
                     ->where('company_id', $companyId)
                     ->where('is_default', true)
                     ->first() ?? CashBox::withoutGlobalScopes()
-                    ->where('user_id', $this->id)
-                    ->where('company_id', $companyId)
-                    ->where('is_active', true)
-                    ->first();
+                        ->where('user_id', $this->id)
+                        ->where('company_id', $companyId)
+                        ->where('is_active', true)
+                        ->first();
 
                 if (!$cashBox) {
                     DB::rollBack();

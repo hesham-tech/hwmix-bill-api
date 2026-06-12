@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Listeners;
 
-// تعليق عربي: مستمع الأحداث (Subscriber) لتشغيل قواعد أتمتة الإشعارات الفورية لكل شركة عند حدوث أحداث معينة في النظام.
+//   مستمع الأحداث (Subscriber) لتشغيل قواعد أتمتة الإشعارات الفورية لكل شركة عند حدوث أحداث معينة في النظام.
 
 use Illuminate\Events\Dispatcher;
 use Modules\Sales\Models\Invoice;
@@ -20,7 +20,8 @@ class NotificationWorkflowSubscriber
     public function handleInvoiceCreated($event)
     {
         $invoice = $event->invoice ?? $event;
-        if (!$invoice instanceof Invoice) return;
+        if (!$invoice instanceof \App\Models\Invoice && !$invoice instanceof \Modules\Sales\Models\Invoice)
+            return;
 
         $this->triggerWorkflow($invoice->company_id, 'invoice.created', $invoice);
     }
@@ -31,7 +32,8 @@ class NotificationWorkflowSubscriber
     public function handleInvoiceCanceled($event)
     {
         $invoice = $event->invoice ?? $event;
-        if (!$invoice instanceof Invoice) return;
+        if (!$invoice instanceof \App\Models\Invoice && !$invoice instanceof \Modules\Sales\Models\Invoice)
+            return;
 
         $this->triggerWorkflow($invoice->company_id, 'invoice.canceled', $invoice);
     }
@@ -42,10 +44,11 @@ class NotificationWorkflowSubscriber
     public function handlePaymentReceived($event)
     {
         $payment = $event->payment ?? $event;
-        if (!$payment) return;
+        if (!$payment)
+            return;
 
         $companyId = $payment->company_id;
-        
+
         $this->triggerWorkflow($companyId, 'payment.received', $payment);
     }
 
@@ -55,7 +58,8 @@ class NotificationWorkflowSubscriber
     public function handleUserRegistered($event)
     {
         $user = $event->user ?? $event;
-        if (!$user instanceof User) return;
+        if (!$user instanceof User)
+            return;
 
         $this->triggerWorkflow($user->company_id, 'customer.created', $user);
     }
@@ -66,7 +70,8 @@ class NotificationWorkflowSubscriber
     public function handleTransactionCreated($event)
     {
         $transaction = $event->transaction ?? $event;
-        if (!$transaction instanceof \App\Models\Transaction && !$transaction instanceof \Modules\Accounting\Models\Transaction) return;
+        if (!$transaction instanceof \App\Models\Transaction && !$transaction instanceof \Modules\Accounting\Models\Transaction)
+            return;
 
         $this->triggerWorkflow($transaction->company_id, 'transaction.created', $transaction);
     }
@@ -77,7 +82,8 @@ class NotificationWorkflowSubscriber
     public function handleTaskUpdated($event)
     {
         $task = $event->task ?? $event;
-        if (!$task instanceof \App\Models\Task) return;
+        if (!$task instanceof \App\Models\Task)
+            return;
 
         $this->triggerWorkflow($task->company_id, 'task.updated', $task);
     }
@@ -88,7 +94,8 @@ class NotificationWorkflowSubscriber
     public function handleTaskCreated($event)
     {
         $task = $event->task ?? $event;
-        if (!$task instanceof \App\Models\Task) return;
+        if (!$task instanceof \App\Models\Task)
+            return;
 
         $this->triggerWorkflow($task->company_id, 'task.created', $task);
     }
@@ -99,7 +106,8 @@ class NotificationWorkflowSubscriber
     public function handleProductCreated($event)
     {
         $product = $event->product ?? $event;
-        if (!$product instanceof \Modules\Inventory\Models\Product) return;
+        if (!$product instanceof \Modules\Inventory\Models\Product)
+            return;
 
         $this->triggerWorkflow($product->company_id, 'product.created', $product);
     }
@@ -110,7 +118,8 @@ class NotificationWorkflowSubscriber
     public function handleStockUpdated($event)
     {
         $stock = $event->stock ?? $event;
-        if (!$stock instanceof \Modules\Inventory\Models\Stock) return;
+        if (!$stock instanceof \Modules\Inventory\Models\Stock)
+            return;
 
         $this->triggerWorkflow($stock->company_id, 'product.stock_updated', $stock);
     }
@@ -121,7 +130,8 @@ class NotificationWorkflowSubscriber
     public function handleInvoiceCreatedForReturn($event)
     {
         $invoice = $event->invoice ?? $event;
-        if (!$invoice instanceof \Modules\Sales\Models\Invoice) return;
+        if (!$invoice instanceof \App\Models\Invoice && !$invoice instanceof \Modules\Sales\Models\Invoice)
+            return;
 
         $type = $invoice->invoiceType;
         if ($type && $type->code === 'sale_return') {
@@ -135,7 +145,8 @@ class NotificationWorkflowSubscriber
     public function handleCashBoxCreated($event)
     {
         $cashbox = $event->cashbox ?? $event;
-        if (!$cashbox instanceof \App\Models\CashBox && !$cashbox instanceof \Modules\Accounting\Models\CashBox) return;
+        if (!$cashbox instanceof \App\Models\CashBox && !$cashbox instanceof \Modules\Accounting\Models\CashBox)
+            return;
 
         $this->triggerWorkflow($cashbox->company_id, 'cashbox.created', $cashbox);
     }
@@ -145,7 +156,8 @@ class NotificationWorkflowSubscriber
      */
     protected function triggerWorkflow($companyId, string $eventType, $entity)
     {
-        if (!$companyId) return;
+        if (!$companyId)
+            return;
 
         try {
             // البحث عن قاعدة الأتمتة المفعلة لهذه الشركة والحدث
@@ -186,7 +198,7 @@ class NotificationWorkflowSubscriber
             \App\Events\PaymentReceived::class,
             [self::class, 'handlePaymentReceived']
         );
-        
+
         // الاستماع لحدث إنشاء الدفعة المبيعات كخط دفاع بديل
         $events->listen(
             'eloquent.created: Modules\Sales\Models\InvoicePayment',

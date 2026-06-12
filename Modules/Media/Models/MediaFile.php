@@ -2,7 +2,7 @@
 
 namespace Modules\Media\Models;
 
-// تعليق عربي: موديل ملفات الوسائط لتسجيل تفاصيل وإدارة الصور والمستندات المرفوعة لكل شركة.
+//   موديل ملفات الوسائط لتسجيل تفاصيل وإدارة الصور والمستندات المرفوعة لكل شركة.
 
 use App\Traits\Blameable;
 use App\Traits\FilterableByCompany;

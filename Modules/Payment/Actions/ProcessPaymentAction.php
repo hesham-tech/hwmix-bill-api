@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\Actions;
 
-// تعليق عربي: أكشن لإنشاء معاملة دفع جديدة واستدعاء بوابة الدفع الإلكتروني لتجهيز رابط الدفع للمستخدم.
+//   أكشن لإنشاء معاملة دفع جديدة واستدعاء بوابة الدفع الإلكتروني لتجهيز رابط الدفع للمستخدم.
 
 use Modules\Core\Actions\BaseAction;
 use Modules\Payment\Models\PaymentGateway;
@@ -25,12 +25,12 @@ class ProcessPaymentAction extends BaseAction
 
         // العثور على بوابة الدفع
         $gateway = PaymentGateway::findOrFail($gatewayId);
-        
+
         if (!$gateway->is_active) {
             throw new \Exception('بوابة الدفع المحددة غير نشطة حالياً.');
         }
 
-        return DB::transaction(function() use ($gateway, $payableType, $payableId, $amount, $currency, $branchId, $options) {
+        return DB::transaction(function () use ($gateway, $payableType, $payableId, $amount, $currency, $branchId, $options) {
             // إنشاء المعاملة المالية في قاعدة البيانات
             $transaction = PaymentTransaction::create([
                 'payment_gateway_id' => $gateway->id,

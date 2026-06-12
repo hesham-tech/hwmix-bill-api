@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-// تعليق عربي: المحرك المركزي الموحد لإدارة وتطبيق شروط الاشتراك ديناميكياً والتحقق من الميزات والحدود النشطة.
+//   المحرك المركزي الموحد لإدارة وتطبيق شروط الاشتراك ديناميكياً والتحقق من الميزات والحدود النشطة.
 class SaaSEngine
 {
     /**
@@ -106,7 +106,8 @@ class SaaSEngine
                     ->pluck('key')
                     ->toArray();
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         // في حال عدم وجود موارد في قاعدة البيانات (حالة الفولباك)
         if (empty($resources)) {
@@ -118,7 +119,7 @@ class SaaSEngine
         foreach ($resources as $resource) {
             $limit = $subscription ? self::resolveMaxLimit($subscription, $resource) : null;
             $current = CachedUsageCounter::get($companyId, $resource);
-            
+
             $isUnlimited = $isSuperAdmin || ($limit === null || (int) $limit === -1);
             $maxVal = $isUnlimited ? 'غير محدود' : (int) $limit;
 
@@ -152,8 +153,8 @@ class SaaSEngine
             if (is_string($subFeatures)) {
                 $subFeatures = json_decode($subFeatures, true) ?: [];
             }
-            $limit = $subFeatures['limits'][$resource] 
-                ?? $subFeatures[$resource] 
+            $limit = $subFeatures['limits'][$resource]
+                ?? $subFeatures[$resource]
                 ?? $subFeatures["max_{$resource}"]
                 ?? null;
         }
@@ -167,8 +168,8 @@ class SaaSEngine
                 if (is_string($planFeatures)) {
                     $planFeatures = json_decode($planFeatures, true) ?: [];
                 }
-                $limit = $planFeatures['limits'][$resource] 
-                    ?? $planFeatures[$resource] 
+                $limit = $planFeatures['limits'][$resource]
+                    ?? $planFeatures[$resource]
                     ?? $planFeatures["max_{$resource}"]
                     ?? null;
             }

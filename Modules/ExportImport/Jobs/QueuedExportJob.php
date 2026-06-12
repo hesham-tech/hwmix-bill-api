@@ -2,7 +2,7 @@
 
 namespace Modules\ExportImport\Jobs;
 
-// تعليق عربي: وظيفة خلفية لمعالجة عمليات التصدير الضخمة وتحويل البيانات لملفات CSV مع تتبع التقدم.
+//   وظيفة خلفية لمعالجة عمليات التصدير الضخمة وتحويل البيانات لملفات CSV مع تتبع التقدم.
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -39,12 +39,12 @@ class QueuedExportJob implements ShouldQueue
             ]);
 
             $fileName = 'exports/' . $exportJob->company_id . '/' . strtolower($exportJob->model_type) . '_' . time() . '.csv';
-            
+
             Storage::disk('public')->makeDirectory('exports/' . $exportJob->company_id);
             $filePath = Storage::disk('public')->path($fileName);
 
             $file = fopen($filePath, 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             if (strtolower($exportJob->model_type) === 'products') {
                 fputcsv($file, ['ID', 'الاسم', 'الوصف', 'مفعل']);

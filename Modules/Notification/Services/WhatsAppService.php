@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Services;
 
-// تعليق عربي: خدمة إرسال التنبيهات عبر WhatsApp Cloud API باستخدام HTTP Client.
+//   خدمة إرسال التنبيهات عبر WhatsApp Cloud API باستخدام HTTP Client.
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -62,7 +62,7 @@ class WhatsAppService
 
         try {
             $url = "https://graph.facebook.com/{$version}/{$phoneNumberId}/messages";
-            
+
             $payload = [
                 'messaging_product' => 'whatsapp',
                 'to' => $to,

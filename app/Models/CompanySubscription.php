@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// تعليق عربي: موديل اشتراكات الشركات بـ SaaS للتحكم بالباقات والتواريخ والحدود الخاصة بالشركة المشتركة بالمنصة.
+//   موديل اشتراكات الشركات بـ SaaS للتحكم بالباقات والتواريخ والحدود الخاصة بالشركة المشتركة بالمنصة.
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -112,14 +112,14 @@ class CompanySubscription extends Model
             'starts_at' => $startsAt,
             'ends_at' => $endsAt,
         ]);
-        
+
         // إذا كان هناك كود كوبون، نزيد عدد الاستخدامات له عند الدفع والتفعيل
         if ($this->coupon_code) {
             \Illuminate\Support\Facades\DB::table('coupons')
                 ->where('code', $this->coupon_code)
                 ->increment('used_count');
         }
-        
+
         // تحديث السياق للشركة
         \Log::info("SaaS: تم تفعيل الاشتراك #{$this->id} للشركة #{$this->company_id} بعد الدفع بنجاح.");
     }

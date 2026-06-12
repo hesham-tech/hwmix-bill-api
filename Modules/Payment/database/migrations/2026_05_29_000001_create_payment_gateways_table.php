@@ -1,6 +1,6 @@
 <?php
 
-// تعليق عربي: هجرة لإنشاء جدول بوابات الدفع التي تربط الشركات بإعداداتها الخاصة لتمكين الدفع الإلكتروني.
+//   هجرة لإنشاء جدول بوابات الدفع التي تربط الشركات بإعداداتها الخاصة لتمكين الدفع الإلكتروني.
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -25,7 +25,7 @@ return new class extends Migration {
 
             $table->softDeletes();
             $table->timestamps();
-            
+
             $table->index(['company_id', 'is_active']);
         });
     }

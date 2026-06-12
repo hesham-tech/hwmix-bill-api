@@ -2,7 +2,7 @@
 
 namespace Modules\Payment\DTOs;
 
-// تعليق عربي: كائن نقل البيانات (DTO) الخاص بإعدادات بوابة الدفع لتوحيد نقل البيانات بين الكنترولر والأكشن.
+//   كائن نقل البيانات (DTO) الخاص بإعدادات بوابة الدفع لتوحيد نقل البيانات بين الكنترولر والأكشن.
 
 class PaymentGatewayDTO
 {
@@ -13,7 +13,8 @@ class PaymentGatewayDTO
         public bool $isActive = true,
         public bool $isTestMode = false,
         public bool $isDefault = false
-    ) {}
+    ) {
+    }
 
     public static function fromRequest(array $data): self
     {

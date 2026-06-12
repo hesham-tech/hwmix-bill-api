@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Models;
 
-// تعليق عربي: موديل قوالب الإشعارات لتخزين نص الرسائل وقنوات الإرسال المخصصة لكل شركة.
+//   موديل قوالب الإشعارات لتخزين نص الرسائل وقنوات الإرسال المخصصة لكل شركة.
 
 use App\Traits\Blameable;
 use App\Traits\FilterableByCompanyOrGlobal;

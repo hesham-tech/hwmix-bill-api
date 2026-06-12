@@ -33,6 +33,7 @@ class InstallmentPlanFactory extends Factory
             'number_of_installments' => 3,
             'total_amount' => 3000,
             'down_payment' => 0,
+            'net_amount' => 3000,
             'remaining_amount' => 3000,
             'installment_amount' => 1000,
             'start_date' => now(),

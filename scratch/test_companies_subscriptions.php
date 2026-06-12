@@ -1,5 +1,5 @@
 <?php
-// تعليق عربي: سكربت محاكاة ترقية مستخدم عادي (ليس سوبر أدمن) لباقة مدفوعة للتحقق من طلب الدفع وسلوكه.
+//   سكربت محاكاة ترقية مستخدم عادي (ليس سوبر أدمن) لباقة مدفوعة للتحقق من طلب الدفع وسلوكه.
 
 require __DIR__ . '/../vendor/autoload.php';
 $app = require_once __DIR__ . '/../bootstrap/app.php';
@@ -46,7 +46,7 @@ $request = Request::create('/api/saas/my-subscription/upgrade', 'POST', [
 try {
     $controller = new \App\Http\Controllers\SaaS\SaaSSubscriptionController();
     $response = $controller->upgrade($request);
-    
+
     echo "Status Code: " . $response->getStatusCode() . "\n";
     echo "Response Content: " . json_encode(json_decode($response->getContent(), true), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
 } catch (\Throwable $e) {

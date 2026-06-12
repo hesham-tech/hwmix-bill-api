@@ -5,7 +5,7 @@ namespace App\Observers;
 use App\Models\Company;
 
 /**
- * تعليق عربي: مراقب أحداث الشركات للتعامل مع الموارد التلقائية وإدارة المحذوفات.
+ *   مراقب أحداث الشركات للتعامل مع الموارد التلقائية وإدارة المحذوفات.
  */
 class CompanyObserver
 {
@@ -88,7 +88,7 @@ class CompanyObserver
             }
 
             \Log::info("CompanyObserver: تم تهيئة الشركة '{$company->name}' (ID: {$company->id}) بالكامل بمستودع وطرق دفع وخزنة وعميل نقدي افتراضي.");
-            
+
         } catch (\Exception $e) {
             \Log::error("CompanyObserver: فشل تهيئة موارد الشركة '{$company->name}': " . $e->getMessage());
         }
@@ -104,7 +104,7 @@ class CompanyObserver
 
     /**
      * Handle the Company "deleting" event.
-     * تعليق عربي: معالجة فك ارتباط المستخدمين أو حذفهم نهائياً عند الحذف النهائي للشركة.
+     *   معالجة فك ارتباط المستخدمين أو حذفهم نهائياً عند الحذف النهائي للشركة.
      */
     public function deleting(Company $company): void
     {
@@ -136,7 +136,7 @@ class CompanyObserver
                     // أولاً نحذف سجل الربط بالجدول الوسيط لمنع أي أخطاء قيود
                     \Log::info("CompanyObserver: Deleting User ID {$user->id} permanently as they have no other companies");
                     \DB::table('company_user')->where('user_id', $user->id)->delete();
-                    
+
                     // حذف المستخدم نهائياً
                     $user->newQueryWithoutScopes()->whereKey($user->getKey())->delete();
                 }

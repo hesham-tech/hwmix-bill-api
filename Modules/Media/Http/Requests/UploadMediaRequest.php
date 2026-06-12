@@ -2,7 +2,7 @@
 
 namespace Modules\Media\Http\Requests;
 
-// تعليق عربي: طلب للتحقق من صحة الملف المرفوع وحجمه وامتداداته المسموحة.
+//   طلب للتحقق من صحة الملف المرفوع وحجمه وامتداداته المسموحة.
 
 use Illuminate\Foundation\Http\FormRequest;
 

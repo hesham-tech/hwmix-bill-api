@@ -46,7 +46,7 @@ class CompanyController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $user  = Auth::user();
+            $user = Auth::user();
             $query = Company::withoutGlobalScopes()
                 ->whereNull('deleted_at')
                 ->with($this->relations)
@@ -81,16 +81,16 @@ class CompanyController extends Controller
             if ($search = $request->get('search')) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'LIKE', "%{$search}%")
-                      ->orWhere('email', 'LIKE', "%{$search}%")
-                      ->orWhere('phone', 'LIKE', "%{$search}%");
+                        ->orWhere('email', 'LIKE', "%{$search}%")
+                        ->orWhere('phone', 'LIKE', "%{$search}%");
                 });
             }
 
             // ---- الترتيب والتصفح ----
             $allowedSortFields = ['id', 'name', 'email', 'created_at'];
-            $sortField  = in_array($request->get('sort_by'), $allowedSortFields) ? $request->get('sort_by') : 'id';
-            $sortOrder  = in_array($request->get('sort_order'), ['asc', 'desc']) ? $request->get('sort_order') : 'asc';
-            $perPage    = max(1, min(200, (int) $request->get('per_page', 15)));
+            $sortField = in_array($request->get('sort_by'), $allowedSortFields) ? $request->get('sort_by') : 'id';
+            $sortOrder = in_array($request->get('sort_order'), ['asc', 'desc']) ? $request->get('sort_order') : 'asc';
+            $perPage = max(1, min(200, (int) $request->get('per_page', 15)));
 
             $companies = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
 
@@ -148,18 +148,20 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyPermission([
-            perm_key('admin.super'),
-            perm_key('companies.create'),
-        ])) {
+        if (
+            !$user->hasAnyPermission([
+                perm_key('admin.super'),
+                perm_key('companies.create'),
+            ])
+        ) {
             return api_forbidden('ليس لديك صلاحية لإنشاء شركة جديدة.');
         }
 
         try {
             $company = DB::transaction(function () use ($request, $user) {
-                $data                = $request->validated();
-                $data['created_by']  = $data['created_by'] ?? $user->id;
-                $data['company_id']  = $data['company_id'] ?? $user->active_company_id;
+                $data = $request->validated();
+                $data['created_by'] = $data['created_by'] ?? $user->id;
+                $data['company_id'] = $data['company_id'] ?? $user->active_company_id;
 
                 $company = Company::create($data);
 
@@ -250,12 +252,12 @@ class CompanyController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'item_ids'   => 'required|array|min:1',
+            'item_ids' => 'required|array|min:1',
             'item_ids.*' => 'integer|exists:companies,id',
         ]);
 
         $companyIds = $request->input('item_ids');
-        $companies  = Company::withoutGlobalScopes()->whereIn('id', $companyIds)->get();
+        $companies = Company::withoutGlobalScopes()->whereIn('id', $companyIds)->get();
 
         // التحقق من الصلاحية على كل شركة
         foreach ($companies as $company) {
@@ -297,10 +299,12 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyPermission([
-            perm_key('admin.super'),
-            perm_key('companies.delete_all'),
-        ])) {
+        if (
+            !$user->hasAnyPermission([
+                perm_key('admin.super'),
+                perm_key('companies.delete_all'),
+            ])
+        ) {
             return api_forbidden('ليس لديك صلاحية لعرض سلة المحذوفات.');
         }
 
@@ -333,21 +337,23 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyPermission([
-            perm_key('admin.super'),
-            perm_key('companies.delete_all'),
-        ])) {
+        if (
+            !$user->hasAnyPermission([
+                perm_key('admin.super'),
+                perm_key('companies.delete_all'),
+            ])
+        ) {
             return api_forbidden('ليس لديك صلاحية لاسترجاع الشركات.');
         }
 
         $request->validate([
-            'item_ids'   => 'required|array|min:1',
+            'item_ids' => 'required|array|min:1',
             'item_ids.*' => 'integer',
         ]);
 
         try {
             $companyIds = $request->input('item_ids');
-            
+
             DB::transaction(function () use ($companyIds) {
                 Company::onlyTrashed()
                     ->withoutGlobalScopes()
@@ -373,21 +379,23 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyPermission([
-            perm_key('admin.super'),
-            perm_key('companies.delete_all'),
-        ])) {
+        if (
+            !$user->hasAnyPermission([
+                perm_key('admin.super'),
+                perm_key('companies.delete_all'),
+            ])
+        ) {
             return api_forbidden('ليس لديك صلاحية لحذف الشركات نهائياً.');
         }
 
         $request->validate([
-            'item_ids'   => 'required|array|min:1',
+            'item_ids' => 'required|array|min:1',
             'item_ids.*' => 'integer',
         ]);
 
         try {
             $companyIds = $request->input('item_ids');
-            
+
             // جلب الشركات المحذوفة مؤقتاً للتأكد من وجودها
             $companies = Company::onlyTrashed()
                 ->withoutGlobalScopes()
@@ -516,7 +524,7 @@ class CompanyController extends Controller
     }
 
     /**
-     * تعليق عربي: جلب بيانات الشركة الأولى في النظام لعرضها على صفحات الهبوط العامة.
+     *   جلب بيانات الشركة الأولى في النظام لعرضها على صفحات الهبوط العامة.
      */
     public function publicCompany(): JsonResponse
     {

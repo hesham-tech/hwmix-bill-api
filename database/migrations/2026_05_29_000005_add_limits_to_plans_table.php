@@ -1,6 +1,6 @@
 <?php
 
-// تعليق عربي: هجرة تعديل جدول الخطط لإضافة قيود الحد الأقصى للمنتجات والفواتير.
+//   هجرة تعديل جدول الخطط لإضافة قيود الحد الأقصى للمنتجات والفواتير.
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;

@@ -2,7 +2,7 @@
 
 namespace Modules\Notification\Http\Requests;
 
-// تعليق عربي: طلب التحقق من صحة مدخلات إعدادات الواتساب (Meta Cloud API).
+//   طلب التحقق من صحة مدخلات إعدادات الواتساب (Meta Cloud API).
 
 use Illuminate\Foundation\Http\FormRequest;
 
