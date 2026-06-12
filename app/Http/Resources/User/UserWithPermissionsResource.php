@@ -42,6 +42,7 @@ class UserWithPermissionsResource extends JsonResource
             'avatar_url' => $this->avatar_url,
             'status' => $this->status,
             'active_company_id' => $this->active_company_id,
+            'is_active_company_deleted' => $this->active_company_id ? !\App\Models\Company::withoutGlobalScopes()->where('id', $this->active_company_id)->whereNull('deleted_at')->exists() : false,
             'created_by' => $this->created_by,
             'customer_type' => $this->customer_type,
             'is_staff_or_admin' => $this->isStaffOrAdmin(),

@@ -105,8 +105,87 @@ class CompanyControllerTest extends TestCase
         $response = $this->postJson('/api/v1/companies/delete', $payload);
 
         $response->assertStatus(200);
+        $this->assertSoftDeleted('companies', ['id' => $company1->id]);
+        $this->assertSoftDeleted('companies', ['id' => $company2->id]);
+    }
+
+    public function test_can_view_companies_trash()
+    {
+        $this->actingAs($this->admin);
+
+        $company1 = Company::factory()->create();
+        $company1->delete();
+
+        $response = $this->getJson('/api/v1/companies/trash');
+
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['name' => $company1->name]);
+    }
+
+    public function test_can_restore_companies_from_trash()
+    {
+        $this->actingAs($this->admin);
+
+        $company1 = Company::factory()->create();
+        $company1->delete();
+
+        $this->assertSoftDeleted('companies', ['id' => $company1->id]);
+
+        $payload = [
+            'item_ids' => [$company1->id]
+        ];
+
+        $response = $this->postJson('/api/v1/companies/restore', $payload);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('companies', [
+            'id' => $company1->id,
+            'deleted_at' => null
+        ]);
+    }
+
+    public function test_can_force_delete_company_and_cleanup_users()
+    {
+        $this->actingAs($this->admin);
+
+        $company1 = Company::factory()->create();
+        
+        // Create user who belongs only to company1
+        $userOnlyCompany1 = User::factory()->create(['company_id' => $company1->id]);
+        $company1->users()->attach($userOnlyCompany1->id, ['created_by' => $this->admin->id]);
+
+        // Create user who belongs to company1 AND another company
+        $otherCompany = Company::factory()->create();
+        $userMultipleCompanies = User::factory()->create([
+            'company_id' => $otherCompany->id,
+            'active_company_id' => $company1->id
+        ]);
+        $company1->users()->attach($userMultipleCompanies->id, ['created_by' => $this->admin->id]);
+        $otherCompany->users()->attach($userMultipleCompanies->id, ['created_by' => $this->admin->id]);
+
+        // Soft delete first
+        $company1->delete();
+
+        // Force delete
+        $payload = [
+            'item_ids'   => [$company1->id]
+        ];
+
+        $response = $this->postJson('/api/v1/companies/force-delete', $payload);
+
+        $response->assertStatus(200);
+
+        // Company is deleted permanently
         $this->assertDatabaseMissing('companies', ['id' => $company1->id]);
-        $this->assertDatabaseMissing('companies', ['id' => $company2->id]);
+
+        // User who only belonged to company1 should be deleted permanently
+        $this->assertDatabaseMissing('users', ['id' => $userOnlyCompany1->id]);
+
+        // User who belongs to multiple companies should NOT be deleted, and active_company_id should remain pointing to company1 (which is deleted)
+        $this->assertDatabaseHas('users', [
+            'id' => $userMultipleCompanies->id,
+            'active_company_id' => $company1->id
+        ]);
     }
 
     public function test_regular_user_cannot_view_all_companies()

@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -31,7 +32,7 @@ use App\Observers\CompanyObserver;
 #[ObservedBy([CompanyObserver::class])]
 class Company extends Model
 {
-    use HasFactory, Notifiable, Translatable, HasRoles, Filterable, Scopes, RolePermissions, LogsActivity, HasImages;
+    use HasFactory, Notifiable, Translatable, HasRoles, Filterable, Scopes, RolePermissions, LogsActivity, HasImages, SoftDeletes;
 
     /**
      * تجاوز الـ Global Scopes عند ربط النموذج بالـ Route (Route Model Binding).
@@ -83,9 +84,6 @@ class Company extends Model
                 'position_in_company',
                 'customer_type_in_company',
                 'status',
-                'user_phone',
-                'user_email',
-                'user_username',
                 'created_by'
             ]);
     }

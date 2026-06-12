@@ -47,7 +47,10 @@ class CompanyController extends Controller
     {
         try {
             $user  = Auth::user();
-            $query = Company::withoutGlobalScopes()->with($this->relations)->withCount('branches');
+            $query = Company::withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->with($this->relations)
+                ->withCount('branches');
 
             // ---- تطبيق نطاق الرؤية بحسب الصلاحية ----
             if (
@@ -273,15 +276,135 @@ class CompanyController extends Controller
         try {
             DB::transaction(function () use ($companies) {
                 foreach ($companies as $company) {
-                    // حذف اللوغو المرتبط قبل حذف الشركة
-                    if ($logo = $company->images()->where('type', 'logo')->first()) {
-                        $company->deleteImage($logo);
-                    }
                     $company->delete();
                 }
             });
 
-            return api_success(null, 'تم حذف الشركات المحددة بنجاح.');
+            return api_success(null, 'تم نقل الشركات المحددة إلى سلة المحذوفات بنجاح.');
+        } catch (\Exception $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * عرض سلة محذوفات الشركات (Trash).
+     *
+     * الصلاحيات: admin.super | companies.delete_all
+     *
+     * @group 07. الإدارة وسجلات النظام
+     */
+    public function trash(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+
+        if (!$user->hasAnyPermission([
+            perm_key('admin.super'),
+            perm_key('companies.delete_all'),
+        ])) {
+            return api_forbidden('ليس لديك صلاحية لعرض سلة المحذوفات.');
+        }
+
+        try {
+            $perPage = max(1, min(200, (int) $request->get('per_page', 15)));
+            $companies = Company::onlyTrashed()
+                ->withoutGlobalScopes()
+                ->with($this->relations)
+                ->orderBy('deleted_at', 'desc')
+                ->paginate($perPage);
+
+            return api_success(
+                CompanyResource::collection($companies),
+                $companies->isEmpty() ? 'سلة المحذوفات فارغة.' : 'تم جلب سلة المحذوفات بنجاح.'
+            );
+        } catch (\Exception $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * استرجاع الشركات المحددة من سلة المحذوفات.
+     *
+     * الصلاحيات: admin.super | companies.delete_all
+     *
+     * @group 07. الإدارة وسجلات النظام
+     * @bodyParam item_ids int[] required مصفوفة معرفات الشركات. Example: [1, 2]
+     */
+    public function restore(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+
+        if (!$user->hasAnyPermission([
+            perm_key('admin.super'),
+            perm_key('companies.delete_all'),
+        ])) {
+            return api_forbidden('ليس لديك صلاحية لاسترجاع الشركات.');
+        }
+
+        $request->validate([
+            'item_ids'   => 'required|array|min:1',
+            'item_ids.*' => 'integer',
+        ]);
+
+        try {
+            $companyIds = $request->input('item_ids');
+            
+            DB::transaction(function () use ($companyIds) {
+                Company::onlyTrashed()
+                    ->withoutGlobalScopes()
+                    ->whereIn('id', $companyIds)
+                    ->restore();
+            });
+
+            return api_success(null, 'تم استرجاع الشركات المحددة بنجاح.');
+        } catch (\Exception $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * حذف الشركات نهائياً وتطهير سجلاتها من النظام (Force Delete).
+     *
+     * الصلاحيات: admin.super | companies.delete_all
+     *
+     * @group 07. الإدارة وسجلات النظام
+     * @bodyParam item_ids int[] required مصفوفة معرفات الشركات. Example: [1, 2]
+     */
+    public function forceDestroy(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+
+        if (!$user->hasAnyPermission([
+            perm_key('admin.super'),
+            perm_key('companies.delete_all'),
+        ])) {
+            return api_forbidden('ليس لديك صلاحية لحذف الشركات نهائياً.');
+        }
+
+        $request->validate([
+            'item_ids'   => 'required|array|min:1',
+            'item_ids.*' => 'integer',
+        ]);
+
+        try {
+            $companyIds = $request->input('item_ids');
+            
+            // جلب الشركات المحذوفة مؤقتاً للتأكد من وجودها
+            $companies = Company::onlyTrashed()
+                ->withoutGlobalScopes()
+                ->whereIn('id', $companyIds)
+                ->get();
+
+            if ($companies->isEmpty()) {
+                return api_error('لم يتم العثور على أي شركة محددة في سلة المحذوفات.', [], 404);
+            }
+
+            DB::transaction(function () use ($companies) {
+                foreach ($companies as $company) {
+                    $company->forceDelete();
+                }
+            });
+
+            return api_success(null, 'تم حذف الشركات وتطهير سجلاتها نهائياً من النظام.');
         } catch (\Exception $e) {
             return api_exception($e);
         }

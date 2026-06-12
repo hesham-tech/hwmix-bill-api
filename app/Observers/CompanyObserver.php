@@ -4,6 +4,9 @@ namespace App\Observers;
 
 use App\Models\Company;
 
+/**
+ * تعليق عربي: مراقب أحداث الشركات للتعامل مع الموارد التلقائية وإدارة المحذوفات.
+ */
 class CompanyObserver
 {
     /**
@@ -97,6 +100,51 @@ class CompanyObserver
     public function updated(Company $company): void
     {
         //
+    }
+
+    /**
+     * Handle the Company "deleting" event.
+     * تعليق عربي: معالجة فك ارتباط المستخدمين أو حذفهم نهائياً عند الحذف النهائي للشركة.
+     */
+    public function deleting(Company $company): void
+    {
+        if ($company->isForceDeleting()) {
+            // حذف اللوغو المرتبط بالشركة نهائياً
+            if ($logo = $company->images()->where('type', 'logo')->first()) {
+                $company->deleteImage($logo);
+            }
+
+            // جلب جميع المستخدمين المرتبطين بالشركة
+            $associatedUsers = $company->users()->withoutGlobalScopes()->get();
+            \Log::info("CompanyObserver: Force deleting company ID {$company->id}. Associated users count: " . $associatedUsers->count());
+
+            foreach ($associatedUsers as $user) {
+                // التحقق من وجود شركات أخرى مرتبطة بالمشغل (باستثناء هذه الشركة)
+                $otherCompanies = \DB::table('company_user')
+                    ->where('user_id', $user->id)
+                    ->where('company_id', '!=', $company->id)
+                    ->get();
+
+                \Log::info("CompanyObserver: User ID {$user->id}, active_company_id: {$user->active_company_id}. Other companies count: " . $otherCompanies->count());
+
+                if ($otherCompanies->count() > 0) {
+                    // إذا كان للمستخدم شركة أخرى، لا نغير الشركة النشطة تلقائياً.
+                    // فقط نتركها كما هي، وسيقوم الفرونت اند بمعالجة ذلك عند جلب بيانات المستخدم.
+                    \Log::info("CompanyObserver: User ID {$user->id} has other companies. Keeping active_company_id as is.");
+                } else {
+                    // هذه هي الشركة الوحيدة للمستخدم، نقوم بحذفه نهائياً من النظام
+                    // أولاً نحذف سجل الربط بالجدول الوسيط لمنع أي أخطاء قيود
+                    \Log::info("CompanyObserver: Deleting User ID {$user->id} permanently as they have no other companies");
+                    \DB::table('company_user')->where('user_id', $user->id)->delete();
+                    
+                    // حذف المستخدم نهائياً
+                    $user->newQueryWithoutScopes()->whereKey($user->getKey())->delete();
+                }
+            }
+
+            // حذف جميع سجلات الربط بالشركة للجميع (لتنظيف الجدول الوسيط)
+            \DB::table('company_user')->where('company_id', $company->id)->delete();
+        }
     }
 
     /**

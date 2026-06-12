@@ -164,9 +164,11 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
             Route::delete('users/{user}', 'destroy');
         });
 
-    // company Controller
     Route::controller(CompanyController::class)
         ->group(function () {
+            Route::get('companies/trash', 'trash');
+            Route::post('companies/restore', 'restore');
+            Route::post('companies/force-delete', 'forceDestroy');
             Route::get('companies', 'index');
             Route::post('companies', 'store');
             Route::get('companies/{company}', 'show');

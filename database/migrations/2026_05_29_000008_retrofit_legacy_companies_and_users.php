@@ -47,7 +47,7 @@ return new class extends Migration {
         }
 
         // 2. تفعيل الباقة المجانية لجميع الشركات القديمة التي ليس لديها اشتراك حالي
-        $companies = Company::where('id', '!=', $masterCompanyId)->get();
+        $companies = \DB::table('companies')->where('id', '!=', $masterCompanyId)->get();
         foreach ($companies as $company) {
             $hasSub = \App\Models\CompanySubscription::where('company_id', $company->id)
                 ->whereIn('status', ['active', 'trial'])
