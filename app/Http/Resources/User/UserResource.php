@@ -43,7 +43,7 @@ class UserResource extends JsonResource
             'roles' => $this->whenLoaded('roles', fn() => $this->roles->pluck('name')),
             'direct_permissions' => $this->whenLoaded('permissions', fn() => $this->getDirectPermissions()->pluck('name')),
             'companies' => $this->whenLoaded('companies', fn() => CompanyResource::collection($this->getVisibleCompaniesForUser() ?? collect())),
-            'branch_ids' => $this->whenLoaded('branches', fn() => $this->branches->pluck('id')),
+            'branches' => $this->whenLoaded('branches', fn() => \Modules\Companies\Transformers\BranchResource::collection($this->branches)),
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
         ];

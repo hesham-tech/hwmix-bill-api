@@ -406,6 +406,10 @@ class UserController extends Controller
                         $q->where('company_id', $activeCompanyId);
                     },
                     'user.creator',
+                    'user.branches',
+                    'user.roles',
+                    'user.permissions',
+                    'user.companies.logo',
                     'company'
                 ])
                 ->first();
@@ -623,7 +627,7 @@ class UserController extends Controller
             }
 
             DB::commit();
-            return api_success(new UserResource($user->load('activeCompanyUser.company', 'companies')), 'تم تحديث البيانات بنجاح.');
+            return api_success(new UserResource($user->load(array_merge($this->relations, ['roles', 'permissions']))), 'تم تحديث البيانات بنجاح.');
         } catch (Throwable $e) {
             DB::rollback();
             return api_exception($e);
