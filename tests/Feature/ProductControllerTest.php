@@ -49,7 +49,7 @@ class ProductControllerTest extends TestCase
             'brand_id' => $this->brand->id,
         ]);
 
-        $response = $this->getJson('/api/products');
+        $response = $this->getJson('/api/v1/products');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data']);
@@ -80,7 +80,7 @@ class ProductControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->postJson('/api/product', $payload);
+        $response = $this->postJson('/api/v1/products', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('products', ['name' => 'Test Product']);
@@ -95,7 +95,7 @@ class ProductControllerTest extends TestCase
             'category_id' => $this->category->id,
         ]);
 
-        $response = $this->getJson("/api/product/{$product->id}");
+        $response = $this->getJson("/api/v1/products/{$product->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $product->id);
@@ -130,7 +130,7 @@ class ProductControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->putJson("/api/product/{$product->id}", $payload);
+        $response = $this->putJson("/api/v1/products/{$product->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('products', [
@@ -148,7 +148,7 @@ class ProductControllerTest extends TestCase
             'category_id' => $this->category->id,
         ]);
 
-        $response = $this->deleteJson("/api/product/delete/{$product->id}");
+        $response = $this->deleteJson("/api/v1/products/{$product->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
@@ -167,10 +167,10 @@ class ProductControllerTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->getJson("/api/product/{$otherProduct->id}");
+        $response = $this->getJson("/api/v1/products/{$otherProduct->id}");
         $response->assertStatus(403);
 
-        $response = $this->getJson('/api/products');
+        $response = $this->getJson('/api/v1/products');
         $response->assertJsonMissing(['name' => $otherProduct->name]);
     }
 
@@ -193,7 +193,7 @@ class ProductControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->postJson('/api/product', $payload);
+        $response = $this->postJson('/api/v1/products', $payload);
         $response->assertStatus(422);
     }
 }

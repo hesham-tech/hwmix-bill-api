@@ -91,4 +91,9 @@ class Stock extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->withoutGlobalScopes()->where($field ?? $this->getRouteKeyName(), $value)->first();
+    }
 }

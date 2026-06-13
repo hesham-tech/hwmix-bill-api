@@ -90,6 +90,10 @@ class StockController extends Controller
     public function show(Stock $stock): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $stock->company_id !== $authUser->active_company_id) {
+                return api_forbidden('ليس لديك صلاحية لعرض هذا المخزون.');
+            }
             $stock->load($this->relations);
             return api_success(new StockResource($stock), 'تم استرداد سجل المخزون بنجاح.');
         } catch (Throwable $e) {
@@ -103,6 +107,10 @@ class StockController extends Controller
     public function update(UpdateStockRequest $request, Stock $stock): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $stock->company_id !== $authUser->active_company_id) {
+                return api_forbidden('ليس لديك صلاحية لتعديل هذا المخزون.');
+            }
             $stock->update(array_merge($request->validated(), [
                 'updated_by' => Auth::id()
             ]));
@@ -119,6 +127,10 @@ class StockController extends Controller
     public function destroy(Stock $stock): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $stock->company_id !== $authUser->active_company_id) {
+                return api_forbidden('ليس لديك صلاحية لحذف هذا المخزون.');
+            }
             $stock->delete();
             return api_success([], 'تم حذف سجل المخزون بنجاح.');
         } catch (Throwable $e) {

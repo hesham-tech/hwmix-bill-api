@@ -6,6 +6,7 @@ use App\Traits\Blameable;
 use App\Traits\Scopes;
 use App\Traits\HasImages;
 use App\Traits\LogsActivity;
+use App\Traits\FilterableByCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
@@ -18,7 +19,7 @@ use App\Models\DigitalProductDelivery;
  */
 class Product extends Model
 {
-    use HasFactory, Blameable, Scopes, LogsActivity, HasImages;
+    use HasFactory, Blameable, Scopes, LogsActivity, HasImages, FilterableByCompany;
 
     protected static function newFactory()
     {
@@ -199,5 +200,10 @@ class Product extends Model
     public function logLabel()
     {
         return "المنتج ({$this->name})";
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->withoutGlobalScopes()->where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 }
