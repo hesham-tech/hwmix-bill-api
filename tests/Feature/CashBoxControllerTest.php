@@ -50,13 +50,15 @@ class CashBoxControllerTest extends TestCase
             'name' => 'Main Safe',
             'cash_box_type_id' => $this->boxType->id,
             'company_id' => $this->company->id,
-            'user_id' => $this->admin->id
+            'user_id' => $this->admin->id,
+            'is_active' => false
         ];
 
         $response = $this->postJson('/api/v1/cash-boxes', $payload);
 
-        $response->assertStatus(201);
-        $this->assertDatabaseHas('cash_boxes', ['name' => 'Main Safe', 'company_id' => $this->company->id]);
+        $response->assertStatus(201)
+            ->assertJsonPath('data.is_active', false);
+        $this->assertDatabaseHas('cash_boxes', ['name' => 'Main Safe', 'company_id' => $this->company->id, 'is_active' => false]);
     }
 
     public function test_can_show_cash_box()
@@ -73,14 +75,15 @@ class CashBoxControllerTest extends TestCase
     public function test_can_update_cash_box()
     {
         $this->actingAs($this->admin);
-        $box = CashBox::factory()->create(['company_id' => $this->company->id, 'name' => 'Old Name']);
+        $box = CashBox::factory()->create(['company_id' => $this->company->id, 'name' => 'Old Name', 'is_active' => true]);
 
-        $payload = ['name' => 'Updated Name'];
+        $payload = ['name' => 'Updated Name', 'is_active' => false];
 
         $response = $this->putJson("/api/v1/cash-boxes/{$box->id}", $payload);
 
-        $response->assertStatus(200);
-        $this->assertDatabaseHas('cash_boxes', ['id' => $box->id, 'name' => 'Updated Name']);
+        $response->assertStatus(200)
+            ->assertJsonPath('data.is_active', false);
+        $this->assertDatabaseHas('cash_boxes', ['id' => $box->id, 'name' => 'Updated Name', 'is_active' => false]);
     }
 
     public function test_can_delete_cash_box()

@@ -46,6 +46,11 @@ class InvoiceItem extends Model
         return $this->belongsTo(Invoice::class);
     }
 
+    public function unit()
+    {
+        return $this->belongsTo(\Modules\Inventory\Models\Unit::class, 'unit_id');
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);

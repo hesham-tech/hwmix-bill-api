@@ -42,4 +42,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
 
     // المخزون
     Route::apiResource('stocks', StockController::class);
+
+    // وحدات القياس
+    Route::get('units', [\Modules\Inventory\Http\Controllers\UnitController::class, 'index']);
 });

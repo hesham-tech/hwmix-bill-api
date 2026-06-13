@@ -9,6 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\Image\ImageResource;
 use App\Http\Resources\InstallmentPlan\InstallmentPlanBasicResource;
 use Modules\Inventory\Models\ProductVariant;
+use Modules\Inventory\Http\Resources\UnitResource;
 
 /**
  * متحور البيانات للمنتجات
@@ -41,6 +42,14 @@ class ProductResource extends JsonResource
             'category_id' => $this->category_id,
             'brand_id' => $this->whenNotNull($this->brand_id),
             'company_id' => $this->company_id,
+            'base_unit_id' => $this->base_unit_id,
+            'purchase_unit_id' => $this->purchase_unit_id,
+            'display_unit_id' => $this->display_unit_id,
+            'allow_decimal_quantities' => (bool) $this->allow_decimal_quantities,
+            'quantity_precision' => (int) $this->quantity_precision,
+            'base_unit' => new UnitResource($this->whenLoaded('baseUnit')),
+            'purchase_unit' => new UnitResource($this->whenLoaded('purchaseUnit')),
+            'display_unit' => new UnitResource($this->whenLoaded('displayUnit')),
             'total_available_quantity' => (float) ($this->total_available_quantity ?? 0),
             'min_price' => (float) ($this->variants_min_retail_price ?? 0),
             'max_price' => (float) ($this->variants_max_retail_price ?? 0),

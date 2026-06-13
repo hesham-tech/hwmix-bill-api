@@ -141,27 +141,48 @@ if (!function_exists('api_exception')) {
                 'message' => "السجل غير موجود ($model)",
                 'error'   => $e->getMessage(),
             ], 404);
+        } elseif ($e instanceof \Illuminate\Database\QueryException) {
+            // التعامل مع أخطاء الاستعلام وقواعد البيانات
+            $errorCode = $e->errorInfo[1] ?? null;
+            if ($errorCode === 1062) {
+                $userMessage = 'هذا السجل موجود بالفعل أو يتعارض مع بيانات مسجلة مسبقاً (قيمة مكررة).';
+                $code = 409; // Conflict
+            } else {
+                $userMessage = 'حدث خطأ في قاعدة البيانات أثناء معالجة الطلب.';
+            }
+        } else {
+            $userMessage = $message ?? (config('app.debug') ? $e->getMessage() : 'حدث خطأ غير متوقع في الخادم.');
         }
 
-        // استخدام رسالة الـ Exception الفعلية كرسالة رئيسية للمستخدم
-        $userMessage = $message ?? $e->getMessage() ?? 'حدث خطأ غير متوقع';
-
-        // تجميع تفاصيل الخطأ
-        $errorDetails = [
+        // تجميع تفاصيل الخطأ الكاملة للتسجيل في السيرفر
+        $fullDetails = [
             'status'    => false,
             'message'   => $userMessage,
             'error'     => $e->getMessage(),
             'exception' => get_class($e),
             'file'      => $e->getFile(),
             'line'      => $e->getLine(),
-            'trace'     => config('app.debug') ? explode("\n", $e->getTraceAsString()) : [],
+            'trace'     => explode("\n", $e->getTraceAsString()),
         ];
 
-        // تسجيل الخطأ
-        Log::error('تفاصيل الخطأ:', $errorDetails);
+        // تسجيل التفاصيل الكاملة دائماً في الـ Log
+        Log::error('تفاصيل الخطأ:', $fullDetails);
 
-        // إرجاع استجابة JSON
-        return response()->json($errorDetails, $code);
+        // تصفية الرد للعميل بناءً على وضع التطوير (Debug Mode)
+        $clientResponse = [
+            'status'  => false,
+            'message' => $userMessage,
+        ];
+
+        if (config('app.debug')) {
+            $clientResponse['error'] = $e->getMessage();
+            $clientResponse['exception'] = get_class($e);
+            $clientResponse['file'] = $e->getFile();
+            $clientResponse['line'] = $e->getLine();
+            $clientResponse['trace'] = array_slice($fullDetails['trace'], 0, 10);
+        }
+
+        return response()->json($clientResponse, $code);
     }
 }
 

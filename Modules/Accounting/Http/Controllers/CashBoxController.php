@@ -121,8 +121,10 @@ class CashBoxController extends Controller
                 if (isset($validatedData['is_default']) && $validatedData['is_default']) {
                     $typeId = $validatedData['cash_box_type_id'] ?? null;
                     if ($typeId) {
-                        CashBox::where('company_id', $validatedData['company_id'])
+                        CashBox::withoutGlobalScopes()
+                            ->where('company_id', $validatedData['company_id'])
                             ->where('user_id', $validatedData['user_id'])
+                            ->where('branch_id', $validatedData['branch_id'])
                             ->where('cash_box_type_id', $typeId)
                             ->where('is_default', true)
                             ->update(['is_default' => false]);
@@ -198,9 +200,12 @@ class CashBoxController extends Controller
                     $typeId = $validatedData['cash_box_type_id'] ?? $cashBox->cash_box_type_id;
                     $userId = $validatedData['user_id'] ?? $cashBox->user_id;
                     $companyId = $validatedData['company_id'] ?? $cashBox->company_id;
+                    $branchId = $validatedData['branch_id'] ?? $cashBox->branch_id;
                     if ($typeId) {
-                        CashBox::where('company_id', $companyId)
+                        CashBox::withoutGlobalScopes()
+                            ->where('company_id', $companyId)
                             ->where('user_id', $userId)
+                            ->where('branch_id', $branchId)
                             ->where('cash_box_type_id', $typeId)
                             ->where('is_default', true)
                             ->where('id', '!=', $cashBox->id)

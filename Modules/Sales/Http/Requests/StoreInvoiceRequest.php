@@ -40,6 +40,7 @@ class StoreInvoiceRequest extends FormRequest
             'items.*.product_id' => 'required|integer|exists:products,id',
             'items.*.variant_id' => 'required|integer|exists:product_variants,id',
             'items.*.name' => 'required|string',
+            'items.*.unit_id' => 'nullable|integer|exists:units,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.discount' => 'nullable|numeric|min:0',

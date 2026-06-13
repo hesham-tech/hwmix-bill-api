@@ -18,6 +18,7 @@ class UpdateCashBoxRequest extends FormRequest
             'balance' => ['nullable', 'numeric', 'min:0'],
             'cash_box_type_id' => ['sometimes', 'exists:cash_box_types,id'],
             'is_default' => ['sometimes', 'boolean'],
+            'is_active' => ['sometimes', 'boolean'],
             'user_id' => ['sometimes', 'exists:users,id'],
             'created_by' => ['nullable', 'exists:users,id'],
             'company_id' => ['sometimes', 'exists:companies,id'],

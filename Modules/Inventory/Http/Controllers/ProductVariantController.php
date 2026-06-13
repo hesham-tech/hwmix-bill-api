@@ -542,7 +542,8 @@ class ProductVariantController extends Controller
             $inSales = $request->get('in_sales');
 
             $query = ProductVariant::with([
-                'product', 'images', 'attributes.attributeValue', 'stocks'
+                'product', 'images', 'attributes.attributeValue', 'stocks',
+                'baseUnit', 'purchaseUnit', 'displayUnit', 'units.unit', 'unitPrices'
             ]);
 
             /** @var \App\Models\User $authUser */
@@ -613,7 +614,51 @@ class ProductVariantController extends Controller
                                 'name' => $attr->attributeValue->name ?? null
                             ]
                         ];
-                    })
+                    }),
+                    // تفاصيل وحدات القياس
+                    'base_unit_id' => $variant->base_unit_id,
+                    'purchase_unit_id' => $variant->purchase_unit_id,
+                    'display_unit_id' => $variant->display_unit_id,
+                    'allow_decimal_quantities' => (bool)$product->allow_decimal_quantities,
+                    'quantity_precision' => (int)$product->quantity_precision,
+                    'base_unit' => $variant->baseUnit ? [
+                        'id' => $variant->baseUnit->id,
+                        'name' => $variant->baseUnit->name,
+                        'code' => $variant->baseUnit->code,
+                        'decimal_places' => $variant->baseUnit->decimal_places,
+                    ] : null,
+                    'purchase_unit' => $variant->purchaseUnit ? [
+                        'id' => $variant->purchaseUnit->id,
+                        'name' => $variant->purchaseUnit->name,
+                        'code' => $variant->purchaseUnit->code,
+                        'decimal_places' => $variant->purchaseUnit->decimal_places,
+                    ] : null,
+                    'display_unit' => $variant->displayUnit ? [
+                        'id' => $variant->displayUnit->id,
+                        'name' => $variant->displayUnit->name,
+                        'code' => $variant->displayUnit->code,
+                        'decimal_places' => $variant->displayUnit->decimal_places,
+                    ] : null,
+                    'units' => $variant->units->map(function($vu) {
+                        return [
+                            'unit_id' => $vu->unit_id,
+                            'conversion_factor_to_base' => (float)$vu->conversion_factor_to_base,
+                            'is_default' => (bool)$vu->is_default,
+                            'unit' => $vu->unit ? [
+                                'id' => $vu->unit->id,
+                                'name' => $vu->unit->name,
+                                'code' => $vu->unit->code,
+                                'decimal_places' => $vu->unit->decimal_places,
+                            ] : null,
+                        ];
+                    })->toArray(),
+                    'unit_prices' => $variant->unitPrices->map(function($up) {
+                        return [
+                            'unit_id' => $up->unit_id,
+                            'price' => (float)$up->price,
+                            'cost' => (float)$up->cost,
+                        ];
+                    })->toArray(),
                 ];
             })->filter()->values();
 

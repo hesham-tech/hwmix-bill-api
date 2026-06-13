@@ -7,6 +7,9 @@ use App\Http\Resources\User\UserBasicResource;
 use App\Http\Resources\Company\CompanyResource;
 use App\Http\Resources\Image\ImageResource;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\Inventory\Http\Resources\UnitResource;
+use Modules\Inventory\Http\Resources\ProductVariantUnitResource;
+use Modules\Inventory\Http\Resources\ProductVariantUnitPriceResource;
 
 /**
  * متحور البيانات لمتغيرات المنتجات
@@ -66,6 +69,14 @@ class ProductVariantResource extends JsonResource
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'company' => new CompanyResource($this->whenLoaded('company')),
             'images' => $this->whenLoaded('images', fn() => ImageResource::collection($this->images)),
+            'base_unit_id' => $this->base_unit_id,
+            'purchase_unit_id' => $this->purchase_unit_id,
+            'display_unit_id' => $this->display_unit_id,
+            'base_unit' => new UnitResource($this->whenLoaded('baseUnit')),
+            'purchase_unit' => new UnitResource($this->whenLoaded('purchaseUnit')),
+            'display_unit' => new UnitResource($this->whenLoaded('displayUnit')),
+            'units' => $this->whenLoaded('units', fn() => ProductVariantUnitResource::collection($this->units)),
+            'unit_prices' => $this->whenLoaded('unitPrices', fn() => ProductVariantUnitPriceResource::collection($this->unitPrices)),
         ];
     }
 }

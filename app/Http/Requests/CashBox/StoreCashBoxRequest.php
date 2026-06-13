@@ -26,6 +26,7 @@ class StoreCashBoxRequest extends FormRequest
             'balance' => ['nullable', 'numeric', 'min:0'],
             'cash_box_type_id' => ['required', 'exists:cash_box_types,id'],
             'is_default' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
             'user_id' => ['nullable', 'exists:users,id'],
             'company_id' => ['nullable', 'exists:companies,id'],
             'branch_id' => ['nullable', 'exists:branches,id'],

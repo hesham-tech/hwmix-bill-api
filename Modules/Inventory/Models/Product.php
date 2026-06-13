@@ -50,7 +50,12 @@ class Product extends Model
         'created_by',
         'sales_count',
         'is_active_in_store',
-        'is_active_in_sales'
+        'is_active_in_sales',
+        'base_unit_id',
+        'purchase_unit_id',
+        'display_unit_id',
+        'allow_decimal_quantities',
+        'quantity_precision',
     ];
 
     // Product Type Constants
@@ -80,6 +85,21 @@ class Product extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function baseUnit()
+    {
+        return $this->belongsTo(Unit::class, 'base_unit_id');
+    }
+
+    public function purchaseUnit()
+    {
+        return $this->belongsTo(Unit::class, 'purchase_unit_id');
+    }
+
+    public function displayUnit()
+    {
+        return $this->belongsTo(Unit::class, 'display_unit_id');
     }
 
     public function company()

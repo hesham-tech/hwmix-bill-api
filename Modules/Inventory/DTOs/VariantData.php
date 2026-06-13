@@ -1,5 +1,5 @@
 <?php
-
+// كلاس يمثل نقل البيانات لمتغيرات المنتجات وربطها بالوحدات والأسعار والمخزون
 namespace Modules\Inventory\DTOs;
 
 class VariantData
@@ -25,6 +25,11 @@ class VariantData
         public ?int $created_by = null,
         public array $image_ids = [],
         public ?int $primary_image_id = null,
+        public ?int $base_unit_id = null,
+        public ?int $purchase_unit_id = null,
+        public ?int $display_unit_id = null,
+        public array $units = [],
+        public array $unit_prices = [],
     ) {
     }
 
@@ -51,6 +56,11 @@ class VariantData
             created_by: $data['created_by'] ?? null,
             image_ids: $data['image_ids'] ?? [],
             primary_image_id: $data['primary_image_id'] ?? null,
+            base_unit_id: isset($data['base_unit_id']) ? (int) $data['base_unit_id'] : null,
+            purchase_unit_id: isset($data['purchase_unit_id']) ? (int) $data['purchase_unit_id'] : null,
+            display_unit_id: isset($data['display_unit_id']) ? (int) $data['display_unit_id'] : null,
+            units: $data['units'] ?? [],
+            unit_prices: $data['unit_prices'] ?? [],
         );
     }
 
@@ -72,6 +82,9 @@ class VariantData
             'status' => $this->status,
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,
+            'base_unit_id' => $this->base_unit_id,
+            'purchase_unit_id' => $this->purchase_unit_id,
+            'display_unit_id' => $this->display_unit_id,
         ], fn($value) => !is_null($value));
     }
 }

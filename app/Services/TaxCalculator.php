@@ -68,7 +68,7 @@ class TaxCalculator
     }
 
     /**
-     * تطبيق نسبة ضريبة موحدة على جميع العناصر
+     * تطبيق نسبة ضريبة موحدة على جميع العناصر مع دعم أوضاع الإدخال الثلاثة (الكمية / المبلغ / مختلط)
      *
      * @param array $items
      * @param float $defaultTaxRate
@@ -81,16 +81,49 @@ class TaxCalculator
 
         foreach ($items as $item) {
             $itemTaxRate = $item['tax_rate'] ?? $defaultTaxRate;
+            
+            $quantity = isset($item['quantity']) ? (float)$item['quantity'] : null;
+            $unitPrice = isset($item['unit_price']) ? (float)$item['unit_price'] : 0;
+            $total = isset($item['total']) ? (float)$item['total'] : null;
+            $discount = isset($item['discount']) ? (float)$item['discount'] : 0;
+
+            if ($unitPrice <= 0) {
+                $quantity = $quantity ?? 0.0;
+                $total = $total ?? 0.0;
+            } else {
+                if (is_null($quantity) && !is_null($total)) {
+                    // Amount Mode: حساب الكمية من المبلغ الإجمالي المدخل
+                    if ($taxInclusive) {
+                        $quantity = ($total + $discount) / $unitPrice;
+                    } else {
+                        $taxMultiplier = 1 + ($itemTaxRate / 100);
+                        $quantity = (($total / $taxMultiplier) + $discount) / $unitPrice;
+                    }
+                }
+            }
+
+            if (is_null($quantity)) {
+                $quantity = 0.0;
+            }
 
             $calculated = $this->calculateItemTax(
-                $item['quantity'],
-                $item['unit_price'],
-                $item['discount'] ?? 0,
+                $quantity,
+                $unitPrice,
+                $discount,
                 $itemTaxRate,
                 $taxInclusive
             );
 
-            $calculatedItems[] = array_merge($item, $calculated);
+            // التحقق من التطابق في حالة mixed mode (إدخال كمية وإجمالي معاً)
+            if (!is_null($total) && !is_null(isset($item['quantity']) ? $item['quantity'] : null) && abs($calculated['total'] - $total) > 0.05) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'items' => ["قيمة الإجمالي المرسلة لا تتطابق مع الحسابات (المرسل: $total، المحسوب: {$calculated['total']})."]
+                ]);
+            }
+
+            $calculatedItems[] = array_merge($item, $calculated, [
+                'quantity' => $quantity
+            ]);
         }
 
         return $calculatedItems;

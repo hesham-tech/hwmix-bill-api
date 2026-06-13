@@ -1,5 +1,5 @@
 <?php
-
+// كلاس يمثل نقل البيانات للمنتج الأساسي شاملاً إعدادات ومجموعات وحدات القياس
 namespace Modules\Inventory\DTOs;
 
 class ProductData
@@ -29,6 +29,11 @@ class ProductData
         public ?int $company_id = null,
         public ?int $created_by = null,
         public array $variants = [],
+        public ?int $base_unit_id = null,
+        public ?int $purchase_unit_id = null,
+        public ?int $display_unit_id = null,
+        public bool $allow_decimal_quantities = false,
+        public int $quantity_precision = 2,
     ) {
     }
 
@@ -59,6 +64,11 @@ class ProductData
             company_id: $data['company_id'] ?? null,
             created_by: $data['created_by'] ?? null,
             variants: array_map(fn($v) => VariantData::fromArray($v), $data['variants'] ?? []),
+            base_unit_id: isset($data['base_unit_id']) ? (int) $data['base_unit_id'] : null,
+            purchase_unit_id: isset($data['purchase_unit_id']) ? (int) $data['purchase_unit_id'] : null,
+            display_unit_id: isset($data['display_unit_id']) ? (int) $data['display_unit_id'] : null,
+            allow_decimal_quantities: (bool) ($data['allow_decimal_quantities'] ?? false),
+            quantity_precision: (int) ($data['quantity_precision'] ?? 2),
         );
     }
 
@@ -88,6 +98,11 @@ class ProductData
             'published_at' => $this->published_at,
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,
+            'base_unit_id' => $this->base_unit_id,
+            'purchase_unit_id' => $this->purchase_unit_id,
+            'display_unit_id' => $this->display_unit_id,
+            'allow_decimal_quantities' => $this->allow_decimal_quantities,
+            'quantity_precision' => $this->quantity_precision,
         ], fn($value) => !is_null($value));
     }
 }

@@ -42,7 +42,10 @@ class ProductVariant extends Model
         'product_id',
         'company_id',
         'created_by',
-        'sales_count'
+        'sales_count',
+        'base_unit_id',
+        'purchase_unit_id',
+        'display_unit_id',
     ];
 
     protected $casts = [
@@ -60,6 +63,31 @@ class ProductVariant extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function baseUnit()
+    {
+        return $this->belongsTo(Unit::class, 'base_unit_id');
+    }
+
+    public function purchaseUnit()
+    {
+        return $this->belongsTo(Unit::class, 'purchase_unit_id');
+    }
+
+    public function displayUnit()
+    {
+        return $this->belongsTo(Unit::class, 'display_unit_id');
+    }
+
+    public function units()
+    {
+        return $this->hasMany(ProductVariantUnit::class, 'product_variant_id');
+    }
+
+    public function unitPrices()
+    {
+        return $this->hasMany(ProductVariantUnitPrice::class, 'product_variant_id');
     }
 
     public function company()

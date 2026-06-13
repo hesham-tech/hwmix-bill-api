@@ -1,5 +1,5 @@
 <?php
-
+// كلاس مسؤول عن معالجة وإدارة متغيرات المنتجات وربطها بالسمات والمخازن والوحدات والأسعار المخصصة
 namespace Modules\Inventory\Actions\Product;
 
 use Modules\Inventory\Models\Product;
@@ -38,6 +38,8 @@ class HandleProductVariants
 
             $this->syncAttributes($variant, $variantData->attributes ?? [], $companyId, $user->id);
             $this->syncStocks($variant, $variantData->stocks ?? [], $companyId, $user->id);
+            $this->syncVariantUnits($variant, $variantData->units ?? []);
+            $this->syncVariantUnitPrices($variant, $variantData->unit_prices ?? []);
         }
     }
 
@@ -92,6 +94,36 @@ class HandleProductVariants
                     'created_by' => $userId,
                 ]
             );
+        }
+    }
+
+    protected function syncVariantUnits($variant, array $units): void
+    {
+        $variant->units()->delete();
+        foreach ($units as $unitData) {
+            $variant->units()->create([
+                'unit_id' => $unitData['unit_id'],
+                'conversion_factor_to_base' => $unitData['conversion_factor_to_base'],
+                'is_default' => $unitData['is_default'] ?? false,
+                'min_quantity' => $unitData['min_quantity'] ?? null,
+                'max_quantity' => $unitData['max_quantity'] ?? null,
+                'allow_fraction' => $unitData['allow_fraction'] ?? false,
+            ]);
+        }
+    }
+
+    protected function syncVariantUnitPrices($variant, array $prices): void
+    {
+        $variant->unitPrices()->delete();
+        foreach ($prices as $priceData) {
+            $variant->unitPrices()->create([
+                'unit_id' => $priceData['unit_id'],
+                'price' => $priceData['price'],
+                'cost' => $priceData['cost'] ?? null,
+                'effective_from' => $priceData['effective_from'] ?? null,
+                'effective_to' => $priceData['effective_to'] ?? null,
+                'is_default' => $priceData['is_default'] ?? true,
+            ]);
         }
     }
 }

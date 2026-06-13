@@ -91,6 +91,16 @@ trait InvoiceHelperTrait
                     $profitMargin = $variant ? $variant->profit_margin : 0;
                 }
 
+                $unitId = $item['unit_id'] ?? null;
+                if (!empty($item['variant_id'])) {
+                    $variant = ProductVariant::find($item['variant_id']);
+                    if ($variant && !$unitId) {
+                        $unitId = $variant->display_unit_id ?? $variant->base_unit_id;
+                    }
+                }
+                $conversionFactor = $this->getItemConversionFactor($item['variant_id'] ?? null, $unitId);
+                $baseQuantity = $item['quantity'] * $conversionFactor;
+
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
                     'product_id' => $item['product_id'] ?? null,
@@ -110,6 +120,10 @@ trait InvoiceHelperTrait
                     'subscription_id' => $item['subscription_id'] ?? null,
                     'company_id' => $companyId,
                     'created_by' => $createdBy,
+                    'unit_id' => $unitId,
+                    'conversion_factor_snapshot' => $conversionFactor,
+                    'base_quantity' => $baseQuantity,
+                    'unit_price_snapshot' => $item['unit_price'],
                 ]);
             } catch (\Throwable $e) {
                 throw $e;
@@ -129,6 +143,16 @@ trait InvoiceHelperTrait
             }
 
             foreach ($newItemsCollection as $itemData) {
+                $unitId = $itemData['unit_id'] ?? null;
+                if (!empty($itemData['variant_id'])) {
+                    $variant = ProductVariant::find($itemData['variant_id']);
+                    if ($variant && !$unitId) {
+                        $unitId = $variant->display_unit_id ?? $variant->base_unit_id;
+                    }
+                }
+                $conversionFactor = $this->getItemConversionFactor($itemData['variant_id'] ?? null, $unitId);
+                $baseQuantity = $itemData['quantity'] * $conversionFactor;
+
                 if (isset($itemData['id']) && $existingItem = $currentItems->get($itemData['id'])) {
                     $costPrice = $existingItem->cost_price;
                     if (!$costPrice || $costPrice <= 0) {
@@ -159,6 +183,10 @@ trait InvoiceHelperTrait
                         'subscription_id' => $itemData['subscription_id'] ?? null,
                         'company_id' => $companyId,
                         'updated_by' => $updatedBy,
+                        'unit_id' => $unitId,
+                        'conversion_factor_snapshot' => $conversionFactor,
+                        'base_quantity' => $baseQuantity,
+                        'unit_price_snapshot' => $itemData['unit_price'],
                     ]);
                 } else {
                     $costPrice = $this->resolveItemCostPrice($invoice->invoice_type_code, $itemData['variant_id'] ?? null, $itemData['unit_price']);
@@ -187,6 +215,10 @@ trait InvoiceHelperTrait
                         'subscription_id' => $itemData['subscription_id'] ?? null,
                         'company_id' => $companyId,
                         'created_by' => $updatedBy,
+                        'unit_id' => $unitId,
+                        'conversion_factor_snapshot' => $conversionFactor,
+                        'base_quantity' => $baseQuantity,
+                        'unit_price_snapshot' => $itemData['unit_price'],
                     ]);
                 }
             }
@@ -234,7 +266,14 @@ trait InvoiceHelperTrait
                     })
                     ->sum('quantity');
 
-                if ($mode === 'deduct' && $totalAvailableQuantity < $item['quantity']) {
+                $unitId = $item['unit_id'] ?? null;
+                if ($variant && !$unitId) {
+                    $unitId = $variant->display_unit_id ?? $variant->base_unit_id;
+                }
+                $conversionFactor = $this->getItemConversionFactor($variantId, $unitId);
+                $baseQty = $item['quantity'] * $conversionFactor;
+
+                if ($mode === 'deduct' && $totalAvailableQuantity < $baseQty) {
                     throw ValidationException::withMessages([
                         "items.$index.quantity" => ['الكمية غير متوفرة في المخزون.'],
                     ]);
@@ -256,7 +295,12 @@ trait InvoiceHelperTrait
                 if (!$variant) continue;
                 if (!$variant->product?->requiresStock()) continue;
 
-                $remaining = $item['quantity'];
+                $unitId = $item['unit_id'] ?? null;
+                if (!$unitId) {
+                    $unitId = $variant->display_unit_id ?? $variant->base_unit_id;
+                }
+                $conversionFactor = $this->getItemConversionFactor($variant->id, $unitId);
+                $remaining = $item['quantity'] * $conversionFactor;
                 $stocks = $variant->stocks()
                     ->where('status', 'available')
                     ->when($itemWarehouseId, function ($query) use ($itemWarehouseId) {
@@ -288,7 +332,7 @@ trait InvoiceHelperTrait
                 if (!$variant) continue;
                 if (!$variant->product?->requiresStock()) continue;
 
-                $remaining = $item->quantity;
+                $remaining = $item->base_quantity ?? $item->quantity;
                 $itemWarehouseId = $item->warehouse_id ?? $invoice->warehouse_id;
                 if (is_null($itemWarehouseId) && $invoice->company_id) {
                     $itemWarehouseId = \Modules\Inventory\Models\Warehouse::where('company_id', $invoice->company_id)
@@ -345,13 +389,21 @@ trait InvoiceHelperTrait
                 if (!$variant->product?->requiresStock()) continue;
 
                 $unitPrice = isset($item['unit_price']) ? (float)$item['unit_price'] : 0;
-                $quantity = (int)$item['quantity'];
+                $quantity = (float)$item['quantity'];
+
+                $unitId = $item['unit_id'] ?? null;
+                if (!$unitId) {
+                    $unitId = $variant->display_unit_id ?? $variant->base_unit_id;
+                }
+                $conversionFactor = $this->getItemConversionFactor($variant->id, $unitId);
+                $baseQty = $quantity * $conversionFactor;
+                $costPerBase = $conversionFactor > 0 ? $unitPrice / $conversionFactor : $unitPrice;
 
                 Stock::create([
                     'variant_id' => $item['variant_id'],
                     'warehouse_id' => $itemWarehouseId,
-                    'quantity' => $quantity,
-                    'cost' => $unitPrice,
+                    'quantity' => $baseQty,
+                    'cost' => $costPerBase,
                     'status' => 'available',
                     'company_id' => $companyId,
                     'created_by' => $createdBy,
@@ -359,19 +411,19 @@ trait InvoiceHelperTrait
 
                 if ($valuationMethod === 'average') {
                     $currentTotalQty = $variant->stocks()->where('status', 'available')->sum('quantity');
-                    $oldQty = max(0, $currentTotalQty - $quantity);
+                    $oldQty = max(0, $currentTotalQty - $baseQty);
                     $oldAvgCost = (float)$variant->average_cost;
                     
                     if ($currentTotalQty > 0) {
-                        $newAvgCost = (($oldQty * $oldAvgCost) + ($quantity * $unitPrice)) / $currentTotalQty;
+                        $newAvgCost = (($oldQty * $oldAvgCost) + ($baseQty * $costPerBase)) / $currentTotalQty;
                         $variant->average_cost = $newAvgCost;
                     } else {
-                        $variant->average_cost = $unitPrice;
+                        $variant->average_cost = $costPerBase;
                     }
                 }
 
-                if ($autoUpdatePrice && $unitPrice > 0) {
-                    $variant->purchase_price = $unitPrice;
+                if ($autoUpdatePrice && $costPerBase > 0) {
+                    $variant->purchase_price = $costPerBase;
                 }
                 
                 $variant->save();
@@ -389,7 +441,7 @@ trait InvoiceHelperTrait
                 if (!$variant) continue;
                 if (!$variant->product?->requiresStock()) continue;
 
-                $remainingToDeduct = $item->quantity;
+                $remainingToDeduct = $item->base_quantity ?? $item->quantity;
                 $itemWarehouseId = $item->warehouse_id ?? $invoice->warehouse_id;
 
                 $stocks = $variant->stocks()
@@ -451,5 +503,36 @@ trait InvoiceHelperTrait
         }
 
         return 0;
+    }
+
+    protected function getItemConversionFactor($variantId, $unitId): float
+    {
+        if (!$variantId || !$unitId) {
+            return 1.0;
+        }
+
+        $variant = ProductVariant::find($variantId);
+        if (!$variant) {
+            return 1.0;
+        }
+
+        $baseUnitId = $variant->base_unit_id;
+        if ($unitId == $baseUnitId) {
+            return 1.0;
+        }
+
+        $pvu = \Modules\Inventory\Models\ProductVariantUnit::where('product_variant_id', $variantId)
+            ->where('unit_id', $unitId)
+            ->first();
+        
+        if ($pvu) {
+            return (float) $pvu->conversion_factor_to_base;
+        }
+
+        try {
+            return app(\Modules\Inventory\Services\UnitConversionService::class)->convert(1.0, $unitId, $baseUnitId);
+        } catch (\Throwable $e) {
+            return 1.0;
+        }
     }
 }
