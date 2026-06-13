@@ -96,6 +96,11 @@ trait LogsActivity
         $companyId = $user?->active_company_id ?? ($this->company_id ?? null);
         $branchId = config('app.active_branch_id') ?? $user?->branch_id ?? ($this->branch_id ?? null);
 
+        // تطهير سياق الفروع عند الإرسال لقاعدة البيانات
+        if ($branchId === 'all') {
+            $branchId = null;
+        }
+
         \App\Jobs\LogActivityJob::dispatch([
             'action' => $action,
             'model' => get_class($this),
