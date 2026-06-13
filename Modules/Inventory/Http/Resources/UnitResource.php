@@ -16,6 +16,7 @@ class UnitResource extends JsonResource
             'code' => $this->code,
             'decimal_places' => (int) $this->decimal_places,
             'is_active' => (bool) $this->is_active,
+            'group' => new UnitGroupResource($this->whenLoaded('group')),
         ];
     }
 }

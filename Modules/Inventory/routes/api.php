@@ -43,6 +43,8 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     // المخزون
     Route::apiResource('stocks', StockController::class);
 
-    // وحدات القياس
-    Route::get('units', [\Modules\Inventory\Http\Controllers\UnitController::class, 'index']);
+    // وحدات القياس والمجموعات والتحويلات
+    Route::apiResource('unit-groups', \Modules\Inventory\Http\Controllers\UnitGroupController::class);
+    Route::apiResource('units', \Modules\Inventory\Http\Controllers\UnitController::class);
+    Route::apiResource('unit-conversions', \Modules\Inventory\Http\Controllers\UnitConversionController::class);
 });

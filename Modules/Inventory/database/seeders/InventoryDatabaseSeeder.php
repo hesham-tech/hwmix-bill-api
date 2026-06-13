@@ -1,8 +1,9 @@
 <?php
-
+// كلاس تهيئة بيانات Module المخزون والوحدات
 namespace Modules\Inventory\database\seeders;
 
 use Illuminate\Database\Seeder;
+use Database\Seeders\SystemUnitsSeeder;
 
 class InventoryDatabaseSeeder extends Seeder
 {
@@ -11,6 +12,8 @@ class InventoryDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        $this->call([
+            SystemUnitsSeeder::class,
+        ]);
     }
 }
