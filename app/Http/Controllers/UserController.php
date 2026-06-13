@@ -548,11 +548,42 @@ class UserController extends Controller
             if ($request->has('branch_ids')) {
                 $branchIds = array_filter((array) $request->input('branch_ids'));
                 
-                $validBranchIds = \Modules\Companies\Models\Branch::whereIn('id', $branchIds)
-                                        ->where('company_id', $activeCompanyId)
-                                        ->pluck('id')->toArray();
-                                        
-                $user->branches()->sync($validBranchIds);
+                // الحصول على كافة الشركات التي ينتمي إليها المستخدم المستهدف حالياً (بعد مزامنة الشركات)
+                $targetCompanyIds = $user->companies()->pluck('companies.id')->toArray();
+                
+                if ($isSuperAdmin) {
+                    // السوبر أدمن يمكنه إدارة فروع كافة شركات المستخدم
+                    $validBranchIds = \Modules\Companies\Models\Branch::withoutGlobalScope('company_filter')
+                        ->whereIn('id', $branchIds)
+                        ->whereIn('company_id', $targetCompanyIds)
+                        ->pluck('id')
+                        ->toArray();
+                        
+                    $user->branches()->sync($validBranchIds);
+                } else {
+                    // مدير الشركة يمكنه فقط إدارة الفروع التابعة للشركات التي يديرها هو
+                    $myManagedCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
+                    
+                    // 1. الفروع الحالية للمستخدم والتي تنتمي لشركات لا يديرها هذا المدير (يجب الحفاظ عليها)
+                    $otherBranchesIds = $user->branches()
+                        ->withoutGlobalScope('company_filter')
+                        ->whereNotIn('branches.company_id', $myManagedCompanyIds)
+                        ->pluck('branches.id')
+                        ->toArray();
+                        
+                    // 2. الفروع المختارة من الطلب والتي تنتمي لشركات يديرها المدير ومسندة للمستخدم المستهدف
+                    $allowedCompanyIds = array_intersect($targetCompanyIds, $myManagedCompanyIds);
+                    $allowedSelectedBranchIds = \Modules\Companies\Models\Branch::withoutGlobalScope('company_filter')
+                        ->whereIn('id', $branchIds)
+                        ->whereIn('company_id', $allowedCompanyIds)
+                        ->pluck('id')
+                        ->toArray();
+                        
+                    // القائمة النهائية = (الفروع التي يجب الحفاظ عليها) + (الفروع المختارة المسموح بها)
+                    $finalBranchIds = array_unique(array_merge($otherBranchesIds, $allowedSelectedBranchIds));
+                    
+                    $user->branches()->sync($finalBranchIds);
+                }
             }
 
             // 4. تحديث الأدوار والصلاحيات (سياق الشركة المعطاة أو النشطة)

@@ -46,6 +46,8 @@ class UserUpdateRequest extends FormRequest
             'roles.*' => 'nullable|string',
             'permissions' => 'nullable|array',
             'permissions.*' => 'string|exists:permissions,name',
+            'branch_ids' => 'nullable|array',
+            'branch_ids.*' => 'exists:branches,id',
         ];
     }
 }
