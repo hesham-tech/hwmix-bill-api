@@ -49,7 +49,7 @@ class UpdateProductRequest extends FormRequest
             'published_at' => 'sometimes|nullable|date',
             'desc' => 'sometimes|nullable|string',
             'desc_long' => 'sometimes|nullable|string',
-            'category_id' => 'sometimes|exists:categories,id',
+            'category_id' => 'sometimes|nullable|exists:categories,id',
             'brand_id' => 'sometimes|nullable|exists:brands,id',
             'company_id' => 'sometimes|nullable|exists:companies,id',
             'created_by' => 'sometimes|nullable|exists:users,id',

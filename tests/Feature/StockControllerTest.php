@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Product;
-use App\Models\ProductVariant;
+use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductVariant;
 use Modules\Inventory\Models\Warehouse;
 use Modules\Inventory\Models\Stock;
 use Database\Seeders\AddPermissionsSeeder;
@@ -47,7 +47,7 @@ class StockControllerTest extends TestCase
             'company_id' => $this->company->id
         ]);
 
-        $response = $this->getJson('/api/stocks');
+        $response = $this->getJson('/api/v1/stocks');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data']);
@@ -66,7 +66,7 @@ class StockControllerTest extends TestCase
             'created_by' => $this->admin->id
         ];
 
-        $response = $this->postJson('/api/stock', $payload);
+        $response = $this->postJson('/api/v1/stocks', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('stocks', ['quantity' => 150, 'variant_id' => $this->variant->id]);
@@ -81,7 +81,7 @@ class StockControllerTest extends TestCase
             'company_id' => $this->company->id
         ]);
 
-        $response = $this->getJson("/api/stock/{$stock->id}");
+        $response = $this->getJson("/api/v1/stocks/{$stock->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $stock->id);
@@ -102,7 +102,7 @@ class StockControllerTest extends TestCase
             'updated_by' => $this->admin->id
         ];
 
-        $response = $this->putJson("/api/stock/{$stock->id}", $payload);
+        $response = $this->putJson("/api/v1/stocks/{$stock->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('stocks', ['id' => $stock->id, 'quantity' => 75]);
@@ -117,7 +117,7 @@ class StockControllerTest extends TestCase
             'company_id' => $this->company->id
         ]);
 
-        $response = $this->deleteJson("/api/stock/{$stock->id}");
+        $response = $this->deleteJson("/api/v1/stocks/{$stock->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('stocks', ['id' => $stock->id]);
@@ -143,7 +143,7 @@ class StockControllerTest extends TestCase
 
         $this->actingAs($userA);
 
-        $response = $this->getJson("/api/stock/{$stockB->id}");
+        $response = $this->getJson("/api/v1/stocks/{$stockB->id}");
         $response->assertStatus(403);
     }
 }

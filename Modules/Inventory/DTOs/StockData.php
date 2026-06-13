@@ -2,6 +2,7 @@
 
 namespace Modules\Inventory\DTOs;
 
+// كائن نقل بيانات المخزون الخاص بمتغيرات المنتجات
 class StockData
 {
     public function __construct(
@@ -39,6 +40,7 @@ class StockData
     public function toArray(): array
     {
         return array_filter([
+            'id' => $this->id,
             'quantity' => $this->quantity,
             'min_quantity' => $this->min_quantity,
             'cost' => $this->cost,

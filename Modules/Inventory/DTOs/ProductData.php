@@ -6,7 +6,7 @@ class ProductData
 {
     public function __construct(
         public string $name,
-        public int $category_id,
+        public ?int $category_id = null,
         public ?string $product_type = 'physical',
         public bool $require_stock = true,
         public bool $is_downloadable = false,
@@ -41,7 +41,7 @@ class ProductData
     {
         return new self(
             name: $data['name'],
-            category_id: (int) $data['category_id'],
+            category_id: isset($data['category_id']) ? (int) $data['category_id'] : null,
             product_type: $data['product_type'] ?? 'physical',
             require_stock: (bool) ($data['require_stock'] ?? true),
             is_downloadable: (bool) ($data['is_downloadable'] ?? false),

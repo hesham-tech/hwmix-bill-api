@@ -7,6 +7,7 @@ use Modules\Inventory\Models\Warehouse;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
+// معالجة وإدارة متغيرات المنتجات ومزامنة المخزون الخاص بها في المستودعات
 class HandleProductVariants
 {
     /**
@@ -83,12 +84,19 @@ class HandleProductVariants
                 }
             }
 
+            $stockId = $data['id'] ?? null;
+            if (!$stockId) {
+                $stockId = $variant->stocks()
+                    ->where('warehouse_id', $warehouseId)
+                    ->value('id');
+            }
+
             $variant->stocks()->updateOrCreate(
                 [
-                    'id' => $data['id'] ?? null,
-                    'warehouse_id' => $warehouseId,
+                    'id' => $stockId,
                 ],
                 [
+                    'warehouse_id' => $warehouseId,
                     'quantity' => $data['quantity'] ?? 0,
                     'company_id' => $companyId,
                     'created_by' => $userId,

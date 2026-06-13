@@ -55,6 +55,7 @@ class User extends Authenticatable
     }
 
 
+
     /**
      * الحقول التي لا تخضع لـ Mass Assignment Protection.
      *

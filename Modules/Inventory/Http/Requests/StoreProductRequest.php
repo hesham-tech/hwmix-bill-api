@@ -23,7 +23,7 @@ class StoreProductRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => 'required|string|max:255',
             'product_type' => 'sometimes|in:physical,digital,service,subscription',
             'require_stock' => 'sometimes|boolean',
@@ -83,6 +83,24 @@ class StoreProductRequest extends FormRequest
             'variants.*.image_ids.*' => 'integer|exists:images,id',
             'variants.*.primary_image_id' => 'nullable|integer|exists:images,id',
         ];
+
+        foreach ($this->input('variants', []) as $index => $variant) {
+            $rules["variants.{$index}.barcode"] = [
+                'nullable',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('product_variants', 'barcode'),
+            ];
+
+            $rules["variants.{$index}.sku"] = [
+                'nullable',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('product_variants', 'sku'),
+            ];
+        }
+
+        return $rules;
     }
 
     public function toSimpleProductData(): ProductData

@@ -361,7 +361,7 @@ class AuthController extends Controller
             $action->execute($request->email, $request->frontend_url);
             return api_success([], 'تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني بنجاح.');
         } catch (Throwable $e) {
-            return api_error($e->getMessage(), 422);
+            return api_error($e->getMessage(), [], 422);
         }
     }
 
@@ -381,7 +381,7 @@ class AuthController extends Controller
             $action->execute($request->email, $request->otp, $request->password);
             return api_success([], 'تم إعادة تعيين كلمة المرور بنجاح، يمكنك الآن تسجيل الدخول.');
         } catch (Throwable $e) {
-            return api_error($e->getMessage(), 422);
+            return api_error($e->getMessage(), [], 422);
         }
     }
 
@@ -410,7 +410,7 @@ class AuthController extends Controller
             $action->execute($request->email, $request->otp);
             return api_success(['valid' => true], 'رمز التحقق صحيح وصالح.');
         } catch (Throwable $e) {
-            return api_error($e->getMessage(), 422);
+            return api_error($e->getMessage(), [], 422);
         }
     }
 }

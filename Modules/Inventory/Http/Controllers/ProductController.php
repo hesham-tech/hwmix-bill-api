@@ -111,6 +111,10 @@ class ProductController extends Controller
     public function show(Product $product): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $product->company_id !== $authUser->active_company_id) {
+                return api_forbidden('ليس لديك صلاحية لعرض هذا المنتج.');
+            }
             $product->load($this->showRelations);
             return api_success(new ProductResource($product), 'تم استرداد بيانات المنتج بنجاح.');
         } catch (Throwable $e) {
@@ -126,6 +130,9 @@ class ProductController extends Controller
         try {
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $product->company_id !== $authUser->active_company_id) {
+                return api_forbidden('ليس لديك صلاحية لتعديل هذا المنتج.');
+            }
             $product = $this->productService->updateProduct($product, $request->toSimpleProductData(), $authUser);
 
             return api_success(new ProductResource($product->load($this->showRelations)), 'تم تحديث المنتج بنجاح.');
@@ -140,6 +147,10 @@ class ProductController extends Controller
     public function destroy(Product $product): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $product->company_id !== $authUser->active_company_id) {
+                return api_forbidden('ليس لديك صلاحية لحذف هذا المنتج.');
+            }
             DB::beginTransaction();
             foreach ($product->variants as $variant) {
                 $variant->attributes()->delete();
