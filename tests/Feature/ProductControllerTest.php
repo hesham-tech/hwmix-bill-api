@@ -4,11 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\Category;
-use App\Models\Brand;
-use App\Models\Warehouse;
+use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductVariant;
+use Modules\Inventory\Models\Category;
+use Modules\Inventory\Models\Brand;
+use Modules\Inventory\Models\Warehouse;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

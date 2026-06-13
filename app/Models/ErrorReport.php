@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ErrorReport extends Model
 {
-    use HasFactory, \App\Traits\FilterableByBranch;
+    use HasFactory;
 
     protected $fillable = [
         'user_id',

@@ -2,6 +2,7 @@
 
 namespace Modules\Inventory\DTOs;
 
+// كائن نقل بيانات المتغيرات الخاصة بالمنتجات
 class VariantData
 {
     public function __construct(
@@ -57,6 +58,7 @@ class VariantData
     public function toArray(): array
     {
         return array_filter([
+            'id' => $this->id,
             'barcode' => $this->barcode,
             'sku' => $this->sku,
             'retail_price' => $this->retail_price,

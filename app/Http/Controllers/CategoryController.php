@@ -132,6 +132,9 @@ class CategoryController extends Controller
                 $validatedData = $request->validated();
                 $name = $validatedData['name'];
                 $slug = \Illuminate\Support\Str::slug($name);
+                if ($companyId) {
+                    $slug = $slug . '-' . $companyId;
+                }
 
                 // 1. الخطة الذكية: البحث عن فئة موجودة بنفس الـ slug أو الاسم/المرادفات (سواء عالمية أو تابعة للشركة)
                 $existing = Category::where(function ($q) use ($companyId) {
@@ -296,6 +299,14 @@ class CategoryController extends Controller
 
                 $validatedData['company_id'] = $categoryCompanyId;
                 $validatedData['updated_by'] = $updatedBy;
+
+                if (isset($validatedData['name'])) {
+                    $slug = \Illuminate\Support\Str::slug($validatedData['name']);
+                    if ($categoryCompanyId) {
+                        $slug = $slug . '-' . $categoryCompanyId;
+                    }
+                    $validatedData['slug'] = $slug;
+                }
 
                 $category->update($validatedData);
 
