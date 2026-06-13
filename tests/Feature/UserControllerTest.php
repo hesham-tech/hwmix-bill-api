@@ -193,4 +193,36 @@ class UserControllerTest extends TestCase
         $response = $this->getJson("/api/v1/users/{$userB->id}");
         $response->assertStatus(404); // UserController returns 404 for user not in active company
     }
+
+    public function test_can_update_user_branches_across_different_company()
+    {
+        $this->actingAs($this->admin);
+
+        $companyB = Company::factory()->create();
+        $userB = User::factory()->create(['company_id' => $companyB->id]);
+        CompanyUser::create([
+            'user_id' => $userB->id,
+            'company_id' => $companyB->id,
+            'nickname_in_company' => 'User B'
+        ]);
+
+        $branchB = \Modules\Companies\Models\Branch::create([
+            'name' => 'Branch B',
+            'company_id' => $companyB->id,
+        ]);
+
+        $payload = [
+            'nickname' => 'Updated User B',
+            'company_ids' => [$companyB->id],
+            'branch_ids' => [$branchB->id],
+        ];
+
+        $response = $this->putJson("/api/v1/users/{$userB->id}", $payload);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('branch_user', [
+            'user_id' => $userB->id,
+            'branch_id' => $branchB->id,
+        ]);
+    }
 }

@@ -62,14 +62,19 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        // تطهير قيمة 'all' لمعرف الفرع قبل الحفظ في قاعدة البيانات
-        \Illuminate\Database\Eloquent\Model::saving(function ($model) {
+        // تطهير قيمة 'all' لمعرف الفرع قبل الحفظ في قاعدة البيانات لكافة النماذج (Wildcard Listener)
+        \Illuminate\Support\Facades\Event::listen([
+            'eloquent.saving: *',
+            'eloquent.creating: *',
+            'eloquent.updating: *'
+        ], function ($eventName, array $data) {
+            $model = $data[0];
             try {
                 if (isset($model->branch_id) && $model->branch_id === 'all') {
                     $model->branch_id = null;
                 }
             } catch (\Throwable $e) {
-                // تجنب توقف النظام في حال وجود مشاكل استثنائية
+                // تجنب توقف النظام
             }
         });
     }

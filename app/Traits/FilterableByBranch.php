@@ -15,6 +15,19 @@ trait FilterableByBranch
      */
     public static function bootFilterableByBranch()
     {
+        static::saving(function ($model) {
+            $activeBranchId = config('app.active_branch_id');
+            if ($activeBranchId === 'all') {
+                if ($model instanceof \App\Models\ActivityLog) {
+                    return;
+                }
+                
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'branch_id' => ['يجب تحديد فرع معين لإجراء هذه العملية. وضع "عرض كل الفروع" مخصص للقراءة والتقارير فقط.']
+                ]);
+            }
+        });
+
         static::addGlobalScope('branch_filter', function (Builder $builder) {
             $user = Auth::user();
             
