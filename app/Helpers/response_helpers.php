@@ -141,6 +141,16 @@ if (!function_exists('api_exception')) {
                 'message' => "السجل غير موجود ($model)",
                 'error'   => $e->getMessage(),
             ], 404);
+        } elseif (
+            $e instanceof \Illuminate\Auth\Access\AuthorizationException ||
+            $e instanceof \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException ||
+            $e instanceof \Spatie\Permission\Exceptions\UnauthorizedException
+        ) {
+            return response()->json([
+                'status'  => false,
+                'message' => $e->getMessage() ?: 'ليس لديك صلاحية لإجراء هذه العملية.',
+                'error'   => $e->getMessage(),
+            ], 403);
         }
 
         // استخدام رسالة الـ Exception الفعلية كرسالة رئيسية للمستخدم

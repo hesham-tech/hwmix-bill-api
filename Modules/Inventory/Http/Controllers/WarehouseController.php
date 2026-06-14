@@ -21,7 +21,7 @@ use Throwable;
  */
 class WarehouseController extends Controller
 {
-    protected array $relations = ['company', 'creator', 'stocks'];
+    protected array $relations = ['company', 'creator', 'stocks.variant'];
 
     /**
      * عرض قائمة المستودعات

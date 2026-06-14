@@ -38,7 +38,16 @@ class UpdateInvoiceRequest extends FormRequest
             'due_date' => 'nullable|date|after_or_equal:today',
             'issue_date' => 'nullable|date',
             'reference_number' => 'nullable|string',
-            'warehouse_id' => 'nullable|integer|exists:warehouses,id',
+            'warehouse_id' => [
+                'nullable',
+                'integer',
+                \Illuminate\Validation\Rule::exists('warehouses', 'id')->where('company_id', auth()->user()?->active_company_id)
+            ],
+            'to_warehouse_id' => [
+                'nullable',
+                'integer',
+                \Illuminate\Validation\Rule::exists('warehouses', 'id')->where('company_id', auth()->user()?->active_company_id)
+            ],
             'cash_box_id' => 'nullable|integer|exists:cash_boxes,id',
             'user_cash_box_id' => 'nullable|integer|exists:cash_boxes,id',
             'user_id' => 'sometimes|integer|exists:users,id',

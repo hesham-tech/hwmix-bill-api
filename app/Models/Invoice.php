@@ -178,6 +178,16 @@ class Invoice extends Model
     /**
      * Get the column name for accounting date filtering
      */
+    public function warehouse()
+    {
+        return $this->belongsTo(\Modules\Inventory\Models\Warehouse::class, 'warehouse_id');
+    }
+
+    public function toWarehouse()
+    {
+        return $this->belongsTo(\Modules\Inventory\Models\Warehouse::class, 'to_warehouse_id');
+    }
+
     public function getIssueDateColumn(): string
     {
         return 'issue_date';
