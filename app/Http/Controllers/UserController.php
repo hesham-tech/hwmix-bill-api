@@ -78,14 +78,14 @@ class UserController extends Controller
                 $query = User::query()
                     ->withoutGlobalScope('company_filter')
                     ->withoutGlobalScope('branch_filter')
-                    ->with(['company', 'companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes'])
+                    ->with(['company', 'companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes', 'branches'])
                     ->whereNull('active_company_id');
             } elseif ($isGlobalView) {
                 // العرض العالمي: جلب سجلات فريدة من جدول users
                 $query = User::query()
                     ->withoutGlobalScope('company_filter')
                     ->withoutGlobalScope('branch_filter')
-                    ->with(['company', 'companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes']);
+                    ->with(['company', 'companies.logo', 'creator', 'roles', 'permissions', 'images', 'cashBoxes', 'branches']);
 
                 // استبعاد العملاء النقديين لجميع الشركات عند عدم البحث
                 if (!$request->filled('search')) {
@@ -100,7 +100,7 @@ class UserController extends Controller
                 }
 
                 $query = CompanyUser::with([
-                    'user' => fn($q) => $q->with(['creator', 'companies.logo', 'roles', 'permissions', 'images', 'cashBoxes']),
+                    'user' => fn($q) => $q->with(['creator', 'companies.logo', 'roles', 'permissions', 'images', 'cashBoxes', 'branches']),
                     'company',
                 ]);
 
