@@ -42,7 +42,13 @@ class WarehouseController extends Controller
             } elseif ($authUser->hasPermissionTo(perm_key('warehouses.view_self'))) {
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض المستودعات.');
+                // للموظف العادي: يرى فقط مخازن الفروع المصرح له بها في الشركة الحالية
+                $allowedBranchIds = $authUser->getAllowedBranchIds();
+                if (!empty($allowedBranchIds)) {
+                    $query->whereCompanyIsCurrent()->whereIn('branch_id', $allowedBranchIds);
+                } else {
+                    return api_forbidden('ليس لديك إذن لعرض المستودعات.');
+                }
             }
 
             // فلاتر البحث
