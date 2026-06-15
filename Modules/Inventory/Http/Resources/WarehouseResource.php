@@ -30,11 +30,19 @@ class WarehouseResource extends JsonResource
         $thirtyDaysFromNow = now()->addDays(30);
         $uniqueActiveVariants = [];
 
+        $filteredStocks = collect();
+
         foreach ($stocks as $stock) {
             $qty = (int)$stock->quantity;
+            $minQty = $stock->min_quantity ?? ($stock->variant?->min_quantity ?? 0);
+
+            // إذا كانت الكمية صفر والحد الأدنى المطلوب صفر (أو غير محدد)، فلا يعتبر مخزوناً ويتم تجاهله تماماً
+            if ($qty <= 0 && $minQty <= 0) {
+                continue;
+            }
 
             // حساب منتهية الصلاحية والتي تنتهي قريباً
-            if ($stock->expiry) {
+            if ($qty > 0 && $stock->expiry) {
                 $expiryDate = \Carbon\Carbon::parse($stock->expiry);
                 if ($expiryDate->lt($now)) {
                     $expiredItemsCount += $qty;
@@ -43,31 +51,30 @@ class WarehouseResource extends JsonResource
                 }
             }
 
-            // حساب النواقص
-            $minQty = $stock->min_quantity ?? ($stock->variant?->min_quantity ?? 0);
-            if ($qty <= $minQty) {
+            // حساب النواقص: فقط إذا كان هناك حد أدنى مطلوب أكبر من صفر والكمية المتوفرة أقل منه أو تساويها
+            if ($minQty > 0 && $qty <= $minQty) {
                 $lowStockItemsCount++;
             }
 
-            if ($qty <= 0) {
-                continue;
+            if ($qty > 0) {
+                $totalItems += $qty;
+                if ($stock->variant_id) {
+                    $uniqueActiveVariants[$stock->variant_id] = true;
+                }
+
+                $variant = $stock->variant;
+                if ($variant) {
+                    $wholesalePrice = (float)($variant->wholesale_price ?? 0);
+                    $retailPrice = (float)($variant->retail_price ?? 0);
+                    $totalWholesaleValue += $qty * $wholesalePrice;
+                    $totalRetailValue += $qty * $retailPrice;
+                }
+
+                $cost = (float)($stock->cost ?? ($variant->purchase_price ?? 0));
+                $totalCostValue += $qty * $cost;
             }
 
-            $totalItems += $qty;
-            if ($stock->variant_id) {
-                $uniqueActiveVariants[$stock->variant_id] = true;
-            }
-
-            $variant = $stock->variant;
-            if ($variant) {
-                $wholesalePrice = (float)($variant->wholesale_price ?? 0);
-                $retailPrice = (float)($variant->retail_price ?? 0);
-                $totalWholesaleValue += $qty * $wholesalePrice;
-                $totalRetailValue += $qty * $retailPrice;
-            }
-
-            $cost = (float)($stock->cost ?? ($variant->purchase_price ?? 0));
-            $totalCostValue += $qty * $cost;
+            $filteredStocks->push($stock);
         }
 
         $totalUniqueItems = count($uniqueActiveVariants);
@@ -94,7 +101,7 @@ class WarehouseResource extends JsonResource
 
             'company' => new CompanyResource($this->whenLoaded('company')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
-            'stocks' => $this->whenLoaded('stocks', fn() => StockResource::collection($this->stocks)),
+            'stocks' => $this->whenLoaded('stocks', fn() => StockResource::collection($filteredStocks)),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
