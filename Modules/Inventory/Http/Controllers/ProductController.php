@@ -166,4 +166,96 @@ class ProductController extends Controller
             return api_exception($e);
         }
     }
+
+    /**
+     * حذف منتجات متعددة دفعة واحدة
+     */
+    public function deleteMultiple(Request $request): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $authUser */
+            $authUser = Auth::user();
+            $companyId = $authUser->active_company_id ?? null;
+
+            if (!$authUser) {
+                return api_unauthorized('يتطلب المصادقة.');
+            }
+            if (!$companyId) {
+                return api_forbidden('يتطلب الارتباط بالشركة.');
+            }
+
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasAnyPermission([
+                perm_key('products.delete_all'),
+                perm_key('admin.company'),
+                perm_key('products.delete_children'),
+                perm_key('products.delete_self')
+            ])) {
+                return api_forbidden('ليس لديك صلاحية لحذف المنتجات.');
+            }
+
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'integer|exists:products,id',
+            ]);
+
+            $idsToDelete = $request->input('ids');
+            $cannotDelete = [];
+
+            DB::beginTransaction();
+            try {
+                $deletedCount = 0;
+                foreach ($idsToDelete as $id) {
+                    $product = Product::with(['variants.stocks'])->find($id);
+
+                    if ($product) {
+                        $canDelete = false;
+                        if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
+                            $canDelete = true;
+                        } elseif ($authUser->hasAnyPermission([perm_key('products.delete_all'), perm_key('admin.company')])) {
+                            $canDelete = ($product->company_id === $companyId);
+                        } elseif ($authUser->hasPermissionTo(perm_key('products.delete_children'))) {
+                            $canDelete = ($product->company_id === $companyId) && $product->createdByUserOrChildren();
+                        } elseif ($authUser->hasPermissionTo(perm_key('products.delete_self'))) {
+                            $canDelete = ($product->company_id === $companyId) && ($product->created_by === $authUser->id);
+                        }
+
+                        if ($canDelete) {
+                            $hasStock = false;
+                            foreach ($product->variants as $variant) {
+                                if ($variant->stocks()->sum('quantity') > 0) {
+                                    $hasStock = true;
+                                    break;
+                                }
+                            }
+
+                            if ($hasStock) {
+                                $cannotDelete[] = $product->id;
+                            } else {
+                                foreach ($product->variants as $variant) {
+                                    $variant->attributes()->delete();
+                                    $variant->stocks()->delete();
+                                    $variant->delete();
+                                }
+                                $product->delete();
+                                $deletedCount++;
+                            }
+                        }
+                    }
+                }
+
+                if (!empty($cannotDelete)) {
+                    DB::rollBack();
+                    return api_error('بعض المنتجات لا يمكن حذفها لوجود كميات مخزنية مرتبطة بها.', ['ids_with_stock' => $cannotDelete], 409);
+                }
+
+                DB::commit();
+                return api_success([], "تم حذف {$deletedCount} منتج بنجاح.");
+            } catch (Throwable $e) {
+                DB::rollBack();
+                return api_exception($e);
+            }
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
 }
