@@ -56,6 +56,12 @@ class CompanyUserBasicResource extends JsonResource
             'roles' => $this->whenLoaded('user', fn() => $this->user->roles->pluck('name')),
             'direct_permissions' => $this->whenLoaded('user', fn() => $this->user->getDirectPermissions()->pluck('name')),
             'companies' => $this->whenLoaded('user', fn() => CompanyResource::collection($this->user->companies ?? collect())),
+            'branches' => $this->whenLoaded('user', function () {
+                if (!$this->user || !$this->user->relationLoaded('branches')) {
+                    return collect();
+                }
+                return \Modules\Companies\Transformers\BranchResource::collection($this->user->branches);
+            }),
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
         ];

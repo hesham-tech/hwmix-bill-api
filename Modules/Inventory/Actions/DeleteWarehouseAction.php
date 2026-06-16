@@ -36,7 +36,7 @@ class DeleteWarehouseAction extends BaseAction
 
         return DB::transaction(function () use ($warehouse) {
             if ($warehouse->stocks()->exists()) {
-                throw new \Exception("لا يمكن حذف المستودع. إنه يحتوي على سجلات مخزون مرتبطة.");
+                throw new \Exception("لا يمكن حذف المستودع. إنه يحتوي على سجلات مخزون مرتبطة.", 409);
             }
 
             return $warehouse->delete();

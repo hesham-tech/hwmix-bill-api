@@ -179,6 +179,16 @@ class Invoice extends Model
         return $this->hasMany(InvoicePayment::class, 'invoice_id');
     }
 
+    public function warehouse()
+    {
+        return $this->belongsTo(\Modules\Inventory\Models\Warehouse::class, 'warehouse_id');
+    }
+
+    public function toWarehouse()
+    {
+        return $this->belongsTo(\Modules\Inventory\Models\Warehouse::class, 'to_warehouse_id');
+    }
+
     public function getIssueDateColumn(): string
     {
         return 'issue_date';

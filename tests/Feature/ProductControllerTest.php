@@ -196,4 +196,58 @@ class ProductControllerTest extends TestCase
         $response = $this->postJson('/api/v1/products', $payload);
         $response->assertStatus(422);
     }
+
+    public function test_can_delete_multiple_products()
+    {
+        $this->actingAs($this->admin);
+
+        $products = Product::factory()->count(3)->create([
+            'company_id' => $this->company->id,
+            'category_id' => $this->category->id,
+        ]);
+
+        $response = $this->postJson('/api/v1/products/delete', [
+            'ids' => $products->pluck('id')->toArray()
+        ]);
+
+        $response->assertStatus(200);
+        foreach ($products as $product) {
+            $this->assertDatabaseMissing('products', ['id' => $product->id]);
+        }
+    }
+
+    public function test_cannot_delete_multiple_products_with_stock()
+    {
+        $this->actingAs($this->admin);
+
+        $productWithStock = Product::factory()->create([
+            'company_id' => $this->company->id,
+            'category_id' => $this->category->id,
+        ]);
+
+        $variant = ProductVariant::factory()->create([
+            'product_id' => $productWithStock->id,
+            'company_id' => $this->company->id,
+        ]);
+
+        \Modules\Inventory\Models\Stock::factory()->create([
+            'variant_id' => $variant->id,
+            'warehouse_id' => $this->warehouse->id,
+            'quantity' => 5,
+            'company_id' => $this->company->id,
+        ]);
+
+        $cleanProduct = Product::factory()->create([
+            'company_id' => $this->company->id,
+            'category_id' => $this->category->id,
+        ]);
+
+        $response = $this->postJson('/api/v1/products/delete', [
+            'ids' => [$productWithStock->id, $cleanProduct->id]
+        ]);
+
+        $response->assertStatus(409);
+        $this->assertDatabaseHas('products', ['id' => $productWithStock->id]);
+        $this->assertDatabaseHas('products', ['id' => $cleanProduct->id]);
+    }
 }

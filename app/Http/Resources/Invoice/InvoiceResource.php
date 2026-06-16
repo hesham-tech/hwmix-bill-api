@@ -40,6 +40,7 @@ class InvoiceResource extends JsonResource
             'notes' => $this->notes,
             'cash_box_id' => $this->cash_box_id,
             'warehouse_id' => $this->warehouse_id,
+            'to_warehouse_id' => $this->to_warehouse_id,
             'reference_number' => $this->reference_number,
 
             'issue_date' => $this->issue_date ? $this->issue_date->format('Y-m-d') : null,
@@ -57,6 +58,8 @@ class InvoiceResource extends JsonResource
             'company' => new CompanyResource($this->whenLoaded('company')),
             'creator' => new UserBasicResource($this->whenLoaded('creator')),
             'installment_plan' => new InstallmentPlanBasicResource($this->whenLoaded('installmentPlan')),
+            'warehouse' => new \Modules\Inventory\Http\Resources\WarehouseResource($this->whenLoaded('warehouse')),
+            'to_warehouse' => new \Modules\Inventory\Http\Resources\WarehouseResource($this->whenLoaded('toWarehouse')),
 
             // بيانات إضافية
             'company_id' => $this->company_id,

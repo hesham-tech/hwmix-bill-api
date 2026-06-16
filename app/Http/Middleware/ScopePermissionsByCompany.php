@@ -25,6 +25,10 @@ class ScopePermissionsByCompany
             // This scopes all can(), hasRole(), etc. to this company
             if ($activeCompanyId) {
                 setPermissionsTeamId($activeCompanyId);
+                
+                // تفريغ العلاقات المحملة مسبقاً لضمان إعادة جلبها بالشركة الجديدة
+                $user->unsetRelation('permissions');
+                $user->unsetRelation('roles');
             }
         }
 

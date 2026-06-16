@@ -22,7 +22,16 @@ class BranchController extends Controller
      */
     public function index(): JsonResponse
     {
-        $branches = Branch::whereCompanyIsCurrent()->get();
+        $authUser = Auth::user();
+        $query = Branch::whereCompanyIsCurrent();
+
+        // إذا لم يكن مديراً أو سوبر أدمن، يتم تصفية الفروع المسموح له بها فقط
+        if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+            $allowedBranchIds = $authUser->getAllowedBranchIds();
+            $query->whereIn('id', $allowedBranchIds);
+        }
+
+        $branches = $query->get();
         return api_success(BranchResource::collection($branches), 'تم جلب الفروع بنجاح.');
     }
 

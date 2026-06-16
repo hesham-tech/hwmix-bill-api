@@ -112,6 +112,12 @@ class CompanyUserWithPermissionsResource extends JsonResource
 
             // الإعدادات
             'settings' => $this->whenLoaded('user', fn() => $this->user->settings ?? null),
+            'branches' => $this->whenLoaded('user', function () {
+                if (!$this->user || !$this->user->relationLoaded('branches')) {
+                    return collect();
+                }
+                return \Modules\Companies\Transformers\BranchResource::collection($this->user->branches);
+            }),
         ];
     }
 }

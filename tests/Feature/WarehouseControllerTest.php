@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Warehouse;
+use Modules\Inventory\Models\Warehouse;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,7 +31,7 @@ class WarehouseControllerTest extends TestCase
         $this->actingAs($this->admin);
         Warehouse::factory()->count(3)->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson('/api/warehouses');
+        $response = $this->getJson('/api/v1/warehouses');
         $response->assertStatus(200)->assertJsonStructure(['status', 'data']);
     }
 
@@ -39,7 +39,7 @@ class WarehouseControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        $response = $this->postJson('/api/warehouse', [
+        $response = $this->postJson('/api/v1/warehouses', [
             'name' => 'Main Warehouse',
             'location' => 'Cairo',
             'description' => 'Main storage facility'
@@ -54,7 +54,7 @@ class WarehouseControllerTest extends TestCase
         $this->actingAs($this->admin);
         $warehouse = Warehouse::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson("/api/warehouse/{$warehouse->id}");
+        $response = $this->getJson("/api/v1/warehouses/{$warehouse->id}");
         $response->assertStatus(200)->assertJsonPath('data.id', $warehouse->id);
     }
 
@@ -63,7 +63,7 @@ class WarehouseControllerTest extends TestCase
         $this->actingAs($this->admin);
         $warehouse = Warehouse::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->putJson("/api/warehouse/{$warehouse->id}", [
+        $response = $this->putJson("/api/v1/warehouses/{$warehouse->id}", [
             'name' => 'Updated Warehouse'
         ]);
 
@@ -76,7 +76,7 @@ class WarehouseControllerTest extends TestCase
         $this->actingAs($this->admin);
         $warehouse = Warehouse::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->deleteJson("/api/warehouse/{$warehouse->id}");
+        $response = $this->deleteJson("/api/v1/warehouses/{$warehouse->id}");
         $response->assertStatus(200);
         $this->assertDatabaseMissing('warehouses', ['id' => $warehouse->id]);
     }
@@ -91,10 +91,10 @@ class WarehouseControllerTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->getJson("/api/warehouse/{$otherWarehouse->id}");
+        $response = $this->getJson("/api/v1/warehouses/{$otherWarehouse->id}");
         $response->assertStatus(403);
 
-        $response = $this->getJson('/api/warehouses');
+        $response = $this->getJson('/api/v1/warehouses');
         $response->assertJsonMissing(['name' => $otherWarehouse->name]);
     }
 
@@ -109,7 +109,7 @@ class WarehouseControllerTest extends TestCase
             'company_id' => $this->company->id
         ]);
 
-        $response = $this->deleteJson("/api/warehouse/{$warehouse->id}");
+        $response = $this->deleteJson("/api/v1/warehouses/{$warehouse->id}");
         $response->assertStatus(409);
         $this->assertDatabaseHas('warehouses', ['id' => $warehouse->id]);
     }

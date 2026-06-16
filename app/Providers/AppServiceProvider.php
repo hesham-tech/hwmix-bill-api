@@ -42,16 +42,17 @@ class AppServiceProvider extends ServiceProvider
             static $isSuperAdmin = [];
 
             if (!isset($isSuperAdmin[$user->id])) {
-                // We check if the user has 'admin.super' permission globally (ignoring teams/companies)
-                // This is safer and more performance-efficient than manual DB queries
                 try {
-                    // Temporarily unset team id to check global permission if teams are used
                     $originalTeamId = getPermissionsTeamId();
                     setPermissionsTeamId(null);
 
                     $isSuperAdmin[$user->id] = $user->hasPermissionTo(perm_key('admin.super'));
 
                     setPermissionsTeamId($originalTeamId);
+                    
+                    // تفريغ العلاقات لتجنب تلويث العلاقات المجلوبة بنطاق الشركة النشطة
+                    $user->unsetRelation('permissions');
+                    $user->unsetRelation('roles');
                 } catch (\Throwable $e) {
                     $isSuperAdmin[$user->id] = false;
                 }

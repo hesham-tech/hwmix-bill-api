@@ -32,6 +32,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     Route::patch('categories/{category}/toggle', [CategoryController::class, 'toggle']);
 
     // المنتجات
+    Route::post('products/delete', [ProductController::class, 'deleteMultiple']);
     Route::post('products', [ProductController::class, 'store'])->middleware('saas.limit:products');
     Route::apiResource('products', ProductController::class)->except(['store']);
 

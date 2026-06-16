@@ -21,7 +21,7 @@ use Throwable;
  */
 class WarehouseController extends Controller
 {
-    protected array $relations = ['company', 'creator', 'stocks'];
+    protected array $relations = ['company', 'creator', 'stocks.variant.product'];
 
     /**
      * عرض قائمة المستودعات
@@ -42,7 +42,13 @@ class WarehouseController extends Controller
             } elseif ($authUser->hasPermissionTo(perm_key('warehouses.view_self'))) {
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض المستودعات.');
+                // للموظف العادي: يرى فقط مخازن الفروع المصرح له بها في الشركة الحالية
+                $allowedBranchIds = $authUser->getAllowedBranchIds();
+                if (!empty($allowedBranchIds)) {
+                    $query->whereCompanyIsCurrent()->whereIn('branch_id', $allowedBranchIds);
+                } else {
+                    return api_forbidden('ليس لديك إذن لعرض المستودعات.');
+                }
             }
 
             // فلاتر البحث
@@ -83,6 +89,10 @@ class WarehouseController extends Controller
     public function show(Warehouse $warehouse): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $warehouse->company_id !== $authUser->active_company_id) {
+                return api_forbidden('ليس لديك صلاحية للوصول إلى هذا المستودع.');
+            }
             $warehouse->load($this->relations);
             return api_success(new WarehouseResource($warehouse), 'تم استرداد المستودع بنجاح.');
         } catch (Throwable $e) {
@@ -96,6 +106,10 @@ class WarehouseController extends Controller
     public function update(UpdateWarehouseRequest $request, Warehouse $warehouse, UpdateWarehouseAction $action): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $warehouse->company_id !== $authUser->active_company_id) {
+                return api_forbidden('ليس لديك صلاحية للوصول إلى هذا المستودع.');
+            }
             $data = $request->validated();
             $data['warehouse'] = $warehouse;
             $updatedWarehouse = $action->handle($data);
@@ -115,7 +129,8 @@ class WarehouseController extends Controller
             $action->handle(['warehouse' => $warehouse]);
             return api_success([], 'تم حذف المستودع بنجاح.');
         } catch (Throwable $e) {
-            return api_exception($e);
+            $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
+            return api_exception($e, $code);
         }
     }
 
@@ -125,6 +140,10 @@ class WarehouseController extends Controller
     public function setDefault(Warehouse $warehouse): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $warehouse->company_id !== $authUser->active_company_id) {
+                return api_forbidden('ليس لديك صلاحية للوصول إلى هذا المستودع.');
+            }
             $warehouse->update(['is_default' => true]);
             return api_success(new WarehouseResource($warehouse->fresh($this->relations)), 'تم تعيين المستودع كافتراضي بنجاح.');
         } catch (Throwable $e) {

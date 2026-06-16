@@ -54,17 +54,18 @@ class UserWithPermissionsResource extends JsonResource
             'cashBoxes' => $this->whenLoaded('cashBoxes', fn() => CashBoxResource::collection($this->cashBoxes ?? collect())),
             'branches' => $this->whenLoaded('branches', function () {
                 if ($this->hasPermissionTo(perm_key('admin.company')) || $this->hasPermissionTo(perm_key('admin.super'))) {
-                    return \Modules\Companies\Models\Branch::where('company_id', $this->active_company_id)->get();
-                }
-                // إضافة الفرع الافتراضي إذا لم يكن ضمن الفروع المحملة
-                $branches = $this->branches;
-                if ($this->branch_id && !$branches->contains('id', $this->branch_id)) {
-                    $defaultBranch = \Modules\Companies\Models\Branch::find($this->branch_id);
-                    if ($defaultBranch) {
-                        $branches->push($defaultBranch);
+                    $branches = \Modules\Companies\Models\Branch::where('company_id', $this->active_company_id)->get();
+                } else {
+                    // إضافة الفرع الافتراضي إذا لم يكن ضمن الفروع المحملة
+                    $branches = $this->branches;
+                    if ($this->branch_id && !$branches->contains('id', $this->branch_id)) {
+                        $defaultBranch = \Modules\Companies\Models\Branch::find($this->branch_id);
+                        if ($defaultBranch) {
+                            $branches->push($defaultBranch);
+                        }
                     }
                 }
-                return $branches;
+                return \Modules\Companies\Transformers\BranchResource::collection($branches);
             }),
 
             // الصلاحيات والادوار
