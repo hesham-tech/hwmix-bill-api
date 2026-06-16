@@ -18,6 +18,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 #[ScopedBy([CompanyScope::class])]
 /**
  * موديل الصندوق المالي (CashBox) - موديول المحاسبة
+ *
+ * @property int $id
+ * @property string $name
+ * @property float $balance
+ * @property bool $is_default
+ * @property bool $is_active
+ * @property int $cash_box_type_id
+ * @property int $user_id
+ * @property int $created_by
+ * @property int $company_id
+ * @property int $branch_id
+ * @property string|null $description
+ * @property string|null $account_number
  */
 class CashBox extends Model
 {

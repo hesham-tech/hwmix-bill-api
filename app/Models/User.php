@@ -815,7 +815,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $company = \App\Models\Company::find($companyId);
+        $company = Company::find($companyId);
         return $company && (int) $company->default_cash_customer_id === (int) $this->id;
     }
 
