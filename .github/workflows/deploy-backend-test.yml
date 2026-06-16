@@ -62,6 +62,8 @@ jobs:
             php artisan migrate --force
             echo "🔑 Seeding Permissions..."
             php artisan db:seed --class=PermissionsSeeder --force
+            echo "📐 Seeding System Units..."
+            php artisan db:seed --class=SystemUnitsSeeder --force
             echo "⚖️ Seeding Legal Documents..."
             echo 'if (\DB::table("legal_documents")->count() === 0) \Artisan::call("db:seed", ["--class" => "Modules\\Legal\\database\\seeders\\LegalDatabaseSeeder", "--force" => true]);' | php artisan tinker
             echo "🧹 Resetting and Clearing Caches..."
