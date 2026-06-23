@@ -48,11 +48,11 @@ class Stock extends Model
     }
 
     protected $casts = [
-        'quantity' => 'integer',
-        'reserved' => 'integer',
-        'min_quantity' => 'integer',
-        'cost' => 'decimal:2',
-        'expiry' => 'datetime',
+        'quantity'     => 'decimal:6',
+        'reserved'     => 'decimal:6',
+        'min_quantity' => 'decimal:6',
+        'cost'         => 'decimal:2',
+        'expiry'       => 'datetime',
     ];
 
     protected static function booted()

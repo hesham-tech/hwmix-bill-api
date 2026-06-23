@@ -45,6 +45,18 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     Route::apiResource('stocks', StockController::class);
 
     // وحدات القياس والمجموعات والتحويلات
+    // Builder: إنشاء مجموعة كاملة (مجموعة + وحدات + تحويلات) دفعة واحدة داخل Transaction
+    Route::post('unit-groups/build', [\Modules\Inventory\Http\Controllers\UnitGroupController::class, 'buildWithUnitsAndConversions']);
+    // مجموعات الشركة فقط للـ Cards (بدون System Groups)
+    Route::get('unit-groups/company', [\Modules\Inventory\Http\Controllers\UnitGroupController::class, 'indexCompanyOnly']);
+    // System Groups كـ Templates جاهزة للـ Wizard
+    Route::get('unit-groups/templates', [\Modules\Inventory\Http\Controllers\UnitGroupController::class, 'systemTemplates']);
+    // إضافة وحدة أو تحويل لمجموعة موجودة (من Detail Drawer)
+    Route::post('unit-groups/{unitGroup}/units', [\Modules\Inventory\Http\Controllers\UnitGroupController::class, 'addUnit']);
+    Route::post('unit-groups/{unitGroup}/conversions', [\Modules\Inventory\Http\Controllers\UnitGroupController::class, 'addConversion']);
+    // تعطيل وحدة
+    Route::patch('units/{unit}/deactivate', [\Modules\Inventory\Http\Controllers\UnitController::class, 'deactivate']);
+
     Route::apiResource('unit-groups', \Modules\Inventory\Http\Controllers\UnitGroupController::class);
     Route::apiResource('units', \Modules\Inventory\Http\Controllers\UnitController::class);
     Route::apiResource('unit-conversions', \Modules\Inventory\Http\Controllers\UnitConversionController::class);

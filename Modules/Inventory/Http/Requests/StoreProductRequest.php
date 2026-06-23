@@ -77,7 +77,7 @@ class StoreProductRequest extends FormRequest
             'variants.*.unit_prices.*.is_default' => 'sometimes|boolean',
             'variants.*.stocks' => 'sometimes|array',
             'variants.*.stocks.*.id' => 'sometimes|nullable|integer|exists:stocks,id',
-            'variants.*.stocks.*.quantity' => 'sometimes|integer|min:0',
+            'variants.*.stocks.*.quantity' => 'sometimes|numeric|min:0',
             'variants.*.stocks.*.warehouse_id' => 'sometimes|nullable|exists:warehouses,id',
             'variants.*.image_ids' => 'sometimes|array',
             'variants.*.image_ids.*' => 'integer|exists:images,id',

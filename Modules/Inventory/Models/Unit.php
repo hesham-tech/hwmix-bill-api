@@ -8,10 +8,11 @@ use App\Models\Company;
 use App\Models\User;
 use App\Traits\Scopes;
 use App\Traits\Blameable;
+use App\Traits\LogsActivity;
 
 class Unit extends Model
 {
-    use Scopes, Blameable, \App\Traits\FilterableByCompanyOrSystem;
+    use Scopes, Blameable, LogsActivity, \App\Traits\FilterableByCompanyOrSystem;
 
     protected $fillable = [
         'unit_group_id',

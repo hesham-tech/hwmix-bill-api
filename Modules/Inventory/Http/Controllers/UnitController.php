@@ -1,18 +1,15 @@
 <?php
-// متحكم إدارة وحدات القياس مع دعم CRUD الكامل
+// متحكم إدارة وحدات القياس مع دعم CRUD كامل وحماية الوحدات المستخدمة
 namespace Modules\Inventory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Modules\Inventory\Http\Requests\StoreUnitRequest;
 use Modules\Inventory\Http\Requests\UpdateUnitRequest;
 use Modules\Inventory\Http\Resources\UnitResource;
-use Modules\Inventory\Http\Resources\UnitGroupResource;
-use Modules\Inventory\Http\Resources\UnitConversionResource;
 use Modules\Inventory\Models\Unit;
-use Modules\Inventory\Models\UnitGroup;
-use Modules\Inventory\Models\UnitConversion;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class UnitController extends Controller
@@ -89,7 +86,7 @@ class UnitController extends Controller
         try {
             // منع تعديل الوحدات العامة للسيستم من غير السوبر آدمن
             if (is_null($unit->company_id) && !auth()->user()->hasPermissionTo(perm_key('admin.super'))) {
-                return api_error('لا يمكن تعديل وحدات النظام الأساسية.', 403);
+                return api_error('لا يمكن تعديل وحدات النظام الأساسية.', [], 403);
             }
 
             $unit->update($request->validated());
@@ -101,26 +98,27 @@ class UnitController extends Controller
     }
 
     /**
-     * حذف وحدة قياس (منع حذف الوحدات المستخدمة)
+     * حذف وحدة قياس — أو تعطيلها إذا كانت مستخدمة في عمليات فعلية
      */
     public function destroy(Unit $unit): JsonResponse
     {
         try {
             // منع حذف الوحدات العامة للسيستم
             if (is_null($unit->company_id)) {
-                return api_error('لا يمكن حذف وحدات النظام الأساسية.', 403);
+                return api_error('لا يمكن حذف وحدات النظام الأساسية.', [], 403);
             }
 
-            // التحقق من عدم استخدام الوحدة في منتجات
-            $usedInProducts = \DB::table('products')
-                ->where(function ($q) use ($unit) {
-                    $q->where('base_unit_id', $unit->id)
-                      ->orWhere('purchase_unit_id', $unit->id)
-                      ->orWhere('display_unit_id', $unit->id);
-                })->exists();
+            // فحص الاستخدام في كل جداول النظام
+            $usageDetails = $this->checkUnitUsage($unit);
 
-            if ($usedInProducts) {
-                return api_error('لا يمكن حذف هذه الوحدة لأنها مرتبطة بمنتجات موجودة.', 422);
+            if (!empty($usageDetails)) {
+                // إذا كانت مستخدمة → تعطيل بدل الحذف
+                $unit->update(['is_active' => false]);
+
+                return api_success(
+                    ['deactivated' => true, 'usage' => $usageDetails],
+                    'لا يمكن حذف هذه الوحدة لأنها مستخدمة في ' . $this->formatUsageMessage($usageDetails) . '. تم تعطيلها بدلاً من حذفها.'
+                );
             }
 
             $unit->delete();
@@ -132,92 +130,97 @@ class UnitController extends Controller
     }
 
     /**
-     * جلب كل مجموعات الوحدات
+     * تعطيل وحدة قياس يدوياً
      */
-    public function groups(): JsonResponse
+    public function deactivate(Unit $unit): JsonResponse
     {
         try {
-            $groups = UnitGroup::with('units')->orderBy('name')->get();
-            return api_success(UnitGroupResource::collection($groups), 'تم استرداد مجموعات الوحدات.');
+            if (is_null($unit->company_id) && !auth()->user()->hasPermissionTo(perm_key('admin.super'))) {
+                return api_error('لا يمكن تعطيل وحدات النظام الأساسية.', [], 403);
+            }
+
+            $unit->update(['is_active' => false]);
+
+            return api_success(new UnitResource($unit->load('group')), 'تم تعطيل وحدة القياس بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e);
         }
     }
 
     /**
-     * جلب تحويلات الوحدات
+     * فحص كل مواضع استخدام الوحدة في النظام
      */
-    public function conversions(Request $request): JsonResponse
+    private function checkUnitUsage(Unit $unit): array
     {
-        try {
-            $query = UnitConversion::with(['fromUnit', 'toUnit', 'group']);
+        $usage = [];
 
-            if ($request->filled('unit_group_id')) {
-                $query->where('unit_group_id', $request->unit_group_id);
-            }
-
-            $conversions = $query->get();
-            return api_success(UnitConversionResource::collection($conversions), 'تم استرداد التحويلات.');
-        } catch (Throwable $e) {
-            return api_exception($e);
+        // استخدام في جدول المنتجات
+        $inProducts = DB::table('products')
+            ->where(fn($q) => $q
+                ->where('base_unit_id', $unit->id)
+                ->orWhere('purchase_unit_id', $unit->id)
+                ->orWhere('display_unit_id', $unit->id)
+            )->count();
+        if ($inProducts > 0) {
+            $usage['products'] = $inProducts;
         }
+
+        // استخدام في وحدات متغيرات المنتجات
+        $inVariantUnits = DB::table('product_variant_units')
+            ->where('unit_id', $unit->id)
+            ->count();
+        if ($inVariantUnits > 0) {
+            $usage['product_variant_units'] = $inVariantUnits;
+        }
+
+        // استخدام في أسعار متغيرات المنتجات
+        $inVariantPrices = DB::table('product_variant_unit_prices')
+            ->where('unit_id', $unit->id)
+            ->count();
+        if ($inVariantPrices > 0) {
+            $usage['product_variant_unit_prices'] = $inVariantPrices;
+        }
+
+        // استخدام في بنود الفواتير (بما فيها المحذوفة)
+        $inInvoiceItems = DB::table('invoice_items')
+            ->where('unit_id', $unit->id)
+            ->count();
+        if ($inInvoiceItems > 0) {
+            $usage['invoice_items'] = $inInvoiceItems;
+        }
+
+        // استخدام في متغيرات المنتجات كـ base/purchase/display
+        $inVariants = DB::table('product_variants')
+            ->where(fn($q) => $q
+                ->where('base_unit_id', $unit->id)
+                ->orWhere('purchase_unit_id', $unit->id)
+                ->orWhere('display_unit_id', $unit->id)
+            )->count();
+        if ($inVariants > 0) {
+            $usage['product_variants'] = $inVariants;
+        }
+
+        return $usage;
     }
 
     /**
-     * إضافة تحويل وحدات جديد
+     * تحويل معلومات الاستخدام إلى رسالة واضحة للمستخدم
      */
-    public function storeConversion(Request $request): JsonResponse
+    private function formatUsageMessage(array $usage): string
     {
-        $request->validate([
-            'unit_group_id' => 'required|exists:unit_groups,id',
-            'from_unit_id'  => 'required|exists:units,id',
-            'to_unit_id'    => 'required|exists:units,id|different:from_unit_id',
-            'factor'        => 'required|numeric|min:0.000001',
-        ]);
-
-        try {
-            $companyId = auth()->user()?->active_company_id;
-
-            $conversion = UnitConversion::firstOrCreate(
-                [
-                    'unit_group_id' => $request->unit_group_id,
-                    'from_unit_id'  => $request->from_unit_id,
-                    'to_unit_id'    => $request->to_unit_id,
-                ],
-                [
-                    'factor'         => $request->factor,
-                    'reverse_factor' => 1 / $request->factor,
-                    'company_id'     => $companyId,
-                    'created_by'     => auth()->id(),
-                ]
-            );
-
-            if (!$conversion->wasRecentlyCreated) {
-                $conversion->update([
-                    'factor'         => $request->factor,
-                    'reverse_factor' => 1 / $request->factor,
-                ]);
+        $parts = [];
+        $map = [
+            'products'                   => 'منتجات',
+            'product_variants'           => 'متغيرات منتجات',
+            'product_variant_units'      => 'وحدات بيع مرتبطة',
+            'product_variant_unit_prices'=> 'أسعار وحدات',
+            'invoice_items'              => 'بنود فواتير',
+        ];
+        foreach ($usage as $key => $count) {
+            if (isset($map[$key])) {
+                $parts[] = "{$count} {$map[$key]}";
             }
-
-            return api_success(new UnitConversionResource($conversion->load(['fromUnit', 'toUnit', 'group'])), 'تم حفظ قاعدة التحويل.');
-        } catch (Throwable $e) {
-            return api_exception($e);
         }
-    }
-
-    /**
-     * حذف تحويل وحدات
-     */
-    public function destroyConversion(UnitConversion $conversion): JsonResponse
-    {
-        try {
-            if (is_null($conversion->company_id)) {
-                return api_error('لا يمكن حذف تحويلات النظام الأساسية.', 403);
-            }
-            $conversion->delete();
-            return api_success(null, 'تم حذف قاعدة التحويل.');
-        } catch (Throwable $e) {
-            return api_exception($e);
-        }
+        return implode(' و', $parts);
     }
 }

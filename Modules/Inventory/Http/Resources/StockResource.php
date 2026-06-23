@@ -14,9 +14,9 @@ class StockResource extends JsonResource
         return [
             'id' => $this->id,
             'warehouse_id' => $this->warehouse_id,
-            'quantity' => $this->quantity,
-            'reserved' => $this->reserved,
-            'min_quantity' => $this->min_quantity,
+            'quantity' => $this->quantity !== null ? (float) $this->quantity : null,
+            'reserved' => $this->reserved !== null ? (float) $this->reserved : null,
+            'min_quantity' => $this->min_quantity !== null ? (float) $this->min_quantity : null,
             'cost' => $this->cost,
             'batch' => $this->batch,
             'expiry' => $this->expiry,

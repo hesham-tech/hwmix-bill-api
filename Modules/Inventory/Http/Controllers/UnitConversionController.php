@@ -66,7 +66,7 @@ class UnitConversionController extends Controller
             if (!$conversion->wasRecentlyCreated) {
                 // منع التعديل إذا كانت قاعدة التحويل تابعة للنظام الأساسي وليست للشركة الحالية
                 if (is_null($conversion->company_id) && !Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
-                    return api_error('لا يمكن تعديل قواعد تحويل النظام الأساسية.', 403);
+                    return api_error('لا يمكن تعديل قواعد تحويل النظام الأساسية.', [], 403);
                 }
 
                 $conversion->update([
@@ -102,7 +102,7 @@ class UnitConversionController extends Controller
         try {
             // منع تعديل التحويلات العامة للسيستم
             if (is_null($unitConversion->company_id) && !Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
-                return api_error('لا يمكن تعديل قواعد تحويل النظام الأساسية.', 403);
+                return api_error('لا يمكن تعديل قواعد تحويل النظام الأساسية.', [], 403);
             }
 
             $unitConversion->update([
@@ -124,7 +124,7 @@ class UnitConversionController extends Controller
         try {
             // منع حذف تحويلات النظام الأساسية
             if (is_null($unitConversion->company_id)) {
-                return api_error('لا يمكن حذف تحويلات النظام الأساسية.', 403);
+                return api_error('لا يمكن حذف تحويلات النظام الأساسية.', [], 403);
             }
 
             $unitConversion->delete();
