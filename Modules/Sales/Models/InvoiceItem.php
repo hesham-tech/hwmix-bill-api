@@ -21,6 +21,11 @@ class InvoiceItem extends Model
 {
     use HasFactory, SoftDeletes, Blameable, Scopes, \App\Traits\LogsActivity;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\InvoiceItemFactory::new();
+    }
+
     public function logLabel()
     {
         return "بند فاتورة ({$this->name}) - كمية: {$this->quantity}";

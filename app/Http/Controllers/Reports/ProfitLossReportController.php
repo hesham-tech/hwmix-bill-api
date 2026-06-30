@@ -28,7 +28,10 @@ class ProfitLossReportController extends BaseReportController
 
         // Fetch existing summaries
         $summaries = DailySalesSummary::where('company_id', $companyId)
-            ->whereBetween('date', [$dateFrom, $dateTo])
+            ->whereBetween('date', [
+                Carbon::parse($dateFrom)->startOfDay(),
+                Carbon::parse($dateTo)->endOfDay()
+            ])
             ->orderBy('date', 'asc')
             ->get()
             ->keyBy(fn($item) => Carbon::parse($item->date)->toDateString());
@@ -82,7 +85,22 @@ class ProfitLossReportController extends BaseReportController
             'net_profit' => (float) $details->sum('net_profit'),
         ];
 
-        return api_success([
+        return response()->json([
+            'period' => [
+                'from' => $dateFrom,
+                'to' => $dateTo,
+            ],
+            'revenues' => [
+                'total' => (float) $details->sum('revenue'),
+            ],
+            'costs' => [
+                'total' => (float) ($details->sum('cost_of_goods_sold') + $details->sum('expenses')),
+                'cost_of_goods_sold' => (float) $details->sum('cost_of_goods_sold'),
+                'expenses' => (float) $details->sum('expenses'),
+            ],
+            'result' => [
+                'net_profit' => (float) $details->sum('net_profit'),
+            ],
             'summary' => $summary,
             'details' => $details,
             'details_count' => $details->count()
@@ -133,6 +151,9 @@ class ProfitLossReportController extends BaseReportController
             ];
         });
 
-        return api_success($formatted);
+        return response()->json([
+            'comparison' => $formatted,
+            'months_count' => count($formatted),
+        ]);
     }
 }

@@ -29,7 +29,7 @@ class AuthControllerTest extends TestCase
             'phone' => '0123456789',
         ];
 
-        $response = $this->postJson('/api/register', $payload);
+        $response = $this->postJson('/api/v1/register/customer', $payload);
 
         $response->assertStatus(201)
             ->assertJsonStructure([

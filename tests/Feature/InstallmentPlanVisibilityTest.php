@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\InstallmentPlan;
-use App\Models\Invoice;
+use Modules\Sales\Models\Invoice;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\InvoiceItem;
-use App\Models\Invoice;
+use Modules\Sales\Models\InvoiceItem;
+use Modules\Sales\Models\Invoice;
 use Modules\Inventory\Models\Product;
 use App\Models\Company;
 use App\Models\User;

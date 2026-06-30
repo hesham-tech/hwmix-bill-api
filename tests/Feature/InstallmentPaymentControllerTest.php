@@ -6,7 +6,7 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\Installment;
 use App\Models\InstallmentPlan;
-use App\Models\Invoice;
+use Modules\Sales\Models\Invoice;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -51,7 +51,7 @@ class InstallmentPaymentControllerTest extends TestCase
             'installment_plan_id' => $this->plan->id,
         ]);
 
-        $response = $this->getJson('/api/installment-payments');
+        $response = $this->getJson('/api/v1/installment-payments');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'message']);
@@ -72,7 +72,7 @@ class InstallmentPaymentControllerTest extends TestCase
             'remaining' => 500,
         ];
 
-        $response = $this->postJson('/api/installment-payment', $payload);
+        $response = $this->postJson('/api/v1/installment-payments', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('installments', [
@@ -93,7 +93,7 @@ class InstallmentPaymentControllerTest extends TestCase
             'installment_plan_id' => $this->plan->id,
         ]);
 
-        $response = $this->getJson("/api/installment-payment/{$installment->id}");
+        $response = $this->getJson("/api/v1/installment-payments/{$installment->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $installment->id);
@@ -116,7 +116,7 @@ class InstallmentPaymentControllerTest extends TestCase
             'status' => 'paid',
         ];
 
-        $response = $this->putJson("/api/installment-payment/{$installment->id}", $payload);
+        $response = $this->putJson("/api/v1/installment-payments/{$installment->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('installments', [
@@ -137,7 +137,7 @@ class InstallmentPaymentControllerTest extends TestCase
             'installment_plan_id' => $this->plan->id,
         ]);
 
-        $response = $this->deleteJson("/api/installment-payment/delete/{$installment->id}");
+        $response = $this->deleteJson("/api/v1/installment-payments/{$installment->id}");
 
         $response->assertStatus(200);
         $this->assertSoftDeleted('installments', ['id' => $installment->id]);

@@ -29,7 +29,7 @@ class PaymentControllerTest extends TestCase
         $this->admin = User::factory()->create(['company_id' => $this->company->id]);
         $this->admin->givePermissionTo('admin.super');
 
-        $this->cashBox = CashBox::factory()->create(['company_id' => $this->company->id]);
+        $this->cashBox = CashBox::factory()->create(['company_id' => $this->company->id, 'user_id' => $this->admin->id]);
         $this->paymentMethod = PaymentMethod::factory()->create(['company_id' => $this->company->id]);
     }
 
@@ -45,7 +45,7 @@ class PaymentControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson('/api/payments');
+        $response = $this->getJson('/api/v1/payments');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'message']);
@@ -61,6 +61,8 @@ class PaymentControllerTest extends TestCase
             'user_id' => $this->admin->id,
             'payment_date' => now()->toDateString(),
             'amount' => 1500.75,
+            'cash_amount' => 1500.75,
+            'credit_amount' => 0.00,
             'method' => 'cash',
             'notes' => 'Test payment notes',
             'is_split' => false,
@@ -68,11 +70,7 @@ class PaymentControllerTest extends TestCase
             'cash_box_id' => $this->cashBox->id, // Controller expects this in store method
         ];
 
-        $response = $this->postJson('/api/payment', $payload);
-
-        if ($response->status() !== 201) {
-            dump($response->json());
-        }
+        $response = $this->postJson('/api/v1/payments', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('payments', [
@@ -93,7 +91,7 @@ class PaymentControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson("/api/payment/{$payment->id}");
+        $response = $this->getJson("/api/v1/payments/{$payment->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $payment->id);
@@ -116,7 +114,7 @@ class PaymentControllerTest extends TestCase
             'notes' => 'Updated notes'
         ];
 
-        $response = $this->putJson("/api/payment/{$payment->id}", $payload);
+        $response = $this->putJson("/api/v1/payments/{$payment->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('payments', [
@@ -138,7 +136,7 @@ class PaymentControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->deleteJson("/api/payment/{$payment->id}");
+        $response = $this->deleteJson("/api/v1/payments/{$payment->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('payments', ['id' => $payment->id]);

@@ -43,9 +43,12 @@ class InstallmentPaymentDetailControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        InstallmentPaymentDetail::factory()->count(3)->create();
+        InstallmentPaymentDetail::factory()->count(3)->create([
+            'installment_payment_id' => $this->payment->id,
+            'installment_id' => $this->installment->id,
+        ]);
 
-        $response = $this->getJson('/api/installment-payment-details');
+        $response = $this->getJson('/api/v1/installment-payment-details');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'message']);
@@ -62,7 +65,7 @@ class InstallmentPaymentDetailControllerTest extends TestCase
             'amount_paid' => 250,
         ];
 
-        $response = $this->postJson('/api/installment-payment-detail', $payload);
+        $response = $this->postJson('/api/v1/installment-payment-detail', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('installment_payment_details', [
@@ -75,23 +78,24 @@ class InstallmentPaymentDetailControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        $detail = InstallmentPaymentDetail::factory()->create();
+        $detail = InstallmentPaymentDetail::factory()->create([
+            'installment_payment_id' => $this->payment->id,
+            'installment_id' => $this->installment->id,
+        ]);
 
-        $response = $this->getJson("/api/installment-payment-detail/{$detail->id}");
+        $response = $this->getJson("/api/v1/installment-payment-detail/{$detail->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $detail->id);
     }
 
-    /** @test */
     public function test_can_update_detail()
     {
-        $this->markTestSkipped('Table has no company_id but Controller checks belongsToCurrentCompany() - returns 500');
-
-        $this->withoutExceptionHandling();
         $this->actingAs($this->admin);
 
         $detail = InstallmentPaymentDetail::factory()->create([
+            'installment_payment_id' => $this->payment->id,
+            'installment_id' => $this->installment->id,
             'amount_paid' => 100,
         ]);
 
@@ -99,9 +103,8 @@ class InstallmentPaymentDetailControllerTest extends TestCase
             'amount_paid' => 150,
         ];
 
-        $response = $this->putJson("/api/installment-payment-detail/{$detail->id}", $payload);
+        $response = $this->putJson("/api/v1/installment-payment-detail/{$detail->id}", $payload);
 
-        dump($response->json());
         $response->assertStatus(200);
 
         // Refresh to get updated data
@@ -119,9 +122,12 @@ class InstallmentPaymentDetailControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        $detail = InstallmentPaymentDetail::factory()->create();
+        $detail = InstallmentPaymentDetail::factory()->create([
+            'installment_payment_id' => $this->payment->id,
+            'installment_id' => $this->installment->id,
+        ]);
 
-        $response = $this->deleteJson("/api/installment-payment-detail/delete/{$detail->id}");
+        $response = $this->deleteJson("/api/v1/installment-payment-detail/delete/{$detail->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('installment_payment_details', ['id' => $detail->id]);

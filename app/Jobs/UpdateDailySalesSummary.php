@@ -90,7 +90,7 @@ class UpdateDailySalesSummary implements ShouldQueue
         $netProfit = $grossProfit - $totalExpenses;
 
         DailySalesSummary::updateOrCreate(
-            ['date' => $date, 'company_id' => $companyId],
+            ['date' => Carbon::parse($date), 'company_id' => $companyId],
             [
                 'total_revenue' => $revenue,
                 'sales_count' => $invoiceStats->count ?? 0,

@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\InstallmentPlan;
-use App\Models\Invoice;
+use Modules\Sales\Models\Invoice;
 use App\Models\InvoiceType;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -81,7 +81,6 @@ class InstallmentPlanControllerTest extends TestCase
 
         $response = $this->postJson('/api/v1/installment-plans', $payload);
 
-        dump($response->json());
         $response->assertStatus(201);
         $this->assertDatabaseHas('installment_plans', [
             'name' => 'Test Plan',

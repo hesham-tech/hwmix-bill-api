@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * ميدل وير لتحديد سياق الشركة النشطة وتخصيص صلاحيات Spatie حسب الشركة.
+ */
 class ScopePermissionsByCompany
 {
     /**

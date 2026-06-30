@@ -173,7 +173,11 @@ class UserControllerTest extends TestCase
     public function test_user_cannot_view_users_from_another_company()
     {
         // Manager in company A
-        $manager = User::factory()->create(['company_id' => $this->company->id]);
+        $manager = User::factory()->create([
+            'company_id' => $this->company->id,
+            'active_company_id' => $this->company->id,
+        ]);
+        setPermissionsTeamId($this->company->id);
         $manager->givePermissionTo('admin.company');
         CompanyUser::create(['user_id' => $manager->id, 'company_id' => $this->company->id]);
 

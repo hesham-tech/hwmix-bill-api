@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * خدمة إدارة الصناديق (CashBoxService) - موديول المحاسبة
+ * خدمة إنشاء وإدارة الصناديق النقدية الافتراضية للمستخدمين والشركات.
  */
 class CashBoxService
 {

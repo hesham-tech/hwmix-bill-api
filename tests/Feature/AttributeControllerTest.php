@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Attribute;
-use App\Models\AttributeValue;
-use App\Models\ProductVariant;
+use Modules\Inventory\Models\Attribute;
+use Modules\Inventory\Models\AttributeValue;
+use Modules\Inventory\Models\ProductVariant;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -33,7 +33,7 @@ class AttributeControllerTest extends TestCase
         $this->actingAs($this->admin);
         Attribute::factory()->count(3)->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson('/api/attributes');
+        $response = $this->getJson('/api/v1/attributes');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data']);
@@ -51,7 +51,7 @@ class AttributeControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->postJson('/api/attribute', $payload);
+        $response = $this->postJson('/api/v1/attributes', $payload);
 
         $response->assertStatus(200); // Controller returns 200 for success in store
         $this->assertDatabaseHas('attributes', ['name' => 'Color']);
@@ -64,7 +64,7 @@ class AttributeControllerTest extends TestCase
         $this->actingAs($this->admin);
         $attribute = Attribute::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson("/api/attribute/{$attribute->id}");
+        $response = $this->getJson("/api/v1/attributes/{$attribute->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $attribute->id);
@@ -87,7 +87,7 @@ class AttributeControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->putJson("/api/attribute/{$attribute->id}", $payload);
+        $response = $this->putJson("/api/v1/attributes/{$attribute->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('attributes', ['id' => $attribute->id, 'name' => 'New Name']);
@@ -102,11 +102,11 @@ class AttributeControllerTest extends TestCase
         $attribute = Attribute::factory()->create(['company_id' => $this->company->id]);
         $value = AttributeValue::factory()->create(['attribute_id' => $attribute->id, 'company_id' => $this->company->id]);
 
-        $response = $this->deleteJson("/api/attribute/{$attribute->id}");
+        $response = $this->deleteJson("/api/v1/attributes/{$attribute->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('attributes', ['id' => $attribute->id]);
-        $this->assertDatabaseMissing('attribute_values', ['id' => $value->id]);
+        $this->assertSoftDeleted('attribute_values', ['id' => $value->id]);
     }
 
     public function test_cannot_delete_attribute_in_use()
@@ -122,7 +122,7 @@ class AttributeControllerTest extends TestCase
             'created_by' => $this->admin->id
         ]);
 
-        $response = $this->deleteJson("/api/attribute/{$attribute->id}");
+        $response = $this->deleteJson("/api/v1/attributes/{$attribute->id}");
 
         $response->assertStatus(409);
         $this->assertDatabaseHas('attributes', ['id' => $attribute->id]);
@@ -133,15 +133,20 @@ class AttributeControllerTest extends TestCase
         $companyB = Company::factory()->create();
         $attributeB = Attribute::factory()->create(['company_id' => $companyB->id]);
 
-        $userA = User::factory()->create(['company_id' => $this->company->id]);
+        $userA = User::factory()->create([
+            'company_id' => $this->company->id,
+            'active_company_id' => $this->company->id,
+        ]);
+        setPermissionsTeamId($this->company->id);
         $userA->givePermissionTo('attributes.view_all');
 
         $this->actingAs($userA);
 
-        $response = $this->getJson("/api/attribute/{$attributeB->id}");
-        $response->assertStatus(403);
+        $response = $this->getJson("/api/v1/attributes/{$attributeB->id}");
+        // Scoped by company; returns 404 (not found) rather than 403
+        $response->assertStatus(404);
 
-        $response = $this->getJson('/api/attributes');
+        $response = $this->getJson('/api/v1/attributes');
         $response->assertJsonMissing(['name' => $attributeB->name]);
     }
 }

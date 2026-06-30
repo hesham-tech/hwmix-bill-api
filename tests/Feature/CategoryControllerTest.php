@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Category;
+use Modules\Inventory\Models\Category;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,10 +31,7 @@ class CategoryControllerTest extends TestCase
         $this->actingAs($this->admin);
         Category::factory()->count(3)->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson('/api/categories');
-        if ($response->status() !== 200) {
-            file_put_contents(base_path('debug_category.json'), $response->content());
-        }
+        $response = $this->getJson('/api/v1/categories');
         $response->assertStatus(200)->assertJsonStructure(['status', 'data']);
 
     }
@@ -43,7 +40,7 @@ class CategoryControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        $response = $this->postJson('/api/category', [
+        $response = $this->postJson('/api/v1/categories', [
             'name' => 'Electronics',
             'description' => 'Electronic devices'
         ]);
@@ -57,7 +54,7 @@ class CategoryControllerTest extends TestCase
         $this->actingAs($this->admin);
         $category = Category::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson("/api/category/{$category->id}");
+        $response = $this->getJson("/api/v1/categories/{$category->id}");
         $response->assertStatus(200)->assertJsonPath('data.id', $category->id);
     }
 
@@ -66,7 +63,7 @@ class CategoryControllerTest extends TestCase
         $this->actingAs($this->admin);
         $category = Category::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->putJson("/api/category/{$category->id}", [
+        $response = $this->putJson("/api/v1/categories/{$category->id}", [
             'name' => 'Updated Category'
         ]);
 
@@ -79,7 +76,7 @@ class CategoryControllerTest extends TestCase
         $this->actingAs($this->admin);
         $category = Category::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->postJson("/api/category/delete", ['id' => $category->id]);
+        $response = $this->deleteJson("/api/v1/categories/{$category->id}");
         $response->assertStatus(200);
         $this->assertDatabaseMissing('categories', ['id' => $category->id]);
     }
@@ -93,7 +90,7 @@ class CategoryControllerTest extends TestCase
             'parent_id' => $parent->id
         ]);
 
-        $response = $this->postJson("/api/category/delete", ['id' => $parent->id]);
+        $response = $this->deleteJson("/api/v1/categories/{$parent->id}");
         $response->assertStatus(409);
     }
 
@@ -102,15 +99,19 @@ class CategoryControllerTest extends TestCase
         $otherCompany = Company::factory()->create();
         $otherCategory = Category::factory()->create(['company_id' => $otherCompany->id]);
 
-        $user = User::factory()->create(['company_id' => $this->company->id]);
+        $user = User::factory()->create([
+            'company_id' => $this->company->id,
+            'active_company_id' => $this->company->id,
+        ]);
+        setPermissionsTeamId($this->company->id);
         $user->givePermissionTo('categories.view_all');
 
         $this->actingAs($user);
 
-        $response = $this->getJson("/api/category/{$otherCategory->id}");
+        $response = $this->getJson("/api/v1/categories/{$otherCategory->id}");
         $response->assertStatus(403);
 
-        $response = $this->getJson('/api/categories');
+        $response = $this->getJson('/api/v1/categories');
         $response->assertJsonMissing(['name' => $otherCategory->name]);
     }
 }
