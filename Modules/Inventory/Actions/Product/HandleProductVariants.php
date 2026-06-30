@@ -25,9 +25,15 @@ class HandleProductVariants
         }
 
         foreach ($variantsData as $variantData) {
+            // نسخ وحدات المنتج الأب إلى الـ variant إذا لم تكن محددة
+            $variantArray = $variantData->toArray();
+            if (empty($variantArray['base_unit_id'])     && $product->base_unit_id)     { $variantArray['base_unit_id']     = $product->base_unit_id; }
+            if (empty($variantArray['purchase_unit_id']) && $product->purchase_unit_id) { $variantArray['purchase_unit_id'] = $product->purchase_unit_id; }
+            if (empty($variantArray['display_unit_id'])  && $product->display_unit_id)  { $variantArray['display_unit_id']  = $product->display_unit_id; }
+
             $variant = $product->variants()->updateOrCreate(
                 ['id' => $variantData->id ?? null],
-                array_merge($variantData->toArray(), [
+                array_merge($variantArray, [
                     'company_id' => $companyId,
                     'created_by' => $user->id,
                 ])

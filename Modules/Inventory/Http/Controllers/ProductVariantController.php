@@ -542,7 +542,8 @@ class ProductVariantController extends Controller
             $inSales = $request->get('in_sales');
 
             $query = ProductVariant::with([
-                'product', 'images', 'attributes.attributeValue', 'stocks',
+                'product.baseUnit', 'product.purchaseUnit', 'product.displayUnit',
+                'images', 'attributes.attributeValue', 'stocks',
                 'baseUnit', 'purchaseUnit', 'displayUnit', 'units.unit', 'unitPrices'
             ]);
 
@@ -615,39 +616,39 @@ class ProductVariantController extends Controller
                             ]
                         ];
                     }),
-                    // تفاصيل وحدات القياس
-                    'base_unit_id' => $variant->base_unit_id,
-                    'purchase_unit_id' => $variant->purchase_unit_id,
-                    'display_unit_id' => $variant->display_unit_id,
+                    // تفاصيل وحدات القياس — مع fallback لوحدات المنتج الأب للمنتجات القديمة
+                    'base_unit_id'     => $variant->base_unit_id     ?? $product->base_unit_id,
+                    'purchase_unit_id' => $variant->purchase_unit_id ?? $product->purchase_unit_id,
+                    'display_unit_id'  => $variant->display_unit_id  ?? $product->display_unit_id,
                     'allow_decimal_quantities' => (bool)$product->allow_decimal_quantities,
-                    'quantity_precision' => (int)$product->quantity_precision,
-                    'base_unit' => $variant->baseUnit ? [
-                        'id' => $variant->baseUnit->id,
-                        'name' => $variant->baseUnit->name,
-                        'code' => $variant->baseUnit->code,
-                        'decimal_places' => $variant->baseUnit->decimal_places,
+                    'quantity_precision'       => (int)$product->quantity_precision,
+                    'base_unit' => ($variant->baseUnit ?? $product->baseUnit) ? [
+                        'id'             => ($variant->baseUnit ?? $product->baseUnit)->id,
+                        'name'           => ($variant->baseUnit ?? $product->baseUnit)->name,
+                        'code'           => ($variant->baseUnit ?? $product->baseUnit)->code,
+                        'decimal_places' => ($variant->baseUnit ?? $product->baseUnit)->decimal_places,
                     ] : null,
-                    'purchase_unit' => $variant->purchaseUnit ? [
-                        'id' => $variant->purchaseUnit->id,
-                        'name' => $variant->purchaseUnit->name,
-                        'code' => $variant->purchaseUnit->code,
-                        'decimal_places' => $variant->purchaseUnit->decimal_places,
+                    'purchase_unit' => ($variant->purchaseUnit ?? $product->purchaseUnit) ? [
+                        'id'             => ($variant->purchaseUnit ?? $product->purchaseUnit)->id,
+                        'name'           => ($variant->purchaseUnit ?? $product->purchaseUnit)->name,
+                        'code'           => ($variant->purchaseUnit ?? $product->purchaseUnit)->code,
+                        'decimal_places' => ($variant->purchaseUnit ?? $product->purchaseUnit)->decimal_places,
                     ] : null,
-                    'display_unit' => $variant->displayUnit ? [
-                        'id' => $variant->displayUnit->id,
-                        'name' => $variant->displayUnit->name,
-                        'code' => $variant->displayUnit->code,
-                        'decimal_places' => $variant->displayUnit->decimal_places,
+                    'display_unit' => ($variant->displayUnit ?? $product->displayUnit) ? [
+                        'id'             => ($variant->displayUnit ?? $product->displayUnit)->id,
+                        'name'           => ($variant->displayUnit ?? $product->displayUnit)->name,
+                        'code'           => ($variant->displayUnit ?? $product->displayUnit)->code,
+                        'decimal_places' => ($variant->displayUnit ?? $product->displayUnit)->decimal_places,
                     ] : null,
                     'units' => $variant->units->map(function($vu) {
                         return [
-                            'unit_id' => $vu->unit_id,
+                            'unit_id'                  => $vu->unit_id,
                             'conversion_factor_to_base' => (float)$vu->conversion_factor_to_base,
-                            'is_default' => (bool)$vu->is_default,
+                            'is_default'               => (bool)$vu->is_default,
                             'unit' => $vu->unit ? [
-                                'id' => $vu->unit->id,
-                                'name' => $vu->unit->name,
-                                'code' => $vu->unit->code,
+                                'id'             => $vu->unit->id,
+                                'name'           => $vu->unit->name,
+                                'code'           => $vu->unit->code,
                                 'decimal_places' => $vu->unit->decimal_places,
                             ] : null,
                         ];
@@ -655,8 +656,8 @@ class ProductVariantController extends Controller
                     'unit_prices' => $variant->unitPrices->map(function($up) {
                         return [
                             'unit_id' => $up->unit_id,
-                            'price' => (float)$up->price,
-                            'cost' => (float)$up->cost,
+                            'price'   => (float)$up->price,
+                            'cost'    => (float)$up->cost,
                         ];
                     })->toArray(),
                 ];

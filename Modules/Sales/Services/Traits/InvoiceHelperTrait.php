@@ -137,7 +137,8 @@ trait InvoiceHelperTrait
             $currentItems = $invoice->items->keyBy('id');
             $newItemsCollection = collect($newItemsData);
 
-            $itemsToDelete = $currentItems->diffKeys($newItemsCollection->keyBy('id'));
+            $existingNewIds = $newItemsCollection->pluck('id')->filter()->values()->toArray();
+            $itemsToDelete = $currentItems->filter(fn($item) => !in_array($item->id, $existingNewIds));
             foreach ($itemsToDelete as $item) {
                 $item->delete();
             }
