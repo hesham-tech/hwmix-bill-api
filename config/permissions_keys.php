@@ -700,8 +700,6 @@ return [
         'tax' => ['key' => 'reports.tax', 'label' => 'عرض تقرير الضرائب'],
         'export' => ['key' => 'reports.export', 'label' => 'تصدير التقارير'],
     ],
-<<<<<<< Updated upstream
-=======
     // => INVOICE TYPES
     'invoice_types' => [
         'name' => ['key' => 'invoice_types', 'label' => 'صلاحيات أنواع المستندات'],
