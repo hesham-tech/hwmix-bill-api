@@ -10,7 +10,7 @@ class SmsDeviceCommand extends Model
 {
     use HasFactory;
 
-    protected $table = 'smsg_device_commands';
+    protected $table = 'sms_gateway_device_commands';
 
     protected $fillable = [
         'sms_device_id',

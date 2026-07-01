@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('smsg_messages', function (Blueprint $table) {
+        Schema::create('sms_gateway_messages', function (Blueprint $table) {
             $table->id();
             
             // روابط الشركة والمستخدم المنشئ
@@ -20,8 +20,8 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             
             // روابط بوابة النقل (الجهاز والخط المستخدم)
-            $table->foreignId('sms_device_id')->constrained('smsg_devices')->onDelete('cascade');
-            $table->foreignId('sms_line_id')->nullable()->constrained('smsg_lines')->onDelete('set null');
+            $table->foreignId('sms_device_id')->constrained('sms_gateway_devices')->onDelete('cascade');
+            $table->foreignId('sms_line_id')->nullable()->constrained('sms_gateway_lines')->onDelete('set null');
             
             // بيانات الرسالة الأساسية
             $table->string('phone_number')->index();
@@ -53,6 +53,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('smsg_messages');
+        Schema::dropIfExists('sms_gateway_messages');
     }
 };

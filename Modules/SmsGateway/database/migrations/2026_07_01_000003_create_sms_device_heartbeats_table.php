@@ -12,11 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('smsg_device_heartbeats', function (Blueprint $table) {
+        Schema::create('sms_gateway_device_heartbeats', function (Blueprint $table) {
             $table->id();
             
             // الربط بالجهاز (علاقة رأس بأطراف One-to-Many)
-            $table->foreignId('sms_device_id')->constrained('smsg_devices')->onDelete('cascade');
+            $table->foreignId('sms_device_id')->constrained('sms_gateway_devices')->onDelete('cascade');
             
             // قراءات الحالة والمراقبة
             $table->string('network_type')->nullable(); // wifi, cellular, none
@@ -36,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('smsg_device_heartbeats');
+        Schema::dropIfExists('sms_gateway_device_heartbeats');
     }
 };

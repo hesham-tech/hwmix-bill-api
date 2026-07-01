@@ -10,7 +10,7 @@ class SmsDeviceHeartbeat extends Model
 {
     use HasFactory;
 
-    protected $table = 'smsg_device_heartbeats';
+    protected $table = 'sms_gateway_device_heartbeats';
 
     // استخدام created_at فقط بدون updated_at
     const UPDATED_AT = null;

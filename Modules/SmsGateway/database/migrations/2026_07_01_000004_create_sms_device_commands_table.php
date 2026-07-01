@@ -12,11 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('smsg_device_commands', function (Blueprint $table) {
+        Schema::create('sms_gateway_device_commands', function (Blueprint $table) {
             $table->id();
             
             // ربط الأمر بالجهاز المطلوب تنفيذه عليه
-            $table->foreignId('sms_device_id')->constrained('smsg_devices')->onDelete('cascade');
+            $table->foreignId('sms_device_id')->constrained('sms_gateway_devices')->onDelete('cascade');
             
             // نوع وحزمة الأمر
             $table->string('command_type')->index(); // SEND_SMS, REFRESH_DEVICE, etc.
@@ -42,6 +42,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('smsg_device_commands');
+        Schema::dropIfExists('sms_gateway_device_commands');
     }
 };

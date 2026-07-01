@@ -15,7 +15,7 @@ class SmsLine extends Model
 {
     use HasFactory, Scopes, Blameable, FilterableByCompany;
 
-    protected $table = 'smsg_lines';
+    protected $table = 'sms_gateway_lines';
 
     protected $fillable = [
         'sms_device_id',
