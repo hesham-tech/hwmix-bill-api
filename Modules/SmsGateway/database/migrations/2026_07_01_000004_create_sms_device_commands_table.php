@@ -12,6 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('smsgate_device_commands');
         Schema::create('smsgate_device_commands', function (Blueprint $table) {
             $table->id();
@@ -36,6 +37,7 @@ return new class extends Migration
             // فهارس إضافية للفلترة والأداء
             $table->index('created_at');
         });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
@@ -43,6 +45,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('smsgate_device_commands');
+        Schema::enableForeignKeyConstraints();
     }
 };

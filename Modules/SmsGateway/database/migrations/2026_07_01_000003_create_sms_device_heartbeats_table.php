@@ -12,6 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('smsgate_device_heartbeats');
         Schema::create('smsgate_device_heartbeats', function (Blueprint $table) {
             $table->id();
@@ -30,6 +31,7 @@ return new class extends Migration
             
             $table->timestamp('created_at')->nullable()->index();
         });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
@@ -37,6 +39,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('smsgate_device_heartbeats');
+        Schema::enableForeignKeyConstraints();
     }
 };
