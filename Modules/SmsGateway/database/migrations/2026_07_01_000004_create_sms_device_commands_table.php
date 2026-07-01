@@ -12,6 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('sms_gateway_device_commands');
         Schema::create('sms_gateway_device_commands', function (Blueprint $table) {
             $table->id();
             
