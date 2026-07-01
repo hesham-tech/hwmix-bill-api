@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sms_devices', function (Blueprint $table) {
+        Schema::create('smsg_devices', function (Blueprint $table) {
             $table->id();
             
             // ربط المستأجر (Multi-Tenant Isolation) والمدقق
@@ -50,6 +50,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sms_devices');
+        Schema::dropIfExists('smsg_devices');
     }
 };
