@@ -54,7 +54,7 @@ jobs:
 
       - name: Run Database Migrations
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && php artisan migrate --force"
+          ssh -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234 "cd /home/u715355537/domains/hwnix.com/public_html/api-teste && php artisan migrate:fresh --force"
 
       - name: Clear All Caches
         run: |
