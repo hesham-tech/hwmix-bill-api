@@ -1,0 +1,14 @@
+{
+    "Core": true,
+    "Inventory": true,
+    "Accounting": true,
+    "Sales": true,
+    "Companies": true,
+    "Guidance": true,
+    "Payment": true,
+    "Notification": true,
+    "ExportImport": true,
+    "Media": true,
+    "Legal": true,
+    "SmsGateway": true
+}

@@ -700,4 +700,106 @@ return [
         'tax' => ['key' => 'reports.tax', 'label' => 'عرض تقرير الضرائب'],
         'export' => ['key' => 'reports.export', 'label' => 'تصدير التقارير'],
     ],
+<<<<<<< Updated upstream
+=======
+    // => INVOICE TYPES
+    'invoice_types' => [
+        'name' => ['key' => 'invoice_types', 'label' => 'صلاحيات أنواع المستندات'],
+        'page' => ['key' => 'invoice_types.page', 'label' => 'صفحة أنواع المستندات'],
+        'view_all' => ['key' => 'invoice_types.view_all', 'label' => 'عرض كل أنواع المستندات'],
+        'view_children' => ['key' => 'invoice_types.view_children', 'label' => 'عرض الأنواع للتابعين'],
+        'view_self' => ['key' => 'invoice_types.view_self', 'label' => 'عرض الأنواع الخاصة'],
+        'update_all' => ['key' => 'invoice_types.update_all', 'label' => 'تعديل أي نوع (تفعيل/تعطيل)'],
+    ],
+    // => PLANS
+    'plans' => [
+        'name' => ['key' => 'plans', 'label' => 'صلاحيات خطط الأسعار'],
+        'page' => ['key' => 'plans.page', 'label' => 'صفحة خطط الأسعار'],
+        'view_all' => ['key' => 'plans.view_all', 'label' => 'عرض جميع الخطط'],
+        'view_children' => ['key' => 'plans.view_children', 'label' => 'عرض خطط التابعين'],
+        'view_self' => ['key' => 'plans.view_self', 'label' => 'عرض خططي الشخصية'],
+        'create' => ['key' => 'plans.create', 'label' => 'إنشاء خطة جديدة'],
+        'update_all' => ['key' => 'plans.update_all', 'label' => 'تعديل أي خطة'],
+        'update_children' => ['key' => 'plans.update_children', 'label' => 'تعديل خطط التابعين'],
+        'update_self' => ['key' => 'plans.update_self', 'label' => 'تعديل خطتي الشخصية'],
+        'delete_all' => ['key' => 'plans.delete_all', 'label' => 'حذف أي خطة'],
+        'delete_children' => ['key' => 'plans.delete_children', 'label' => 'حذف خطط التابعين'],
+        'delete_self' => ['key' => 'plans.delete_self', 'label' => 'حذف خطتي الشخصية'],
+    ],
+    // => TASKS
+    'tasks' => [
+        'name' => ['key' => 'tasks', 'label' => 'صلاحيات إدارة المهام'],
+        'page' => ['key' => 'tasks.page', 'label' => 'صفحة المهام'],
+        'view_all' => ['key' => 'tasks.view_all', 'label' => 'عرض جميع المهام'],
+        'view_children' => ['key' => 'tasks.view_children', 'label' => 'عرض مهام التابعين'],
+        'view_self' => ['key' => 'tasks.view_self', 'label' => 'عرض مهامي الشخصية'],
+        'create' => ['key' => 'tasks.create', 'label' => 'إنشاء مهمة جديدة'],
+        'update_all' => ['key' => 'tasks.update_all', 'label' => 'تعديل أي مهمة'],
+        'delete_all' => ['key' => 'tasks.delete_all', 'label' => 'حذف أي مهمة'],
+    ],
+    // => ERROR REPORTS
+    'error_reports' => [
+        'name' => ['key' => 'error_reports', 'label' => 'صلاحيات تقارير الأخطاء'],
+        'page' => ['key' => 'error_reports.page', 'label' => 'صفحة تقارير الأخطاء'],
+        'view_all' => ['key' => 'error_reports.view_all', 'label' => 'عرض جميع تقارير الأخطاء'],
+        'update_all' => ['key' => 'error_reports.update_all', 'label' => 'تحديث حالة التقرير'],
+    ],
+    // => BACKUPS
+    'backups' => [
+        'name' => ['key' => 'backups', 'label' => 'صلاحيات النسخ الاحتياطي'],
+        'page' => ['key' => 'backups.page', 'label' => 'صفحة النسخ الاحتياطي'],
+        'create' => ['key' => 'backups.create', 'label' => 'تشغيل نسخة احتياطية'],
+        'view_all' => ['key' => 'backups.view_all', 'label' => 'عرض النسخ السابقة'],
+    ],
+    // => QUOTATIONS
+    'quotations' => [
+        'name' => ['key' => 'quotations', 'label' => 'صلاحيات عروض الأسعار'],
+        'page' => ['key' => 'quotations.page', 'label' => 'صفحة عروض الأسعار'],
+        'view_all' => ['key' => 'quotations.view_all', 'label' => 'عرض جميع عروض الأسعار'],
+        'create' => ['key' => 'quotations.create', 'label' => 'إنشاء عرض سعر'],
+    ],
+    // => ORDERS
+    'orders' => [
+        'name' => ['key' => 'orders', 'label' => 'صلاحيات طلبات الشراء/البيع'],
+        'page' => ['key' => 'orders.page', 'label' => 'صفحة الطلبات'],
+        'view_all' => ['key' => 'orders.view_all', 'label' => 'عرض جميع الطلبات'],
+        'create' => ['key' => 'orders.create', 'label' => 'إنشاء طلب جديد'],
+    ],
+    'balance' => [
+        'name' => ['key' => 'balance', 'label' => 'صلاحيات إدارة الأرصدة والماليات'],
+        'deposit_any' => ['key' => 'balance.deposit_any', 'label' => 'إيداع رصيد لأي مستخدم'],
+        'withdraw_any' => ['key' => 'balance.withdraw_any', 'label' => 'سحب رصيد من أي مستخدم'],
+        'transfer_any' => ['key' => 'balance.transfer_any', 'label' => 'تحويل رصيد من أي مستخدم'],
+        'deposit' => ['key' => 'balance.deposit', 'label' => 'إجراء إيداع رصيد (شخصي)'],
+        'withdraw' => ['key' => 'balance.withdraw', 'label' => 'إجراء سحب رصيد (شخصي)'],
+        'transfer' => ['key' => 'balance.transfer', 'label' => 'تحويل رصيد (شخصي)'],
+    ],
+    // => LEGAL DOCUMENTS
+    'legal_documents' => [
+        'name' => ['key' => 'legal_documents', 'label' => 'صلاحيات المستندات القانونية'],
+        'page' => ['key' => 'legal_documents.page', 'label' => 'صفحة المستندات القانونية'],
+        'view_all' => ['key' => 'legal_documents.view_all', 'label' => 'عرض المستندات القانونية'],
+        'create' => ['key' => 'legal_documents.create', 'label' => 'إنشاء مسودة مستند جديد'],
+        'update_all' => ['key' => 'legal_documents.update_all', 'label' => 'تعديل أو صياغة إصدار جديد'],
+    ],
+    // => SMS GATEWAY
+    'sms_gateway' => [
+        'name' => ['key' => 'sms_gateway', 'label' => 'صلاحيات بوابات الأجهزة والشرائح'],
+        'page' => ['key' => 'sms_gateway.page', 'label' => 'بوابات الرسائل - الصفحة الرئيسية'],
+        'view_all' => ['key' => 'sms_gateway.view_all', 'label' => 'عرض كل بوابات الأجهزة والشرائح'],
+        'view_self' => ['key' => 'sms_gateway.view_self', 'label' => 'عرض بواباتي الشخصية فقط'],
+        'create' => ['key' => 'sms_gateway.create', 'label' => 'ربط وتسجيل جهاز جديد'],
+        'update_all' => ['key' => 'sms_gateway.update_all', 'label' => 'تعديل أي جهاز أو إعدادات'],
+        'delete_all' => ['key' => 'sms_gateway.delete_all', 'label' => 'إلغاء ربط وحذف جهاز'],
+    ],
+    // => SMS MESSAGES
+    'sms_messages' => [
+        'name' => ['key' => 'sms_messages', 'label' => 'صلاحيات إدارة رسائل SMS'],
+        'page' => ['key' => 'sms_messages.page', 'label' => 'رسائل SMS - الصفحة الرئيسية'],
+        'view_all' => ['key' => 'sms_messages.view_all', 'label' => 'عرض كل الرسائل والتقارير والنبضات'],
+        'view_self' => ['key' => 'sms_messages.view_self', 'label' => 'عرض رسائلي وتاريخ إرسالي'],
+        'create' => ['key' => 'sms_messages.create', 'label' => 'إرسال رسالة SMS جديدة'],
+        'update_all' => ['key' => 'sms_messages.update_all', 'label' => 'إلغاء أو تعديل رسائل معلقة'],
+        'delete_all' => ['key' => 'sms_messages.delete_all', 'label' => 'حذف أو أرشفة الرسائل'],
+    ],
 ];
