@@ -8,8 +8,9 @@ use Modules\SmsGateway\Http\Controllers\Api\v1\AgentCommandController;
 use Modules\SmsGateway\Http\Controllers\Api\v1\AgentSmsController;
 
 Route::prefix('v1/agent')->group(function () {
-    // مسارات عامة للمصادقة
+    // مسارات عامة للمصادقة والتحديثات
     Route::post('auth/login', [AgentAuthController::class, 'login']);
+    Route::get('public/app-update/check', [AgentDeviceController::class, 'checkAppUpdate']);
     
     // مسارات تتطلب مصادقة الـ Token
     Route::middleware(['auth:sanctum'])->group(function () {

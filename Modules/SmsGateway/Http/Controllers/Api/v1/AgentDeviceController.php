@@ -125,4 +125,22 @@ class AgentDeviceController extends Controller
             'sync_limits' => $settings->sync_limits,
         ], 'تم جلب الإعدادات بنجاح.');
     }
+
+    /**
+     * التحقق من وجود تحديث جديد لتطبيق الأندرويد.
+     */
+    public function checkAppUpdate(Request $request): JsonResponse
+    {
+        $versionCode = 2; // رقم إصدار الـ APK المتوفر حالياً على السيرفر
+        $versionName = "1.0.1";
+        $downloadUrl = url('downloads/sms-agent.apk');
+
+        return api_success([
+            'version_code' => $versionCode,
+            'version_name' => $versionName,
+            'download_url' => $downloadUrl,
+            'changelog' => 'إصلاح مشكلة المصادقة وتعديل إزاحة لوحة المفاتيح والـ URL auto-normalization.',
+            'force_update' => false
+        ], 'معلومات التحديث المتاحة.');
+    }
 }

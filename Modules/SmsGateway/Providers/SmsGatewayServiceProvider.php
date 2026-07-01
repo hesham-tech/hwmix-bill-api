@@ -1,55 +1,19 @@
 <?php
+// كلاس مزود الخدمة لموديول بوابة الرسائل لإدارة وتسجيل الخدمات.
 
 namespace Modules\SmsGateway\Providers;
 
-use Nwidart\Modules\Support\ModuleServiceProvider;
-use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\ServiceProvider;
 
-class SmsGatewayServiceProvider extends ModuleServiceProvider
+class SmsGatewayServiceProvider extends ServiceProvider
 {
-    /**
-     * The name of the module.
-     */
     protected string $name = 'SmsGateway';
-
-    /**
-     * The lowercase version of the module name.
-     */
     protected string $nameLower = 'smsgateway';
 
-    /**
-     * Command classes to register.
-     *
-     * @var string[]
-     */
-    // protected array $commands = [];
-
-    /**
-     * Provider classes to register.
-     *
-     * @var string[]
-     */
-    protected array $providers = [
-        EventServiceProvider::class,
-        RouteServiceProvider::class,
-    ];
-
-    /**
-     * Define module schedules.
-     * 
-     * @param $schedule
-     */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
-
-    /**
-     * Register services.
-     */
     public function register(): void
     {
-        parent::register();
+        $this->app->register(EventServiceProvider::class);
+        $this->app->register(RouteServiceProvider::class);
 
         $this->app->bind(
             \Modules\SmsGateway\Domain\Contracts\SmsDeviceRepositoryInterface::class,
@@ -60,5 +24,25 @@ class SmsGatewayServiceProvider extends ModuleServiceProvider
             \Modules\SmsGateway\Domain\Contracts\SmsMessageRepositoryInterface::class,
             \Modules\SmsGateway\Repositories\Eloquent\EloquentSmsMessageRepository::class
         );
+        
+        $this->app->bind(
+            \Modules\SmsGateway\Domain\Contracts\SmsTransportDriverInterface::class,
+            \Modules\SmsGateway\Drivers\AndroidAgentDriver::class
+        );
+    }
+
+    public function boot(): void
+    {
+        // تحميل الـ Config
+        $this->publishes([
+            __DIR__ . '/../config/config.php' => config_path('smsgateway.php'),
+        ], 'config');
+
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/config.php', 'smsgateway'
+        );
+
+        // تحميل الـ Migrations
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 }

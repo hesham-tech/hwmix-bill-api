@@ -5,4 +5,5 @@ return [
     App\Providers\AuthServiceProvider::class,
     Spatie\Permission\PermissionServiceProvider::class,
     Spatie\Backup\BackupServiceProvider::class,
+    Modules\SmsGateway\Providers\SmsGatewayServiceProvider::class,
 ];
