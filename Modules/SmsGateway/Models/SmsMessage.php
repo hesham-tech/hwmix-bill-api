@@ -17,7 +17,7 @@ class SmsMessage extends Model
 {
     use HasFactory, Scopes, Blameable, LogsActivity, FilterableByCompany, SoftDeletes;
 
-    protected $table = 'sms_gateway_messages';
+    protected $table = 'smsgate_messages';
 
     protected $fillable = [
         'company_id',

@@ -12,12 +12,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('sms_gateway_device_settings');
-        Schema::create('sms_gateway_device_settings', function (Blueprint $table) {
+        Schema::dropIfExists('smsgate_device_settings');
+        Schema::create('smsgate_device_settings', function (Blueprint $table) {
             $table->id();
             
             // الربط بالجهاز (علاقة رأس برأس One-to-One)
-            $table->foreignId('sms_device_id')->constrained('sms_gateway_devices')->onDelete('cascade');
+            $table->foreignId('sms_device_id')->constrained('smsgate_devices')->onDelete('cascade');
             
             // رقم إصدار التكوين (تحديثه يعني سحب الإعدادات مجدداً بالهاتف)
             $table->integer('configuration_version')->default(1);
@@ -40,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sms_gateway_device_settings');
+        Schema::dropIfExists('smsgate_device_settings');
     }
 };

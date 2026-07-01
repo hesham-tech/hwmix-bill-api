@@ -12,8 +12,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('sms_gateway_devices');
-        Schema::create('sms_gateway_devices', function (Blueprint $table) {
+        Schema::dropIfExists('smsgate_devices');
+        Schema::create('smsgate_devices', function (Blueprint $table) {
             $table->id();
             
             // ربط المستأجر (Multi-Tenant Isolation) والمدقق
@@ -51,6 +51,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sms_gateway_devices');
+        Schema::dropIfExists('smsgate_devices');
     }
 };

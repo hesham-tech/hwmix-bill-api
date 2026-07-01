@@ -12,12 +12,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('sms_gateway_lines');
-        Schema::create('sms_gateway_lines', function (Blueprint $table) {
+        Schema::dropIfExists('smsgate_lines');
+        Schema::create('smsgate_lines', function (Blueprint $table) {
             $table->id();
             
             // روابط الشركة، الجهاز والمستخدم
-            $table->foreignId('sms_device_id')->constrained('sms_gateway_devices')->onDelete('cascade');
+            $table->foreignId('sms_device_id')->constrained('smsgate_devices')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             
@@ -47,6 +47,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sms_gateway_lines');
+        Schema::dropIfExists('smsgate_lines');
     }
 };
