@@ -55,11 +55,13 @@ class SmsDispatcherService
                 direction: 'incoming',
                 status: SmsMessageStatus::Delivered,
                 messageRef: $messageRef,
-                sentAt: isset($data['sent_at']) ? new \DateTime($data['sent_at']) : now(),
+                sentAt: isset($data['sent_at']) ? $this->parseTimestamp($data['sent_at']) : now(),
                 deliveredAt: now()
             );
 
             $savedMessage = $this->messageRepo->save($message);
+
+            \Log::info("Incoming SMS successfully saved to DB: Device ID {$deviceId}, From: {$data['phone_number']}, Body: {$data['message_body']}, Ref: {$messageRef}");
 
             // إطلاق حدث استلام رسالة واردة
             event(new \Modules\SmsGateway\Events\SmsReceived($savedMessage));
@@ -139,5 +141,24 @@ class SmsDispatcherService
             createdAt: $model->created_at,
             updatedAt: $model->updated_at
         );
+    }
+
+    /**
+     * تحويل التوقيت المرسل من الهاتف إلى كائن DateTime سواء كان بالملي ثانية أو نصي.
+     */
+    private function parseTimestamp($value): \DateTime
+    {
+        if (empty($value)) {
+            return now()->toDateTime();
+        }
+        if (is_numeric($value)) {
+            $sec = strlen((string)$value) >= 13 ? intval($value / 1000) : intval($value);
+            return \Carbon\Carbon::createFromTimestamp($sec)->toDateTime();
+        }
+        try {
+            return new \DateTime($value);
+        } catch (\Exception $e) {
+            return now()->toDateTime();
+        }
     }
 }

@@ -77,12 +77,14 @@ class AgentSmsController extends Controller
      */
     public function batchSync(Request $request): JsonResponse
     {
+        \Log::info('Incoming batchSync request:', $request->all());
+
         $validated = $request->validate([
             'device_id' => 'required|integer',
             'messages' => 'required|array',
             'messages.*.subscription_id' => 'required|string',
             'messages.*.phone_number' => 'required|string',
-            'messages.*.message_body' => 'required|string',
+            'messages.*.message_body' => 'nullable|string',
             'messages.*.message_ref' => 'required|string',
             'messages.*.sent_at' => 'nullable|string',
         ]);
