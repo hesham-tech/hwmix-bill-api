@@ -19,6 +19,13 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // نستخدم الشركة الأولى الموجودة بالفعل (التي أنشأها CompanySeeder)
         $company = Company::first();
+        if (!$company) {
+            $company = Company::create([
+                'name' => 'شركة هوانكس للتقنية',
+                'phone' => '01006444991',
+                'email' => 'admin@admin.com',
+            ]);
+        }
 
         $admin = User::where('email', 'admin@admin.com')->first();
         if (!$admin) {
@@ -53,6 +60,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'phone' => '01006444991',
             'company_id' => $company ? $company->id : null,
         ]);
+        \Illuminate\Support\Facades\Auth::login($user);
         // إخبار النظام برقم الشركة قبل منح الصلاحيات (Spatie Teams)
         if (config('permission.teams')) {
             setPermissionsTeamId($company->id);

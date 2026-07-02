@@ -38,7 +38,7 @@ class AgentAuthController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        if (!$user->active_company_id) {
+        if (!$user->company_id) {
             return api_error('المستخدم غير مرتبط بشركة نشطة حالياً.', [], 403);
         }
 
@@ -59,7 +59,7 @@ class AgentAuthController extends Controller
                 'phone' => $user->phone,
             ],
             'company' => [
-                'id' => $user->active_company_id,
+                'id' => $user->company_id,
             ]
         ], 'تمت المصادقة بنجاح.');
     }
