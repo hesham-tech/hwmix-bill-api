@@ -133,7 +133,7 @@ class AgentDeviceController extends Controller
     {
         $versionCode = 10; // رقم إصدار الـ APK المتوفر حالياً على السيرفر
         $versionName = "1.0.9";
-        $downloadUrl = url('downloads/sms-agent-v109.apk');
+        $downloadUrl = url('downloads/sms-agent-v1.0.9.apk');
 
         return api_success([
             'version_code' => $versionCode,
