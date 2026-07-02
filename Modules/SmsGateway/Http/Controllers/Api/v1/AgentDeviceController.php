@@ -31,7 +31,7 @@ class AgentDeviceController extends Controller
         ]);
 
         $user = $request->user();
-        $device = $this->gatewayService->registerDevice($validated, $user->active_company_id, $user->id);
+        $device = $this->gatewayService->registerDevice($validated, $user->company_id, $user->id);
 
         return api_success([
             'device_id' => $device->id,
@@ -58,7 +58,7 @@ class AgentDeviceController extends Controller
         ]);
 
         $user = $request->user();
-        $this->gatewayService->syncSimLines($validated['device_id'], $validated['sims'], $user->active_company_id, $user->id);
+        $this->gatewayService->syncSimLines($validated['device_id'], $validated['sims'], $user->company_id, $user->id);
 
         return api_success(null, 'تم مزامنة الشرائح بنجاح.');
     }

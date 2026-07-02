@@ -32,7 +32,7 @@ class AgentSmsController extends Controller
         ]);
 
         $user = $request->user();
-        $message = $this->dispatcherService->processIncomingSms($validated, $user->active_company_id, $user->id);
+        $message = $this->dispatcherService->processIncomingSms($validated, $user->company_id, $user->id);
 
         return api_success([
             'message_id' => $message->id,
@@ -93,7 +93,7 @@ class AgentSmsController extends Controller
         foreach ($validated['messages'] as $msgData) {
             try {
                 $msgData['device_id'] = $validated['device_id'];
-                $message = $this->dispatcherService->processIncomingSms($msgData, $user->active_company_id, $user->id);
+                $message = $this->dispatcherService->processIncomingSms($msgData, $user->company_id, $user->id);
                 $syncedIds[] = [
                     'message_ref' => $msgData['message_ref'],
                     'message_id' => $message->id,
