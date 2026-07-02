@@ -131,15 +131,15 @@ class AgentDeviceController extends Controller
      */
     public function checkAppUpdate(Request $request): JsonResponse
     {
-        $versionCode = 4; // رقم إصدار الـ APK المتوفر حالياً على السيرفر
-        $versionName = "1.0.3";
+        $versionCode = 7; // رقم إصدار الـ APK المتوفر حالياً على السيرفر
+        $versionName = "1.0.6";
         $downloadUrl = url('downloads/sms-agent.apk');
 
         return api_success([
             'version_code' => $versionCode,
             'version_name' => $versionName,
             'download_url' => $downloadUrl,
-            'changelog' => 'تعديل مسارات الاتصال بالـ API لحل مشكلة تسجيل الدخول وإضافة خيار إظهار الباسورد.',
+            'changelog' => 'تعيين الرابط الافتراضي وتصحيح مسار طلبات الـ API لضمان تسجيل الدخول بنجاح.',
             'force_update' => true
         ], 'معلومات التحديث المتاحة.');
     }
