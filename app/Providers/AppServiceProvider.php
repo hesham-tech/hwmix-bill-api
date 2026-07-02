@@ -5,7 +5,7 @@ namespace App\Providers;
 
 use App\Observers\RoleObserver;
 use Spatie\Permission\Models\Role;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Schema::defaultStringLength(191);
+
         // Enforce Arabic locale for all requests
         app()->setLocale(config('app.locale', 'ar'));
 
