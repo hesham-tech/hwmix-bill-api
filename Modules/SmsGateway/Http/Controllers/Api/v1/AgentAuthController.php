@@ -26,8 +26,12 @@ class AgentAuthController extends Controller
         $loginField = filter_var($validated['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
         $user = User::where($loginField, $validated['login'])->first();
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
-            return api_error('بيانات الاعتماد غير صالحة.', [], 421);
+        if (!$user) {
+            return api_error('البريد الإلكتروني أو الهاتف غير مسجل لدينا.', [], 421);
+        }
+
+        if (!Hash::check($validated['password'], $user->password)) {
+            return api_error('كلمة المرور غير صحيحة.', [], 421);
         }
 
         // تسجيل الدخول
