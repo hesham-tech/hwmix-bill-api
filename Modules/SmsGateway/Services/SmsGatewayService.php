@@ -22,7 +22,7 @@ class SmsGatewayService
     /**
      * تسجيل أو تحديث جهاز أندرويد.
      */
-    public function registerDevice(array $data, int $companyId, int $userId): Device
+    public function registerDevice(array $data, ?int $companyId, int $userId): Device
     {
         return DB::transaction(function () use ($data, $companyId, $userId) {
             // البحث عن الجهاز بالـ UUID أو الـ Android ID
@@ -79,7 +79,7 @@ class SmsGatewayService
     /**
      * مزامنة الشرائح النشطة على الهاتف.
      */
-    public function syncSimLines(int $deviceId, array $sims, int $companyId, int $userId): void
+    public function syncSimLines(int $deviceId, array $sims, ?int $companyId, int $userId): void
     {
         DB::transaction(function () use ($deviceId, $sims, $companyId, $userId) {
             // تعطيل كافة الشرائح السابقة للجهاز مؤقتاً لتثبيت التغيير الجديد

@@ -35,5 +35,5 @@ interface SmsDeviceRepositoryInterface
     /**
      * الحصول على جميع الأجهزة التابعة لشركة محددة.
      */
-    public function getCompanyDevices(int $companyId): array;
+    public function getCompanyDevices(?int $companyId): array;
 }

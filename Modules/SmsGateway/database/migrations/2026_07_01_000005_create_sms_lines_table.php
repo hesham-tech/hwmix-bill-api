@@ -19,7 +19,7 @@ return new class extends Migration
             
             // روابط الشركة، الجهاز والمستخدم
             $table->foreignId('sms_device_id')->constrained('smsgate_devices')->onDelete('cascade');
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             
             // تفاصيل مكان وتعرف الشريحة

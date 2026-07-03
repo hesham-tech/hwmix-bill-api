@@ -103,7 +103,7 @@ class EloquentSmsDeviceRepository implements SmsDeviceRepositoryInterface
     /**
      * الحصول على جميع الأجهزة التابعة لشركة محددة.
      */
-    public function getCompanyDevices(int $companyId): array
+    public function getCompanyDevices(?int $companyId): array
     {
         $models = SmsDevice::where('company_id', $companyId)->get();
         return $models->map(fn($model) => $this->mapToEntity($model))->toArray();

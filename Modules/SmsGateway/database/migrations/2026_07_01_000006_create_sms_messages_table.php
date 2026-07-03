@@ -18,7 +18,7 @@ return new class extends Migration
             $table->id();
             
             // روابط الشركة والمستخدم المنشئ
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             
             // روابط بوابة النقل (الجهاز والخط المستخدم)

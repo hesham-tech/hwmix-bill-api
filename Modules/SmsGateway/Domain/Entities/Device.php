@@ -9,7 +9,7 @@ class Device
 {
     public function __construct(
         public ?int $id,
-        public int $companyId,
+        public ?int $companyId,
         public ?int $createdBy,
         public string $androidId,
         public string $uuid,

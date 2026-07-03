@@ -10,7 +10,7 @@ class SIMCard
     public function __construct(
         public ?int $id,
         public int $deviceId,
-        public int $companyId,
+        public ?int $companyId,
         public ?int $createdBy,
         public int $slotIndex,
         public string $subscriptionId,
