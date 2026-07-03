@@ -29,6 +29,17 @@ class SmsGatewayService
             $existingDevice = $this->deviceRepo->findByUuid($data['uuid']) 
                 ?? $this->deviceRepo->findByAndroidId($data['android_id']);
 
+            // لمنع تكرار الأجهزة عند إعادة تثبيت التطبيق: نبحث عن جهاز بنفس الموديل والمستخدم
+            if (!$existingDevice) {
+                $dbDevice = SmsDevice::where('created_by', $userId)
+                    ->where('brand', $data['brand'])
+                    ->where('model', $data['model'])
+                    ->first();
+                if ($dbDevice) {
+                    $existingDevice = $this->deviceRepo->findById($dbDevice->id);
+                }
+            }
+
             $deviceId = $existingDevice?->id;
 
             $device = new Device(
