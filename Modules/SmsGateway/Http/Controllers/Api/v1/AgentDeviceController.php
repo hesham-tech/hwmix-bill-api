@@ -143,4 +143,20 @@ class AgentDeviceController extends Controller
             'force_update' => true
         ], 'معلومات التحديث المتاحة.');
     }
+
+    /**
+     * الحصول على الشرائح المسجلة حالياً للجهاز.
+     */
+    public function getLines(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'device_id' => 'required|integer',
+        ]);
+
+        $lines = \Modules\SmsGateway\Models\SmsLine::where('sms_device_id', $validated['device_id'])
+            ->where('status', \Modules\SmsGateway\Domain\Enums\LineStatus::Active->value)
+            ->get();
+
+        return api_success($lines, 'تم جلب خطوط الاتصال بنجاح.');
+    }
 }

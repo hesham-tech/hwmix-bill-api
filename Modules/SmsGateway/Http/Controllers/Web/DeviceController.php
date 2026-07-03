@@ -24,7 +24,7 @@ class DeviceController extends Controller
             return api_forbidden('غير مصرح لك بعرض الأجهزة.');
         }
 
-        $devices = $this->deviceRepo->getCompanyDevices($user->active_company_id);
+        $devices = $this->deviceRepo->getCompanyDevices($user->company_id);
 
         // تنسيق المخرجات
         $formatted = array_map(fn($dev) => [
@@ -53,7 +53,7 @@ class DeviceController extends Controller
         }
 
         $device = $this->deviceRepo->findById($id);
-        if (!$device || $device->companyId !== $user->active_company_id) {
+        if (!$device || $device->companyId !== $user->company_id) {
             return api_error('الجهاز غير متوفر أو لا ينتمي لشركتك.', [], 404);
         }
 

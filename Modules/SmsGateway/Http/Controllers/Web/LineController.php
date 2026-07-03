@@ -22,7 +22,7 @@ class LineController extends Controller
 
         // استخدام Eager Loading لتحسين الأداء ومنع N+1 queries
         $lines = SmsLine::with('device')
-            ->where('company_id', $user->active_company_id)
+            ->where('company_id', $user->company_id)
             ->get();
 
         $formatted = $lines->map(fn($line) => [

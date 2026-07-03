@@ -25,6 +25,7 @@ Route::prefix('v1/agent')->group(function () {
         // النبضات وسحب التكوينات غير الخاضعة للـ Idempotency لمرونتها المستمرة
         Route::post('device/heartbeat', [AgentDeviceController::class, 'heartbeat']);
         Route::get('device/config', [AgentDeviceController::class, 'config']);
+        Route::get('device/lines', [AgentDeviceController::class, 'getLines']);
         
         // الأوامر التشغيلية والـ SMS
         Route::get('commands/pending', [AgentCommandController::class, 'pending']);

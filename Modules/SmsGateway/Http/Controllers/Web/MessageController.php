@@ -29,7 +29,7 @@ class MessageController extends Controller
 
         // بناء الاستعلام مع العلاقات لتحسين الأداء (Eager Loading)
         $query = SmsMessage::with(['device', 'line'])
-            ->where('company_id', $user->active_company_id);
+            ->where('company_id', $user->company_id);
 
         // الفلاتر
         if ($request->filled('direction')) {
@@ -103,7 +103,7 @@ class MessageController extends Controller
         ]);
 
         // معالجة الإرسال عبر محرك الـ dispatch
-        $messageEntity = $this->dispatcherService->dispatchOutgoingSms($validated, $user->active_company_id, $user->id);
+        $messageEntity = $this->dispatcherService->dispatchOutgoingSms($validated, $user->company_id, $user->id);
 
         return api_success([
             'message_id' => $messageEntity->id,
