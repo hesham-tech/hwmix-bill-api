@@ -38,10 +38,6 @@ class AgentAuthController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        if (!$user->company_id) {
-            return api_error('المستخدم غير مرتبط بشركة نشطة حالياً.', [], 403);
-        }
-
         // توليد Token مخصص للـ Agent وصالح لمدة شهر
         $tokenName = 'SMS_Gateway_Agent_' . $validated['device_uuid'];
         
