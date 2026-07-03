@@ -49,7 +49,7 @@ class AgentDeviceController extends Controller
             'sims' => 'required|array',
             'sims.*.slot_index' => 'required|integer',
             'sims.*.subscription_id' => 'required|string',
-            'sims.*.carrier' => 'required|string',
+            'sims.*.carrier' => 'nullable|string',
             'sims.*.mcc' => 'nullable|string',
             'sims.*.mnc' => 'nullable|string',
             'sims.*.phone_number' => 'nullable|string',
@@ -131,9 +131,9 @@ class AgentDeviceController extends Controller
      */
     public function checkAppUpdate(Request $request): JsonResponse
     {
-        $versionCode = 21; // رقم إصدار الـ APK المتوفر حالياً على السيرفر
-        $versionName = "1.0.21";
-        $downloadUrl = url('downloads/sms-agent-v1.0.21.apk');
+        $versionCode = 22; // رقم إصدار الـ APK المتوفر حالياً على السيرفر
+        $versionName = "1.0.22";
+        $downloadUrl = url('downloads/sms-agent-v1.0.22.apk');
 
         return api_success([
             'version_code' => $versionCode,

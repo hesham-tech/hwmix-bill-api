@@ -95,7 +95,7 @@ class SmsGatewayService
                         'company_id' => $companyId,
                         'created_by' => $userId,
                         'slot_index' => $sim['slot_index'],
-                        'carrier' => $sim['carrier'],
+                        'carrier' => !empty($sim['carrier']) ? $sim['carrier'] : 'Unknown',
                         'mcc' => $sim['mcc'] ?? null,
                         'mnc' => $sim['mnc'] ?? null,
                         'phone_number' => $sim['phone_number'] ?? null,
