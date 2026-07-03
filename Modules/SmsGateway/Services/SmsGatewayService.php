@@ -34,6 +34,7 @@ class SmsGatewayService
                 $dbDevice = SmsDevice::where('created_by', $userId)
                     ->where('brand', $data['brand'])
                     ->where('model', $data['model'])
+                    ->orderBy('id', 'desc')
                     ->first();
                 if ($dbDevice) {
                     $existingDevice = $this->deviceRepo->findById($dbDevice->id);
@@ -65,7 +66,7 @@ class SmsGatewayService
                 ['sms_device_id' => $savedDevice->id],
                 [
                     'configuration_version' => 1,
-                    'polling_interval_seconds' => 60,
+                    'polling_interval_seconds' => 10,
                     'max_retry_count' => 3,
                     'logging_level' => 'info',
                     'feature_flags' => [
