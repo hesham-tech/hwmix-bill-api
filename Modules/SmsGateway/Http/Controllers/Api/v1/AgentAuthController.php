@@ -13,6 +13,56 @@ use Illuminate\Support\Facades\Hash;
 class AgentAuthController extends Controller
 {
     /**
+     * تسجيل مستخدم جديد من التطبيق بدون صلاحيات.
+     */
+    public function register(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'nickname' => 'required|string|max:255',
+            'phone' => 'required|string|unique:users,phone',
+            'email' => 'nullable|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'device_uuid' => 'required|string',
+        ]);
+
+        $company = \App\Models\Company::first();
+        $companyId = $company ? $company->id : 1;
+
+        $user = User::create([
+            'phone' => $validated['phone'],
+            'email' => $validated['email'] ?? null,
+            'company_id' => $companyId,
+            'full_name' => $validated['full_name'],
+            'nickname' => $validated['nickname'],
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        $user->companies()->attach($companyId, [
+            'created_by' => $user->id,
+            'user_phone' => $user->phone,
+            'full_name_in_company' => $user->full_name,
+            'nickname_in_company' => $user->nickname,
+        ]);
+
+        $tokenName = 'SMS_Gateway_Agent_' . $validated['device_uuid'];
+        $token = $user->createToken($tokenName, ['*'], now()->addDays(30))->plainTextToken;
+
+        return api_success([
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->full_name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+            ],
+            'company' => [
+                'id' => $user->company_id,
+            ]
+        ], 'تم إنشاء الحساب بنجاح وتوليد رمز الوصول.', 201);
+    }
+
+    /**
      * تسجيل دخول الـ Agent وتوليد Token مخصص.
      */
     public function login(Request $request): JsonResponse

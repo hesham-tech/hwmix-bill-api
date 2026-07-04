@@ -10,6 +10,7 @@ use Modules\SmsGateway\Http\Controllers\Api\v1\AgentSmsController;
 Route::prefix('v1/agent')->group(function () {
     // مسارات عامة للمصادقة والتحديثات
     Route::post('auth/login', [AgentAuthController::class, 'login']);
+    Route::post('auth/register', [AgentAuthController::class, 'register']);
     Route::get('public/app-update/check', [AgentDeviceController::class, 'checkAppUpdate']);
     
     // مسارات تتطلب مصادقة الـ Token
