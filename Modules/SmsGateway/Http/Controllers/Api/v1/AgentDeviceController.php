@@ -46,6 +46,7 @@ class AgentDeviceController extends Controller
     {
         $validated = $request->validate([
             'device_id' => 'required|integer',
+            'device_name' => 'nullable|string',
             'sims' => 'required|array',
             'sims.*.slot_index' => 'required|integer',
             'sims.*.subscription_id' => 'required|string',
@@ -58,7 +59,13 @@ class AgentDeviceController extends Controller
         ]);
 
         $user = $request->user();
-        $this->gatewayService->syncSimLines($validated['device_id'], $validated['sims'], $user->company_id, $user->id);
+        $this->gatewayService->syncSimLines(
+            $validated['device_id'],
+            $validated['sims'],
+            $user->company_id,
+            $user->id,
+            $validated['device_name'] ?? null
+        );
 
         return api_success(null, 'تم مزامنة الشرائح بنجاح.');
     }

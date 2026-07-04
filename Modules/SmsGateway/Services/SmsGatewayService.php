@@ -91,9 +91,13 @@ class SmsGatewayService
     /**
      * مزامنة الشرائح النشطة على الهاتف.
      */
-    public function syncSimLines(int $deviceId, array $sims, ?int $companyId, int $userId): void
+    public function syncSimLines(int $deviceId, array $sims, ?int $companyId, int $userId, ?string $deviceName = null): void
     {
-        DB::transaction(function () use ($deviceId, $sims, $companyId, $userId) {
+        DB::transaction(function () use ($deviceId, $sims, $companyId, $userId, $deviceName) {
+            if ($deviceName) {
+                SmsDevice::where('id', $deviceId)->update(['device_name' => $deviceName]);
+            }
+
             // تعطيل كافة الشرائح السابقة للجهاز مؤقتاً لتثبيت التغيير الجديد
             SmsLine::where('sms_device_id', $deviceId)->update(['status' => LineStatus::Disabled->value]);
 
