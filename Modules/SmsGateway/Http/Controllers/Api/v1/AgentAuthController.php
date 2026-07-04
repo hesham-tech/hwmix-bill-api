@@ -48,7 +48,6 @@ class AgentAuthController extends Controller
             if (method_exists($user, 'companies')) {
                 $user->companies()->attach($companyId, [
                     'created_by' => $user->id,
-                    'user_phone' => $user->phone,
                     'full_name_in_company' => $user->full_name,
                     'nickname_in_company' => $user->nickname,
                 ]);
