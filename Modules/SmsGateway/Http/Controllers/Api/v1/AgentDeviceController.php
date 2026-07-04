@@ -131,23 +131,32 @@ class AgentDeviceController extends Controller
      */
     public function checkAppUpdate(Request $request): JsonResponse
     {
-        $directory = public_path('downloads');
+        $jsonPath = public_path('downloads/app-version.json');
         $highestVersionCode = 1;
         $highestVersionName = "1.0.0";
         $downloadUrl = url('download-app/latest');
 
-        if (is_dir($directory)) {
-            $files = scandir($directory);
-            foreach ($files as $file) {
-                if (preg_match('/^sms-agent-v([\d\.]+)\.apk$/i', $file, $matches)) {
-                    $versionName = $matches[1];
-                    // استنتاج رقم الكود بتحويل رقم الإصدار، مثل 1.0.11 -> 1011
-                    $cleanVersion = str_replace('.', '', $versionName);
-                    $versionCode = (int) $cleanVersion;
+        if (file_exists($jsonPath)) {
+            $jsonData = json_decode(file_get_contents($jsonPath), true);
+            if (isset($jsonData['version_code']) && isset($jsonData['version_name'])) {
+                $highestVersionCode = (int) $jsonData['version_code'];
+                $highestVersionName = $jsonData['version_name'];
+            }
+        } else {
+            $directory = public_path('downloads');
+            if (is_dir($directory)) {
+                $files = scandir($directory);
+                foreach ($files as $file) {
+                    if (preg_match('/^sms-agent-v([\d\.]+)\.apk$/i', $file, $matches)) {
+                        $versionName = $matches[1];
+                        // استنتاج رقم الكود بتحويل رقم الإصدار، مثل 1.0.11 -> 1011
+                        $cleanVersion = str_replace('.', '', $versionName);
+                        $versionCode = (int) $cleanVersion;
 
-                    if ($versionCode > $highestVersionCode) {
-                        $highestVersionCode = $versionCode;
-                        $highestVersionName = $versionName;
+                        if ($versionCode > $highestVersionCode) {
+                            $highestVersionCode = $versionCode;
+                            $highestVersionName = $versionName;
+                        }
                     }
                 }
             }
