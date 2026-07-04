@@ -131,9 +131,9 @@ class AgentDeviceController extends Controller
      */
     public function checkAppUpdate(Request $request): JsonResponse
     {
-        $versionCode = 27; // رقم إصدار الـ APK المتوفر حالياً على السيرفر
-        $versionName = "1.0.27";
-        $downloadUrl = url('downloads/sms-agent-v1.0.27.apk');
+        $versionCode = 2; // رقم إصدار الـ APK المتوفر حالياً على السيرفر
+        $versionName = "1.0.2";
+        $downloadUrl = url('downloads/sms-agent-v1.0.2.apk');
 
         return api_success([
             'version_code' => $versionCode,
@@ -142,6 +142,48 @@ class AgentDeviceController extends Controller
             'changelog' => 'معالجة مشكلة تعليق التطبيق وتصحيح رابط الباك إند وتحديث التوقيع والأيقونات مع إضافة شاشة إعداد الشرائح وضغط الحجم.',
             'force_update' => true
         ], 'معلومات التحديث المتاحة.');
+    }
+
+    /**
+     * تحميل أعلى إصدار متوفر من تطبيق الأندرويد تلقائياً.
+     */
+    public function downloadLatestApp()
+    {
+        $directory = public_path('downloads');
+        if (!is_dir($directory)) {
+            return response()->json(['message' => 'مجلد التحميلات غير موجود على السيرفر.'], 404);
+        }
+
+        $files = scandir($directory);
+        $apkFiles = [];
+
+        foreach ($files as $file) {
+            if (preg_match('/^sms-agent-v([\d\.]+)\.apk$/i', $file, $matches)) {
+                $version = $matches[1];
+                $apkFiles[$version] = $directory . '/' . $file;
+            }
+        }
+
+        if (empty($apkFiles)) {
+            return response()->json(['message' => 'لا توجد أي إصدارات APK متوفرة للتحميل حالياً.'], 404);
+        }
+
+        // ترتيب المفاتيح (إصدارات التطبيق) ترتيباً تنازلياً للمقارنة السليمة
+        uksort($apkFiles, function ($a, $b) {
+            return version_compare($b, $a);
+        });
+
+        // الحصول على الملف ذو الإصدار الأعلى
+        $latestVersion = array_key_first($apkFiles);
+        $filePath = $apkFiles[$latestVersion];
+
+        if (!file_exists($filePath)) {
+            return response()->json(['message' => 'ملف الإصدار الأخير غير موجود.'], 404);
+        }
+
+        return response()->download($filePath, "sms-agent-v{$latestVersion}.apk", [
+            'Content-Type' => 'application/vnd.android.package-archive'
+        ]);
     }
 
     /**
