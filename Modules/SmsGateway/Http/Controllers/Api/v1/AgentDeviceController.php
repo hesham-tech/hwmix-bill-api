@@ -127,19 +127,37 @@ class AgentDeviceController extends Controller
     }
 
     /**
-     * التحقق من وجود تحديث جديد لتطبيق الأندرويد.
+     * التحقق من وجود تحديث جديد لتطبيق الأندرويد dynamically.
      */
     public function checkAppUpdate(Request $request): JsonResponse
     {
-        $versionCode = 2; // رقم إصدار الـ APK المتوفر حالياً على السيرفر
-        $versionName = "1.0.2";
-        $downloadUrl = url('downloads/sms-agent-v1.0.2.apk');
+        $directory = public_path('downloads');
+        $highestVersionCode = 1;
+        $highestVersionName = "1.0.0";
+        $downloadUrl = url('download-app/latest');
+
+        if (is_dir($directory)) {
+            $files = scandir($directory);
+            foreach ($files as $file) {
+                if (preg_match('/^sms-agent-v([\d\.]+)\.apk$/i', $file, $matches)) {
+                    $versionName = $matches[1];
+                    // استنتاج رقم الكود بتحويل رقم الإصدار، مثل 1.0.11 -> 1011
+                    $cleanVersion = str_replace('.', '', $versionName);
+                    $versionCode = (int) $cleanVersion;
+
+                    if ($versionCode > $highestVersionCode) {
+                        $highestVersionCode = $versionCode;
+                        $highestVersionName = $versionName;
+                    }
+                }
+            }
+        }
 
         return api_success([
-            'version_code' => $versionCode,
-            'version_name' => $versionName,
+            'version_code' => $highestVersionCode,
+            'version_name' => $highestVersionName,
             'download_url' => $downloadUrl,
-            'changelog' => 'معالجة مشكلة تعليق التطبيق وتصحيح رابط الباك إند وتحديث التوقيع والأيقونات مع إضافة شاشة إعداد الشرائح وضغط الحجم.',
+            'changelog' => 'دعم التشغيل التلقائي وإدارة الشرائح وإصلاحات الاستقرار.',
             'force_update' => true
         ], 'معلومات التحديث المتاحة.');
     }
@@ -184,6 +202,39 @@ class AgentDeviceController extends Controller
         return response()->download($filePath, "sms-agent-v{$latestVersion}.apk", [
             'Content-Type' => 'application/vnd.android.package-archive'
         ]);
+    }
+
+    /**
+     * عرض صفحة تحميل الإصدارات المتوفرة لتطبيق الأندرويد.
+     */
+    public function showDownloadsPage()
+    {
+        $directory = public_path('downloads');
+        $apkFiles = [];
+
+        if (is_dir($directory)) {
+            $files = scandir($directory);
+            foreach ($files as $file) {
+                if (preg_match('/^sms-agent-v([\d\.]+)\.apk$/i', $file, $matches)) {
+                    $version = $matches[1];
+                    $filePath = $directory . '/' . $file;
+                    $apkFiles[] = [
+                        'version' => $version,
+                        'filename' => $file,
+                        'size' => round(filesize($filePath) / (1024 * 1024), 2) . ' MB',
+                        'date' => date('Y-m-d H:i:s', filemtime($filePath)),
+                        'url' => asset('downloads/' . $file)
+                    ];
+                }
+            }
+        }
+
+        // ترتيب تنازلي حسب رقم الإصدار
+        usort($apkFiles, function ($a, $b) {
+            return version_compare($b['version'], $a['version']);
+        });
+
+        return view('smsgateway::downloads', compact('apkFiles'));
     }
 
     /**

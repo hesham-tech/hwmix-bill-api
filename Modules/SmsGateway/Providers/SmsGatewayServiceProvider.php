@@ -44,5 +44,8 @@ class SmsGatewayServiceProvider extends ServiceProvider
 
         // تحميل الـ Migrations
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
+        // تحميل الـ Views
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'smsgateway');
     }
 }
