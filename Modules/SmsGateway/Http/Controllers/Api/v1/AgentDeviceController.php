@@ -45,7 +45,7 @@ class AgentDeviceController extends Controller
     public function syncLines(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'device_id' => 'required|integer',
+            'device_id' => 'required|integer|exists:smsgate_devices,id',
             'device_name' => 'nullable|string',
             'sims' => 'required|array',
             'sims.*.slot_index' => 'required|integer',
@@ -76,7 +76,7 @@ class AgentDeviceController extends Controller
     public function heartbeat(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'device_id' => 'required|integer',
+            'device_id' => 'required|integer|exists:smsgate_devices,id',
             'network_type' => 'nullable|string',
             'battery_level' => 'required|integer',
             'is_internet_available' => 'required|boolean',
@@ -115,7 +115,7 @@ class AgentDeviceController extends Controller
     public function config(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'device_id' => 'required|integer',
+            'device_id' => 'required|integer|exists:smsgate_devices,id',
         ]);
 
         $settings = \Modules\SmsGateway\Models\SmsDeviceSetting::where('sms_device_id', $validated['device_id'])->first();
@@ -259,7 +259,7 @@ class AgentDeviceController extends Controller
     public function getLines(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'device_id' => 'required|integer',
+            'device_id' => 'required|integer|exists:smsgate_devices,id',
         ]);
 
         $lines = \Modules\SmsGateway\Models\SmsLine::where('sms_device_id', $validated['device_id'])
