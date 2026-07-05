@@ -29,12 +29,19 @@ class SmsLine extends Model
         'phone_number',
         'network_type',
         'signal_strength',
-        'status'
+        'status',
+        'balance',
+        'actual_balance',
+        'daily_limit',
+        'note'
     ];
 
     protected $casts = [
         'slot_index' => 'integer',
         'signal_strength' => 'integer',
+        'balance' => 'decimal:2',
+        'actual_balance' => 'decimal:2',
+        'daily_limit' => 'integer',
     ];
 
     public function device()

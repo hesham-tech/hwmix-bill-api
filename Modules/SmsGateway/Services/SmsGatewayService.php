@@ -102,27 +102,49 @@ class SmsGatewayService
             SmsLine::where('sms_device_id', $deviceId)->update(['status' => LineStatus::Disabled->value]);
 
             foreach ($sims as $sim) {
-                $lineModel = SmsLine::updateOrCreate(
-                    [
-                        'sms_device_id' => $deviceId,
-                        'subscription_id' => $sim['subscription_id'],
-                    ],
-                    [
-                        'company_id' => $companyId,
-                        'created_by' => $userId,
-                        'slot_index' => $sim['slot_index'],
-                        'carrier' => !empty($sim['carrier']) ? $sim['carrier'] : 'Unknown',
-                        'mcc' => $sim['mcc'] ?? null,
-                        'mnc' => $sim['mnc'] ?? null,
-                        'phone_number' => $sim['phone_number'] ?? null,
-                        'network_type' => $sim['network_type'] ?? null,
-                        'signal_strength' => $sim['signal_strength'] ?? null,
-                        'status' => LineStatus::Active->value,
-                    ]
-                );
+                $phoneNumber = !empty($sim['phone_number']) ? trim($sim['phone_number']) : null;
+                
+                $lineModel = null;
+                
+                // 1. محاولة المطابقة برقم الهاتف الفعلي إذا كان متوفراً
+                if ($phoneNumber) {
+                    $lineModel = SmsLine::where('sms_device_id', $deviceId)
+                        ->where('phone_number', $phoneNumber)
+                        ->first();
+                }
+                
+                // 2. المطابقة البديلة برقم منفذ الشريحة (slot_index) أو معرف الاشتراك
+                if (!$lineModel) {
+                    $lineModel = SmsLine::where('sms_device_id', $deviceId)
+                        ->where(function($query) use ($sim) {
+                            $query->where('subscription_id', $sim['subscription_id'])
+                                  ->orWhere('slot_index', $sim['slot_index']);
+                        })
+                        ->first();
+                }
 
-                // إطلاق حدث إدخال شريحة جديدة
-                if ($lineModel->wasRecentlyCreated) {
+                $updateData = [
+                    'company_id' => $companyId,
+                    'created_by' => $userId,
+                    'slot_index' => $sim['slot_index'],
+                    'subscription_id' => $sim['subscription_id'],
+                    'carrier' => !empty($sim['carrier']) ? $sim['carrier'] : 'Unknown',
+                    'mcc' => $sim['mcc'] ?? null,
+                    'mnc' => $sim['mnc'] ?? null,
+                    'phone_number' => $phoneNumber,
+                    'network_type' => $sim['network_type'] ?? null,
+                    'signal_strength' => $sim['signal_strength'] ?? null,
+                    'status' => LineStatus::Active->value,
+                ];
+
+                if ($lineModel) {
+                    $lineModel->update($updateData);
+                } else {
+                    $lineModel = SmsLine::create(array_merge([
+                        'sms_device_id' => $deviceId,
+                    ], $updateData));
+
+                    // إطلاق حدث إدخال شريحة جديدة
                     event(new \Modules\SmsGateway\Events\SimInserted($lineModel));
                 }
             }

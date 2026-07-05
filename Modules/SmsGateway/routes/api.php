@@ -46,6 +46,7 @@ Route::middleware(['auth:sanctum'])->prefix('v1/sms-gateway')->group(function ()
     Route::delete('devices/{id}', [\Modules\SmsGateway\Http\Controllers\Web\DeviceController::class, 'destroy']);
     
     Route::get('lines', [\Modules\SmsGateway\Http\Controllers\Web\LineController::class, 'index']);
+    Route::put('lines/{id}', [\Modules\SmsGateway\Http\Controllers\Web\LineController::class, 'update']);
     
     Route::get('messages', [\Modules\SmsGateway\Http\Controllers\Web\MessageController::class, 'index']);
     Route::post('messages/send', [\Modules\SmsGateway\Http\Controllers\Web\MessageController::class, 'store']);
