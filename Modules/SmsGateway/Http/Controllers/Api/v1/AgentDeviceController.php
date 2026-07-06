@@ -283,7 +283,7 @@ class AgentDeviceController extends Controller
     public function decouple(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'device_id' => 'required|integer|exists:smsgate_devices,id',
+            'device_id' => 'required|integer',
         ]);
 
         $this->gatewayService->decoupleDevice($validated['device_id']);

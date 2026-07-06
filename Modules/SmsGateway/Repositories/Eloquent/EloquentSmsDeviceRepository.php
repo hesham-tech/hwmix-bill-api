@@ -40,7 +40,7 @@ class EloquentSmsDeviceRepository implements SmsDeviceRepositoryInterface
      */
     public function findById(int $id): ?Device
     {
-        $model = SmsDevice::find($id);
+        $model = SmsDevice::withTrashed()->find($id);
         return $model ? $this->mapToEntity($model) : null;
     }
 
@@ -49,7 +49,7 @@ class EloquentSmsDeviceRepository implements SmsDeviceRepositoryInterface
      */
     public function findByUuid(string $uuid): ?Device
     {
-        $model = SmsDevice::where('uuid', $uuid)->first();
+        $model = SmsDevice::withTrashed()->where('uuid', $uuid)->first();
         return $model ? $this->mapToEntity($model) : null;
     }
 
@@ -58,7 +58,7 @@ class EloquentSmsDeviceRepository implements SmsDeviceRepositoryInterface
      */
     public function findByAndroidId(string $androidId): ?Device
     {
-        $model = SmsDevice::where('android_id', $androidId)->first();
+        $model = SmsDevice::withTrashed()->where('android_id', $androidId)->first();
         return $model ? $this->mapToEntity($model) : null;
     }
 
@@ -84,10 +84,22 @@ class EloquentSmsDeviceRepository implements SmsDeviceRepositoryInterface
         ];
 
         if ($device->id) {
-            $model = SmsDevice::findOrFail($device->id);
+            $model = SmsDevice::withTrashed()->findOrFail($device->id);
+            if ($model->trashed()) {
+                $model->restore();
+            }
             $model->update($data);
         } else {
-            $model = SmsDevice::create($data);
+            // التحقق مما إذا كان هناك جهاز محذوف بنفس الـ UUID أو الـ Android ID لمنع أخطاء القيد الفريد Unique constraint
+            $model = SmsDevice::withTrashed()->where('uuid', $device->uuid)->first();
+            if ($model) {
+                if ($model->trashed()) {
+                    $model->restore();
+                }
+                $model->update($data);
+            } else {
+                $model = SmsDevice::create($data);
+            }
         }
 
         return $this->mapToEntity($model);
