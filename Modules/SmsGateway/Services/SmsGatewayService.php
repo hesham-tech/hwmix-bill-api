@@ -29,9 +29,10 @@ class SmsGatewayService
             $existingDevice = $this->deviceRepo->findByUuid($data['uuid']) 
                 ?? $this->deviceRepo->findByAndroidId($data['android_id']);
 
-            // لمنع تكرار الأجهزة عند إعادة تثبيت التطبيق: نبحث عن جهاز بنفس الموديل والمستخدم
+            // لمنع تكرار الأجهزة عند إعادة تثبيت التطبيق: نبحث عن جهاز بنفس الموديل والمستخدم (بما في ذلك الأجهزة المحذوفة)
             if (!$existingDevice) {
-                $dbDevice = SmsDevice::where('created_by', $userId)
+                $dbDevice = SmsDevice::withTrashed()
+                    ->where('created_by', $userId)
                     ->where('brand', $data['brand'])
                     ->where('model', $data['model'])
                     ->orderBy('id', 'desc')
@@ -105,6 +106,13 @@ class SmsGatewayService
             foreach ($sims as $sim) {
                 $phoneNumber = !empty($sim['phone_number']) ? trim($sim['phone_number']) : null;
                 
+                // لمنع تكرار الأرقام على السيرفر عبر الأجهزة المختلفة:
+                if ($phoneNumber) {
+                    SmsLine::where('phone_number', $phoneNumber)
+                        ->where('sms_device_id', '!=', $deviceId)
+                        ->delete();
+                }
+
                 $lineModel = null;
                 
                 // 1. محاولة المطابقة برقم الهاتف الفعلي إذا كان متوفراً
