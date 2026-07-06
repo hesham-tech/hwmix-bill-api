@@ -25,6 +25,7 @@ class SmsDevice extends Model
         'android_id',
         'uuid',
         'device_name',
+        'hardware_name',
         'brand',
         'model',
         'android_version',

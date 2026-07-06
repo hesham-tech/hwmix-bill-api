@@ -30,6 +30,7 @@ class DeviceController extends Controller
         $formatted = array_map(fn($dev) => [
             'id' => $dev->id,
             'device_name' => $dev->deviceName,
+            'hardware_name' => $dev->hardwareName,
             'brand' => $dev->brand,
             'model' => $dev->model,
             'android_version' => $dev->androidVersion,

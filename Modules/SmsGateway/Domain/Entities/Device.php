@@ -14,6 +14,7 @@ class Device
         public string $androidId,
         public string $uuid,
         public string $deviceName,
+        public ?string $hardwareName,
         public string $brand,
         public string $model,
         public string $androidVersion,

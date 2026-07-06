@@ -49,7 +49,8 @@ class SmsGatewayService
                 createdBy: $existingDevice?->createdBy ?? $userId,
                 androidId: $data['android_id'],
                 uuid: $data['uuid'],
-                deviceName: $data['device_name'],
+                deviceName: !empty($existingDevice?->deviceName) ? $existingDevice->deviceName : $data['device_name'],
+                hardwareName: $data['model'],
                 brand: $data['brand'],
                 model: $data['model'],
                 androidVersion: $data['android_version'],
@@ -206,5 +207,13 @@ class SmsGatewayService
             'latest_version' => $latestVersion,
             'download_url' => config('services.agent.download_url', 'https://example.com/agent-latest.apk'),
         ];
+    }
+
+    /**
+     * إلغاء ربط وحذف جهاز.
+     */
+    public function decoupleDevice(int $deviceId): void
+    {
+        $this->deviceRepo->delete($deviceId);
     }
 }

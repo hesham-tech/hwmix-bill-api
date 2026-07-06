@@ -44,6 +44,10 @@ class AgentDeviceController extends Controller
      */
     public function syncLines(Request $request): JsonResponse
     {
+        if ($decoupled = $this->checkDeviceStatus((int)$request->input('device_id'))) {
+            return $decoupled;
+        }
+
         $validated = $request->validate([
             'device_id' => 'required|integer|exists:smsgate_devices,id',
             'device_name' => 'nullable|string',
@@ -75,6 +79,10 @@ class AgentDeviceController extends Controller
      */
     public function heartbeat(Request $request): JsonResponse
     {
+        if ($decoupled = $this->checkDeviceStatus((int)$request->input('device_id'))) {
+            return $decoupled;
+        }
+
         $validated = $request->validate([
             'device_id' => 'required|integer|exists:smsgate_devices,id',
             'network_type' => 'nullable|string',
@@ -267,5 +275,35 @@ class AgentDeviceController extends Controller
             ->get();
 
         return api_success($lines, 'تم جلب خطوط الاتصال بنجاح.');
+    }
+
+    /**
+     * إلغاء ربط وتسجيل الجهاز من طرف التطبيق نفسه.
+     */
+    public function decouple(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'device_id' => 'required|integer|exists:smsgate_devices,id',
+        ]);
+
+        $this->gatewayService->decoupleDevice($validated['device_id']);
+
+        return api_success(null, 'تم إلغاء ربط الجهاز بنجاح.');
+    }
+
+    /**
+     * التحقق مما إذا كان الجهاز ملغى ربطه (موجود في المحذوفات مؤقتاً).
+     */
+    protected function checkDeviceStatus(int $deviceId): ?JsonResponse
+    {
+        $device = \Modules\SmsGateway\Models\SmsDevice::withTrashed()->find($deviceId);
+        if ($device && $device->trashed()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'DEVICE_DECOUPLED',
+                'errors' => ['device_id' => ['تم إلغاء ربط هذا الجهاز من لوحة التحكم.']]
+            ], 403);
+        }
+        return null;
     }
 }
