@@ -190,7 +190,7 @@ class InvoiceControllerTest extends TestCase
 
         // التحقق من عدم تسجيل أي ذمم أو مديونيات على حساب العميل النقدي
         $cashCustomer->refresh();
-        $this->assertEquals(0, (float)$cashCustomer->balance ?? 0,
+        $this->assertEquals(0, $cashCustomer->getFinancialBalance($this->company->id, 'receivable'),
             'يجب ألا يكون للعميل النقدي أي ذمم أو رصيد مسجل.');
     }
 

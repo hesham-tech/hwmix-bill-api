@@ -37,7 +37,36 @@ class AccountingService
             if (in_array($type, ['sale', 'installment_sale', 'service_invoice'])) {
                 // تسجيل المديونية فقط للعملاء الحقيقيين (ليس العميل النقدي)
                 if ($party && !$isCashCustomer) {
-                    $party->deposit($netAmount, $userCashBoxId, "إثبات مديونية فاتورة {$type} رقم: {$invoice->invoice_number}");
+                    $balance = \Modules\Companies\Models\StakeholderFinancialBalance::updateOrCreate(
+                        [
+                            'company_id' => $invoice->company_id,
+                            'user_id' => $party->id,
+                            'relation_type' => 'receivable',
+                        ],
+                        [
+                            'created_by' => Auth::id() ?? $invoice->created_by,
+                        ]
+                    );
+                    $balanceBefore = (float)$balance->balance;
+                    $balance->balance += $netAmount;
+                    $balance->save();
+
+                    $tx = \App\Models\Transaction::create([
+                        'user_id' => $party->id,
+                        'cashbox_id' => null,
+                        'created_by' => Auth::id() ?? $invoice->created_by,
+                        'company_id' => $invoice->company_id,
+                        'branch_id' => $invoice->branch_id,
+                        'type' => 'deposit',
+                        'amount' => $netAmount,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balance->balance,
+                        'description' => "إثبات مديونية فاتورة {$type} رقم: {$invoice->invoice_number}",
+                        'source_invoice_id' => $invoice->id,
+                    ]);
+
+                    $balance->last_transaction_id = $tx->id;
+                    $balance->save();
                 }
 
                 if ($paidAmount > 0) {
@@ -46,6 +75,7 @@ class AccountingService
                         'party_cash_box_id' => $userCashBoxId,
                         'description' => "دفعة من فاتورة رقم: {$invoice->invoice_number}",
                         'skip_party_balance' => $isCashCustomer,
+                        'source_invoice_id' => $invoice->id,
                     ]);
 
                     $createdById = $authUser ? $authUser->id : $invoice->created_by;
@@ -120,7 +150,36 @@ class AccountingService
                 }
             } elseif ($type === 'purchase') {
                 if ($party && !$isCashCustomer) {
-                    $party->withdraw($netAmount, $userCashBoxId, "إثبات التزام فاتورة شراء رقم: {$invoice->invoice_number}");
+                    $balance = \Modules\Companies\Models\StakeholderFinancialBalance::updateOrCreate(
+                        [
+                            'company_id' => $invoice->company_id,
+                            'user_id' => $party->id,
+                            'relation_type' => 'payable',
+                        ],
+                        [
+                            'created_by' => Auth::id() ?? $invoice->created_by,
+                        ]
+                    );
+                    $balanceBefore = (float)$balance->balance;
+                    $balance->balance += $netAmount;
+                    $balance->save();
+
+                    $tx = \App\Models\Transaction::create([
+                        'user_id' => $party->id,
+                        'cashbox_id' => null,
+                        'created_by' => Auth::id() ?? $invoice->created_by,
+                        'company_id' => $invoice->company_id,
+                        'branch_id' => $invoice->branch_id,
+                        'type' => 'withdraw',
+                        'amount' => $netAmount,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balance->balance,
+                        'description' => "إثبات التزام فاتورة شراء رقم: {$invoice->invoice_number}",
+                        'source_invoice_id' => $invoice->id,
+                    ]);
+
+                    $balance->last_transaction_id = $tx->id;
+                    $balance->save();
                 }
 
                 if ($paidAmount > 0) {
@@ -129,11 +188,41 @@ class AccountingService
                         'party_cash_box_id' => $userCashBoxId,
                         'description' => "سداد فاتورة شراء رقم: {$invoice->invoice_number}",
                         'skip_party_balance' => $isCashCustomer,
+                        'source_invoice_id' => $invoice->id,
                     ]);
                 }
             } elseif ($type === 'sale_return') {
                 if ($party && !$isCashCustomer) {
-                    $party->withdraw($netAmount, $userCashBoxId, "إلغاء مديونية (مرتجع مبيعات) رقم: {$invoice->invoice_number}");
+                    $balance = \Modules\Companies\Models\StakeholderFinancialBalance::updateOrCreate(
+                        [
+                            'company_id' => $invoice->company_id,
+                            'user_id' => $party->id,
+                            'relation_type' => 'receivable',
+                        ],
+                        [
+                            'created_by' => Auth::id() ?? $invoice->created_by,
+                        ]
+                    );
+                    $balanceBefore = (float)$balance->balance;
+                    $balance->balance -= $netAmount;
+                    $balance->save();
+
+                    $tx = \App\Models\Transaction::create([
+                        'user_id' => $party->id,
+                        'cashbox_id' => null,
+                        'created_by' => Auth::id() ?? $invoice->created_by,
+                        'company_id' => $invoice->company_id,
+                        'branch_id' => $invoice->branch_id,
+                        'type' => 'withdraw',
+                        'amount' => $netAmount,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balance->balance,
+                        'description' => "إلغاء مديونية (مرتجع مبيعات) رقم: {$invoice->invoice_number}",
+                        'source_invoice_id' => $invoice->id,
+                    ]);
+
+                    $balance->last_transaction_id = $tx->id;
+                    $balance->save();
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'out', [
@@ -141,11 +230,41 @@ class AccountingService
                         'party_cash_box_id' => $userCashBoxId,
                         'description' => "رد مبلغ لمرتجع مبيعات رقم: {$invoice->invoice_number}",
                         'skip_party_balance' => $isCashCustomer,
+                        'source_invoice_id' => $invoice->id,
                     ]);
                 }
             } elseif ($type === 'purchase_return') {
                 if ($party && !$isCashCustomer) {
-                    $party->deposit($netAmount, $userCashBoxId, "إلغاء التزام (مرتجع مشتريات) رقم: {$invoice->invoice_number}");
+                    $balance = \Modules\Companies\Models\StakeholderFinancialBalance::updateOrCreate(
+                        [
+                            'company_id' => $invoice->company_id,
+                            'user_id' => $party->id,
+                            'relation_type' => 'payable',
+                        ],
+                        [
+                            'created_by' => Auth::id() ?? $invoice->created_by,
+                        ]
+                    );
+                    $balanceBefore = (float)$balance->balance;
+                    $balance->balance -= $netAmount;
+                    $balance->save();
+
+                    $tx = \App\Models\Transaction::create([
+                        'user_id' => $party->id,
+                        'cashbox_id' => null,
+                        'created_by' => Auth::id() ?? $invoice->created_by,
+                        'company_id' => $invoice->company_id,
+                        'branch_id' => $invoice->branch_id,
+                        'type' => 'deposit',
+                        'amount' => $netAmount,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balance->balance,
+                        'description' => "إلغاء التزام (مرتجع مشتريات) رقم: {$invoice->invoice_number}",
+                        'source_invoice_id' => $invoice->id,
+                    ]);
+
+                    $balance->last_transaction_id = $tx->id;
+                    $balance->save();
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'in', [
@@ -153,6 +272,7 @@ class AccountingService
                         'party_cash_box_id' => $userCashBoxId,
                         'description' => "استلام مبلغ لمرتجع مشتريات رقم: {$invoice->invoice_number}",
                         'skip_party_balance' => $isCashCustomer,
+                        'source_invoice_id' => $invoice->id,
                     ]);
                 }
             }
@@ -182,19 +302,11 @@ class AccountingService
                 ->where('user_id', $staff->id)
                 ->where('company_id', $companyId)
                 ->where('is_active', true)
+                ->first() ?? \App\Models\CashBox::withoutGlobalScopes()
+                ->whereNull('user_id')
+                ->where('company_id', $companyId)
+                ->where('access_type', 'company_shared')
                 ->first();
-
-            $partyBox = $party ? (\App\Models\CashBox::withoutGlobalScopes()
-                ->where('id', $partyCashBoxId ?? 0)
-                ->first() ?? \App\Models\CashBox::withoutGlobalScopes()
-                ->where('user_id', $party->id)
-                ->where('company_id', $companyId)
-                ->where('is_default', true)
-                ->first() ?? \App\Models\CashBox::withoutGlobalScopes()
-                ->where('user_id', $party->id)
-                ->where('company_id', $companyId)
-                ->where('is_active', true)
-                ->first()) : null;
 
             // حساب رصيد الموظف قبل وبعد
             $staffBalanceBefore = $staffBox ? (float)$staffBox->balance : 0.00;
@@ -202,11 +314,40 @@ class AccountingService
                 ? $staffBalanceBefore + $amount 
                 : $staffBalanceBefore - $amount;
 
-            // حساب رصيد العميل قبل وبعد
-            $partyBalanceBefore = $partyBox ? (float)$partyBox->balance : 0.00;
-            $partyBalanceAfter = $direction === 'in' 
-                ? $partyBalanceBefore - $amount 
-                : $partyBalanceBefore + $amount;
+            // حساب رصيد الأطراف المجمع (العميل/المورد)
+            $partyBalanceBefore = 0.00;
+            $partyBalanceAfter = 0.00;
+            $balanceModel = null;
+
+            if ($party && !$skipPartyBalance) {
+                $invoiceId = $options['source_invoice_id'] ?? $options['invoice_id'] ?? null;
+                $invoice = $invoiceId ? \Modules\Sales\Models\Invoice::withoutGlobalScopes()->find($invoiceId) : null;
+                $relationType = ($invoice && in_array($invoice->invoice_type_code, ['purchase', 'purchase_return'])) ? 'payable' : 'receivable';
+
+                $balanceModel = \Modules\Companies\Models\StakeholderFinancialBalance::updateOrCreate(
+                    [
+                        'company_id' => $companyId,
+                        'user_id' => $party->id,
+                        'relation_type' => $relationType,
+                    ],
+                    [
+                        'created_by' => Auth::id() ?? $staff->id,
+                    ]
+                );
+                $partyBalanceBefore = (float)$balanceModel->balance;
+                if ($relationType === 'payable') {
+                    $partyBalanceAfter = $direction === 'out'
+                        ? $partyBalanceBefore - $amount
+                        : $partyBalanceBefore + $amount;
+                } else {
+                    $partyBalanceAfter = $direction === 'in'
+                        ? $partyBalanceBefore - $amount
+                        : $partyBalanceBefore + $amount;
+                }
+
+                $balanceModel->balance = $partyBalanceAfter;
+                $balanceModel->save();
+            }
 
             $logOptions = [
                 'employee_balance_before' => $staffBalanceBefore,
@@ -221,12 +362,46 @@ class AccountingService
             if ($direction === 'in') {
                 $staff->deposit($amount, $cashBoxId, $description, true, $logOptions);
                 if ($party && !$skipPartyBalance) {
-                    $party->withdraw($amount, $partyCashBoxId, "دفع مبلغ: {$amount} - {$description}", true, $logOptions);
+                    $txParty = \App\Models\Transaction::create([
+                        'user_id' => $party->id,
+                        'cashbox_id' => null,
+                        'created_by' => Auth::id() ?? $staff->id,
+                        'company_id' => $companyId,
+                        'branch_id' => $staffBox ? $staffBox->branch_id : null,
+                        'type' => 'withdraw',
+                        'amount' => $amount,
+                        'balance_before' => $partyBalanceBefore,
+                        'balance_after' => $partyBalanceAfter,
+                        'description' => "دفع مبلغ: {$amount} - {$description}",
+                        'source_invoice_id' => $options['source_invoice_id'] ?? $options['invoice_id'] ?? null,
+                        'source_installment_id' => $options['installment_id'] ?? null,
+                    ]);
+                    if ($balanceModel) {
+                        $balanceModel->last_transaction_id = $txParty->id;
+                        $balanceModel->save();
+                    }
                 }
             } else {
                 $staff->withdraw($amount, $cashBoxId, $description, true, $logOptions);
                 if ($party && !$skipPartyBalance) {
-                    $party->deposit($amount, $partyCashBoxId, "استلام مبلغ: {$amount} - {$description}", true, $logOptions);
+                    $txParty = \App\Models\Transaction::create([
+                        'user_id' => $party->id,
+                        'cashbox_id' => null,
+                        'created_by' => Auth::id() ?? $staff->id,
+                        'company_id' => $companyId,
+                        'branch_id' => $staffBox ? $staffBox->branch_id : null,
+                        'type' => 'deposit',
+                        'amount' => $amount,
+                        'balance_before' => $partyBalanceBefore,
+                        'balance_after' => $partyBalanceAfter,
+                        'description' => "استلام مبلغ: {$amount} - {$description}",
+                        'source_invoice_id' => $options['source_invoice_id'] ?? $options['invoice_id'] ?? null,
+                        'source_installment_id' => $options['installment_id'] ?? null,
+                    ]);
+                    if ($balanceModel) {
+                        $balanceModel->last_transaction_id = $txParty->id;
+                        $balanceModel->save();
+                    }
                 }
             }
         });
@@ -254,7 +429,36 @@ class AccountingService
             if (in_array($type, ['sale', 'installment_sale', 'service_invoice'])) {
                 // عكس المديونية دائماً حتى لو لم يُدفع شيء — لأن المديونية نفسها سُجِّلت عند الإنشاء
                 if ($party && !$isCashCustomer && $netAmount > 0) {
-                    $party->withdraw($netAmount, $userCashBoxId, "إلغاء مديونية فاتورة {$type} رقم: {$invoice->invoice_number}");
+                    $balance = \Modules\Companies\Models\StakeholderFinancialBalance::updateOrCreate(
+                        [
+                            'company_id' => $invoice->company_id,
+                            'user_id' => $party->id,
+                            'relation_type' => 'receivable',
+                        ],
+                        [
+                            'created_by' => Auth::id() ?? $invoice->created_by,
+                        ]
+                    );
+                    $balanceBefore = (float)$balance->balance;
+                    $balance->balance -= $netAmount;
+                    $balance->save();
+
+                    $tx = \App\Models\Transaction::create([
+                        'user_id' => $party->id,
+                        'cashbox_id' => null,
+                        'created_by' => Auth::id() ?? $invoice->created_by,
+                        'company_id' => $invoice->company_id,
+                        'branch_id' => $invoice->branch_id,
+                        'type' => 'withdraw',
+                        'amount' => $netAmount,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balance->balance,
+                        'description' => "إلغاء مديونية فاتورة {$type} رقم: {$invoice->invoice_number}",
+                        'source_invoice_id' => $invoice->id,
+                    ]);
+
+                    $balance->last_transaction_id = $tx->id;
+                    $balance->save();
                 } elseif ($isCashCustomer && $netAmount > 0) {
                     // العميل النقدي: لا ذمم على حسابه لكن نسجّل Transaction توثيقية للإلغاء
                     \App\Models\Transaction::create([
@@ -281,7 +485,36 @@ class AccountingService
                 }
             } elseif ($type === 'purchase') {
                 if ($party && !$isCashCustomer && $netAmount > 0) {
-                    $party->deposit($netAmount, $userCashBoxId, "إلغاء التزام فاتورة شراء رقم: {$invoice->invoice_number}");
+                    $balance = \Modules\Companies\Models\StakeholderFinancialBalance::updateOrCreate(
+                        [
+                            'company_id' => $invoice->company_id,
+                            'user_id' => $party->id,
+                            'relation_type' => 'payable',
+                        ],
+                        [
+                            'created_by' => Auth::id() ?? $invoice->created_by,
+                        ]
+                    );
+                    $balanceBefore = (float)$balance->balance;
+                    $balance->balance -= $netAmount;
+                    $balance->save();
+
+                    $tx = \App\Models\Transaction::create([
+                        'user_id' => $party->id,
+                        'cashbox_id' => null,
+                        'created_by' => Auth::id() ?? $invoice->created_by,
+                        'company_id' => $invoice->company_id,
+                        'branch_id' => $invoice->branch_id,
+                        'type' => 'deposit',
+                        'amount' => $netAmount,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balance->balance,
+                        'description' => "إلغاء التزام فاتورة شراء رقم: {$invoice->invoice_number}",
+                        'source_invoice_id' => $invoice->id,
+                    ]);
+
+                    $balance->last_transaction_id = $tx->id;
+                    $balance->save();
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'in', [
@@ -294,7 +527,36 @@ class AccountingService
                 }
             } elseif ($type === 'sale_return') {
                 if ($party && !$isCashCustomer && $netAmount > 0) {
-                    $party->deposit($netAmount, $userCashBoxId, "إلغاء أثر مرتجع مبيعات رقم: {$invoice->invoice_number}");
+                    $balance = \Modules\Companies\Models\StakeholderFinancialBalance::updateOrCreate(
+                        [
+                            'company_id' => $invoice->company_id,
+                            'user_id' => $party->id,
+                            'relation_type' => 'receivable',
+                        ],
+                        [
+                            'created_by' => Auth::id() ?? $invoice->created_by,
+                        ]
+                    );
+                    $balanceBefore = (float)$balance->balance;
+                    $balance->balance += $netAmount;
+                    $balance->save();
+
+                    $tx = \App\Models\Transaction::create([
+                        'user_id' => $party->id,
+                        'cashbox_id' => null,
+                        'created_by' => Auth::id() ?? $invoice->created_by,
+                        'company_id' => $invoice->company_id,
+                        'branch_id' => $invoice->branch_id,
+                        'type' => 'deposit',
+                        'amount' => $netAmount,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balance->balance,
+                        'description' => "إلغاء أثر مرتجع مبيعات رقم: {$invoice->invoice_number}",
+                        'source_invoice_id' => $invoice->id,
+                    ]);
+
+                    $balance->last_transaction_id = $tx->id;
+                    $balance->save();
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'in', [
@@ -307,7 +569,36 @@ class AccountingService
                 }
             } elseif ($type === 'purchase_return') {
                 if ($party && !$isCashCustomer && $netAmount > 0) {
-                    $party->withdraw($netAmount, $userCashBoxId, "إلغاء أثر مرتجع مشتريات رقم: {$invoice->invoice_number}");
+                    $balance = \Modules\Companies\Models\StakeholderFinancialBalance::updateOrCreate(
+                        [
+                            'company_id' => $invoice->company_id,
+                            'user_id' => $party->id,
+                            'relation_type' => 'payable',
+                        ],
+                        [
+                            'created_by' => Auth::id() ?? $invoice->created_by,
+                        ]
+                    );
+                    $balanceBefore = (float)$balance->balance;
+                    $balance->balance += $netAmount;
+                    $balance->save();
+
+                    $tx = \App\Models\Transaction::create([
+                        'user_id' => $party->id,
+                        'cashbox_id' => null,
+                        'created_by' => Auth::id() ?? $invoice->created_by,
+                        'company_id' => $invoice->company_id,
+                        'branch_id' => $invoice->branch_id,
+                        'type' => 'withdraw',
+                        'amount' => $netAmount,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balance->balance,
+                        'description' => "إلغاء أثر مرتجع مشتريات رقم: {$invoice->invoice_number}",
+                        'source_invoice_id' => $invoice->id,
+                    ]);
+
+                    $balance->last_transaction_id = $tx->id;
+                    $balance->save();
                 }
                 if ($paidAmount > 0) {
                     $this->recordPayment($invoice->company_id, $authUser, $party, $paidAmount, 'out', [
@@ -382,7 +673,35 @@ class AccountingService
                 $remaining -= $paymentForThisInvoice;
             }
 
-            $party->withdraw($amount, $partyCashBoxId, "سداد مبلغ: {$amount} - {$notes}");
+            $balance = \Modules\Companies\Models\StakeholderFinancialBalance::updateOrCreate(
+                [
+                    'company_id' => $staff->active_company_id ?? $party->active_company_id,
+                    'user_id' => $party->id,
+                    'relation_type' => 'receivable',
+                ],
+                [
+                    'created_by' => Auth::id() ?? $staff->id,
+                ]
+            );
+            $balanceBefore = (float)$balance->balance;
+            $balance->balance -= $amount;
+            $balance->save();
+
+            $tx = \App\Models\Transaction::create([
+                'user_id' => $party->id,
+                'cashbox_id' => null,
+                'created_by' => Auth::id() ?? $staff->id,
+                'company_id' => $balance->company_id,
+                'branch_id' => $staff->branch_id,
+                'type' => 'withdraw',
+                'amount' => $amount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balance->balance,
+                'description' => "سداد مبلغ: {$amount} - {$notes}",
+            ]);
+
+            $balance->last_transaction_id = $tx->id;
+            $balance->save();
         });
     }
 }

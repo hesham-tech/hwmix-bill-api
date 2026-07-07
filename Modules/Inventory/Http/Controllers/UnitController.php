@@ -20,7 +20,7 @@ class UnitController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Unit::with('group');
+            $query = Unit::with('group')->whereCompanyIsCurrent();
 
             if (!$request->boolean('with_inactive', false)) {
                 $query->where('is_active', true);

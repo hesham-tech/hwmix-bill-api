@@ -48,6 +48,11 @@ class UserUpdateRequest extends FormRequest
             'permissions.*' => 'string|exists:permissions,name',
             'branch_ids' => 'nullable|array',
             'branch_ids.*' => 'exists:branches,id',
+            'relation_types' => 'nullable|array',
+            'relation_types.*' => 'nullable|string|in:customer,supplier,employee,partner',
+            'starting_balances' => 'nullable|array',
+            'starting_balances.receivable' => 'nullable|numeric',
+            'starting_balances.payable' => 'nullable|numeric',
         ];
     }
 }

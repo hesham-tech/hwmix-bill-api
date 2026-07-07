@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
+// إضافة معرف الشركة لجداول الصلاحيات وتحديث القيود الفريدة
 return new class extends Migration {
     /**
      * Run the migrations.
@@ -59,18 +60,36 @@ return new class extends Migration {
         // 3. roles
         $tableName3 = $tableNames['roles'];
         if (Schema::hasTable($tableName3)) {
-            Schema::table($tableName3, function (Blueprint $table) use ($tableName3) {
-                try {
-                    if (DB::connection()->getDriverName() !== 'sqlite') {
-                        $table->dropUnique($tableName3 . '_name_guard_name_unique');
-                    }
-                } catch (\Throwable $e) {}
+            $hasUniqueIndex = false;
+            $hasNewUniqueIndex = false;
 
-                // Add new unique with company_id
+            if (DB::connection()->getDriverName() !== 'sqlite') {
+                $indexes = Schema::getIndexes($tableName3);
+                foreach ($indexes as $index) {
+                    if ($index['name'] === $tableName3 . '_name_guard_name_unique') {
+                        $hasUniqueIndex = true;
+                    }
+                    if ($index['name'] === $tableName3 . '_name_guard_name_company_id_unique') {
+                        $hasNewUniqueIndex = true;
+                    }
+                }
+            }
+
+            if ($hasUniqueIndex) {
                 try {
-                    $table->unique(['name', 'guard_name', 'company_id'], $tableName3 . '_name_guard_name_company_id_unique');
+                    Schema::table($tableName3, function (Blueprint $table) use ($tableName3) {
+                        $table->dropUnique($tableName3 . '_name_guard_name_unique');
+                    });
                 } catch (\Throwable $e) {}
-            });
+            }
+
+            if (!$hasNewUniqueIndex) {
+                try {
+                    Schema::table($tableName3, function (Blueprint $table) use ($tableName3) {
+                        $table->unique(['name', 'guard_name', 'company_id'], $tableName3 . '_name_guard_name_company_id_unique');
+                    });
+                } catch (\Throwable $e) {}
+            }
         }
     }
 

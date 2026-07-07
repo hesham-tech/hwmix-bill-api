@@ -38,7 +38,10 @@ trait ManagesBalance
             if ($cashBoxId) {
                 $cashBox = CashBox::withoutGlobalScopes()
                     ->where('id', $cashBoxId)
-                    ->where('user_id', $this->id)
+                    ->where(function ($q) {
+                        $q->where('user_id', $this->id)
+                          ->orWhereNull('user_id');
+                    })
                     ->first();
             } else {
                 if (is_null($companyId)) {
@@ -49,10 +52,16 @@ trait ManagesBalance
                     ->where('user_id', $this->id)
                     ->where('company_id', $companyId)
                     ->where('is_default', true)
-                    ->first() ?? CashBox::withoutGlobalScopes()
+                    ->first() 
+                    ?? CashBox::withoutGlobalScopes()
                         ->where('user_id', $this->id)
                         ->where('company_id', $companyId)
                         ->where('is_active', true)
+                        ->first()
+                    ?? CashBox::withoutGlobalScopes()
+                        ->whereNull('user_id')
+                        ->where('company_id', $companyId)
+                        ->where('access_type', 'company_shared')
                         ->first();
             }
 
@@ -124,12 +133,15 @@ trait ManagesBalance
             if ($cashBoxId) {
                 $cashBox = CashBox::withoutGlobalScopes()
                     ->where('id', $cashBoxId)
-                    ->where('user_id', $this->id)
+                    ->where(function ($q) {
+                        $q->where('user_id', $this->id)
+                          ->orWhereNull('user_id');
+                    })
                     ->first();
 
                 if (!$cashBox) {
                     DB::rollBack();
-                    throw new Exception("معرف الخزنة {$cashBoxId} غير صالح أو لا ينتمي للمستخدم {$this->nickname}.");
+                    throw new Exception("معرف الخزنة {$cashBoxId} غير صالح أو لا ينتمي للمستخدم {$this->nickname} وليست خزنة مشتركة.");
                 }
             } else {
                 if (is_null($companyId)) {
@@ -140,15 +152,21 @@ trait ManagesBalance
                     ->where('user_id', $this->id)
                     ->where('company_id', $companyId)
                     ->where('is_default', true)
-                    ->first() ?? CashBox::withoutGlobalScopes()
+                    ->first() 
+                    ?? CashBox::withoutGlobalScopes()
                         ->where('user_id', $this->id)
                         ->where('company_id', $companyId)
                         ->where('is_active', true)
+                        ->first()
+                    ?? CashBox::withoutGlobalScopes()
+                        ->whereNull('user_id')
+                        ->where('company_id', $companyId)
+                        ->where('access_type', 'company_shared')
                         ->first();
 
                 if (!$cashBox) {
                     DB::rollBack();
-                    throw new Exception("المستخدم {$this->nickname} ليس له خزنة في الشركة النشطة.");
+                    throw new Exception("المستخدم {$this->nickname} ليس له خزنة شخصية أو مشتركة في الشركة النشطة.");
                 }
             }
 

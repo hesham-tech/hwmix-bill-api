@@ -96,12 +96,7 @@ class Company extends Model
 
 
 
-    public function userCompanyCash()
-    {
-        return $this
-            ->belongsToMany(User::class, 'user_company_cash')
-            ->withPivot('cash_box_id', 'created_by');  // أضف الحقول الإضافية التي تريد الوصول إليها
-    }
+
 
     /**
      * علاقة الشركة بالفروع

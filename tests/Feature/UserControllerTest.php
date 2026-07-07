@@ -174,6 +174,7 @@ class UserControllerTest extends TestCase
     {
         // Manager in company A
         $manager = User::factory()->create(['company_id' => $this->company->id]);
+        setPermissionsTeamId($this->company->id);
         $manager->givePermissionTo('admin.company');
         CompanyUser::create(['user_id' => $manager->id, 'company_id' => $this->company->id]);
 
@@ -223,6 +224,85 @@ class UserControllerTest extends TestCase
         $this->assertDatabaseHas('branch_user', [
             'user_id' => $userB->id,
             'branch_id' => $branchB->id,
+        ]);
+    }
+
+    public function test_can_create_and_update_user_with_relation_types_and_starting_balances()
+    {
+        $this->actingAs($this->admin);
+
+        // 1. Test creation
+        $payload = [
+            'username' => 'reluser',
+            'email' => 'reluser@example.com',
+            'phone' => '987654321',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'nickname' => 'Relational User',
+            'full_name' => 'Relational User Full Name',
+            'status' => 'active',
+            'relation_types' => ['customer', 'supplier'],
+            'starting_balances' => [
+                'receivable' => 1500.50,
+                'payable' => 400.00
+            ]
+        ];
+
+        $response = $this->postJson('/api/v1/users', $payload);
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('users', ['phone' => '987654321']);
+        $createdUser = User::where('phone', '987654321')->first();
+
+        $this->assertDatabaseHas('business_relations', [
+            'company_id' => $this->company->id,
+            'user_id' => $createdUser->id,
+            'relation_type' => 'customer'
+        ]);
+        $this->assertDatabaseHas('business_relations', [
+            'company_id' => $this->company->id,
+            'user_id' => $createdUser->id,
+            'relation_type' => 'supplier'
+        ]);
+
+        $this->assertDatabaseHas('stakeholder_financial_balances', [
+            'company_id' => $this->company->id,
+            'user_id' => $createdUser->id,
+            'relation_type' => 'receivable',
+            'balance' => 1500.50
+        ]);
+        $this->assertDatabaseHas('stakeholder_financial_balances', [
+            'company_id' => $this->company->id,
+            'user_id' => $createdUser->id,
+            'relation_type' => 'payable',
+            'balance' => 400.00
+        ]);
+
+        // 2. Test update
+        $updatePayload = [
+            'nickname' => 'Updated Relational User',
+            'relation_types' => ['customer'], // Remove supplier
+            'starting_balances' => [
+                'receivable' => 2000.00
+            ]
+        ];
+
+        $updateResponse = $this->putJson("/api/v1/users/{$createdUser->id}", $updatePayload);
+        $updateResponse->assertStatus(200);
+
+        // Supplier relation should be deleted
+        $this->assertDatabaseMissing('business_relations', [
+            'company_id' => $this->company->id,
+            'user_id' => $createdUser->id,
+            'relation_type' => 'supplier'
+        ]);
+
+        // Receivable balance should be updated
+        $this->assertDatabaseHas('stakeholder_financial_balances', [
+            'company_id' => $this->company->id,
+            'user_id' => $createdUser->id,
+            'relation_type' => 'receivable',
+            'balance' => 2000.00
         ]);
     }
 }

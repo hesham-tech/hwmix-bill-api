@@ -67,7 +67,7 @@ class DashboardController extends Controller
         $stats = [
             'total_invoices' => Invoice::where('user_id', $user->id)->count(),
             'total_paid' => (float) \App\Models\Payment::where('user_id', $user->id)->sum('amount'),
-            'remaining_balance' => (float) $user->balance,
+            'remaining_balance' => (float) $user->getFinancialBalance($user->active_company_id, 'receivable'),
             'active_installment_plans' => \App\Models\InstallmentPlan::where('user_id', $user->id)->where('status', '!=', 'paid')->count(),
             'upcoming_installments_count' => Installment::where('user_id', $user->id)
                 ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
@@ -138,8 +138,8 @@ class DashboardController extends Controller
             'unpaid_installments' => (float) Installment::where('company_id', $companyId)
                 ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي', 'ملغى'])
                 ->sum('remaining'),
-            'total_customers' => CompanyUser::where('company_id', $companyId)
-                ->where('role', 'customer')
+            'total_customers' => \Modules\Companies\Models\BusinessRelation::where('company_id', $companyId)
+                ->where('relation_type', 'customer')
                 ->count(),
             'total_products' => Product::where('company_id', $companyId)->count(),
             'liquidity' => [

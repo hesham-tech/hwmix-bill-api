@@ -24,12 +24,8 @@ class UnitGroupController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $authUser = Auth::user();
-            $query = UnitGroup::with(['units', 'conversions.fromUnit', 'conversions.toUnit']);
-
-            if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                $query->whereCompanyIsCurrent();
-            }
+            $query = UnitGroup::with(['units', 'conversions.fromUnit', 'conversions.toUnit'])
+                ->whereCompanyIsCurrent();
 
             if ($request->filled('search')) {
                 $query->where('name', 'like', '%' . $request->search . '%');

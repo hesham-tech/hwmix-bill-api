@@ -45,7 +45,6 @@ class InstallmentPlanVisibilityTest extends TestCase
         DB::table('company_user')->insert([
             'company_id' => $this->companyA->id,
             'user_id' => $this->crossCustomer->id,
-            'role' => 'customer',
             'status' => 'active',
             'created_at' => now(),
             'updated_at' => now()

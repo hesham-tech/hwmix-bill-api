@@ -121,7 +121,7 @@ class InvoiceObserver
             DB::afterCommit(function () use ($invoice, $user) {
                 $user->unsetRelation('cashBoxes');
                 $invoice->updateQuietly([
-                    'user_balance_after' => $user->balance
+                    'user_balance_after' => $user->getFinancialBalance($invoice->company_id, 'receivable')
                 ]);
             });
         }

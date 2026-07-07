@@ -51,7 +51,15 @@ class CashBoxController extends Controller
                  $authUser->hasPermissionTo(perm_key('cash_boxes.view_all')));
 
             if (!$showAllBoxes) {
-                $cashBoxQuery->where('user_id', $authUser->id);
+                $branchId = config('app.active_branch_id') ?? $authUser->branch_id;
+                $cashBoxQuery->where(function($q) use ($authUser, $branchId) {
+                    $q->where('user_id', $authUser->id);
+                    if ($branchId) {
+                        $q->orWhere(function($subQ) use ($branchId) {
+                            $subQ->whereNull('user_id')->where('branch_id', $branchId);
+                        });
+                    }
+                });
             }
 
             if (!empty($request->get('name'))) {
@@ -104,7 +112,9 @@ class CashBoxController extends Controller
             try {
                 $validatedData = $request->validated();
                 $validatedData['company_id'] = $validatedData['company_id'] ?? $companyId;
-                $validatedData['user_id'] = $validatedData['user_id'] ?? $authUser->id;
+                if (!array_key_exists('user_id', $validatedData)) {
+                    $validatedData['user_id'] = $authUser->id;
+                }
 
                 if (!array_key_exists('branch_id', $validatedData)) {
                     $validatedData['branch_id'] = config('app.active_branch_id') ?? $authUser->branch_id;

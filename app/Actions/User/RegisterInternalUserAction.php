@@ -75,13 +75,70 @@ class RegisterInternalUserAction
                 'created_by' => $creatorUser->id,
             ]);
 
-            // 4. معالجة الرصيد الابتدائي (إن وجد)
-            if (isset($data['balance']) && $data['balance'] != 0) {
-                if ($data['balance'] > 0) {
-                    $user->deposit($data['balance']);
+            // 4. مزامنة العلاقات التجارية (Business Relations)
+            $relationTypes = $data['relation_types'] ?? [];
+            if (empty($relationTypes)) {
+                // تراجع تلقائي للتوافقية
+                if (isset($data['roles']) && !empty($data['roles'])) {
+                    $relationTypes[] = 'employee';
                 } else {
-                    $user->withdraw(abs($data['balance']));
+                    $relationTypes[] = 'customer';
                 }
+            }
+
+            $userRelations = [];
+            foreach (array_unique($relationTypes) as $type) {
+                \Modules\Companies\Models\BusinessRelation::firstOrCreate([
+                    'company_id' => $companyId,
+                    'user_id' => $user->id,
+                    'relation_type' => $type,
+                ]);
+                $userRelations[] = $type;
+            }
+            // حذف أي علاقات قديمة غير محددة
+            \Modules\Companies\Models\BusinessRelation::where([
+                'company_id' => $companyId,
+                'user_id' => $user->id,
+            ])->whereNotIn('relation_type', $userRelations)->delete();
+
+            // 5. معالجة الرصيد الابتدائي (الافتتاحي للذمم الدفترية)
+            $startingBalances = $data['starting_balances'] ?? [];
+
+            // توافقية خلفية مع الحقل الموحد القديم (balance)
+            if (empty($startingBalances) && isset($data['balance']) && $data['balance'] != 0) {
+                $val = (float)$data['balance'];
+                if (in_array('supplier', $relationTypes)) {
+                    $startingBalances['payable'] = $val;
+                } elseif (in_array('customer', $relationTypes)) {
+                    $startingBalances['receivable'] = $val;
+                }
+            }
+
+            foreach ($startingBalances as $relType => $amount) {
+                if ($amount == 0) continue;
+
+                // تحديث أو إنشاء سجل رصيد الطرف المالي
+                $balModel = \Modules\Companies\Models\StakeholderFinancialBalance::firstOrCreate([
+                    'company_id' => $companyId,
+                    'user_id' => $user->id,
+                    'relation_type' => $relType,
+                ]);
+
+                $balModel->balance = (float)$amount;
+                $balModel->save();
+
+                // تسجيل قيد افتتاحي دفتري (غير نقدي)
+                \App\Models\Transaction::create([
+                    'user_id' => $user->id,
+                    'cashbox_id' => null, // حركة ذمم دفترية
+                    'company_id' => $companyId,
+                    'type' => 'deposit',
+                    'amount' => (float)$amount,
+                    'balance_before' => 0.00,
+                    'balance_after' => (float)$amount,
+                    'created_by' => $creatorUser->id,
+                    'description' => 'رصيد افتتاحي للنظام - ' . ($relType === 'receivable' ? 'ذمة مدينة عميل' : 'ذمة دائنة مورد'),
+                ]);
             }
 
             // 5. مزامنة الفروع وتحديد الفرع المستهدف للخزنة
@@ -128,6 +185,18 @@ class RegisterInternalUserAction
                 );
             } catch (\Exception $e) {
                 Log::error("فشل إنشاء/تحديث الخزنة للفرع المستهدف للمستخدم {$user->id}: " . $e->getMessage());
+            }
+
+            // إذا كان الموظف لديه رصيد نقدي عهدة ابتدائي
+            if (in_array('employee', $relationTypes) && isset($data['balance']) && $data['balance'] != 0) {
+                $defaultBox = \App\Models\CashBox::withoutGlobalScopes()
+                    ->where('user_id', $user->id)
+                    ->where('company_id', $companyId)
+                    ->first();
+                if ($defaultBox) {
+                    $defaultBox->balance = (float)$data['balance'];
+                    $defaultBox->save();
+                }
             }
 
             // 6. مزامنة الصور

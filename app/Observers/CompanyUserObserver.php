@@ -21,6 +21,9 @@ class CompanyUserObserver
     /**
      * Handle the CompanyUser "created" event.
      */
+    /**
+     * Handle the CompanyUser "created" event.
+     */
     public function created(CompanyUser $companyUser): void
     {
         try {
@@ -38,11 +41,10 @@ class CompanyUserObserver
 
     /**
      * Handle the CompanyUser "updated" event.
-     * تُركت فارغة لتجاهل التحديثات الروتينية على البيانات المكررة.
      */
     public function updated(CompanyUser $companyUser): void
     {
-        // لا يوجد منطق هنا.
+        // تم إلغاء مزامنة الأدوار بعد حذف عمود role
     }
 
     /**
@@ -56,9 +58,15 @@ class CompanyUserObserver
                 userId: $companyUser->user_id,
                 companyId: $companyUser->company_id
             );
+
+            // حذف العلاقات التجارية للطرف
+            \Modules\Companies\Models\BusinessRelation::where([
+                'company_id' => $companyUser->company_id,
+                'user_id' => $companyUser->user_id,
+            ])->delete();
         } catch (\Exception $e) {
              // تسجيل الخطأ إذا فشلت عملية تعطيل الخزنة
-             Log::error("فشل تعطيل خزنة للمستخدم {$companyUser->user_id} والشركة {$companyUser->company_id}: " . $e->getMessage());
+             Log::error("فشل تعطيل خزنة أو حذف علاقات للمستخدم {$companyUser->user_id} والشركة {$companyUser->company_id}: " . $e->getMessage());
         }
     }
 

@@ -180,6 +180,26 @@ class UserController extends Controller
                 }
             }
 
+            // فلترة حسب العلاقة التجارية (Business Relation)
+            if ($request->filled('relation_type')) {
+                $relationType = $request->input('relation_type');
+                if ($isGlobalView) {
+                    $query->whereHas('businessRelations', function ($q) use ($relationType, $activeCompanyId) {
+                        $q->where('relation_type', $relationType);
+                        if ($activeCompanyId) {
+                            $q->where('company_id', $activeCompanyId);
+                        }
+                    });
+                } else {
+                    $query->whereHas('user.businessRelations', function ($q) use ($relationType, $activeCompanyId) {
+                        $q->where('relation_type', $relationType);
+                        if ($activeCompanyId) {
+                            $q->where('company_id', $activeCompanyId);
+                        }
+                    });
+                }
+            }
+
             // تحديد عدد العناصر في الصفحة والفرز
             $perPage = max(1, $request->input('per_page', 10));
             $sortField = $request->input('sort_by');
@@ -490,16 +510,32 @@ class UserController extends Controller
                     if (isset($validated['status']))
                         $contextData['status'] = $validated['status'];
                     if (isset($validated['balance']) && $isSuperAdmin) {
-                        // [تعديل]: تحديث الرصيد في الخزنة مباشرة بدلاً من جدول الربط عند تعديل السوبر أدمن
-                        $currentBalance = (float) $companyUser->balance;
-                        $newBalance = (float) $validated['balance'];
-                        $difference = $newBalance - $currentBalance;
+                        // تحديث رصيد الخزنة عهدة الموظف
+                        $defaultBox = \App\Models\CashBox::withoutGlobalScopes()
+                            ->where('user_id', $user->id)
+                            ->where('company_id', $activeCompanyId)
+                            ->first();
+                        if ($defaultBox) {
+                            $currentBalance = (float)$defaultBox->balance;
+                            $newBalance = (float)$validated['balance'];
+                            $difference = $newBalance - $currentBalance;
 
-                        if ($difference !== 0) {
-                            if ($difference > 0) {
-                                $user->deposit(abs($difference));
-                            } else {
-                                $user->withdraw(abs($difference));
+                            if ($difference !== 0) {
+                                $defaultBox->balance = $newBalance;
+                                $defaultBox->save();
+
+                                // تسجيل حركة الخزنة
+                                \App\Models\Transaction::create([
+                                    'user_id' => $user->id,
+                                    'cashbox_id' => $defaultBox->id,
+                                    'company_id' => $activeCompanyId,
+                                    'type' => $difference > 0 ? 'deposit' : 'withdraw',
+                                    'amount' => abs($difference),
+                                    'balance_before' => $currentBalance,
+                                    'balance_after' => $newBalance,
+                                    'created_by' => $authUser->id,
+                                    'description' => 'تعديل رصيد الخزنة نقداً للموظف',
+                                ]);
                             }
                         }
                     }
@@ -510,6 +546,59 @@ class UserController extends Controller
 
                     if (!empty($contextData)) {
                         $companyUser->update($contextData);
+                    }
+
+                    // مزامنة العلاقات التجارية (Business Relations)
+                    if ($request->has('relation_types')) {
+                        $relationTypes = (array)$request->input('relation_types');
+                        $userRelations = [];
+                        foreach (array_unique($relationTypes) as $type) {
+                            \Modules\Companies\Models\BusinessRelation::firstOrCreate([
+                                'company_id' => $activeCompanyId,
+                                'user_id' => $user->id,
+                                'relation_type' => $type,
+                            ]);
+                            $userRelations[] = $type;
+                        }
+                        // حذف العلاقات التي لم تعد موجودة
+                        \Modules\Companies\Models\BusinessRelation::where([
+                            'company_id' => $activeCompanyId,
+                            'user_id' => $user->id,
+                        ])->whereNotIn('relation_type', $userRelations)->delete();
+                    }
+
+                    // مزامنة الأرصدة الافتتاحية للأطراف
+                    if ($request->has('starting_balances')) {
+                        $startingBalances = (array)$request->input('starting_balances');
+                        foreach ($startingBalances as $relType => $amount) {
+                            $balModel = \Modules\Companies\Models\StakeholderFinancialBalance::firstOrCreate([
+                                'company_id' => $activeCompanyId,
+                                'user_id' => $user->id,
+                                'relation_type' => $relType,
+                            ]);
+
+                            $currentVal = (float)$balModel->balance;
+                            $newVal = (float)$amount;
+                            $diff = $newVal - $currentVal;
+
+                            if ($diff != 0) {
+                                $balModel->balance = $newVal;
+                                $balModel->save();
+
+                                // تسجيل التغيير في الحركات كحركة تعديل رصيد دفتري
+                                \App\Models\Transaction::create([
+                                    'user_id' => $user->id,
+                                    'cashbox_id' => null, // حركة ذمم دفترية
+                                    'company_id' => $activeCompanyId,
+                                    'type' => $diff > 0 ? 'deposit' : 'withdraw',
+                                    'amount' => $diff,
+                                    'balance_before' => $currentVal,
+                                    'balance_after' => $newVal,
+                                    'created_by' => $authUser->id,
+                                    'description' => 'تعديل رصيد افتتاحي - ' . ($relType === 'receivable' ? 'ذمة مدينة عميل' : 'ذمة دائنة مورد'),
+                                ]);
+                            }
+                        }
                     }
                 }
             }

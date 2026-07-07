@@ -9,12 +9,18 @@ use App\Models\Plan;
 use App\Models\CompanyUser;
 use App\Services\SaaS\SubscriptionService;
 
+// تهيئة وتفعيل باقات SaaS للمستخدمين والشركات القديمة
 return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
+        // إذا كان جدول الشركات فارغاً، فهذا تثبيت جديد ولا توجد بيانات قديمة تحتاج لـ retrofit
+        if (\DB::table('companies')->count() === 0) {
+            return;
+        }
+
         $masterCompanyId = (int) config('app.master_company_id', 1);
 
         // 1. التأكد من وجود الباقة التجريبية المجانية الافتراضية

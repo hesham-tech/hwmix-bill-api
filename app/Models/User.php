@@ -274,6 +274,14 @@ class User extends Authenticatable
     }
 
     /**
+     * علاقة العلاقات التجارية للمستخدم في سياق الشركات
+     */
+    public function businessRelations(): HasMany
+    {
+        return $this->hasMany(\Modules\Companies\Models\BusinessRelation::class, 'user_id');
+    }
+
+    /**
      * علاقة HasOne للحصول على سجل المستخدم الحالي في جدول company_user للشركة النشطة.
      */
     public function activeCompanyUser(): HasOne
@@ -763,13 +771,18 @@ class User extends Authenticatable
         $this->attributes['active_company_id'] = $value;
     }
 
-    /**
-     * الحصول على الرصيد (المصدر الوحيد: الخزنة)
-     * تم تحسينه ليرجع رصيد الفرع النشط مباشرة للمحافظة على التوافقية.
-     */
-    public function getBalanceAttribute()
+    public function stakeholderFinancialBalances()
     {
-        return $this->active_branch_balance;
+        return $this->hasMany(\Modules\Companies\Models\StakeholderFinancialBalance::class);
+    }
+
+    public function getFinancialBalance($companyId, $relationType = 'receivable'): float
+    {
+        $bal = $this->stakeholderFinancialBalances()
+            ->where('company_id', $companyId)
+            ->where('relation_type', $relationType)
+            ->first();
+        return $bal ? (float)$bal->balance : 0.00;
     }
 
     /**
