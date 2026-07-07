@@ -114,4 +114,35 @@ class CategoryControllerTest extends TestCase
         $response = $this->getJson('/api/v1/categories');
         $response->assertJsonMissing(['name' => $otherCategory->name]);
     }
+
+    public function test_can_create_categories_with_same_name_in_different_companies()
+    {
+        $otherCompany = Company::factory()->create();
+        $otherAdmin = User::factory()->create(['company_id' => $otherCompany->id]);
+        $otherAdmin->givePermissionTo('admin.super');
+
+        // Create category 'Electronics' in company A (default)
+        $this->actingAs($this->admin);
+        $response1 = $this->postJson('/api/v1/categories', [
+            'name' => 'Electronics',
+            'description' => 'Electronic devices'
+        ]);
+        $response1->assertStatus(201);
+
+        // Create category 'Electronics' in company B
+        $this->actingAs($otherAdmin);
+        $response2 = $this->postJson('/api/v1/categories', [
+            'name' => 'Electronics',
+            'description' => 'Electronic devices in company B'
+        ]);
+        $response2->assertStatus(201);
+
+        // Assert they have different slugs containing company ID or distinct slugs
+        $cat1 = Category::where('name', 'Electronics')->where('company_id', $this->company->id)->first();
+        $cat2 = Category::where('name', 'Electronics')->where('company_id', $otherCompany->id)->first();
+
+        $this->assertNotNull($cat1);
+        $this->assertNotNull($cat2);
+        $this->assertNotEquals($cat1->slug, $cat2->slug);
+    }
 }

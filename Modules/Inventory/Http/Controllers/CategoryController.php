@@ -59,62 +59,74 @@ class CategoryController extends Controller
     /**
      * إضافة قسم جديد
      */
-    public function store(StoreCategoryRequest $request, CreateCategoryAction $action): JsonResponse
-    {
-        try {
-            $category = $action->handle($request->validated());
-            $category->load($this->relations);
-            return api_success(new CategoryResource($category), 'تم معالجة القسم بنجاح.');
-        } catch (Throwable $e) {
-            return api_exception($e);
-        }
-    }
-
-    /**
-     * عرض قسم محدد
-     */
-    public function show(Category $category): JsonResponse
-    {
-        try {
-            $category->load($this->relations);
-            return api_success(new CategoryResource($category), 'تم استرداد القسم بنجاح.');
-        } catch (Throwable $e) {
-            return api_exception($e);
-        }
-    }
-
-    /**
-     * تحديث بيانات قسم
-     */
-    public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
-    {
-        try {
-            $category->update($request->validated());
-            $category->load($this->relations);
-            return api_success(new CategoryResource($category), 'تم تحديث القسم بنجاح.');
-        } catch (Throwable $e) {
-            return api_exception($e);
-        }
-    }
-
-    /**
-     * حذف قسم
-     */
-    public function destroy(Category $category): JsonResponse
-    {
-        try {
-            if ($category->products()->exists()) {
-                return api_error('لا يمكن حذف القسم لوجود منتجات مرتبطة به.');
-            }
-            if ($category->children()->exists()) {
-                return api_error('لا يمكن حذف القسم لوجود أقسام فرعية مرتبطة به.');
-            }
-            $category->delete();
-            return api_success([], 'تم حذف القسم بنجاح.');
-        } catch (Throwable $e) {
-            return api_exception($e);
-        }
-    }
+     public function store(StoreCategoryRequest $request, CreateCategoryAction $action): JsonResponse
+     {
+         try {
+             $category = $action->handle($request->validated());
+             $category->load($this->relations);
+             return api_success(new CategoryResource($category), 'تم معالجة القسم بنجاح.', 201);
+         } catch (Throwable $e) {
+             return api_exception($e);
+         }
+     }
+ 
+     /**
+      * عرض قسم محدد
+      */
+     public function show(Category $category): JsonResponse
+     {
+         try {
+             $authUser = Auth::user();
+             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $category->company_id !== null && $category->company_id !== $authUser->active_company_id) {
+                 return api_forbidden('ليس لديك صلاحية للوصول إلى هذا القسم.');
+             }
+             $category->load($this->relations);
+             return api_success(new CategoryResource($category), 'تم استرداد القسم بنجاح.');
+         } catch (Throwable $e) {
+             return api_exception($e);
+         }
+     }
+ 
+     /**
+      * تحديث بيانات قسم
+      */
+     public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
+     {
+         try {
+             $authUser = Auth::user();
+             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $category->company_id !== null && $category->company_id !== $authUser->active_company_id) {
+                 return api_forbidden('ليس لديك صلاحية للوصول إلى هذا القسم.');
+             }
+             $category->update($request->validated());
+             $category->load($this->relations);
+             return api_success(new CategoryResource($category), 'تم تحديث القسم بنجاح.');
+         } catch (Throwable $e) {
+             return api_exception($e);
+         }
+     }
+ 
+     /**
+      * حذف قسم
+      */
+     public function destroy(Category $category): JsonResponse
+     {
+         try {
+             $authUser = Auth::user();
+             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $category->company_id !== null && $category->company_id !== $authUser->active_company_id) {
+                 return api_forbidden('ليس لديك صلاحية للوصول إلى هذا القسم.');
+             }
+             if ($category->products()->exists()) {
+                 return api_error('لا يمكن حذف القسم لوجود منتجات مرتبطة به.', [], 409);
+             }
+             if ($category->children()->exists()) {
+                 return api_error('لا يمكن حذف القسم لوجود أقسام فرعية مرتبطة به.', [], 409);
+             }
+             $category->delete();
+             return api_success([], 'تم حذف القسم بنجاح.');
+         } catch (Throwable $e) {
+             return api_exception($e);
+         }
+     }
 
     /**
      * تغيير حالة القسم

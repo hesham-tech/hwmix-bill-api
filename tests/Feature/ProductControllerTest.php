@@ -250,4 +250,35 @@ class ProductControllerTest extends TestCase
         $this->assertDatabaseHas('products', ['id' => $productWithStock->id]);
         $this->assertDatabaseHas('products', ['id' => $cleanProduct->id]);
     }
+
+    public function test_can_create_product_with_null_category_id()
+    {
+        $this->actingAs($this->admin);
+
+        $payload = [
+            'name' => 'Test Product No Category',
+            'product_type' => 'physical',
+            'require_stock' => true,
+            'category_id' => null,
+            'brand_id' => $this->brand->id,
+            'variants' => [
+                [
+                    'sku' => 'TEST-002',
+                    'retail_price' => 100,
+                    'wholesale_price' => 50,
+                    'stocks' => [
+                        [
+                            'warehouse_id' => $this->warehouse->id,
+                            'quantity' => 10,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->postJson('/api/v1/products', $payload);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('products', ['name' => 'Test Product No Category', 'category_id' => null]);
+    }
 }
