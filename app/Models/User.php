@@ -703,6 +703,27 @@ class User extends Authenticatable
     }
 
     /**
+     * الحصول على الرصيد المتوافق مع المعمارية الجديدة (الموظف -> عهدة | العميل -> ذمة مدينة | المورد -> ذمة دائنة)
+     */
+    public function getBalanceAttribute()
+    {
+        $companyId = $this->active_company_id ?? $this->company_id;
+        if (!$companyId) {
+            return 0.0;
+        }
+
+        $isEmployee = $this->hasCapability('is_internal', $companyId);
+        if ($isEmployee) {
+            return $this->active_branch_balance;
+        }
+
+        $receivable = $this->getFinancialBalance($companyId, 'receivable');
+        $payable    = $this->getFinancialBalance($companyId, 'payable');
+
+        return $receivable > 0 ? $receivable : -$payable;
+    }
+
+    /**
      * الحصول على إجمالي أرصدة الصناديق في الفروع المنتمي إليها بشرط أن يكون مرتبطاً بأكثر من فرع
      *   يرجع مجموع أرصدة كل خزن فروع المستخدم بشرط ارتباطه بأكثر من فرع.
      */
