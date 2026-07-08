@@ -26,9 +26,14 @@ class SyncAccountingConvention extends Command
 
     /**
      * Execute the console command.
+     * @deprecated تم استبدال هذا الأمر كلياً بالمعمارية الجديدة ويُحظر تشغيله لتجنب تلف الأرصدة.
      */
     public function handle()
     {
+        $this->error('⚠️ تحذير: هذا الأمر قديم ومحظور تشغيله لتجنب إتلاف الأرصدة وتصفيرها بالخطأ.');
+        $this->warn('تم حظر التنفيذ لحماية قاعدة البيانات المالية.');
+        return Command::FAILURE;
+
         $dryRun = $this->option('dry-run');
 
         $this->info('بدء عملية تحويل الأرصدة للمنظومة الجديدة (+ أصل، - التزام)...');

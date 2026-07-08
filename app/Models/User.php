@@ -7,7 +7,7 @@ use App\Traits\Scopes;
 use App\Traits\HasImages;
 use App\Traits\Filterable;
 use App\Traits\LogsActivity;
-use Modules\Accounting\Services\CashBoxService;
+use App\Services\CashBoxService;
 use Laravel\Sanctum\HasApiTokens;
 use App\Traits\ManagesBalance;
 use Illuminate\Support\Facades\DB;

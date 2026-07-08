@@ -37,6 +37,14 @@ class InvoiceObserver
     }
     public function updated(Invoice $invoice): void
     {
+        // معالجة صريحة لحالة الإلغاء — يجب أن تأتي أولاً
+        if ($invoice->wasChanged('status') && $invoice->status === 'canceled') {
+            $this->dispatchSummaryUpdate($invoice);
+            $this->clearDashboardCache($invoice);
+            event(new \App\Events\InvoiceCanceled($invoice));
+            return;
+        }
+
         // إذا تغيرت الحالة لتصبح مؤكدة/مدفوعة ولم تكن كذلك من قبل
         if (
             $invoice->wasChanged('status') &&
