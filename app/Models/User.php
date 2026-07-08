@@ -139,6 +139,7 @@ class User extends Authenticatable
         // 1. محاولة جلب الخزنة الافتراضية المرتبطة بالفرع النشط
         if ($activeBranchId) {
             $cashBox = $this->cashBoxes()
+                ->where('is_active', true)
                 ->where('is_default', true)
                 ->where('company_id', $companyId)
                 ->where('branch_id', $activeBranchId)
@@ -157,6 +158,7 @@ class User extends Authenticatable
         // 3. إذا لم توجد (أو لم يحدد فرع)، نبحث عن الخزنة الافتراضية للشركة بدون قيد الفرع
         if (!$cashBox) {
             $cashBox = $this->cashBoxes()
+                ->where('is_active', true)
                 ->where('is_default', true)
                 ->where('company_id', $companyId)
                 ->first();
@@ -174,10 +176,12 @@ class User extends Authenticatable
         if (!$cashBox && $this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
             if ($activeBranchId) {
                 $cashBox = collect($this->cashBoxes)
+                    ->where('is_active', true)
                     ->where('company_id', $companyId)
                     ->where('branch_id', $activeBranchId)
                     ->firstWhere('is_default', true)
                     ?? collect($this->cashBoxes)
+                        ->where('is_active', true)
                         ->where('company_id', $companyId)
                         ->where('branch_id', $activeBranchId)
                         ->firstWhere('is_default', 1)
@@ -189,9 +193,11 @@ class User extends Authenticatable
             }
             if (!$cashBox) {
                 $cashBox = collect($this->cashBoxes)
+                    ->where('is_active', true)
                     ->where('company_id', $companyId)
                     ->firstWhere('is_default', true)
                     ?? collect($this->cashBoxes)
+                        ->where('is_active', true)
                         ->where('company_id', $companyId)
                         ->firstWhere('is_default', 1)
                     ?? collect($this->cashBoxes)
