@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+// متحكم لإدارة وعرض مؤشرات الأداء والتحليلات المالية والتشغيلية للوحة التحكم (Dashboard).
+
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Installment;
@@ -122,23 +124,19 @@ class DashboardController extends Controller
         $liquidityStats = DB::table('cash_boxes')
             ->where('company_id', $companyId)
             ->where('is_active', true)
-            ->where(function ($q) use ($companyId) {
-                $q->whereNull('user_id')
-                  ->orWhereNotExists(function ($sub) use ($companyId) {
-                      $sub->select(DB::raw(1))
-                          ->from('business_relations')
-                          ->whereColumn('business_relations.user_id', 'cash_boxes.user_id')
-                          ->where('business_relations.company_id', $companyId)
-                          ->whereIn('business_relations.relation_type', ['customer', 'supplier'])
-                          ->whereNotExists(function ($nested) use ($companyId) {
-                              $nested->select(DB::raw(1))
-                                     ->from('business_relations as br2')
-                                     ->whereColumn('br2.user_id', 'business_relations.user_id')
-                                     ->where('br2.company_id', $companyId)
-                                     ->where('br2.relation_type', 'employee');
-                          });
-                  });
-            })
+             ->where(function ($q) use ($companyId) {
+                  $q->whereNull('user_id')
+                    ->orWhereExists(function ($sub) use ($companyId) {
+                        $sub->select(DB::raw(1))
+                            ->from('business_relations')
+                            ->join('relation_types', 'relation_types.id', '=', 'business_relations.relation_type_id')
+                            ->join('relation_type_capabilities', 'relation_type_capabilities.relation_type_id', '=', 'relation_types.id')
+                            ->join('capabilities', 'capabilities.id', '=', 'relation_type_capabilities.capability_id')
+                            ->whereColumn('business_relations.user_id', 'cash_boxes.user_id')
+                            ->where('business_relations.company_id', $companyId)
+                            ->where('capabilities.code', 'has_cash_custody');
+                    });
+             })
             ->selectRaw("
                 SUM(CASE WHEN balance > 0 THEN balance ELSE 0 END) as total_assets,
                 SUM(CASE WHEN balance < 0 THEN balance ELSE 0 END) as total_liabilities,

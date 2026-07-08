@@ -37,7 +37,7 @@ class ExpenseObserver
     {
         $date = $date ?? $expense->expense_date;
         if ($date && $expense->company_id) {
-            UpdateDailySalesSummary::dispatchSync(
+            UpdateDailySalesSummary::dispatch(
                 $date instanceof \Carbon\Carbon ? $date->toDateString() : (string) $date,
                 $expense->company_id
             );

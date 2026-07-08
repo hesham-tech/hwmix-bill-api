@@ -57,6 +57,13 @@ class ProvisionNewCompanyAction
             // 3. تحديث المستخدم بالشركة النشطة
             $user->update(['active_company_id' => $company->id]);
 
+            // 3.5 إنشاء علاقة تجارية (موظف) للمالك ليتعرف عليها الـ Observer ويُنشئ له خزنة
+            \Modules\Companies\Models\BusinessRelation::firstOrCreate([
+                'company_id' => $company->id,
+                'user_id' => $user->id,
+                'relation_type' => 'employee',
+            ]);
+
             // 4. ربط المالك بالشركة (Membership)
             $companyUser = CompanyUser::create([
                 'user_id' => $user->id,

@@ -24,9 +24,11 @@ class UserResource extends JsonResource
 
         // تحديد حقل balance الصحيح حسب نوع المستخدم
         // الموظف → خزنة العهدة | العميل → ذمته المدينة | المورد → مستحقاته
-        $relationTypes = $this->businessRelations()->where('company_id', $companyId)->pluck('relation_type');
-        $isEmployee = $relationTypes->isEmpty() || $relationTypes->contains('employee');
+        $relationTypes = $this->getRelationTypesForCompany($companyId);
+        $isEmployee = $this->hasCapability('is_internal', $companyId);
         $legacyBalance = $isEmployee ? $this->active_branch_balance : ($receivable > 0 ? $receivable : -$payable);
+
+        $capabilities = $this->getCapabilitiesForCompany($companyId);
 
         return [
             'id'                    => $this->id,
@@ -46,6 +48,7 @@ class UserResource extends JsonResource
             'financial_balance'     => $receivable - $payable,
             'customer_type'         => $this->customer_type,
             'relation_types'        => $relationTypes,
+            'capabilities'          => $capabilities,
             'starting_balances'     => [
                 'receivable' => $receivable,
                 'payable'    => $payable,

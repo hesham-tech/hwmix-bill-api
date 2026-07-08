@@ -28,11 +28,18 @@ class CreateCategoryAction extends BaseAction
 
         return DB::transaction(function () use ($data, $authUser, $companyId) {
             $name = $data['name'];
+            $categoryCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($data['company_id']))
+                ? $data['company_id']
+                : $companyId;
+
             $slug = Str::slug($name);
+            if ($categoryCompanyId) {
+                $slug = $slug . '-' . $categoryCompanyId;
+            }
 
             // التحقق من وجود قسم مشابه
-            $existing = Category::where(function ($q) use ($companyId) {
-                $q->where('company_id', $companyId)->orWhereNull('company_id');
+            $existing = Category::where(function ($q) use ($categoryCompanyId) {
+                $q->where('company_id', $categoryCompanyId)->orWhereNull('company_id');
             })
             ->where(function ($q) use ($name, $slug) {
                 $q->where('slug', $slug)
@@ -43,10 +50,6 @@ class CreateCategoryAction extends BaseAction
             if ($existing) {
                 return $existing;
             }
-
-            $categoryCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($data['company_id']))
-                ? $data['company_id']
-                : $companyId;
 
             $data['company_id'] = $categoryCompanyId;
             $data['created_by'] = $authUser->id;

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+// متحكم لإدارة مصادقة المستخدمين وتسجيل الدخول والخروج والعمليات الأمنية المرتبطة بالحسابات.
+
 use App\Http\Controllers\Controller;
 use App\Http\Resources\User\UserResource;
 use App\Http\Resources\User\UserWithPermissionsResource;
@@ -100,6 +102,18 @@ class AuthController extends Controller
                 'full_name_in_company' => $validated['full_name'] ?? $user->full_name,
                 'status' => 'active',
                 'created_by' => $user->id, // يسجل نفسه كمنشئ للعلاقة
+            ]);
+
+            // 4.5 إنشاء علاقة تجارية (عميل) لضمان اتساق البيانات
+            $customerType = \Modules\Companies\Models\RelationType::where('code', 'customer')->first();
+            \Modules\Companies\Models\BusinessRelation::firstOrCreate([
+                'company_id' => $companyId,
+                'user_id' => $user->id,
+                'relation_type' => 'customer',
+            ], [
+                'relation_type_id' => $customerType?->id,
+                'is_active' => true,
+                'created_by' => $user->id,
             ]);
 
             // 5. ربط الفرع الافتراضي تلقائياً

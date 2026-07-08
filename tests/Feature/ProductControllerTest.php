@@ -168,7 +168,7 @@ class ProductControllerTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->getJson("/api/v1/products/{$otherProduct->id}");
-        $response->assertStatus(403);
+        $response->assertStatus(404);
 
         $response = $this->getJson('/api/v1/products');
         $response->assertJsonMissing(['name' => $otherProduct->name]);

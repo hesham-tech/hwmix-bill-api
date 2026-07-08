@@ -144,6 +144,6 @@ class StockControllerTest extends TestCase
         $this->actingAs($userA);
 
         $response = $this->getJson("/api/v1/stocks/{$stockB->id}");
-        $response->assertStatus(403);
+        $response->assertStatus(404);
     }
 }

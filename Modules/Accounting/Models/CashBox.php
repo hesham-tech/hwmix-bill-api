@@ -44,7 +44,6 @@ class CashBox extends Model
                     ->where('user_id', $cashBox->user_id)
                     ->where('company_id', $cashBox->company_id)
                     ->where('branch_id', $cashBox->branch_id)
-                    ->where('cash_box_type_id', $cashBox->cash_box_type_id)
                     ->where('id', '!=', $cashBox->id)
                     ->update(['is_default' => false]);
             }

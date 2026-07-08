@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+// متحكم لأدوات الصيانة الإدارية وتصحيح ومعالجة سجلات النظام الحساسة.
+
 use App\Models\CompanyUser;
 use App\Models\CashBox;
 use App\Models\CashBoxType;
@@ -23,7 +25,7 @@ class MaintenanceController extends Controller
     }
 
     /**
-     * تصحيح السجلات المفقودة للخزن الافتراضية
+     * تصحيح ومعالجة سجلات الصناديق القديمة المفقودة لبعض المستخدمين وتفعيلها افتراضياً.
      */
     public function fixMissingCashBoxes(): JsonResponse
     {
@@ -46,30 +48,15 @@ class MaintenanceController extends Controller
                     ->exists();
 
                 if (!$exists) {
-                    $cashType = CashBoxType::where('name', 'نقدي')
-                        ->where('company_id', $cu->company_id)
-                        ->first();
+                    $createdBox = app(\App\Services\CashBoxService::class)->createDefaultCashBoxForUserCompany(
+                        $cu->user_id,
+                        $cu->company_id,
+                        $cu->created_by ?? $cu->user_id
+                    );
 
-                    if (!$cashType) {
-                        Log::warning("MaintenanceController: Missing 'نقدي' type for company {$cu->company_id}");
-                        continue;
+                    if ($createdBox) {
+                        $missingCount++;
                     }
-
-                    $companyName = $cu->company ? $cu->company->name : 'غير محدد';
-
-                    CashBox::create([
-                        'name' => 'الخزنة النقدية',
-                        'balance' => '0.00',
-                        'cash_box_type_id' => $cashType->id,
-                        'is_default' => 1,
-                        'user_id' => $cu->user_id,
-                        'created_by' => $cu->created_by ?? $cu->user_id,
-                        'company_id' => $cu->company_id,
-                        'description' => "تصحيح بيانات: تم إنشاؤها تلقائيًا للشركة: **{$companyName}**",
-                        'account_number' => null,
-                    ]);
-
-                    $missingCount++;
                 }
             }
 

@@ -553,11 +553,15 @@ class UserController extends Controller
                         $relationTypes = (array)$request->input('relation_types');
                         $userRelations = [];
                         foreach (array_unique($relationTypes) as $type) {
-                            \Modules\Companies\Models\BusinessRelation::firstOrCreate([
+                            $typeModel = \Modules\Companies\Models\RelationType::where('code', $type)->first();
+                            $br = \Modules\Companies\Models\BusinessRelation::firstOrCreate([
                                 'company_id' => $activeCompanyId,
                                 'user_id' => $user->id,
                                 'relation_type' => $type,
                             ]);
+                            if ($typeModel && !$br->relation_type_id) {
+                                $br->update(['relation_type_id' => $typeModel->id]);
+                            }
                             $userRelations[] = $type;
                         }
                         // حذف العلاقات التي لم تعد موجودة

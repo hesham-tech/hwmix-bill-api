@@ -16,14 +16,8 @@ class CashBoxService
     public function createDefaultCashBoxForUserCompany(int $userId, int $companyId, int $createdById, ?int $branchId = null): ?CashBox
     {
         try {
-            // التحقق من نوع العلاقة لتفادي إنشاء خزن للعملاء والموردين
-            $isExternalParty = \Modules\Companies\Models\BusinessRelation::where([
-                'company_id' => $companyId,
-                'user_id'    => $userId,
-            ])->whereIn('relation_type', ['customer', 'supplier'])
-              ->exists();
-
-            if ($isExternalParty) {
+            $user = \App\Models\User::withoutGlobalScopes()->find($userId);
+            if (!$user || !$user->hasCapability('has_cash_custody', $companyId)) {
                 return null;
             }
 

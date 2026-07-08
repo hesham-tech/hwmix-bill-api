@@ -7,7 +7,10 @@ use App\Models\Company;
 use App\Models\CashBox;
 use App\Models\CashBoxType;
 use App\Models\Transaction;
+use Modules\Companies\Models\BusinessRelation;
+use Modules\Companies\Models\RelationType;
 use Database\Seeders\AddPermissionsSeeder;
+use Database\Seeders\RelationCapabilitiesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,11 +27,23 @@ class CashBoxControllerTest extends TestCase
         parent::setUp();
 
         $this->seed(AddPermissionsSeeder::class);
+        $this->seed(RelationCapabilitiesSeeder::class);
         $this->company = Company::factory()->create();
         $this->admin = User::factory()->create(['company_id' => $this->company->id]);
         $this->admin->givePermissionTo('admin.super');
 
         $this->boxType = CashBoxType::factory()->create();
+
+        // منح قدرة عهدة نقدية للمسؤول عبر علاقة تجارية من نوع موظف
+        $employeeType = RelationType::where('code', 'employee')->first();
+        BusinessRelation::firstOrCreate([
+            'company_id' => $this->company->id,
+            'user_id' => $this->admin->id,
+            'relation_type' => 'employee',
+        ], [
+            'relation_type_id' => $employeeType?->id,
+            'is_active' => true,
+        ]);
     }
 
     public function test_can_list_cash_boxes()

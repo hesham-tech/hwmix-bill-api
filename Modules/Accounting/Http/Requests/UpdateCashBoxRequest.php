@@ -15,7 +15,6 @@ class UpdateCashBoxRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'balance' => ['nullable', 'numeric', 'min:0'],
             'cash_box_type_id' => ['sometimes', 'exists:cash_box_types,id'],
             'is_default' => ['sometimes', 'boolean'],
             'is_active' => ['sometimes', 'boolean'],

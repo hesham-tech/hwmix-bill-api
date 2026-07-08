@@ -27,27 +27,41 @@ class CompanyUserObserver
     public function created(CompanyUser $companyUser): void
     {
         try {
-            // التحقق من نوع العلاقة في business_relations لتحديد هل المستخدم موظف
-            // الدور محدد في جدول business_relations وليس في company_user
-            $isExternalParty = \Modules\Companies\Models\BusinessRelation::where([
-                'company_id' => $companyUser->company_id,
-                'user_id'    => $companyUser->user_id,
-            ])->whereIn('relation_type', ['customer', 'supplier'])
-              ->exists();
-
-            if ($isExternalParty) {
-                // العميل أو المورد: لا خزنة نقدية — ذممهم في stakeholder_financial_balances
-                return;
+            $user = $companyUser->user;
+            
+            // 1. التحقق مما إذا كان المستخدم يملك عهدة مالية نشطة (مثلاً موظف أو سائق)
+            if ($user && $user->hasCapability(\App\Enums\CapabilityCode::HAS_CASH_CUSTODY, $companyUser->company_id)) {
+                $this->cashBoxService->createDefaultCashBoxForUserCompany(
+                    userId: $companyUser->user_id,
+                    companyId: $companyUser->company_id,
+                    createdById: $companyUser->created_by ?? $companyUser->user_id
+                );
             }
 
-            // الموظف أو المستخدم غير المصنّف: ينشئ له خزنة افتراضية
-            $this->cashBoxService->createDefaultCashBoxForUserCompany(
-                userId: $companyUser->user_id,
-                companyId: $companyUser->company_id,
-                createdById: $companyUser->created_by
-            );
+            // 2. التحقق مما إذا كان المستخدم يتتبع ذمم مدينة أو دائنة
+            if ($user && $user->hasCapability(\App\Enums\CapabilityCode::TRACK_RECEIVABLE, $companyUser->company_id)) {
+                \Modules\Companies\Models\StakeholderFinancialBalance::firstOrCreate([
+                    'company_id' => $companyUser->company_id,
+                    'user_id' => $companyUser->user_id,
+                    'relation_type' => 'receivable',
+                ], [
+                    'balance' => 0.00,
+                    'created_by' => $companyUser->created_by ?? $companyUser->user_id,
+                ]);
+            }
+
+            if ($user && $user->hasCapability(\App\Enums\CapabilityCode::TRACK_PAYABLE, $companyUser->company_id)) {
+                \Modules\Companies\Models\StakeholderFinancialBalance::firstOrCreate([
+                    'company_id' => $companyUser->company_id,
+                    'user_id' => $companyUser->user_id,
+                    'relation_type' => 'payable',
+                ], [
+                    'balance' => 0.00,
+                    'created_by' => $companyUser->created_by ?? $companyUser->user_id,
+                ]);
+            }
         } catch (\Exception $e) {
-            Log::error("فشل إنشاء خزنة للمستخدم {$companyUser->user_id} والشركة {$companyUser->company_id}: " . $e->getMessage());
+            Log::error("فشل إنشاء خزنة أو رصيد مالي للمستخدم {$companyUser->user_id} والشركة {$companyUser->company_id}: " . $e->getMessage());
         }
     }
 

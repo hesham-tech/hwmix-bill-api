@@ -92,7 +92,7 @@ class WarehouseControllerTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->getJson("/api/v1/warehouses/{$otherWarehouse->id}");
-        $response->assertStatus(403);
+        $response->assertStatus(404);
 
         $response = $this->getJson('/api/v1/warehouses');
         $response->assertJsonMissing(['name' => $otherWarehouse->name]);

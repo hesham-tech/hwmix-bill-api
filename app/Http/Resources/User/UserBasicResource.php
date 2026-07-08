@@ -32,7 +32,7 @@ class UserBasicResource extends JsonResource
             'avatar_url' => $this->avatar_url,
             'company_id' => $this->company_id,
             'cash_box_id' => $this->getDefaultCashBoxForCompany()?->id,
-            'roles' => $this->roles->pluck('name'),
+            'roles' => $this->relationLoaded('roles') ? $this->roles->pluck('name') : [],
             'created_by' => $this->created_by,
             'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
             'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,

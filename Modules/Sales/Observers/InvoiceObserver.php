@@ -105,7 +105,7 @@ class InvoiceObserver
         $date = $invoice->issue_date ?? $invoice->created_at;
         if ($date && $invoice->company_id) {
             DB::afterCommit(function () use ($date, $invoice) {
-                UpdateDailySalesSummary::dispatchSync(
+                UpdateDailySalesSummary::dispatch(
                     $date->toDateString(),
                     $invoice->company_id
                 );

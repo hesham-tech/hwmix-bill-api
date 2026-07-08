@@ -224,6 +224,15 @@ class Product extends Model
 
     public function resolveRouteBinding($value, $field = null)
     {
-        return $this->withoutGlobalScopes()->where($field ?? $this->getRouteKeyName(), $value)->first();
+        $user = auth()->user();
+        $model = $this->withoutGlobalScopes()->where($field ?? $this->getRouteKeyName(), $value)->first();
+
+        if ($model && $user && !$user->hasPermissionTo(perm_key('admin.super'))) {
+            if ($model->company_id !== $user->active_company_id) {
+                return null;
+            }
+        }
+
+        return $model;
     }
 }

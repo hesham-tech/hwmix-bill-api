@@ -10,6 +10,7 @@ use App\Traits\LogsActivity;
 use App\Services\CashBoxService;
 use Laravel\Sanctum\HasApiTokens;
 use App\Traits\ManagesBalance;
+use App\Traits\HasBusinessCapabilities;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Log;
@@ -48,7 +49,7 @@ use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, Translatable, HasApiTokens, Filterable, Scopes, LogsActivity, HasImages, ManagesBalance, \App\Traits\FilterableByCompany, \App\Traits\SmartSearch;
+    use HasFactory, Notifiable, Translatable, HasApiTokens, Filterable, Scopes, LogsActivity, HasImages, ManagesBalance, \App\Traits\FilterableByCompany, \App\Traits\SmartSearch, HasBusinessCapabilities;
     use HasRoles, HasPermissions {
         HasPermissions::hasPermissionTo insteadof HasRoles;
         HasPermissions::hasPermissionTo as traitHasPermissionTo;
@@ -124,6 +125,15 @@ class User extends Authenticatable
      * @param int|null $companyId
      * @return CashBox|null
      */
+    // كاش داخلي لتجنب تكرار الاستعلامات عن الخزنة الافتراضية
+    protected array $defaultCashBoxCache = [];
+
+    /**
+     * الحصول على الخزنة الافتراضية للمستخدم لشركة معينة.
+     *
+     * @param int|null $companyId
+     * @return CashBox|null
+     */
     public function getDefaultCashBoxForCompany($companyId = null)
     {
         // الأولوية لـ Auth::user()->active_company_id لضمان جلب رصيد الشركة النشطة حالياً حتى لو كان المستخدم في شركة أخرى
@@ -134,91 +144,52 @@ class User extends Authenticatable
         }
 
         $activeBranchId = config('app.active_branch_id') ?? Auth::user()?->branch_id ?? $this->branch_id ?? null;
+        $cacheKey = "{$companyId}_" . ($activeBranchId ?? '0');
+
+        if (array_key_exists($cacheKey, $this->defaultCashBoxCache)) {
+            return $this->defaultCashBoxCache[$cacheKey];
+        }
+
         $cashBox = null;
 
-        // 1. محاولة جلب الخزنة الافتراضية المرتبطة بالفرع النشط
-        if ($activeBranchId) {
-            $cashBox = $this->cashBoxes()
-                ->where('is_active', true)
-                ->where('is_default', true)
+        // 1. إذا كانت العلاقة محملة مسبقاً (Eager Loaded)
+        if ($this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
+            $collection = collect($this->cashBoxes)
                 ->where('company_id', $companyId)
-                ->where('branch_id', $activeBranchId)
-                ->first();
+                ->where('is_active', true);
 
-            // 2. إذا لم توجد، جلب أي خزنة نشطة مرتبطة بالفرع النشط
-            if (!$cashBox) {
-                $cashBox = $this->cashBoxes()
-                    ->where('company_id', $companyId)
-                    ->where('is_active', true)
-                    ->where('branch_id', $activeBranchId)
-                    ->first();
-            }
-        }
-
-        // 3. إذا لم توجد (أو لم يحدد فرع)، نبحث عن الخزنة الافتراضية للشركة بدون قيد الفرع
-        if (!$cashBox) {
-            $cashBox = $this->cashBoxes()
-                ->where('is_active', true)
-                ->where('is_default', true)
-                ->where('company_id', $companyId)
-                ->first();
-        }
-
-        // 4. محاولة جلب أي خزنة نشطة للشركة
-        if (!$cashBox) {
-            $cashBox = $this->cashBoxes()
-                ->where('company_id', $companyId)
-                ->where('is_active', true)
-                ->first();
-        }
-
-        // Paranoid Mode: Extra safety if relation was eager loaded but might be null or not a collection
-        if (!$cashBox && $this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
             if ($activeBranchId) {
-                $cashBox = collect($this->cashBoxes)
-                    ->where('is_active', true)
-                    ->where('company_id', $companyId)
-                    ->where('branch_id', $activeBranchId)
-                    ->firstWhere('is_default', true)
-                    ?? collect($this->cashBoxes)
-                        ->where('is_active', true)
-                        ->where('company_id', $companyId)
-                        ->where('branch_id', $activeBranchId)
-                        ->firstWhere('is_default', 1)
-                    ?? collect($this->cashBoxes)
-                        ->where('company_id', $companyId)
-                        ->where('is_active', true)
-                        ->where('branch_id', $activeBranchId)
-                        ->first();
+                $cashBox = $collection->where('branch_id', $activeBranchId)->firstWhere('is_default', true)
+                    ?? $collection->where('branch_id', $activeBranchId)->firstWhere('is_default', 1)
+                    ?? $collection->where('branch_id', $activeBranchId)->first();
             }
+
             if (!$cashBox) {
-                $cashBox = collect($this->cashBoxes)
-                    ->where('is_active', true)
-                    ->where('company_id', $companyId)
-                    ->firstWhere('is_default', true)
-                    ?? collect($this->cashBoxes)
-                        ->where('is_active', true)
-                        ->where('company_id', $companyId)
-                        ->firstWhere('is_default', 1)
-                    ?? collect($this->cashBoxes)
-                        ->where('company_id', $companyId)
-                        ->where('is_active', true)
-                        ->first();
+                $cashBox = $collection->firstWhere('is_default', true)
+                    ?? $collection->firstWhere('is_default', 1)
+                    ?? $collection->first();
+            }
+        } else {
+            // 2. إذا لم تكن محملة، نقوم بطلب واحد فقط لجلب كل خزن المستخدم النشطة في هذه الشركة
+            $boxes = $this->cashBoxes()
+                ->where('company_id', $companyId)
+                ->where('is_active', true)
+                ->get();
+
+            if ($activeBranchId) {
+                $cashBox = $boxes->where('branch_id', $activeBranchId)->firstWhere('is_default', true)
+                    ?? $boxes->where('branch_id', $activeBranchId)->firstWhere('is_default', 1)
+                    ?? $boxes->where('branch_id', $activeBranchId)->first();
+            }
+
+            if (!$cashBox) {
+                $cashBox = $boxes->firstWhere('is_default', true)
+                    ?? $boxes->firstWhere('is_default', 1)
+                    ?? $boxes->first();
             }
         }
 
-        // إذا لم يوجد، نقوم بإنشاء واحدة تلقائياً للمستخدم في هذه الشركة لضمان استمرارية العمليات المالية
-        if (!$cashBox && $companyId) {
-            try {
-                $cashBox = app(CashBoxService::class)->createDefaultCashBoxForUserCompany(
-                    $this->id,
-                    $companyId,
-                    Auth::id() ?? $this->id
-                );
-            } catch (Exception $e) {
-                Log::error("فشل إنشاء خزنة تلقائية للمستخدم {$this->id} في الشركة {$companyId}: " . $e->getMessage());
-            }
-        }
+        $this->defaultCashBoxCache[$cacheKey] = $cashBox;
 
         return $cashBox;
     }
@@ -782,13 +753,82 @@ class User extends Authenticatable
         return $this->hasMany(\Modules\Companies\Models\StakeholderFinancialBalance::class);
     }
 
+    protected array $financialBalanceCache = [];
+
     public function getFinancialBalance($companyId, $relationType = 'receivable'): float
     {
-        $bal = $this->stakeholderFinancialBalances()
+        $cacheKey = "{$companyId}_{$relationType}";
+        if (array_key_exists($cacheKey, $this->financialBalanceCache)) {
+            return $this->financialBalanceCache[$cacheKey];
+        }
+
+        if ($this->relationLoaded('stakeholderFinancialBalances')) {
+            $bal = collect($this->stakeholderFinancialBalances)
+                ->where('company_id', $companyId)
+                ->where('relation_type', $relationType)
+                ->first();
+        } else {
+            $bal = $this->stakeholderFinancialBalances()
+                ->where('company_id', $companyId)
+                ->where('relation_type', $relationType)
+                ->first();
+        }
+
+        $balanceValue = $bal ? (float)$bal->balance : 0.00;
+        $this->financialBalanceCache[$cacheKey] = $balanceValue;
+
+        return $balanceValue;
+    }
+
+    /**
+     * الحصول على أنواع العلاقات للشركة مع دعم التحميل المسبق.
+     */
+    public function getRelationTypesForCompany($companyId): array
+    {
+        if ($this->relationLoaded('businessRelations')) {
+            return collect($this->businessRelations)
+                ->where('company_id', $companyId)
+                ->pluck('relation_type')
+                ->toArray();
+        }
+        return $this->businessRelations()
             ->where('company_id', $companyId)
-            ->where('relation_type', $relationType)
-            ->first();
-        return $bal ? (float)$bal->balance : 0.00;
+            ->pluck('relation_type')
+            ->toArray();
+    }
+
+    /**
+     * الحصول على القدرات والسلوكيات التشغيلية للشركة مع دعم التحميل المسبق.
+     */
+    public function getCapabilitiesForCompany($companyId): array
+    {
+        if ($this->relationLoaded('businessRelations')) {
+            return collect($this->businessRelations)
+                ->where('company_id', $companyId)
+                ->where('is_active', true)
+                ->flatMap(function ($relation) {
+                    if ($relation->relationLoaded('relationType') && $relation->relationType) {
+                        if ($relation->relationType->relationLoaded('capabilities')) {
+                            return collect($relation->relationType->capabilities)->pluck('code');
+                        }
+                    }
+                    return $relation->relationType?->capabilities()->pluck('code')->toArray() ?? [];
+                })
+                ->unique()
+                ->values()
+                ->toArray();
+        }
+
+        return $this->businessRelations()
+            ->where('company_id', $companyId)
+            ->where('is_active', true)
+            ->whereHas('relationType.capabilities')
+            ->with('relationType.capabilities')
+            ->get()
+            ->flatMap(fn($relation) => $relation->relationType?->capabilities ? $relation->relationType->capabilities->pluck('code') : [])
+            ->unique()
+            ->values()
+            ->toArray();
     }
 
     /**

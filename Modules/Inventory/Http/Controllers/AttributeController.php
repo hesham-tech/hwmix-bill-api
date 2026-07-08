@@ -16,6 +16,9 @@ use Throwable;
 /**
  * @group إدارة السمات (Module Inventory)
  */
+/**
+ * متحكم لإدارة سمات وخصائص المنتجات وقيمها وتأكيد عزل الشركات.
+ */
 class AttributeController extends Controller
 {
     protected array $relations = ['values', 'company', 'creator'];
@@ -93,6 +96,10 @@ class AttributeController extends Controller
     public function show(Attribute $attribute): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $attribute->company_id !== null && $attribute->company_id !== $authUser->active_company_id) {
+                return api_error('السمة غير موجودة.', [], 404);
+            }
             $attribute->load($this->relations);
             return api_success(new AttributeResource($attribute), 'تم استرداد السمة بنجاح.');
         } catch (Throwable $e) {
@@ -107,6 +114,9 @@ class AttributeController extends Controller
     {
         try {
             $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $attribute->company_id !== null && $attribute->company_id !== $authUser->active_company_id) {
+                return api_error('السمة غير موجودة.', [], 404);
+            }
             $companyId = $authUser->active_company_id;
 
             DB::beginTransaction();
@@ -147,6 +157,11 @@ class AttributeController extends Controller
     public function destroy(Attribute $attribute): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $attribute->company_id !== null && $attribute->company_id !== $authUser->active_company_id) {
+                return api_error('السمة غير موجودة.', [], 404);
+            }
+
             if ($attribute->productVariants()->exists()) {
                 return api_error('لا يمكن حذف السمة لارتباطها بمنتجات.', [], 409);
             }
@@ -166,6 +181,11 @@ class AttributeController extends Controller
     public function toggle(Attribute $attribute): JsonResponse
     {
         try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $attribute->company_id !== null && $attribute->company_id !== $authUser->active_company_id) {
+                return api_error('السمة غير موجودة.', [], 404);
+            }
+
             $attribute->update(['active' => !$attribute->active]);
             return api_success(new AttributeResource($attribute), 'تم تغيير حالة السمة بنجاح.');
         } catch (Throwable $e) {

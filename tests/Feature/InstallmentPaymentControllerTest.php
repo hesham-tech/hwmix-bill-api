@@ -6,11 +6,17 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\Installment;
 use App\Models\InstallmentPlan;
+use App\Models\InstallmentPayment;
+use App\Models\PaymentMethod;
+use App\Models\CashBox;
 use Modules\Sales\Models\Invoice;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * اختبارات متحكم دفع الأقساط (InstallmentPaymentController).
+ */
 class InstallmentPaymentControllerTest extends TestCase
 {
     use RefreshDatabase;
@@ -20,6 +26,8 @@ class InstallmentPaymentControllerTest extends TestCase
     protected User $customer;
     protected InstallmentPlan $plan;
     protected Invoice $invoice;
+    protected CashBox $cashBox;
+    protected PaymentMethod $paymentMethod;
 
     protected function setUp(): void
     {
@@ -29,6 +37,36 @@ class InstallmentPaymentControllerTest extends TestCase
         $this->company = Company::factory()->create();
         $this->admin = User::factory()->create(['company_id' => $this->company->id]);
         $this->admin->givePermissionTo('admin.super');
+
+        // إنشاء العلاقات للمشرف ليكون موظفاً ويملك عهدة
+        $employeeRelationType = \Modules\Companies\Models\RelationType::firstOrCreate(
+            ['code' => 'employee'],
+            ['display_name' => 'موظف']
+        );
+        $employeeCap = \Modules\Companies\Models\Capability::firstOrCreate(
+            ['code' => 'has_cash_custody'],
+            ['display_name' => 'امتلاك عهدة مالية']
+        );
+        $employeeRelationType->capabilities()->syncWithoutDetaching([$employeeCap->id]);
+
+        \Modules\Companies\Models\BusinessRelation::create([
+            'company_id' => $this->company->id,
+            'user_id' => $this->admin->id,
+            'relation_type' => 'employee',
+            'relation_type_id' => $employeeRelationType->id,
+            'is_active' => true,
+        ]);
+
+        $this->cashBox = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'user_id' => $this->admin->id,
+            'is_active' => true,
+        ]);
+
+        $this->paymentMethod = PaymentMethod::factory()->create([
+            'company_id' => $this->company->id,
+            'active' => true,
+        ]);
 
         $this->customer = User::factory()->create(['company_id' => $this->company->id]);
         $this->invoice = Invoice::factory()->create(['company_id' => $this->company->id]);
@@ -40,14 +78,13 @@ class InstallmentPaymentControllerTest extends TestCase
     }
 
     /** @test */
-    public function test_can_list_installments()
+    public function test_can_list_installment_payments()
     {
         $this->actingAs($this->admin);
 
-        Installment::factory()->count(3)->create([
+        InstallmentPayment::factory()->count(3)->create([
             'company_id' => $this->company->id,
             'created_by' => $this->admin->id,
-            'user_id' => $this->customer->id,
             'installment_plan_id' => $this->plan->id,
         ]);
 
@@ -58,88 +95,92 @@ class InstallmentPaymentControllerTest extends TestCase
     }
 
     /** @test */
-    public function test_can_create_installment()
+    public function test_can_pay_installments()
     {
         $this->actingAs($this->admin);
 
+        $installment = Installment::factory()->create([
+            'company_id' => $this->company->id,
+            'created_by' => $this->admin->id,
+            'user_id' => $this->customer->id,
+            'installment_plan_id' => $this->plan->id,
+            'amount' => 500,
+            'remaining' => 500,
+            'status' => 'pending',
+        ]);
+
         $payload = [
             'installment_plan_id' => $this->plan->id,
-            'user_id' => $this->customer->id,
-            'installment_number' => 1,
-            'due_date' => now()->addMonth()->toDateString(),
+            'installment_ids' => [$installment->id],
             'amount' => 500,
-            'status' => 'pending',
-            'remaining' => 500,
+            'payment_method_id' => $this->paymentMethod->id,
+            'cash_box_id' => $this->cashBox->id,
+            'payment_date' => now()->toDateString(),
+            'notes' => 'سداد القسط الأول',
         ];
 
         $response = $this->postJson('/api/v1/installment-payments', $payload);
 
-        $response->assertStatus(201);
+        $response->assertStatus(200)
+            ->assertJsonPath('status', true);
+
         $this->assertDatabaseHas('installments', [
-            'installment_plan_id' => $this->plan->id,
-            'amount' => 500
+            'id' => $installment->id,
+            'status' => 'paid',
+            'remaining' => 0.00
         ]);
     }
 
     /** @test */
-    public function test_can_show_installment()
+    public function test_can_show_installment_payment()
     {
         $this->actingAs($this->admin);
 
-        $installment = Installment::factory()->create([
+        $payment = InstallmentPayment::factory()->create([
             'company_id' => $this->company->id,
             'created_by' => $this->admin->id,
-            'user_id' => $this->customer->id,
             'installment_plan_id' => $this->plan->id,
         ]);
 
-        $response = $this->getJson("/api/v1/installment-payments/{$installment->id}");
+        $response = $this->getJson("/api/v1/installment-payments/{$payment->id}");
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.id', $installment->id);
+            ->assertJsonPath('data.id', $payment->id);
     }
 
     /** @test */
-    public function test_can_update_installment()
+    public function test_cannot_update_installment_payment()
     {
         $this->actingAs($this->admin);
 
-        $installment = Installment::factory()->create([
+        $payment = InstallmentPayment::factory()->create([
             'company_id' => $this->company->id,
             'created_by' => $this->admin->id,
-            'user_id' => $this->customer->id,
             'installment_plan_id' => $this->plan->id,
-            'status' => 'pending',
         ]);
 
         $payload = [
-            'status' => 'paid',
+            'amount_paid' => 1000,
         ];
 
-        $response = $this->putJson("/api/v1/installment-payments/{$installment->id}", $payload);
+        $response = $this->putJson("/api/v1/installment-payments/{$payment->id}", $payload);
 
-        $response->assertStatus(200);
-        $this->assertDatabaseHas('installments', [
-            'id' => $installment->id,
-            'status' => 'paid'
-        ]);
+        $response->assertStatus(403);
     }
 
     /** @test */
-    public function test_can_delete_installment()
+    public function test_cannot_delete_installment_payment()
     {
         $this->actingAs($this->admin);
 
-        $installment = Installment::factory()->create([
+        $payment = InstallmentPayment::factory()->create([
             'company_id' => $this->company->id,
             'created_by' => $this->admin->id,
-            'user_id' => $this->customer->id,
             'installment_plan_id' => $this->plan->id,
         ]);
 
-        $response = $this->deleteJson("/api/v1/installment-payments/{$installment->id}");
+        $response = $this->deleteJson("/api/v1/installment-payments/{$payment->id}");
 
-        $response->assertStatus(200);
-        $this->assertSoftDeleted('installments', ['id' => $installment->id]);
+        $response->assertStatus(403);
     }
 }

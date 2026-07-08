@@ -263,6 +263,12 @@ class Company extends Model
                 ]);
             }
 
+            \Modules\Companies\Models\BusinessRelation::firstOrCreate([
+                'company_id' => $this->id,
+                'user_id' => $customer->id,
+                'relation_type' => 'customer',
+            ]);
+
             $defaultBranchId = $this->branches()->where('is_default', true)->value('id');
             if ($defaultBranchId) {
                 $branchUserExists = \DB::table('branch_user')

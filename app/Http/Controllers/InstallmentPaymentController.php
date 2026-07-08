@@ -164,6 +164,11 @@ class InstallmentPaymentController extends Controller
      * @bodyParam cash_box_id integer معرف الخزنة (اختياري، يستخدم الافتراضي إذا لم يحدد). Example: 1
      * @bodyParam paid_at datetime تاريخ الدفع. Example: 2023-10-25 14:00:00
      */
+    public function store(PayInstallmentsRequest $request): JsonResponse
+    {
+        return $this->payInstallments($request);
+    }
+
     public function payInstallments(PayInstallmentsRequest $request): JsonResponse
     {
         try {

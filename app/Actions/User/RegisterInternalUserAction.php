@@ -77,11 +77,15 @@ class RegisterInternalUserAction
 
             $userRelations = [];
             foreach (array_unique($relationTypes) as $type) {
-                \Modules\Companies\Models\BusinessRelation::firstOrCreate([
+                $typeModel = \Modules\Companies\Models\RelationType::where('code', $type)->first();
+                $br = \Modules\Companies\Models\BusinessRelation::firstOrCreate([
                     'company_id' => $companyId,
                     'user_id' => $user->id,
                     'relation_type' => $type,
                 ]);
+                if ($typeModel && !$br->relation_type_id) {
+                    $br->update(['relation_type_id' => $typeModel->id]);
+                }
                 $userRelations[] = $type;
             }
             // حذف أي علاقات قديمة غير محددة
@@ -107,9 +111,10 @@ class RegisterInternalUserAction
             // توافقية خلفية مع الحقل الموحد القديم (balance)
             if (empty($startingBalances) && isset($data['balance']) && $data['balance'] != 0) {
                 $val = (float)$data['balance'];
-                if (in_array('supplier', $relationTypes)) {
+                if ($user->hasCapability('track_payable', $companyId)) {
                     $startingBalances['payable'] = $val;
-                } elseif (in_array('customer', $relationTypes)) {
+                }
+                if ($user->hasCapability('track_receivable', $companyId)) {
                     $startingBalances['receivable'] = $val;
                 }
             }
@@ -188,7 +193,7 @@ class RegisterInternalUserAction
             }
 
             // إذا كان الموظف لديه رصيد نقدي عهدة ابتدائي
-            if (in_array('employee', $relationTypes) && isset($data['balance']) && $data['balance'] != 0) {
+            if ($user->hasCapability('has_cash_custody', $companyId) && isset($data['balance']) && $data['balance'] != 0) {
                 $defaultBox = \App\Models\CashBox::withoutGlobalScopes()
                     ->where('user_id', $user->id)
                     ->where('company_id', $companyId)

@@ -123,6 +123,14 @@ class CashBoxController extends Controller
                     $validatedData['branch_id'] = config('app.active_branch_id') ?? $authUser->branch_id;
                 }
 
+                if ($validatedData['user_id'] !== null) {
+                    $targetUser = \App\Models\User::withoutGlobalScopes()->find($validatedData['user_id']);
+                    if (!$targetUser || !$targetUser->hasCapability('has_cash_custody', $validatedData['company_id'])) {
+                        DB::rollBack();
+                        return api_error('المستخدم المستهدف لا يملك صلاحية/قدرة عهدة نقدية.', [], 422);
+                    }
+                }
+
                 if ($validatedData['company_id'] != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
                     DB::rollBack();
                     return api_forbidden('يمكنك فقط إنشاء خزن لشركتك الحالية.');
@@ -130,15 +138,16 @@ class CashBoxController extends Controller
 
                 $validatedData['created_by'] = $authUser->id;
 
-                // إذا تم تعيين هذه الخزنة كافتراضية، قم بإزالة الصفة عن باقي الخزائن لنفس المستخدم والشركة ونوع الخزنة أولاً لمنع أخطاء القيود الفريدة
+                // إذا تم تعيين هذه الخزنة كافتراضية، قم بإزالة الصفة عن باقي الخزائن لنفس المستخدم والشركة والفرع أولاً لضمان وجود خزنة افتراضية واحدة فقط
                 if (isset($validatedData['is_default']) && $validatedData['is_default']) {
-                    $typeId = $validatedData['cash_box_type_id'] ?? null;
-                    if ($typeId) {
+                    $userId = $validatedData['user_id'] ?? null;
+                    $companyId = $validatedData['company_id'] ?? null;
+                    $branchId = $validatedData['branch_id'] ?? null;
+                    if ($userId && $companyId) {
                         CashBox::withoutGlobalScopes()
-                            ->where('company_id', $validatedData['company_id'])
-                            ->where('user_id', $validatedData['user_id'])
-                            ->where('branch_id', $validatedData['branch_id'])
-                            ->where('cash_box_type_id', $typeId)
+                            ->where('company_id', $companyId)
+                            ->where('user_id', $userId)
+                            ->where('branch_id', $branchId)
                             ->where('is_default', true)
                             ->update(['is_default' => false]);
                     }
@@ -208,22 +217,30 @@ class CashBoxController extends Controller
             try {
                 $validatedData = $request->validated();
 
-                // إذا تم تعيين هذه الخزنة كافتراضية، قم بإزالة الصفة عن باقي الخزائن لنفس المستخدم والشركة ونوع الخزنة أولاً لمنع أخطاء القيود الفريدة
+                // الفحص يتم فقط إذا أراد المستخدم تغيير صاحب الخزنة لشخص مختلف
+                $newUserId = array_key_exists('user_id', $validatedData) ? $validatedData['user_id'] : null;
+                $targetCompanyId = array_key_exists('company_id', $validatedData) ? $validatedData['company_id'] : $cashBox->company_id;
+
+                if ($newUserId !== null && $newUserId !== $cashBox->user_id) {
+                    $targetUser = \App\Models\User::withoutGlobalScopes()->find($newUserId);
+                    if (!$targetUser || !$targetUser->hasCapability('has_cash_custody', $targetCompanyId)) {
+                        DB::rollBack();
+                        return api_error('المستخدم المستهدف لا يملك صلاحية/قدرة عهدة نقدية.', [], 422);
+                    }
+                }
+
+                // إذا تم تعيين هذه الخزنة كافتراضية، قم بإزالة الصفة عن باقي الخزائن لنفس المستخدم والشركة والفرع أولاً لضمان وجود خزنة افتراضية واحدة فقط
                 if (isset($validatedData['is_default']) && $validatedData['is_default']) {
-                    $typeId = $validatedData['cash_box_type_id'] ?? $cashBox->cash_box_type_id;
                     $userId = $validatedData['user_id'] ?? $cashBox->user_id;
                     $companyId = $validatedData['company_id'] ?? $cashBox->company_id;
                     $branchId = $validatedData['branch_id'] ?? $cashBox->branch_id;
-                    if ($typeId) {
-                        CashBox::withoutGlobalScopes()
-                            ->where('company_id', $companyId)
-                            ->where('user_id', $userId)
-                            ->where('branch_id', $branchId)
-                            ->where('cash_box_type_id', $typeId)
-                            ->where('is_default', true)
-                            ->where('id', '!=', $cashBox->id)
-                            ->update(['is_default' => false]);
-                    }
+                    CashBox::withoutGlobalScopes()
+                        ->where('company_id', $companyId)
+                        ->where('user_id', $userId)
+                        ->where('branch_id', $branchId)
+                        ->where('is_default', true)
+                        ->where('id', '!=', $cashBox->id)
+                        ->update(['is_default' => false]);
                 }
 
                 $cashBox->update($validatedData);

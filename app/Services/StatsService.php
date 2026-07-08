@@ -11,12 +11,15 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * خدمة لتجميع وتحديث إحصائيات الفواتير والمنتجات والعملاء بشكل تراكمي.
+ */
 class StatsService
 {
     /**
      * Update all relevant stats when an invoice is fully processed (e.g., Paid).
      */
-    public function aggregateInvoiceStats(Invoice $invoice)
+    public function aggregateInvoiceStats(\App\Models\Invoice|\Modules\Sales\Models\Invoice $invoice)
     {
         try {
             DB::transaction(function () use ($invoice) {
@@ -60,7 +63,7 @@ class StatsService
     /**
      * Update cumulative stats for a user (customer).
      */
-    protected function updateUserStats(Invoice $invoice)
+    protected function updateUserStats(\App\Models\Invoice|\Modules\Sales\Models\Invoice $invoice)
     {
         $stats = StatsUserSummary::firstOrCreate(
             ['user_id' => $invoice->user_id],

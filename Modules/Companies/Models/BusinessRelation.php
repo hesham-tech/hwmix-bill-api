@@ -19,6 +19,7 @@ class BusinessRelation extends Model
         'company_id',
         'user_id',
         'relation_type',
+        'relation_type_id',
         'metadata',
         'is_active',
         'created_by',
@@ -51,5 +52,13 @@ class BusinessRelation extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * العلاقة مع نوع العلاقة التجارية.
+     */
+    public function relationType(): BelongsTo
+    {
+        return $this->belongsTo(RelationType::class, 'relation_type_id');
     }
 }
