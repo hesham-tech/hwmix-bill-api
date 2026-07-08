@@ -18,55 +18,59 @@ class UserResource extends JsonResource
      */
     public function toArray($request)
     {
+        $companyId = $this->active_company_id ?? $this->company_id;
+        $receivable = $this->getFinancialBalance($companyId, 'receivable');
+        $payable    = $this->getFinancialBalance($companyId, 'payable');
+
+        // تحديد حقل balance الصحيح حسب نوع المستخدم
+        // الموظف → خزنة العهدة | العميل → ذمته المدينة | المورد → مستحقاته
+        $relationTypes = $this->businessRelations()->where('company_id', $companyId)->pluck('relation_type');
+        $isEmployee = $relationTypes->isEmpty() || $relationTypes->contains('employee');
+        $legacyBalance = $isEmployee ? $this->active_branch_balance : ($receivable > 0 ? $receivable : -$payable);
+
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'nickname' => $this->nickname,
-            'full_name' => $this->full_name,
-            'username' => $this->username,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'balance' => $this->active_branch_balance,
+            'id'                    => $this->id,
+            'name'                  => $this->name,
+            'nickname'              => $this->nickname,
+            'full_name'             => $this->full_name,
+            'username'              => $this->username,
+            'email'                 => $this->email,
+            'phone'                 => $this->phone,
+            // @deprecated — استخدم receivable_balance / payable_balance / cashbox_balance
+            'balance'               => $legacyBalance,
             'active_branch_balance' => $this->active_branch_balance,
-            'total_branches_balance' => $this->total_branches_balance,
-            'cashbox_balance' => $this->active_branch_balance,
-            'receivable_balance' => $this->getFinancialBalance($this->active_company_id ?? $this->company_id, 'receivable'),
-            'payable_balance' => $this->getFinancialBalance($this->active_company_id ?? $this->company_id, 'payable'),
-            'financial_balance' => $this->getFinancialBalance($this->active_company_id ?? $this->company_id, 'receivable') - $this->getFinancialBalance($this->active_company_id ?? $this->company_id, 'payable'),
-            'customer_type' => $this->customer_type,
-            'relation_types' => $this->businessRelations()->where('company_id', $this->active_company_id ?? $this->company_id)->pluck('relation_type'),
-            'starting_balances' => [
-                'receivable' => $this->getFinancialBalance($this->active_company_id ?? $this->company_id, 'receivable'),
-                'payable' => $this->getFinancialBalance($this->active_company_id ?? $this->company_id, 'payable'),
+            'total_branches_balance'=> $this->total_branches_balance,
+            'cashbox_balance'       => $this->active_branch_balance,
+            'receivable_balance'    => $receivable,
+            'payable_balance'       => $payable,
+            'financial_balance'     => $receivable - $payable,
+            'customer_type'         => $this->customer_type,
+            'relation_types'        => $relationTypes,
+            'starting_balances'     => [
+                'receivable' => $receivable,
+                'payable'    => $payable,
             ],
-            'position' => $this->position,
-            'status' => $this->status,
-            'avatar_url' => $this->avatar_url,
-            'active_company_id' => $this->active_company_id,
-            'company_name' => $this->whenLoaded('company', fn() => $this->company->name),
-            'company_logo' => $this->whenLoaded('company', fn() => $this->company->logo?->url),
-            'cash_box_id' => $this->getDefaultCashBoxForCompany()?->id,
-            'last_login_at' => $this->last_login_at,
-            'email_verified_at' => $this->email_verified_at,
-            'created_by' => $this->created_by,
-            'roles' => $this->whenLoaded('roles', fn() => $this->roles->pluck('name')),
-            'direct_permissions' => $this->whenLoaded('permissions', fn() => $this->getDirectPermissions()->pluck('name')),
-            'companies' => $this->whenLoaded('companies', fn() => CompanyResource::collection($this->getVisibleCompaniesForUser() ?? collect())),
-            'branches' => $this->whenLoaded('branches', fn() => \Modules\Companies\Transformers\BranchResource::collection($this->branches)),
-            'created_at' => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
-            'updated_at' => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
+            'position'              => $this->position,
+            'status'                => $this->status,
+            'avatar_url'            => $this->avatar_url,
+            'active_company_id'     => $this->active_company_id,
+            'company_name'          => $this->whenLoaded('company', fn() => $this->company->name),
+            'company_logo'          => $this->whenLoaded('company', fn() => $this->company->logo?->url),
+            'cash_box_id'           => $this->getDefaultCashBoxForCompany()?->id,
+            'last_login_at'         => $this->last_login_at,
+            'email_verified_at'     => $this->email_verified_at,
+            'created_by'            => $this->created_by,
+            'roles'                 => $this->whenLoaded('roles', fn() => $this->roles->pluck('name')),
+            'direct_permissions'    => $this->whenLoaded('permissions', fn() => $this->getDirectPermissions()->pluck('name')),
+            'companies'             => $this->whenLoaded('companies', fn() => CompanyResource::collection($this->getVisibleCompaniesForUser() ?? collect())),
+            'branches'              => $this->whenLoaded('branches', fn() => \Modules\Companies\Transformers\BranchResource::collection($this->branches)),
+            'created_at'            => isset($this->created_at) ? $this->created_at->format('Y-m-d') : null,
+            'updated_at'            => isset($this->updated_at) ? $this->updated_at->format('Y-m-d') : null,
         ];
     }
 
     protected function getVisibleCompaniesForUser()
     {
-        // Debugging: تحقق من محتوى $this->companies
-
-        // Debugging: تأكد من أن $this->companies هو Collection فارغة إذا لم تكن هناك علاقات
-        if ($this->companies->isEmpty()) {
-        } else {
-        }
-
         if ($this->hasPermissionTo(perm_key('admin.super'))) {
             return Company::all();
         }

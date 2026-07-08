@@ -64,18 +64,7 @@ class RegisterInternalUserAction
                 ]);
             }
 
-            // 3. إنشاء سجل العلاقة مع الشركة
-            $companyUser = CompanyUser::create([
-                'user_id' => $user->id,
-                'company_id' => $companyId,
-                'nickname_in_company' => $data['nickname'] ?? $user->nickname,
-                'full_name_in_company' => $data['full_name'] ?? $user->full_name,
-                'customer_type_in_company' => $data['customer_type'] ?? 'default',
-                'status' => $data['status'] ?? 'active',
-                'created_by' => $creatorUser->id,
-            ]);
-
-            // 4. مزامنة العلاقات التجارية (Business Relations)
+            // 3. مزامنة العلاقات التجارية (Business Relations) أولاً لكي يتعرف عليها الـ Observer
             $relationTypes = $data['relation_types'] ?? [];
             if (empty($relationTypes)) {
                 // تراجع تلقائي للتوافقية
@@ -100,6 +89,17 @@ class RegisterInternalUserAction
                 'company_id' => $companyId,
                 'user_id' => $user->id,
             ])->whereNotIn('relation_type', $userRelations)->delete();
+
+            // 4. إنشاء سجل العلاقة مع الشركة (يطلق CompanyUserObserver)
+            $companyUser = CompanyUser::create([
+                'user_id' => $user->id,
+                'company_id' => $companyId,
+                'nickname_in_company' => $data['nickname'] ?? $user->nickname,
+                'full_name_in_company' => $data['full_name'] ?? $user->full_name,
+                'customer_type_in_company' => $data['customer_type'] ?? 'default',
+                'status' => $data['status'] ?? 'active',
+                'created_by' => $creatorUser->id,
+            ]);
 
             // 5. معالجة الرصيد الابتدائي (الافتتاحي للذمم الدفترية)
             $startingBalances = $data['starting_balances'] ?? [];

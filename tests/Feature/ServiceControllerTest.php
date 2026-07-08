@@ -36,7 +36,7 @@ class ServiceControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson('/api/services');
+        $response = $this->getJson('/api/v1/services');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'message']);
@@ -53,7 +53,7 @@ class ServiceControllerTest extends TestCase
             'default_price' => 100.50,
         ];
 
-        $response = $this->postJson('/api/service', $payload);
+        $response = $this->postJson('/api/v1/services', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('services', [
@@ -72,7 +72,7 @@ class ServiceControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson("/api/service/{$service->id}");
+        $response = $this->getJson("/api/v1/services/{$service->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $service->id);
@@ -93,7 +93,7 @@ class ServiceControllerTest extends TestCase
             'default_price' => 150.00
         ];
 
-        $response = $this->putJson("/api/service/{$service->id}", $payload);
+        $response = $this->putJson("/api/v1/services/{$service->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('services', [
@@ -113,7 +113,7 @@ class ServiceControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->deleteJson("/api/service/delete/{$service->id}");
+        $response = $this->deleteJson("/api/v1/services/{$service->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('services', ['id' => $service->id]);

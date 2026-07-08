@@ -42,7 +42,7 @@ class SubscriptionControllerTest extends TestCase
             'plan_id' => $this->plan->id,
         ]);
 
-        $response = $this->getJson('/api/subscriptions');
+        $response = $this->getJson('/api/v1/subscriptions');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'message']);
@@ -55,10 +55,12 @@ class SubscriptionControllerTest extends TestCase
         $this->actingAs($this->admin);
 
         $subscriber = User::factory()->create(['company_id' => $this->company->id]);
+        $service = \App\Models\Service::factory()->create(['company_id' => $this->company->id]);
 
         $payload = [
             'user_id' => $subscriber->id,
             'plan_id' => $this->plan->id,
+            'service_id' => $service->id,
             'starts_at' => now()->toDateTimeString(),
             'ends_at' => now()->addYear()->toDateTimeString(),
             'billing_cycle' => 'yearly',
@@ -68,7 +70,7 @@ class SubscriptionControllerTest extends TestCase
             'company_id' => $this->company->id,
         ];
 
-        $response = $this->postJson('/api/subscription', $payload);
+        $response = $this->postJson('/api/v1/subscriptions', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('subscriptions', [
@@ -89,7 +91,7 @@ class SubscriptionControllerTest extends TestCase
             'plan_id' => $this->plan->id,
         ]);
 
-        $response = $this->getJson("/api/subscription/{$subscription->id}");
+        $response = $this->getJson("/api/v1/subscriptions/{$subscription->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $subscription->id);
@@ -111,7 +113,7 @@ class SubscriptionControllerTest extends TestCase
             'notes' => 'Updated notes'
         ];
 
-        $response = $this->putJson("/api/subscription/{$subscription->id}", $payload);
+        $response = $this->putJson("/api/v1/subscriptions/{$subscription->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('subscriptions', [
@@ -132,7 +134,7 @@ class SubscriptionControllerTest extends TestCase
             'plan_id' => $this->plan->id,
         ]);
 
-        $response = $this->deleteJson("/api/subscription/delete/{$subscription->id}");
+        $response = $this->deleteJson("/api/v1/subscriptions/{$subscription->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('subscriptions', ['id' => $subscription->id]);

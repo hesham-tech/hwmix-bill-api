@@ -118,9 +118,27 @@ class DashboardController extends Controller
 
         $totalSales = \App\Models\MonthlySalesSummary::where('company_id', $companyId)->sum('total_revenue');
 
-        // حساب السيولة الصافية (Assets vs Liabilities) من الخزن الخاصة بالشركة
+        // حساب السيولة الصافية (Assets vs Liabilities) من الخزن النشطة الخاصة بالشركة والموظفين فقط
         $liquidityStats = DB::table('cash_boxes')
             ->where('company_id', $companyId)
+            ->where('is_active', true)
+            ->where(function ($q) use ($companyId) {
+                $q->whereNull('user_id')
+                  ->orWhereNotExists(function ($sub) use ($companyId) {
+                      $sub->select(DB::raw(1))
+                          ->from('business_relations')
+                          ->whereColumn('business_relations.user_id', 'cash_boxes.user_id')
+                          ->where('business_relations.company_id', $companyId)
+                          ->whereIn('business_relations.relation_type', ['customer', 'supplier'])
+                          ->whereNotExists(function ($nested) use ($companyId) {
+                              $nested->select(DB::raw(1))
+                                     ->from('business_relations as br2')
+                                     ->whereColumn('br2.user_id', 'business_relations.user_id')
+                                     ->where('br2.company_id', $companyId)
+                                     ->where('br2.relation_type', 'employee');
+                          });
+                  });
+            })
             ->selectRaw("
                 SUM(CASE WHEN balance > 0 THEN balance ELSE 0 END) as total_assets,
                 SUM(CASE WHEN balance < 0 THEN balance ELSE 0 END) as total_liabilities,

@@ -117,12 +117,9 @@ class Company extends Model
     }
 
     // العلاقة مع صناديق النقدية
-    public function cashBoxes(): BelongsToMany
+    public function cashBoxes(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this
-            ->belongsToMany(CashBox::class, 'user_company_cash')
-            ->withPivot('user_id')  // إذا كنت بحاجة إلى الوصول إلى user_id
-            ->withTimestamps();  // إذا كنت بحاجة إلى الوصول إلى timestamps
+        return $this->hasMany(CashBox::class);
     }
 
     public function logo()

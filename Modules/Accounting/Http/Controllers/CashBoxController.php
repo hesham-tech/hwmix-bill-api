@@ -68,6 +68,9 @@ class CashBoxController extends Controller
             if (!empty($request->get('account_number'))) {
                 $cashBoxQuery->where('account_number', 'like', '%' . $request->get('account_number') . '%');
             }
+            if ($request->has('is_active')) {
+                $cashBoxQuery->where('is_active', $request->boolean('is_active'));
+            }
             if ($request->boolean('current_user')) {
                 $cashBoxQuery->where('user_id', $authUser->id);
             }

@@ -27,14 +27,26 @@ class CompanyUserObserver
     public function created(CompanyUser $companyUser): void
     {
         try {
-            // إنشاء الخزنة الافتراضية للشركة الجديدة المرتبطة
+            // التحقق من نوع العلاقة في business_relations لتحديد هل المستخدم موظف
+            // الدور محدد في جدول business_relations وليس في company_user
+            $isExternalParty = \Modules\Companies\Models\BusinessRelation::where([
+                'company_id' => $companyUser->company_id,
+                'user_id'    => $companyUser->user_id,
+            ])->whereIn('relation_type', ['customer', 'supplier'])
+              ->exists();
+
+            if ($isExternalParty) {
+                // العميل أو المورد: لا خزنة نقدية — ذممهم في stakeholder_financial_balances
+                return;
+            }
+
+            // الموظف أو المستخدم غير المصنّف: ينشئ له خزنة افتراضية
             $this->cashBoxService->createDefaultCashBoxForUserCompany(
                 userId: $companyUser->user_id,
                 companyId: $companyUser->company_id,
-                createdById: $companyUser->created_by 
+                createdById: $companyUser->created_by
             );
         } catch (\Exception $e) {
-            // تسجيل الخطأ إذا فشلت عملية إنشاء الخزنة
             Log::error("فشل إنشاء خزنة للمستخدم {$companyUser->user_id} والشركة {$companyUser->company_id}: " . $e->getMessage());
         }
     }

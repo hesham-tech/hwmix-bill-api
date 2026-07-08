@@ -123,10 +123,10 @@ class InvoiceObserver
         $user = $invoice->customer;
         if ($user) {
             \Illuminate\Support\Facades\DB::afterCommit(function () use ($invoice, $user) {
-                // Force a fresh balance from the database
+                // Force a fresh balance from the new financial architecture
                 $user->unsetRelation('cashBoxes');
                 $invoice->updateQuietly([
-                    'user_balance_after' => $user->balance
+                    'user_balance_after' => $user->getFinancialBalance($invoice->company_id, 'receivable')
                 ]);
             });
         }
