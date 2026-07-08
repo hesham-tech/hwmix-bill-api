@@ -197,8 +197,6 @@ class ProductVariantControllerTest extends TestCase
         $this->actingAs($userA);
 
         $response = $this->getJson("/api/v1/product-variants/{$variantB->id}");
-        if ($response->status() !== 403)
-            dd($response->json());
         $response->assertStatus(403);
     }
 }

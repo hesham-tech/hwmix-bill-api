@@ -6,6 +6,9 @@ use App\Models\Transaction;
 use Modules\Core\Services\DocumentServiceInterface;
 use Modules\Sales\Models\Invoice;
 
+/**
+ * خدمة تسجيل المعاملات المالية وإنشاء قيود الحركة المباشرة.
+ */
 class FinancialTransactionService implements DocumentServiceInterface
 {
     public function create(array $data): Invoice|array

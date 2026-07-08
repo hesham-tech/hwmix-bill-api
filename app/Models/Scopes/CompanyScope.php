@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * سكوب لعزل استعلامات قاعدة البيانات تلقائياً حسب الشركة النشطة للمستخدم.
+ */
 class CompanyScope implements Scope
 {
     /**

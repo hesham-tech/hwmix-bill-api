@@ -22,3 +22,11 @@ error.log
 /.vscode
 /.zed
 /database/seeders/Backup
+
+# ملفات التطوير المؤقتة
+/scratch/
+debug_*.json
+*.sql
+ag_server_key.pem
+remote_key.pem
+server_key.pem

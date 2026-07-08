@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\InvoiceItem;
-use App\Models\Invoice;
-use App\Models\Product;
+use Modules\Sales\Models\InvoiceItem;
+use Modules\Sales\Models\Invoice;
+use Modules\Inventory\Models\Product;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -43,7 +43,7 @@ class InvoiceItemControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson('/api/invoice-items');
+        $response = $this->getJson('/api/v1/invoice-items');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'message']);
@@ -64,7 +64,7 @@ class InvoiceItemControllerTest extends TestCase
             'total' => 500,
         ];
 
-        $response = $this->postJson('/api/invoice-item', $payload);
+        $response = $this->postJson('/api/v1/invoice-item', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('invoice_items', [
@@ -83,7 +83,7 @@ class InvoiceItemControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson("/api/invoice-item/{$item->id}");
+        $response = $this->getJson("/api/v1/invoice-item/{$item->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $item->id);
@@ -104,7 +104,7 @@ class InvoiceItemControllerTest extends TestCase
             'quantity' => 10,
         ];
 
-        $response = $this->putJson("/api/invoice-item/{$item->id}", $payload);
+        $response = $this->putJson("/api/v1/invoice-item/{$item->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('invoice_items', [
@@ -123,7 +123,7 @@ class InvoiceItemControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->deleteJson("/api/invoice-item/delete/{$item->id}");
+        $response = $this->deleteJson("/api/v1/invoice-item/{$item->id}");
 
         $response->assertStatus(200);
         $this->assertSoftDeleted('invoice_items', ['id' => $item->id]);

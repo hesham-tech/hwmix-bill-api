@@ -17,6 +17,7 @@ class SubscriptionControllerTest extends TestCase
     protected User $admin;
     protected Company $company;
     protected Plan $plan;
+    protected \App\Models\Service $service;
 
     protected function setUp(): void
     {
@@ -28,6 +29,7 @@ class SubscriptionControllerTest extends TestCase
         $this->admin->givePermissionTo('admin.super');
 
         $this->plan = Plan::factory()->create(['company_id' => $this->company->id]);
+        $this->service = \App\Models\Service::factory()->create(['company_id' => $this->company->id]);
     }
 
     /** @test */
@@ -40,12 +42,13 @@ class SubscriptionControllerTest extends TestCase
             'company_id' => $this->company->id,
             'created_by' => $this->admin->id,
             'plan_id' => $this->plan->id,
+            'service_id' => $this->service->id,
         ]);
 
         $response = $this->getJson('/api/v1/subscriptions');
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['status', 'data', 'message']);
+             ->assertJsonStructure(['status', 'data', 'message']);
     }
 
     /** @test */
@@ -59,6 +62,7 @@ class SubscriptionControllerTest extends TestCase
 
         $payload = [
             'user_id' => $subscriber->id,
+            'service_id' => $this->service->id,
             'plan_id' => $this->plan->id,
             'service_id' => $service->id,
             'starts_at' => now()->toDateTimeString(),
@@ -89,6 +93,7 @@ class SubscriptionControllerTest extends TestCase
             'company_id' => $this->company->id,
             'created_by' => $this->admin->id,
             'plan_id' => $this->plan->id,
+            'service_id' => $this->service->id,
         ]);
 
         $response = $this->getJson("/api/v1/subscriptions/{$subscription->id}");
@@ -106,6 +111,7 @@ class SubscriptionControllerTest extends TestCase
             'company_id' => $this->company->id,
             'created_by' => $this->admin->id,
             'plan_id' => $this->plan->id,
+            'service_id' => $this->service->id,
         ]);
 
         $payload = [
@@ -132,6 +138,7 @@ class SubscriptionControllerTest extends TestCase
             'company_id' => $this->company->id,
             'created_by' => $this->admin->id,
             'plan_id' => $this->plan->id,
+            'service_id' => $this->service->id,
         ]);
 
         $response = $this->deleteJson("/api/v1/subscriptions/{$subscription->id}");

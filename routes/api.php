@@ -47,9 +47,6 @@ use App\Http\Controllers\UserTablePreferenceController;
 
 
 
-Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceController::class, 'fixMissingCashBoxes'])->name('emergency.fix.cashboxes');
-
-
 Route::middleware('throttle:auth')->group(function () {
     Route::post('register/customer', [\App\Http\Controllers\Api\Auth\MarketplaceRegisterController::class, 'register']);
     Route::post('register/company', [\App\Http\Controllers\Api\Auth\TenantProvisioningController::class, 'register']);
@@ -64,6 +61,8 @@ Route::post('error-reports', [ErrorReportController::class, 'store']);
 Route::get('media/view/{path}', [ImageController::class, 'serve'])->where('path', '.*')->name('media.serve');
 
 Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:api'])->group(function () {
+    Route::get('/fix-missing-default-cashboxes', [\App\Http\Controllers\MaintenanceController::class, 'fixMissingCashBoxes'])->name('emergency.fix.cashboxes');
+
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('/auth/check', [AuthController::class, 'checkLogin']);
 

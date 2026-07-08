@@ -37,7 +37,7 @@ class RevenueControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson('/api/revenues');
+        $response = $this->getJson('/api/v1/revenues');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'message']);
@@ -58,7 +58,7 @@ class RevenueControllerTest extends TestCase
             'company_id' => $this->company->id,
         ];
 
-        $response = $this->postJson('/api/revenue', $payload);
+        $response = $this->postJson('/api/v1/revenues', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('revenues', [
@@ -77,7 +77,7 @@ class RevenueControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson("/api/revenue/{$revenue->id}");
+        $response = $this->getJson("/api/v1/revenues/{$revenue->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $revenue->id);
@@ -101,7 +101,7 @@ class RevenueControllerTest extends TestCase
             'revenue_date' => now()->toDateString(),
         ];
 
-        $response = $this->putJson("/api/revenue/{$revenue->id}", $payload);
+        $response = $this->putJson("/api/v1/revenues/{$revenue->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('revenues', [
@@ -121,7 +121,7 @@ class RevenueControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->deleteJson("/api/revenue/delete/{$revenue->id}");
+        $response = $this->deleteJson("/api/v1/revenues/{$revenue->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('revenues', ['id' => $revenue->id]);

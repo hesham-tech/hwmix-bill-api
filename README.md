@@ -63,7 +63,18 @@ php artisan db:seed --class=PermissionsSeeder
 
 # 7. تشغيل السيرفر
 php artisan serve
+
+# 8. تشغيل الاختبارات
+php artisan test                          # جميع الاختبارات
+php artisan test --filter=InvoiceController  # اختبار محدد
+php artisan test tests/Feature/           # مجلد محدد
+
+# 9. تشغيل الـ Queue (مطلوب للعمليات الثقيلة)
+php artisan queue:work
 ```
+
+> **حالة الاختبارات الحالية**: 223+ اختبار يعمل بنجاح، يغطي:
+> الفواتير، الأقساط، المدفوعات، الخزائن، الأقسام، السمات، والعلامات التجارية.
 
 **بيانات المدير الافتراضي:**
 - Email: `admin@admin.com`
@@ -84,20 +95,25 @@ hwnix-bill-api/
 │   │   ├── permissions_helpers.php # perm_key() helper
 │   │   └── general_helpers.php
 │   ├── Http/
-│   │   ├── Controllers/  # 44+ controllers
+│   │   ├── Controllers/  # Controllers العامة
 │   │   ├── Middleware/   # Custom middlewares
 │   │   └── Resources/    # API Resources (JSON transformers)
-│   ├── Models/           # 57+ Eloquent models
+│   ├── Models/           # Eloquent models العامة
 │   ├── Observers/        # Model observers
 │   ├── Services/         # Business service classes
 │   └── Traits/           # Reusable traits
+├── Modules/              # ⭐ النظام الموديولار
+│   ├── Inventory/        # المخزون (Products, Categories, Attributes, Brands)
+│   ├── Sales/            # المبيعات (Invoices, Invoice Items)
+│   └── ...               # موديولات مستقبلية
 ├── config/
 │   └── permissions_keys.php  # ⭐ مصدر الحقيقة لجميع الصلاحيات
 ├── database/
 │   ├── migrations/       # جميع migrations
 │   └── seeders/          # Seeders
+├── tests/Feature/        # اختبارات الـ Feature (223+ اختبار)
 └── routes/
-    └── api.php           # جميع API routes
+    └── api.php           # جميع API routes الأساسية
 ```
 
 ---
@@ -707,4 +723,4 @@ POST /api/transactions/transfer
 
 ---
 
-*آخر تحديث: مايو 2026*
+*آخر تحديث: يونيو 2026 — المرحلة 6-7 مكتملة*

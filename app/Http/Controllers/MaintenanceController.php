@@ -15,11 +15,22 @@ use Illuminate\Support\Facades\Log;
  */
 class MaintenanceController extends Controller
 {
+    private function authorizeAdmin(): bool
+    {
+        $user = auth()->user();
+
+        return $user && $user->hasPermissionTo(perm_key('admin.super'));
+    }
+
     /**
      * تصحيح السجلات المفقودة للخزن الافتراضية
      */
     public function fixMissingCashBoxes(): JsonResponse
     {
+        if (!$this->authorizeAdmin()) {
+            return api_forbidden('غير مصرح لك بالوصول إلى أدوات الصيانة الحساسة.');
+        }
+
         $missingCount = 0;
 
         // 1. جلب جميع ارتباطات المستخدمين بالشركات

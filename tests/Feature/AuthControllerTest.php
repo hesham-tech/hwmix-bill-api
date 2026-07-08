@@ -29,7 +29,7 @@ class AuthControllerTest extends TestCase
             'phone' => '0123456789',
         ];
 
-        $response = $this->postJson('/api/register', $payload);
+        $response = $this->postJson('/api/v1/register/customer', $payload);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
@@ -108,5 +108,23 @@ class AuthControllerTest extends TestCase
         $response = $this->getJson('/api/auth/check');
 
         $response->assertStatus(200);
+    }
+
+    public function test_reset_password_with_invalid_otp_returns_422()
+    {
+        $user = User::factory()->create(['email' => 'test-otp@example.com']);
+        
+        $response = $this->postJson('/api/reset-password', [
+            'email' => 'test-otp@example.com',
+            'otp' => '000000',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123'
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJson([
+                'status' => false,
+                'message' => 'لم يتم طلب رمز تحقق لهذا البريد الإلكتروني أو الرمز غير موجود.'
+            ]);
     }
 }

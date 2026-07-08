@@ -8,7 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * خدمة سجل دفتر الأستاذ (FinancialLedgerService) - موديول المحاسبة
+ * خدمة تسجيل وتسوية قيود دفتر الأستاذ والمعاملات المالية العامة.
  */
 class FinancialLedgerService
 {

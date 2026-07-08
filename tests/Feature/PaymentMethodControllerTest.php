@@ -31,7 +31,7 @@ class PaymentMethodControllerTest extends TestCase
         $this->actingAs($this->admin);
         PaymentMethod::factory()->count(3)->create();
 
-        $response = $this->getJson('/api/payment-methods');
+        $response = $this->getJson('/api/v1/payment-methods');
         $response->assertStatus(200)->assertJsonStructure(['status', 'data']);
     }
 
@@ -39,7 +39,7 @@ class PaymentMethodControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        $response = $this->postJson('/api/payment-method', [
+        $response = $this->postJson('/api/v1/payment-methods', [
             'name' => 'Credit Card',
             'code' => 'credit_card',
             'active' => true,
@@ -54,7 +54,7 @@ class PaymentMethodControllerTest extends TestCase
         $this->actingAs($this->admin);
         $method = PaymentMethod::factory()->create();
 
-        $response = $this->getJson("/api/payment-method/{$method->id}");
+        $response = $this->getJson("/api/v1/payment-methods/{$method->id}");
         $response->assertStatus(200)->assertJsonPath('data.id', $method->id);
     }
 
@@ -63,7 +63,7 @@ class PaymentMethodControllerTest extends TestCase
         $this->actingAs($this->admin);
         $method = PaymentMethod::factory()->create();
 
-        $response = $this->putJson("/api/payment-method/{$method->id}", [
+        $response = $this->putJson("/api/v1/payment-methods/{$method->id}", [
             'name' => 'Updated Payment Method'
         ]);
 
@@ -76,7 +76,7 @@ class PaymentMethodControllerTest extends TestCase
         $this->actingAs($this->admin);
         $method = PaymentMethod::factory()->create();
 
-        $response = $this->deleteJson("/api/payment-method/delete/{$method->id}");
+        $response = $this->deleteJson("/api/v1/payment-methods/{$method->id}");
         $response->assertStatus(200);
         $this->assertSoftDeleted('payment_methods', ['id' => $method->id]);
     }

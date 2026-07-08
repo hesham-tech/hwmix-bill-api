@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Brand;
+use Modules\Inventory\Models\Brand;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,7 +31,7 @@ class BrandControllerTest extends TestCase
         $this->actingAs($this->admin);
         Brand::factory()->count(3)->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson('/api/brands');
+        $response = $this->getJson('/api/v1/brands');
         $response->assertStatus(200)->assertJsonStructure(['status', 'data']);
     }
 
@@ -39,7 +39,7 @@ class BrandControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        $response = $this->postJson('/api/brand', [
+        $response = $this->postJson('/api/v1/brands', [
             'name' => 'Samsung',
             'description' => 'Samsung Electronics'
         ]);
@@ -53,7 +53,7 @@ class BrandControllerTest extends TestCase
         $this->actingAs($this->admin);
         $brand = Brand::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->getJson("/api/brand/{$brand->id}");
+        $response = $this->getJson("/api/v1/brands/{$brand->id}");
         $response->assertStatus(200)->assertJsonPath('data.id', $brand->id);
     }
 
@@ -62,7 +62,7 @@ class BrandControllerTest extends TestCase
         $this->actingAs($this->admin);
         $brand = Brand::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->putJson("/api/brand/{$brand->id}", [
+        $response = $this->putJson("/api/v1/brands/{$brand->id}", [
             'name' => 'Updated Brand'
         ]);
 
@@ -75,7 +75,7 @@ class BrandControllerTest extends TestCase
         $this->actingAs($this->admin);
         $brand = Brand::factory()->create(['company_id' => $this->company->id]);
 
-        $response = $this->deleteJson("/api/brand/delete/{$brand->id}");
+        $response = $this->deleteJson("/api/v1/brands/{$brand->id}");
         $response->assertStatus(200);
         // Soft delete not configured - skip assertion
     }

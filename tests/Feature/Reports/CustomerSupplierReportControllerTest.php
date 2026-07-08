@@ -4,7 +4,7 @@ namespace Tests\Feature\Reports;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Invoice;
+use Modules\Sales\Models\Invoice;
 use App\Models\InvoiceType;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

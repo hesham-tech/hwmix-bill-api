@@ -36,7 +36,7 @@ class PlanControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson('/api/plans');
+        $response = $this->getJson('/api/v1/plans');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'message']);
@@ -57,7 +57,7 @@ class PlanControllerTest extends TestCase
             'is_active' => true,
         ];
 
-        $response = $this->postJson('/api/plans', $payload);
+        $response = $this->postJson('/api/v1/plans', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('plans', [
@@ -76,7 +76,7 @@ class PlanControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson("/api/plans/{$plan->id}");
+        $response = $this->getJson("/api/v1/plans/{$plan->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $plan->id);
@@ -97,7 +97,7 @@ class PlanControllerTest extends TestCase
             'price' => 1299.99
         ];
 
-        $response = $this->putJson("/api/plans/{$plan->id}", $payload);
+        $response = $this->putJson("/api/v1/plans/{$plan->id}", $payload);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('plans', [
@@ -117,7 +117,7 @@ class PlanControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->deleteJson("/api/plans/{$plan->id}");
+        $response = $this->deleteJson("/api/v1/plans/{$plan->id}");
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('plans', ['id' => $plan->id]);

@@ -32,8 +32,6 @@ class CompanyControllerTest extends TestCase
         $this->actingAs($this->admin);
 
         Company::factory()->count(3)->create();
-        // dump(Company::pluck('name')->toArray());
-
         $response = $this->getJson('/api/v1/companies'); // Note the route is 'companies' in api.php
 
         $response->assertStatus(200);
@@ -190,7 +188,11 @@ class CompanyControllerTest extends TestCase
 
     public function test_regular_user_cannot_view_all_companies()
     {
-        $user = User::factory()->create(['company_id' => $this->company->id]);
+        $user = User::factory()->create([
+            'company_id' => $this->company->id,
+            'active_company_id' => $this->company->id,
+        ]);
+        setPermissionsTeamId($this->company->id);
         $user->givePermissionTo('companies.view_self');
 
         $this->actingAs($user);

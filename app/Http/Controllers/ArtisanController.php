@@ -16,6 +16,14 @@ use Illuminate\Support\Facades\DB;
  */
 class ArtisanController extends Controller
 {
+    public function health(): JsonResponse
+    {
+        return api_success([
+            'status' => 'ok',
+            'timestamp' => now()->toISOString(),
+        ], 'System health check passed.');
+    }
+
     /**
      * ميثود خاصة للتحقق من أن المستخدم هو مدير النظام.
      */

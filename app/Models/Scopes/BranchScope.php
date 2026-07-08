@@ -21,7 +21,9 @@ class BranchScope implements Scope
         $activeBranchId = config('app.active_branch_id');
 
         if ($activeBranchId) {
-            $builder->where($model->getTable() . '.branch_id', $activeBranchId);
+            if ($activeBranchId !== 'all') {
+                $builder->where($model->getTable() . '.branch_id', $activeBranchId);
+            }
             return;
         }
 

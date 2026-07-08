@@ -31,19 +31,23 @@ class InvoiceTypeControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        InvoiceType::factory()->count(3)->create([
+        $types = InvoiceType::factory()->count(3)->create([
             'company_id' => $this->company->id,
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson('/api/invoice-types');
+        foreach ($types as $type) {
+            $this->company->invoiceTypes()->attach($type->id, ['is_active' => true]);
+        }
+
+        $response = $this->getJson('/api/v1/invoice-types');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['status', 'data', 'message']);
     }
 
     /** @test */
-    public function test_can_create_invoice_type()
+    public function test_cannot_create_invoice_type()
     {
         $this->actingAs($this->admin);
 
@@ -53,10 +57,10 @@ class InvoiceTypeControllerTest extends TestCase
             'context' => 'sale',
         ];
 
-        $response = $this->postJson('/api/invoice-type', $payload);
+        $response = $this->postJson('/api/v1/invoice-types', $payload);
 
-        $response->assertStatus(201);
-        $this->assertDatabaseHas('invoice_types', [
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('invoice_types', [
             'code' => 'SALE_001'
         ]);
     }
@@ -71,7 +75,9 @@ class InvoiceTypeControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->getJson("/api/invoice-type/{$type->id}");
+        $this->company->invoiceTypes()->attach($type->id, ['is_active' => true]);
+
+        $response = $this->getJson("/api/v1/invoice-types/{$type->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $type->id);
@@ -88,21 +94,24 @@ class InvoiceTypeControllerTest extends TestCase
             'name' => 'Old Name',
         ]);
 
+        $this->company->invoiceTypes()->attach($type->id, ['is_active' => true]);
+
         $payload = [
-            'name' => 'New Name',
+            'is_active' => false,
         ];
 
-        $response = $this->putJson("/api/invoice-type/{$type->id}", $payload);
+        $response = $this->putJson("/api/v1/invoice-types/{$type->id}", $payload);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('invoice_types', [
-            'id' => $type->id,
-            'name' => 'New Name'
+        $this->assertDatabaseHas('company_invoice_type', [
+            'invoice_type_id' => $type->id,
+            'company_id' => $this->company->id,
+            'is_active' => false,
         ]);
     }
 
     /** @test */
-    public function test_can_delete_invoice_type()
+    public function test_cannot_delete_invoice_type()
     {
         $this->actingAs($this->admin);
 
@@ -111,9 +120,9 @@ class InvoiceTypeControllerTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
-        $response = $this->deleteJson("/api/invoice-type/delete/{$type->id}");
+        $response = $this->deleteJson("/api/v1/invoice-types/{$type->id}");
 
-        $response->assertStatus(200);
-        $this->assertDatabaseMissing('invoice_types', ['id' => $type->id]);
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('invoice_types', ['id' => $type->id]);
     }
 }

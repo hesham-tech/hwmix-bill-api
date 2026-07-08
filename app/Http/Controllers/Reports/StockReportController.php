@@ -38,7 +38,7 @@ class StockReportController extends BaseReportController
                 'stocks.warehouse_id',
                 DB::raw("SUM(CASE WHEN invoice_types.code = 'purchase' THEN invoice_items.quantity ELSE 0 END) as total_in"),
                 DB::raw("SUM(CASE WHEN invoice_types.code = 'sale' THEN invoice_items.quantity ELSE 0 END) as total_out"),
-                DB::raw("ANY_VALUE(stocks.quantity) as current_stock"), // Or use a separate subquery for precision if status matches
+                DB::raw("MAX(stocks.quantity) as current_stock"), // Or use a separate subquery for precision if status matches
             ])
             ->where('stocks.company_id', auth()->user()->active_company_id)
             ->where('products.product_type', 'physical')

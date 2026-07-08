@@ -117,8 +117,6 @@ class InstallmentPaymentDetailController extends Controller
             DB::beginTransaction();
             try {
                 $validatedData = $request->validated();
-                $validatedData['created_by'] = $authUser->id;
-                $validatedData['company_id'] = $companyId; // ربط بتفاصيل الشركة الحالية
 
                 $detail = InstallmentPaymentDetail::create($validatedData);
                 $detail->load($this->relations);
@@ -220,7 +218,6 @@ class InstallmentPaymentDetailController extends Controller
             DB::beginTransaction();
             try {
                 $validatedData = $request->validated();
-                $validatedData['updated_by'] = $authUser->id;
 
                 $installmentPaymentDetail->update($validatedData);
                 $installmentPaymentDetail->load($this->relations);

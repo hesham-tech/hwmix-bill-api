@@ -26,7 +26,7 @@ class InstallmentPaymentResource extends JsonResource
             'plan' => new \App\Http\Resources\InstallmentPlan\InstallmentPlanBasicResource($this->whenLoaded('plan')),
             'customer' => new \App\Http\Resources\User\UserBasicResource(
                 $this->relationLoaded('plan')
-                ? ($this->plan->customer ?? optional($this->plan->invoice)->customer)
+                ? ($this->plan?->customer ?? $this->plan?->invoice?->customer)
                 : null
             ),
             'creator' => new \App\Http\Resources\User\UserBasicResource($this->whenLoaded('creator')),

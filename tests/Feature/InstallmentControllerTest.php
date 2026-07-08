@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Invoice;
+use Modules\Sales\Models\Invoice;
 use App\Models\InvoiceType;
 use App\Models\Installment;
 use App\Models\InstallmentPlan;
@@ -56,7 +56,7 @@ class InstallmentControllerTest extends TestCase
             'invoice_id' => $this->invoice->id,
         ]);
 
-        $response = $this->getJson('/api/installments');
+        $response = $this->getJson('/api/v1/installments');
         $response->assertStatus(200)->assertJsonStructure(['status', 'data']);
     }
 
@@ -74,7 +74,7 @@ class InstallmentControllerTest extends TestCase
             'status' => 'pending',
         ];
 
-        $response = $this->postJson('/api/installment', $payload);
+        $response = $this->postJson('/api/v1/installments', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseCount('installments', 1);
@@ -90,7 +90,7 @@ class InstallmentControllerTest extends TestCase
             'invoice_id' => $this->invoice->id,
         ]);
 
-        $response = $this->getJson("/api/installment/{$installment->id}");
+        $response = $this->getJson("/api/v1/installments/{$installment->id}");
         $response->assertStatus(200);
         $response->assertStatus(200)->assertJsonPath('data.id', $installment->id);
     }
@@ -104,7 +104,7 @@ class InstallmentControllerTest extends TestCase
             'invoice_id' => $this->invoice->id,
         ]);
 
-        $response = $this->putJson("/api/installment/{$installment->id}", [
+        $response = $this->putJson("/api/v1/installments/{$installment->id}", [
             'amount' => 1500,
         ]);
 
@@ -121,7 +121,7 @@ class InstallmentControllerTest extends TestCase
             'invoice_id' => $this->invoice->id,
         ]);
 
-        $response = $this->deleteJson("/api/installment/{$installment->id}");
+        $response = $this->deleteJson("/api/v1/installments/{$installment->id}");
         $response->assertStatus(200);
         $this->assertSoftDeleted('installments', ['id' => $installment->id]);
     }

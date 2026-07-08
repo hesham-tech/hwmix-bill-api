@@ -4,7 +4,7 @@ namespace Tests\Feature\Reports;
 
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Invoice;
+use Modules\Sales\Models\Invoice;
 use App\Models\InvoiceType;
 use Database\Seeders\AddPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,6 +49,22 @@ class ProfitLossReportControllerTest extends TestCase
             'status' => 'confirmed',
             'net_amount' => 500
         ]);
+
+        $category = \App\Models\ExpenseCategory::create([
+            'name' => 'General',
+            'company_id' => $this->company->id,
+            'created_by' => $this->admin->id,
+        ]);
+
+        \App\Models\Expense::create([
+            'expense_category_id' => $category->id,
+            'amount' => 500,
+            'expense_date' => now()->toDateString(),
+            'company_id' => $this->company->id,
+            'created_by' => $this->admin->id,
+        ]);
+
+        \App\Jobs\UpdateDailySalesSummary::dispatchSync(now()->toDateString(), $this->company->id);
 
         $response = $this->getJson('/api/reports/profit-loss');
 

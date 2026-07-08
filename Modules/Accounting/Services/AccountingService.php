@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * خدمة المحاسبة (AccountingService) - موديول المحاسبة
- * تتضمن منطق العزل المالي للعميل النقدي الافتراضي (cash_customer) بحيث لا تُسجَّل
- * أي ذمم أو حركات رصيد باسمه مع الحفاظ الكامل على تدفق الخزينة للمؤسسة.
+ * خدمة إدارة القيود وتدفق الأثر المالي للفواتير والدفعات والخزائن.
  */
 class AccountingService
 {
