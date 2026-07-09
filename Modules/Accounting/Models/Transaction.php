@@ -45,6 +45,7 @@ class Transaction extends Model
         'description',
         'original_transaction_id',
         'branch_id',
+        'financial_operation_id',
     ];
 
     protected static function booted()

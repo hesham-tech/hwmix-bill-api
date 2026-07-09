@@ -90,9 +90,14 @@ class SubscriptionRenewalService
 
         $description = "تجديد اشتراك: " . ($payment->subscription->service->name ?? 'خدمة');
 
-        $user->deposit((float) $payment->amount, $payment->cash_box_id, $description, true, [
-            'created_by' => $payment->created_by,
+        $engine = app(\App\Contracts\FinancialEngineInterface::class);
+        $operationId = (string) \Illuminate\Support\Str::uuid();
+
+        $engine->receiveMoney((float) $payment->amount, $payment->cash_box_id, $operationId, [
             'company_id' => $payment->company_id,
+            'user_id' => $payment->user_id,
+            'created_by' => $payment->created_by,
+            'description' => $description,
         ]);
     }
 }

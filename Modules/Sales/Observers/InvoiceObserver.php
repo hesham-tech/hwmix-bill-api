@@ -82,6 +82,14 @@ class InvoiceObserver
         }
     }
 
+    public function deleting(Invoice $invoice): void
+    {
+        // منع الحذف المادي أو الناعم المباشر للفاتورة بعد تأكيدها لضمان نزاهة الحسابات المالية
+        if (in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])) {
+            throw new \Exception('لا يمكن حذف الفاتورة مباشرة من قاعدة البيانات بعد تأكيدها أو دفعها. يجب إلغاء الفاتورة أولاً لعكس الأثر المالي برمجياً ومحاسبياً.');
+        }
+    }
+
     public function deleted(Invoice $invoice): void
     {
         $context = $invoice->invoiceType?->context;

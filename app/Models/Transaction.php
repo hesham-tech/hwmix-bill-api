@@ -38,6 +38,7 @@ class Transaction extends Model
         'description',
         'original_transaction_id',
         'branch_id',
+        'financial_operation_id',
     ];
 
     protected static function booted()
@@ -46,6 +47,30 @@ class Transaction extends Model
             $transaction->company_id = $transaction->company_id ?? Auth::user()?->active_company_id;
             $transaction->branch_id = $transaction->branch_id ?? config('app.active_branch_id') ?? Auth::user()?->branch_id;
             $transaction->is_transfer = $transaction->is_transfer ?? in_array($transaction->type, ['transfer_out', 'transfer_in', 'reverse_transfer', 'reverse_transfer_out', 'reverse_transfer_in']);
+
+            // ربط معرفات المصدر للفاتورة أو القسط تلقائياً من خلال العملية المالية
+            if ($transaction->financial_operation_id && null === $transaction->source_invoice_id && null === $transaction->source_installment_id) {
+                $operation = \App\Models\FinancialOperation::withoutGlobalScopes()->find($transaction->financial_operation_id);
+                if ($operation) {
+                    if (in_array($operation->source_type, ['Modules\Sales\Models\Invoice', 'App\Models\Invoice'])) {
+                        $transaction->source_invoice_id = $operation->source_id;
+                    } elseif (in_array($operation->source_type, ['App\Models\Installment', 'Modules\Sales\Models\Installment'])) {
+                        $transaction->source_installment_id = $operation->source_id;
+                    } elseif ($operation->source_type === 'App\Models\InvoicePayment') {
+                        $payment = \App\Models\InvoicePayment::withoutGlobalScopes()->find($operation->source_id);
+                        if ($payment) {
+                            $transaction->source_invoice_id = $payment->invoice_id;
+                        }
+                    }
+
+                    if (empty($transaction->source_invoice_id) && isset($operation->metadata['source_invoice_id'])) {
+                        $transaction->source_invoice_id = $operation->metadata['source_invoice_id'];
+                    }
+                    if (empty($transaction->source_invoice_id) && isset($operation->metadata['invoice_id'])) {
+                        $transaction->source_invoice_id = $operation->metadata['invoice_id'];
+                    }
+                }
+            }
         });
     }
 

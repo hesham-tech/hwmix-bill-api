@@ -268,14 +268,21 @@ class InstallmentPaymentController extends Controller
                 return api_error('لم يتم العثور على العميل المرتبط بهذه الخطة.');
             }
 
+            $engine = app(\App\Contracts\FinancialEngineInterface::class);
+            $operationId = (string) \Illuminate\Support\Str::uuid();
+
             // إيداع في رصيد العميل (تقليل مديونية أو رصيد دائن)
-            $customer->deposit($validated['amount'], null, $validated['notes'] ?? 'إيداع فائض تحصيل أقساط');
+            $engine->reduceReceivable($customer, (float)$validated['amount'], $operationId, [
+                'company_id' => $plan->company_id,
+                'description' => $validated['notes'] ?? 'إيداع فائض تحصيل أقساط',
+                'allow_negative' => true,
+            ]);
 
             DB::commit();
             return api_success([], 'تم إضافة المبلغ إلى رصيد العميل بنجاح.');
         } catch (Throwable $e) {
             DB::rollBack();
-            return api_exception($e);
+            return api_error($e->getMessage() ?: 'فشل تحويل الفائض لرصيد العميل.', [], 500);
         }
     }
 }

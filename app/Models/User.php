@@ -9,7 +9,6 @@ use App\Traits\Filterable;
 use App\Traits\LogsActivity;
 use App\Services\CashBoxService;
 use Laravel\Sanctum\HasApiTokens;
-use App\Traits\ManagesBalance;
 use App\Traits\HasBusinessCapabilities;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -49,7 +48,7 @@ use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, Translatable, HasApiTokens, Filterable, Scopes, LogsActivity, HasImages, ManagesBalance, \App\Traits\FilterableByCompany, \App\Traits\SmartSearch, HasBusinessCapabilities;
+    use HasFactory, Notifiable, Translatable, HasApiTokens, Filterable, Scopes, LogsActivity, HasImages, \App\Traits\FilterableByCompany, \App\Traits\SmartSearch, HasBusinessCapabilities;
     use HasRoles, HasPermissions {
         HasPermissions::hasPermissionTo insteadof HasRoles;
         HasPermissions::hasPermissionTo as traitHasPermissionTo;

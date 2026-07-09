@@ -152,22 +152,25 @@ class TransactionController extends Controller
                 }
             }
 
+            $engine = app(\App\Contracts\FinancialEngineInterface::class);
+            $operationId = (string) \Illuminate\Support\Str::uuid();
+            $description = $validated['description'] ?? "تحويل من {$sourceUser->name} إلى {$targetUser->name}";
+
             DB::beginTransaction();
             try {
-                // تنفيذ التحويل باسم المستخدم المصدر وليس بالضرورة المستخدم الموثق
-                $sourceUser->transferTo(
-                    $targetUser,
-                    $validated['amount'],
+                $engine->transferCash(
                     $fromCashBoxId,
                     $toCashBoxId,
-                    $validated['description'] ?? "تحويل من {$sourceUser->name} إلى {$targetUser->name}"
+                    (float)$validated['amount'],
+                    $operationId,
+                    $description
                 );
 
                 DB::commit();
                 return api_success([], 'تم التحويل بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('فشل التحويل. يرجى المحاولة مرة أخرى.', [], 500);
+                return api_error($e->getMessage() ?: 'فشل التحويل. يرجى المحاولة مرة أخرى.', [], 500);
             }
         } catch (ValidationException $e) {
             return api_error('فشل التحقق من صحة البيانات أثناء تحويل الأموال.', $e->errors(), 422);
@@ -304,19 +307,28 @@ class TransactionController extends Controller
                 }
             }
 
+            $engine = app(\App\Contracts\FinancialEngineInterface::class);
+            $operationId = (string) \Illuminate\Support\Str::uuid();
+            $description = $validated['description'] ?? 'إيداع نقدي خارجي';
+
             DB::beginTransaction();
             try {
-                $targetUser->deposit(
-                    $validated['amount'],
+                $engine->receiveMoney(
+                    (float)$validated['amount'],
                     $cashBoxId,
-                    $validated['description'] ?? 'إيداع نقدي خارجي'
+                    $operationId,
+                    [
+                        'company_id' => $companyId,
+                        'user_id' => $targetUserId,
+                        'description' => $description,
+                    ]
                 );
 
                 DB::commit();
                 return api_success([], 'تم الإيداع بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('فشل الإيداع. يرجى المحاولة مرة أخرى.', [], 500);
+                return api_error($e->getMessage() ?: 'فشل الإيداع. يرجى المحاولة مرة أخرى.', [], 500);
             }
         } catch (ValidationException $e) {
             return api_error('فشل التحقق من صحة البيانات أثناء الإيداع.', $e->errors(), 422);
@@ -390,29 +402,29 @@ class TransactionController extends Controller
                 }
             }
 
+            $engine = app(\App\Contracts\FinancialEngineInterface::class);
+            $operationId = (string) \Illuminate\Support\Str::uuid();
+            $description = $validated['description'] ?? 'سحب نقدي خارجي';
+
             DB::beginTransaction();
             try {
-                // تحقق من الرصيد في حالة الصناديق النقدية الحقيقية فقط (عهدة الموظف)
-                // أما أرصدة العملاء والموردين فيمكن أن تكون سالبة (ديون) أو موجبة (أمانات)
-                if ($cashBox->user_id === $targetUserId && $targetUser->isStaffOrAdmin()) {
-                    $currentBalance = $targetUser->balanceBox($cashBoxId);
-                    if ($currentBalance < $validated['amount']) {
-                        DB::rollBack();
-                        return api_error('الرصيد غير كافٍ في عهدة الموظف.', [], 422);
-                    }
-                }
-
-                $targetUser->withdraw(
-                    $validated['amount'],
+                $engine->payMoney(
+                    (float)$validated['amount'],
                     $cashBoxId,
-                    $validated['description'] ?? 'سحب نقدي خارجي'
+                    $operationId,
+                    [
+                        'company_id' => $companyId,
+                        'user_id' => $targetUserId,
+                        'description' => $description,
+                    ]
                 );
 
                 DB::commit();
                 return api_success([], 'تم السحب بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('فشل السحب. يرجى المحاولة مرة أخرى.', [], 500);
+                $code = (str_contains($e->getMessage(), 'الرصيد غير كاف') || str_contains($e->getMessage(), 'insufficient')) ? 422 : 500;
+                return api_error($e->getMessage() ?: 'فشل السحب. يرجى المحاولة مرة أخرى.', [], $code);
             }
         } catch (ValidationException $e) {
             return api_error('فشل التحقق من صحة البيانات أثناء السحب.', $e->errors(), 422);

@@ -119,31 +119,34 @@ class RegisterInternalUserAction
                 }
             }
 
+            $engine = app(\App\Services\FinancialEngine::class);
+            $opService = app(\App\Services\FinancialOperationService::class);
+
             foreach ($startingBalances as $relType => $amount) {
                 if ($amount == 0) continue;
 
-                // تحديث أو إنشاء سجل رصيد الطرف المالي
-                $balModel = \Modules\Companies\Models\StakeholderFinancialBalance::firstOrCreate([
+                $operationId = (string) \Illuminate\Support\Str::uuid();
+                $opService->createOperation([
+                    'id' => $operationId,
                     'company_id' => $companyId,
-                    'user_id' => $user->id,
-                    'relation_type' => $relType,
-                ]);
-
-                $balModel->balance = (float)$amount;
-                $balModel->save();
-
-                // تسجيل قيد افتتاحي دفتري (غير نقدي)
-                \App\Models\Transaction::create([
-                    'user_id' => $user->id,
-                    'cashbox_id' => null, // حركة ذمم دفترية
-                    'company_id' => $companyId,
-                    'type' => 'deposit',
+                    'type' => 'opening_balance',
                     'amount' => (float)$amount,
-                    'balance_before' => 0.00,
-                    'balance_after' => (float)$amount,
-                    'created_by' => $creatorUser->id,
-                    'description' => 'رصيد افتتاحي للنظام - ' . ($relType === 'receivable' ? 'ذمة مدينة عميل' : 'ذمة دائنة مورد'),
+                    'source_type' => get_class($user),
+                    'source_id' => $user->id,
+                    'metadata' => ['relation_type' => $relType],
                 ]);
+
+                if ($relType === 'receivable') {
+                    $engine->createReceivable($user, (float)$amount, $operationId, [
+                        'company_id' => $companyId,
+                        'description' => 'رصيد افتتاحي للنظام - ذمة مدينة عميل',
+                    ]);
+                } else if ($relType === 'payable') {
+                    $engine->createPayable($user, (float)$amount, $operationId, [
+                        'company_id' => $companyId,
+                        'description' => 'رصيد افتتاحي للنظام - ذمة دائنة مورد',
+                    ]);
+                }
             }
 
             // 5. مزامنة الفروع وتحديد الفرع المستهدف للخزنة
@@ -199,8 +202,20 @@ class RegisterInternalUserAction
                     ->where('company_id', $companyId)
                     ->first();
                 if ($defaultBox) {
-                    $defaultBox->balance = (float)$data['balance'];
-                    $defaultBox->save();
+                    $operationId = (string) \Illuminate\Support\Str::uuid();
+                    $opService->createOperation([
+                        'id' => $operationId,
+                        'company_id' => $companyId,
+                        'type' => 'opening_balance',
+                        'amount' => (float)$data['balance'],
+                        'source_type' => get_class($defaultBox),
+                        'source_id' => $defaultBox->id,
+                        'metadata' => [],
+                    ]);
+                    $engine->receiveMoney((float)$data['balance'], $defaultBox->id, $operationId, [
+                        'company_id' => $companyId,
+                        'description' => 'رصيد افتتاحي للخزينة عند الإنشاء للموظف',
+                    ]);
                 }
             }
 

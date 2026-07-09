@@ -17,7 +17,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(
+            \App\Contracts\FinancialEngineInterface::class,
+            \App\Services\FinancialEngine::class
+        );
     }
 
     /**

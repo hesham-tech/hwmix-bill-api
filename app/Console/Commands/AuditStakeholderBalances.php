@@ -115,10 +115,10 @@ class AuditStakeholderBalances extends Command
                         }
                     } elseif ($bal->relation_type === 'payable') {
                         if ($tx->cashbox_id === null) {
-                            if ($tx->type === 'withdraw') {
+                            if ($tx->type === 'deposit') {
                                 $calculated += (float)$tx->amount; // إنشاء التزام
-                            } elseif ($tx->type === 'deposit') {
-                                $calculated -= (float)$tx->amount; // إلغاء التزام
+                            } elseif ($tx->type === 'withdraw') {
+                                $calculated -= (float)$tx->amount; // إلغاء/سداد التزام
                             }
                         } else {
                             if ($tx->type === 'withdraw') {

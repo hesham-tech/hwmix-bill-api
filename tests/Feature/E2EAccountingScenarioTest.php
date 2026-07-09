@@ -123,7 +123,7 @@ class E2EAccountingScenarioTest extends TestCase
             'company_id' => $this->company->id,
             'branch_id' => $this->branch->id,
             'cash_box_type_id' => $this->cashBoxType->id,
-            'balance' => 0,
+            'balance' => 10000,
             'is_default' => true,
             'created_by' => $this->staff->id,
         ]);
@@ -188,8 +188,8 @@ class E2EAccountingScenarioTest extends TestCase
         // التحقق من الأرصدة
         // رصيد المورد التراكمي (ذمة دائنة) = 3000
         $this->assertEquals(3000, $this->supplier->fresh()->getFinancialBalance($this->company->id, 'payable'));
-        // رصيد خزنة الموظف = -2000
-        $this->assertEquals(-2000, $this->staffCashBox->fresh()->balance);
+        // رصيد خزنة الموظف = 10000 - 2000 = 8000
+        $this->assertEquals(8000, $this->staffCashBox->fresh()->balance);
 
         // === خطوة 2: فاتورة مبيعات للعميل بقيمة 3000 مع قبض 1000 ===
         $saleInvoice = Invoice::create([
@@ -214,8 +214,8 @@ class E2EAccountingScenarioTest extends TestCase
         // التحقق من الأرصدة
         // رصيد العميل التراكمي (ذمة مدينة) = 2000
         $this->assertEquals(2000, $this->customer->fresh()->getFinancialBalance($this->company->id, 'receivable'));
-        // رصيد خزنة الموظف = -2000 + 1000 = -1000
-        $this->assertEquals(-1000, $this->staffCashBox->fresh()->balance);
+        // رصيد خزنة الموظف = 8000 + 1000 = 9000
+        $this->assertEquals(9000, $this->staffCashBox->fresh()->balance);
 
         // === خطوة 3: تحصيل دفعة إضافية من العميل بقيمة 500 ===
         $this->accountingService->collectPayment($this->staff, $this->customer, 500, [
@@ -224,8 +224,8 @@ class E2EAccountingScenarioTest extends TestCase
 
         // رصيد العميل التراكمي يصبح 1500 (2000 - 500)
         $this->assertEquals(1500, $this->customer->fresh()->getFinancialBalance($this->company->id, 'receivable'));
-        // رصيد خزنة الموظف يصبح -500 (-1000 + 500)
-        $this->assertEquals(-500, $this->staffCashBox->fresh()->balance);
+        // رصيد خزنة الموظف يصبح 9500 (9000 + 500)
+        $this->assertEquals(9500, $this->staffCashBox->fresh()->balance);
 
         // === خطوة 4: إلغاء فاتورة المبيعات بالكامل وعكس أثر النقدية والدين ===
         $saleInvoice->status = 'canceled';
@@ -237,8 +237,8 @@ class E2EAccountingScenarioTest extends TestCase
 
         // رصيد العميل بعد الإلغاء يعود ليكون -500 (لأنه تم تحصيل 500 بدون مديونية فاتورة قائمة)
         $this->assertEquals(-500, $this->customer->fresh()->getFinancialBalance($this->company->id, 'receivable'));
-        // رصيد خزنة الموظف يصبح -1500 (-500 - 1000 مستردة)
-        $this->assertEquals(-1500, $this->staffCashBox->fresh()->balance);
+        // رصيد خزنة الموظف يصبح 8500 (9500 - 1000 مستردة)
+        $this->assertEquals(8500, $this->staffCashBox->fresh()->balance);
 
         // === خطوة 5: تشغيل أداة التدقيق المالي ومراقبة السلامة العامة للبيانات ===
         $this->assertEquals(0, \Illuminate\Support\Facades\Artisan::call('financial:audit-balances'));

@@ -112,13 +112,21 @@ class UserController extends Controller
                             $descendantUserIds = $authUser->getDescendantUserIds();
                             $query->whereIn('user_id', $descendantUserIds);
                         } else {
-                            return api_forbidden('ليس لديك صلاحية لعرض المستخدمين.');
+                            $hasCashBoxPermission = $authUser->hasPermissionTo(perm_key('cash_boxes.create')) ||
+                                                    $authUser->hasPermissionTo(perm_key('cash_boxes.update')) ||
+                                                    $authUser->hasPermissionTo(perm_key('cash_boxes.update_all'));
+
+                            if (!$hasCashBoxPermission) {
+                                return api_forbidden('ليس لديك صلاحية لعرض المستخدمين.');
+                            }
                         }
                     }
                 }
 
-                // استبعاد المستخدم الحالي من القائمة الإدارية
-                $query->where('user_id', '!=', $authUser->id);
+                // استبعاد المستخدم الحالي من القائمة الإدارية (إلا إذا تم طلب إدراجه صراحة)
+                if (!$request->boolean('include_self')) {
+                    $query->where('user_id', '!=', $authUser->id);
+                }
 
                 // استبعاد جميع المستخدمين من النوع نقدي (العملاء النقديين) عند عدم البحث
                 if (!$request->filled('search')) {
@@ -521,21 +529,31 @@ class UserController extends Controller
                             $difference = $newBalance - $currentBalance;
 
                             if ($difference !== 0) {
-                                $defaultBox->balance = $newBalance;
-                                $defaultBox->save();
-
-                                // تسجيل حركة الخزنة
-                                \App\Models\Transaction::create([
-                                    'user_id' => $user->id,
-                                    'cashbox_id' => $defaultBox->id,
+                                $operationId = (string) \Illuminate\Support\Str::uuid();
+                                app(\App\Services\FinancialOperationService::class)->createOperation([
+                                    'id' => $operationId,
                                     'company_id' => $activeCompanyId,
-                                    'type' => $difference > 0 ? 'deposit' : 'withdraw',
+                                    'type' => 'balance_adjustment',
                                     'amount' => abs($difference),
-                                    'balance_before' => $currentBalance,
-                                    'balance_after' => $newBalance,
-                                    'created_by' => $authUser->id,
-                                    'description' => 'تعديل رصيد الخزنة نقداً للموظف',
+                                    'source_type' => get_class($defaultBox),
+                                    'source_id' => $defaultBox->id,
+                                    'metadata' => [],
                                 ]);
+
+                                $engine = app(\App\Services\FinancialEngine::class);
+                                if ($difference > 0) {
+                                    $engine->receiveMoney($difference, $defaultBox->id, $operationId, [
+                                        'company_id' => $activeCompanyId,
+                                        'created_by' => $authUser->id,
+                                        'description' => 'تعديل رصيد الخزنة نقداً للموظف (زيادة)',
+                                    ]);
+                                } else {
+                                    $engine->payMoney(abs($difference), $defaultBox->id, $operationId, [
+                                        'company_id' => $activeCompanyId,
+                                        'created_by' => $authUser->id,
+                                        'description' => 'تعديل رصيد الخزنة نقداً للموظف (عجز/سحب)',
+                                    ]);
+                                }
                             }
                         }
                     }
@@ -586,21 +604,45 @@ class UserController extends Controller
                             $diff = $newVal - $currentVal;
 
                             if ($diff != 0) {
-                                $balModel->balance = $newVal;
-                                $balModel->save();
-
-                                // تسجيل التغيير في الحركات كحركة تعديل رصيد دفتري
-                                \App\Models\Transaction::create([
-                                    'user_id' => $user->id,
-                                    'cashbox_id' => null, // حركة ذمم دفترية
+                                $operationId = (string) \Illuminate\Support\Str::uuid();
+                                app(\App\Services\FinancialOperationService::class)->createOperation([
+                                    'id' => $operationId,
                                     'company_id' => $activeCompanyId,
-                                    'type' => $diff > 0 ? 'deposit' : 'withdraw',
-                                    'amount' => $diff,
-                                    'balance_before' => $currentVal,
-                                    'balance_after' => $newVal,
-                                    'created_by' => $authUser->id,
-                                    'description' => 'تعديل رصيد افتتاحي - ' . ($relType === 'receivable' ? 'ذمة مدينة عميل' : 'ذمة دائنة مورد'),
+                                    'type' => 'opening_balance',
+                                    'amount' => abs($diff),
+                                    'source_type' => get_class($user),
+                                    'source_id' => $user->id,
+                                    'metadata' => ['relation_type' => $relType],
                                 ]);
+
+                                $engine = app(\App\Services\FinancialEngine::class);
+                                if ($relType === 'receivable') {
+                                    if ($diff > 0) {
+                                        $engine->createReceivable($user, $diff, $operationId, [
+                                            'company_id' => $activeCompanyId,
+                                            'description' => 'تعديل رصيد افتتاحي - ذمة مدينة عميل (زيادة مديونية)',
+                                        ]);
+                                    } else {
+                                        $engine->reduceReceivable($user, abs($diff), $operationId, [
+                                            'company_id' => $activeCompanyId,
+                                            'allow_negative' => true,
+                                            'description' => 'تعديل رصيد افتتاحي - ذمة مدينة عميل (تخفيض مديونية)',
+                                        ]);
+                                    }
+                                } else if ($relType === 'payable') {
+                                    if ($diff > 0) {
+                                        $engine->createPayable($user, $diff, $operationId, [
+                                            'company_id' => $activeCompanyId,
+                                            'description' => 'تعديل رصيد افتتاحي - ذمة دائنة مورد (زيادة التزام)',
+                                        ]);
+                                    } else {
+                                        $engine->reducePayable($user, abs($diff), $operationId, [
+                                            'company_id' => $activeCompanyId,
+                                            'allow_negative' => true,
+                                            'description' => 'تعديل رصيد افتتاحي - ذمة دائنة مورد (تخفيض التزام)',
+                                        ]);
+                                    }
+                                }
                             }
                         }
                     }

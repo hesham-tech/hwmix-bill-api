@@ -26,7 +26,8 @@ class FinancialLedgerService
         float $amount,
         string $type,
         ?string $description = null,
-        ?Carbon $date = null
+        ?Carbon $date = null,
+        ?string $financialOperationId = null
     ): FinancialLedger {
         return FinancialLedger::create([
             'entry_date' => $date ?? now(),
@@ -38,6 +39,7 @@ class FinancialLedgerService
             'account_type' => $accountType,
             'company_id' => $source->company_id ?? Auth::user()->active_company_id,
             'created_by' => Auth::id(),
+            'financial_operation_id' => $financialOperationId,
         ]);
     }
 
@@ -202,5 +204,51 @@ class FinancialLedgerService
             'credit',
             "نقص المخزون (تكلفة المبيعات) - فاتورة رقم: {$invoice->invoice_number}"
         );
+    }
+
+    /**
+     * تسجيل القيود المزدوجة لمعاملات أموال الملاك والشركاء
+     * 
+     * @param Model $tx (OwnerFundTransaction)
+     */
+    public function recordOwnerFundTransaction(Model $tx): void
+    {
+        $amount = (float)$tx->amount;
+        $desc = $tx->description ?? "معاملة أملاك من نوع {$tx->type}";
+
+        switch ($tx->type) {
+            case 'capital_increase':
+                $this->recordEntry($tx, 'asset', $amount, 'debit', "زيادة رأس المال بالنقدية - {$desc}");
+                $this->recordEntry($tx, 'equity', $amount, 'credit', "إثبات مساهمة رأس مال جديدة - {$desc}");
+                break;
+            case 'partner_contribution':
+                $this->recordEntry($tx, 'asset', $amount, 'debit', "مساهمة نقدية من شريك - {$desc}");
+                $this->recordEntry($tx, 'equity', $amount, 'credit', "إثبات مساهمة جارية من الشريك - {$desc}");
+                break;
+            case 'loan_from_owner':
+                $this->recordEntry($tx, 'asset', $amount, 'debit', "استلام نقدية كقرض من المالك - {$desc}");
+                $this->recordEntry($tx, 'liability', $amount, 'credit', "إثبات التزام قرض من المالك - {$desc}");
+                break;
+            case 'loan_to_owner':
+                $this->recordEntry($tx, 'liability', $amount, 'debit', "إثبات ذمة قرض للمالك - {$desc}");
+                $this->recordEntry($tx, 'asset', $amount, 'credit', "صرف نقدية كقرض للمالك - {$desc}");
+                break;
+            case 'advance_from_owner':
+                $this->recordEntry($tx, 'asset', $amount, 'debit', "استلام نقدية كسلفة من المالك - {$desc}");
+                $this->recordEntry($tx, 'liability', $amount, 'credit', "إثبات التزام سلفة مستحقة للمالك - {$desc}");
+                break;
+            case 'advance_to_partner':
+                $this->recordEntry($tx, 'liability', $amount, 'debit', "إثبات ذمة سلفة للشريك - {$desc}");
+                $this->recordEntry($tx, 'asset', $amount, 'credit', "صرف سلفة نقدية للشريك - {$desc}");
+                break;
+            case 'drawings':
+                $this->recordEntry($tx, 'equity', $amount, 'debit', "إثبات مسحوبات نقدية للمالك - {$desc}");
+                $this->recordEntry($tx, 'asset', $amount, 'credit', "صرف مسحوبات المالك من الخزينة - {$desc}");
+                break;
+            case 'profit_distribution':
+                $this->recordEntry($tx, 'equity', $amount, 'debit', "توزيع أرباح وتخفيض الأرباح المرحلة - {$desc}");
+                $this->recordEntry($tx, 'asset', $amount, 'credit', "صرف أرباح نقدية للملاك - {$desc}");
+                break;
+        }
     }
 }

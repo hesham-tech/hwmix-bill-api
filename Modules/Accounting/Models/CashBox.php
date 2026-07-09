@@ -13,6 +13,7 @@ use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 #[ScopedBy([CompanyScope::class])]
@@ -84,6 +85,7 @@ class CashBox extends Model
         'branch_id',
         'description',
         'account_number',
+        'access_type',
     ];
 
     /**
@@ -109,6 +111,16 @@ class CashBox extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * المستخدمون المصرح لهم بالوصول إلى الخزنة المشتركة
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'cash_box_user', 'cash_box_id', 'user_id')
+            ->withPivot('created_by')
+            ->withTimestamps();
+    }
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
@@ -119,3 +131,4 @@ class CashBox extends Model
         return "الصندوق ({$this->name})";
     }
 }
+

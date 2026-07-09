@@ -155,11 +155,20 @@ class InstallmentService
                 $totalReversedAmount += $paidAmount;
             }
 
-            // حذف سجل الدفع وتفاصيله
-            $payment->details->each->delete();
-            Log::info('InstallmentService: تم حذف تفاصيل الدفع المرتبطة.', ['payment_id' => $payment->id]);
-            $payment->delete();
-            Log::info('InstallmentService: تم حذف سجل الدفع الرئيسي.', ['payment_id' => $payment->id]);
+            // تحديث تفاصيل الدفع لتكون صفرية بدلاً من حذفها (حفظ مسار التدقيق المالي Audit Trail)
+            $payment->details->each(function ($detail) {
+                $detail->update([
+                    'amount_paid' => 0.00
+                ]);
+            });
+            Log::info('InstallmentService: تم تصفير مبالغ تفاصيل الدفع المرتبطة وتجميدها للحفاظ على التدقيق المالي.', ['payment_id' => $payment->id]);
+
+            // إلغاء وتصفير سجل الدفع الرئيسي
+            $payment->update([
+                'amount_paid' => 0.00,
+                'notes' => trim(($payment->notes ?? '') . " (تم إلغاء دفعة القسط وتصفيرها محاسبياً نتيجة إلغاء الفاتورة. القيمة الأصلية كانت: {$paidAmount})")
+            ]);
+            Log::info('InstallmentService: تم تصفير وإلغاء سجل الدفع الرئيسي بنجاح.', ['payment_id' => $payment->id]);
         }
 
         // تحديث حالة جميع الأقساط التابعة لخطة الأقساط إلى 'canceled'

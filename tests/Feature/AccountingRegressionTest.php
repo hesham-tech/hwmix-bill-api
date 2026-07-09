@@ -481,7 +481,6 @@ class AccountingRegressionTest extends TestCase
         // Shared cashbox balance should increase by paid_amount (5000 + 400 = 5400)
         $this->assertEquals(5400, $sharedBox->fresh()->balance);
 
-        // Transaction should be registered with cashbox_id = sharedBox->id and user_id = newStaff->id
         $tx = Transaction::where('cashbox_id', $sharedBox->id)->latest('id')->first();
         $this->assertNotNull($tx);
         $this->assertEquals(400, $tx->amount);

@@ -51,7 +51,7 @@ class FinancialLedgerService
     public function recordPurchaseInvoice(Model $invoice): void
     {
         $this->recordEntry($invoice, 'asset', $invoice->net_amount, 'debit', "زيادة مخزون - فاتورة شراء رقم: {$invoice->invoice_number}");
-        $this->recordEntry($invoice, 'asset', $invoice->net_amount, 'credit', "نقص نقدية/زيادة التزامات - شراء فاتورة رقم: {$invoice->invoice_number}");
+        $this->recordEntry($invoice, 'liability', $invoice->net_amount, 'credit', "إثبات التزام (زيادة التزامات الموردين) - فاتورة شراء رقم: {$invoice->invoice_number}");
     }
 
     /**
@@ -78,7 +78,7 @@ class FinancialLedgerService
     public function recordPurchaseReturnInvoice(Model $invoice): void
     {
         $this->recordEntry($invoice, 'asset', $invoice->net_amount, 'credit', "نقص مخزون (مرتجع مشتريات) - فاتورة رقم: {$invoice->invoice_number}");
-        $this->recordEntry($invoice, 'asset', $invoice->net_amount, 'debit', "تحصيل نقدية/نقص التزامات - مرتجع شراء رقم: {$invoice->invoice_number}");
+        $this->recordEntry($invoice, 'liability', $invoice->net_amount, 'debit', "تحصيل نقدية/نقص التزامات (مرتجع مشتريات) - فاتورة رقم: {$invoice->invoice_number}");
     }
 
     /**
@@ -92,5 +92,51 @@ class FinancialLedgerService
 
         $this->recordEntry($invoice, 'expense', $totalCost, 'debit', "تكلفة البضاعة المباعة - فاتورة رقم: {$invoice->invoice_number}");
         $this->recordEntry($invoice, 'asset', $totalCost, 'credit', "نقص المخزون (تكلفة المبيعات) - فاتورة رقم: {$invoice->invoice_number}");
+    }
+
+    /**
+     * تسجيل القيود المزدوجة لمعاملات أموال الملاك والشركاء
+     * 
+     * @param Model $tx (OwnerFundTransaction)
+     */
+    public function recordOwnerFundTransaction(Model $tx): void
+    {
+        $amount = (float)$tx->amount;
+        $desc = $tx->description ?? "معاملة أملاك من نوع {$tx->type}";
+
+        switch ($tx->type) {
+            case 'capital_increase':
+                $this->recordEntry($tx, 'asset', $amount, 'debit', "زيادة رأس المال بالنقدية - {$desc}");
+                $this->recordEntry($tx, 'equity', $amount, 'credit', "إثبات مساهمة رأس مال جديدة - {$desc}");
+                break;
+            case 'partner_contribution':
+                $this->recordEntry($tx, 'asset', $amount, 'debit', "مساهمة نقدية من شريك - {$desc}");
+                $this->recordEntry($tx, 'equity', $amount, 'credit', "إثبات مساهمة جارية من الشريك - {$desc}");
+                break;
+            case 'loan_from_owner':
+                $this->recordEntry($tx, 'asset', $amount, 'debit', "استلام نقدية كقرض من المالك - {$desc}");
+                $this->recordEntry($tx, 'liability', $amount, 'credit', "إثبات التزام قرض من المالك - {$desc}");
+                break;
+            case 'loan_to_owner':
+                $this->recordEntry($tx, 'liability', $amount, 'debit', "إثبات ذمة قرض للمالك - {$desc}");
+                $this->recordEntry($tx, 'asset', $amount, 'credit', "صرف نقدية كقرض للمالك - {$desc}");
+                break;
+            case 'advance_from_owner':
+                $this->recordEntry($tx, 'asset', $amount, 'debit', "استلام نقدية كسلفة من المالك - {$desc}");
+                $this->recordEntry($tx, 'liability', $amount, 'credit', "إثبات التزام سلفة مستحقة للمالك - {$desc}");
+                break;
+            case 'advance_to_partner':
+                $this->recordEntry($tx, 'liability', $amount, 'debit', "إثبات ذمة سلفة للشريك - {$desc}");
+                $this->recordEntry($tx, 'asset', $amount, 'credit', "صرف سلفة نقدية للشريك - {$desc}");
+                break;
+            case 'drawings':
+                $this->recordEntry($tx, 'equity', $amount, 'debit', "إثبات مسحوبات نقدية للمالك - {$desc}");
+                $this->recordEntry($tx, 'asset', $amount, 'credit', "صرف مسحوبات المالك من الخزينة - {$desc}");
+                break;
+            case 'profit_distribution':
+                $this->recordEntry($tx, 'equity', $amount, 'debit', "توزيع أرباح وتخفيض الأرباح المرحلة - {$desc}");
+                $this->recordEntry($tx, 'asset', $amount, 'credit', "صرف أرباح نقدية للملاك - {$desc}");
+                break;
+        }
     }
 }

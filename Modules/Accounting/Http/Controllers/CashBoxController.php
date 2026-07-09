@@ -329,56 +329,108 @@ class CashBoxController extends Controller
                 }
             }
 
-            $authUserBalance = $authUser->balanceBox($fromCashBoxId);
-            if ($authUserBalance < $amount) {
-                return api_error('الرصيد غير كافٍ في صندوق النقد المصدر.', [], 422);
-            }
-
+            $engine = app(\App\Contracts\FinancialEngineInterface::class);
+            $operationId = (string) \Illuminate\Support\Str::uuid();
             $description = $validated['description'] ?? ($authUser->id == $toUser->id ? "تحويل داخلي بين {$fromCashBox->name} إلى {$toCashBox->name}" : "تحويل من {$authUser->nickname} إلى {$toUser->nickname}");
 
-            \App\Models\Transaction::$preventObserverLog = true;
             DB::beginTransaction();
             try {
-                Transaction::create([
-                    'user_id' => $authUser->id,
-                    'cashbox_id' => $fromCashBoxId,
-                    'target_user_id' => $toUser->id,
-                    'target_cashbox_id' => $toCashBoxId,
-                    'created_by' => $authUser->id,
-                    'company_id' => $companyId,
-                    'type' => 'transfer_out',
-                    'amount' => $amount,
-                    'balance_before' => $authUserBalance,
-                    'balance_after' => $authUserBalance - $amount,
-                    'description' => $description,
-                ]);
-
-                $toUserBalance = $toUser->balanceBox($toCashBoxId);
-                Transaction::create([
-                    'user_id' => $toUser->id,
-                    'cashbox_id' => $toCashBoxId,
-                    'target_user_id' => $authUser->id,
-                    'target_cashbox_id' => $fromCashBoxId,
-                    'created_by' => $authUser->id,
-                    'company_id' => $companyId,
-                    'type' => 'transfer_in',
-                    'amount' => $amount,
-                    'balance_before' => $toUserBalance,
-                    'balance_after' => $toUserBalance + $amount,
-                    'description' => "استلام من {$authUser->nickname}",
-                ]);
-
-                $authUser->withdraw($amount, $fromCashBoxId, null, false);
-                $toUser->deposit($amount, $toCashBoxId, null, false);
+                $engine->transferCash(
+                    $fromCashBoxId,
+                    $toCashBoxId,
+                    (float)$amount,
+                    $operationId,
+                    $description
+                );
 
                 DB::commit();
                 return api_success([], 'تم تحويل الأموال بنجاح!');
             } catch (Throwable $e) {
                 DB::rollback();
-                return api_exception($e, 500);
-            } finally {
-                \App\Models\Transaction::$preventObserverLog = false;
+                $code = (str_contains($e->getMessage(), 'الرصيد غير كاف') || str_contains($e->getMessage(), 'insufficient')) ? 422 : 500;
+                return api_error($e->getMessage() ?: 'فشل تحويل الأموال.', [], $code);
             }
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    public function summary(Request $request): JsonResponse
+    {
+        try {
+            $authUser = Auth::user();
+            $companyId = $authUser->active_company_id ?? null;
+            if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة.');
+
+            $summaryData = DB::table('cash_boxes')
+                ->join('cash_box_types', 'cash_boxes.cash_box_type_id', '=', 'cash_box_types.id')
+                ->where('cash_boxes.company_id', $companyId)
+                ->where('cash_boxes.is_active', true)
+                ->select(
+                    DB::raw("SUM(CASE WHEN cash_box_types.name = 'نقدي' THEN cash_boxes.balance ELSE 0 END) as total_cash"),
+                    DB::raw("SUM(CASE WHEN cash_box_types.name = 'حساب بنكي' THEN cash_boxes.balance ELSE 0 END) as total_bank"),
+                    DB::raw("SUM(CASE WHEN cash_box_types.name NOT IN ('نقدي', 'حساب بنكي') THEN cash_boxes.balance ELSE 0 END) as total_wallets"),
+                    DB::raw("SUM(cash_boxes.balance) as total_all")
+                )
+                ->first();
+
+            return api_success([
+                'total_cash' => (float)($summaryData->total_cash ?? 0),
+                'total_bank' => (float)($summaryData->total_bank ?? 0),
+                'total_wallets' => (float)($summaryData->total_wallets ?? 0),
+                'total_all' => (float)($summaryData->total_all ?? 0),
+            ], 'تم جلب ملخص الخزن بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    public function getUsers(CashBox $cashBox): JsonResponse
+    {
+        try {
+            $authUser = Auth::user();
+            if (!$authUser) return api_unauthorized('يتطلب المصادقة.');
+
+            $companyId = $authUser->active_company_id;
+
+            $assignedUserIds = $cashBox->users()->pluck('users.id')->toArray();
+
+            $companyUsers = User::whereHas('companies', function($q) use ($companyId) {
+                $q->where('companies.id', $companyId);
+            })->get(['id', 'nickname', 'full_name', 'email']);
+
+            return api_success([
+                'assigned_user_ids' => $assignedUserIds,
+                'company_users' => $companyUsers
+            ], 'تم استرداد مستخدمي الخزينة بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e, 500);
+        }
+    }
+
+    public function syncUsers(Request $request, CashBox $cashBox): JsonResponse
+    {
+        try {
+            $authUser = Auth::user();
+            if (!$authUser) return api_unauthorized('يتطلب المصادقة.');
+
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('admin.company')) && !$authUser->hasPermissionTo(perm_key('cash_boxes.update_all'))) {
+                return api_forbidden('ليس لديك إذن لإجراء هذه العملية.');
+            }
+
+            $validated = $request->validate([
+                'user_ids' => 'present|array',
+                'user_ids.*' => 'exists:users,id',
+            ]);
+
+            $syncData = [];
+            foreach ($validated['user_ids'] as $userId) {
+                $syncData[$userId] = ['created_by' => $authUser->id];
+            }
+
+            $cashBox->users()->sync($syncData);
+
+            return api_success([], 'تم تحديث مستخدمي الخزينة بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e, 500);
         }

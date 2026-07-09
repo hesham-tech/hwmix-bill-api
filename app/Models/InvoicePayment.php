@@ -40,6 +40,7 @@ class InvoicePayment extends Model
         'company_id',
         'created_by',
         'updated_by',
+        'financial_operation_id',
     ];
 
     protected $casts = [
