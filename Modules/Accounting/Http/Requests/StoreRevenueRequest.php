@@ -18,7 +18,7 @@ class StoreRevenueRequest extends FormRequest
             'source_id' => 'required|integer',
             'user_id' => 'nullable|exists:users,id',
             'created_by' => 'nullable|exists:users,id',
-            'wallet_id' => 'nullable|exists:cash_boxes,id',
+            'wallet_id' => ['nullable', 'integer', new \App\Rules\AccessibleCashBox],
             'company_id' => 'required|exists:companies,id',
             'amount' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',

@@ -39,17 +39,6 @@ class CashBox extends Model
 
     protected static function booted()
     {
-        static::saving(function ($cashBox) {
-            if ($cashBox->is_default) {
-                static::withoutGlobalScopes()
-                    ->where('user_id', $cashBox->user_id)
-                    ->where('company_id', $cashBox->company_id)
-                    ->where('branch_id', $cashBox->branch_id)
-                    ->where('id', '!=', $cashBox->id)
-                    ->update(['is_default' => false]);
-            }
-        });
-
         static::updating(function ($cashBox) {
             if ($cashBox->isDirty('branch_id')) {
                 throw new \Exception('لا يمكن تعديل الفرع المرتبط بالخزنة الماليّة بعد إنشائها لضمان سلامة القيود التاريخية.');
@@ -69,6 +58,25 @@ class CashBox extends Model
                     'balance_after' => (float)$cashBox->balance,
                     'description' => 'رصيد افتتاحي للخزينة عند الإنشاء',
                 ]);
+            }
+        });
+
+        static::saved(function ($cashBox) {
+            if ($cashBox->is_default) {
+                // تصفير الخزنة الافتراضية القديمة من جدول الخزن للتوافقية
+                static::withoutGlobalScopes()
+                    ->where('user_id', $cashBox->user_id)
+                    ->where('company_id', $cashBox->company_id)
+                    ->where('branch_id', $cashBox->branch_id)
+                    ->where('id', '!=', $cashBox->id)
+                    ->update(['is_default' => false]);
+
+                // تحديث جدول المستخدمين بالخزنة الافتراضية الجديدة
+                if ($cashBox->user_id) {
+                    \App\Models\User::withoutGlobalScopes()
+                        ->where('id', $cashBox->user_id)
+                        ->update(['default_cash_box_id' => $cashBox->id]);
+                }
             }
         });
     }

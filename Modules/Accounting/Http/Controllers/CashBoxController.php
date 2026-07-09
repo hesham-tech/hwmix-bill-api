@@ -53,12 +53,16 @@ class CashBoxController extends Controller
             if (!$showAllBoxes) {
                 $branchId = config('app.active_branch_id') ?? $authUser->branch_id;
                 $cashBoxQuery->where(function($q) use ($authUser, $branchId) {
-                    $q->where('user_id', $authUser->id);
-                    if ($branchId) {
-                        $q->orWhere(function($subQ) use ($branchId) {
-                            $subQ->whereNull('user_id')->where('branch_id', $branchId);
-                        });
-                    }
+                    $q->where('user_id', $authUser->id)
+                      ->orWhere(function($subQ) use ($authUser, $branchId) {
+                          $subQ->whereNull('user_id')
+                               ->whereHas('users', function($userQ) use ($authUser) {
+                                   $userQ->where('users.id', $authUser->id);
+                               });
+                          if ($branchId) {
+                              $subQ->where('branch_id', $branchId);
+                          }
+                      });
                 });
             }
 
@@ -138,22 +142,16 @@ class CashBoxController extends Controller
 
                 $validatedData['created_by'] = $authUser->id;
 
-                // إذا تم تعيين هذه الخزنة كافتراضية، قم بإزالة الصفة عن باقي الخزائن لنفس المستخدم والشركة والفرع أولاً لضمان وجود خزنة افتراضية واحدة فقط
-                if (isset($validatedData['is_default']) && $validatedData['is_default']) {
-                    $userId = $validatedData['user_id'] ?? null;
-                    $companyId = $validatedData['company_id'] ?? null;
-                    $branchId = $validatedData['branch_id'] ?? null;
-                    if ($userId && $companyId) {
-                        CashBox::withoutGlobalScopes()
-                            ->where('company_id', $companyId)
-                            ->where('user_id', $userId)
-                            ->where('branch_id', $branchId)
-                            ->where('is_default', true)
-                            ->update(['is_default' => false]);
+                $cashBox = CashBox::create($validatedData);
+
+                // حفظ إعداد الخزينة الافتراضية للمستخدم في جدول المستخدمين
+                if (isset($request->is_default) && $request->is_default) {
+                    $userId = $validatedData['user_id'] ?? $authUser->id;
+                    if ($userId) {
+                        \App\Models\User::withoutGlobalScopes()->where('id', $userId)->update(['default_cash_box_id' => $cashBox->id]);
                     }
                 }
 
-                $cashBox = CashBox::create($validatedData);
                 $cashBox->load($this->relations);
                 DB::commit();
                 return api_success(new CashBoxResource($cashBox), 'تم إنشاء الخزنة بنجاح.', 201);
@@ -229,21 +227,20 @@ class CashBoxController extends Controller
                     }
                 }
 
-                // إذا تم تعيين هذه الخزنة كافتراضية، قم بإزالة الصفة عن باقي الخزائن لنفس المستخدم والشركة والفرع أولاً لضمان وجود خزنة افتراضية واحدة فقط
-                if (isset($validatedData['is_default']) && $validatedData['is_default']) {
-                    $userId = $validatedData['user_id'] ?? $cashBox->user_id;
-                    $companyId = $validatedData['company_id'] ?? $cashBox->company_id;
-                    $branchId = $validatedData['branch_id'] ?? $cashBox->branch_id;
-                    CashBox::withoutGlobalScopes()
-                        ->where('company_id', $companyId)
-                        ->where('user_id', $userId)
-                        ->where('branch_id', $branchId)
-                        ->where('is_default', true)
-                        ->where('id', '!=', $cashBox->id)
-                        ->update(['is_default' => false]);
+                $cashBox->update($validatedData);
+
+                // حفظ إعداد الخزينة الافتراضية للمستخدم في جدول المستخدمين
+                if (isset($request->is_default)) {
+                    $userId = $validatedData['user_id'] ?? $cashBox->user_id ?? $authUser->id;
+                    if ($userId) {
+                        if ($request->is_default) {
+                            \App\Models\User::withoutGlobalScopes()->where('id', $userId)->update(['default_cash_box_id' => $cashBox->id]);
+                        } else {
+                            \App\Models\User::withoutGlobalScopes()->where('id', $userId)->where('default_cash_box_id', $cashBox->id)->update(['default_cash_box_id' => null]);
+                        }
+                    }
                 }
 
-                $cashBox->update($validatedData);
                 $cashBox->load($this->relations);
                 DB::commit();
                 return api_success(new CashBoxResource($cashBox), 'تم تحديث الخزنة بنجاح.');
@@ -322,6 +319,10 @@ class CashBoxController extends Controller
 
             $fromCashBox = CashBox::findOrFail($fromCashBoxId);
             $toCashBox = CashBox::findOrFail($toCashBoxId);
+
+            if (!$authUser->canAccessCashBox($fromCashBox)) {
+                return api_forbidden('ليس لديك صلاحية الوصول إلى الخزينة المصدر.');
+            }
 
             if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
                 if ($fromCashBox->company_id !== $companyId || $toCashBox->company_id !== $companyId) {

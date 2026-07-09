@@ -25,7 +25,7 @@ class CashBoxResource extends JsonResource
             'company_id' => $this->company_id,
             'branch_id' => $this->branch_id,
             'branch_name' => $this->branch?->name,
-            'is_default' => (bool) $this->is_default,
+            'is_default' => (bool) (auth()->user()?->default_cash_box_id === $this->id),
             'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

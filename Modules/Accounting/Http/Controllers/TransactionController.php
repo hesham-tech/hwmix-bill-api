@@ -64,6 +64,17 @@ class TransactionController extends Controller
 
             if (!$fromCashBoxId || !$toCashBoxId) return api_error('لا توجد صناديق افتراضية.', [], 422);
 
+            $fromCashBox = CashBox::findOrFail($fromCashBoxId);
+            $toCashBox = CashBox::findOrFail($toCashBoxId);
+
+            if (!$authUser->canAccessCashBox($fromCashBox)) {
+                return api_forbidden('ليس لديك صلاحية الوصول إلى الخزينة المصدر.');
+            }
+
+            if (!$authUser->canAccessCashBox($toCashBox) && !$authUser->hasPermissionTo(perm_key('balance.transfer_any')) && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                return api_forbidden('ليس لديك صلاحية الوصول إلى الخزينة الهدف.');
+            }
+
             $engine = app(\App\Contracts\FinancialEngineInterface::class);
             $operationId = (string) \Illuminate\Support\Str::uuid();
             $description = $validated['description'] ?? "تحويل من {$sourceUser->name} إلى {$targetUser->name}";
@@ -136,8 +147,13 @@ class TransactionController extends Controller
                 return api_forbidden('ليس لديك إذن للإيداع في حساب مستخدم آخر.');
             }
 
-            $cashBoxId = $validated['cash_box_id'] ?? $targetUser->getDefaultCashBoxForCompany($companyId)?->id;
-            if (!$cashBoxId) return api_error('لا توجد خزنة للمستهدف.', [], 422);
+            $cashBoxId = $validated['cash_box_id'] ?? $authUser->getDefaultCashBoxForCompany($companyId)?->id;
+            if (!$cashBoxId) return api_error('لا توجد خزنة صالحة لإتمام العملية.', [], 422);
+
+            $cashBox = CashBox::findOrFail($cashBoxId);
+            if (!$authUser->canAccessCashBox($cashBox)) {
+                return api_forbidden('ليس لديك صلاحية الوصول إلى هذه الخزينة.');
+            }
 
             $engine = app(\App\Contracts\FinancialEngineInterface::class);
             $operationId = (string) \Illuminate\Support\Str::uuid();
@@ -192,8 +208,13 @@ class TransactionController extends Controller
                 return api_forbidden('ليس لديك إذن للسحب من حساب مستخدم آخر.');
             }
 
-            $cashBoxId = $validated['cash_box_id'] ?? $targetUser->getDefaultCashBoxForCompany($companyId)?->id;
-            if (!$cashBoxId) return api_error('لا توجد خزنة للمستهدف.', [], 422);
+            $cashBoxId = $validated['cash_box_id'] ?? $authUser->getDefaultCashBoxForCompany($companyId)?->id;
+            if (!$cashBoxId) return api_error('لا توجد خزنة صالحة لإتمام العملية.', [], 422);
+
+            $cashBox = CashBox::findOrFail($cashBoxId);
+            if (!$authUser->canAccessCashBox($cashBox)) {
+                return api_forbidden('ليس لديك صلاحية الوصول إلى هذه الخزينة.');
+            }
 
             $engine = app(\App\Contracts\FinancialEngineInterface::class);
             $operationId = (string) \Illuminate\Support\Str::uuid();

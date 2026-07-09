@@ -124,11 +124,15 @@ class CashReconciliationController extends Controller
                 return api_error('لا يمكن اعتماد تسوية غير معلقة.', [], 400);
             }
 
-            $reconciliation->update([
-                'status' => 'approved',
-                'approved_by' => $authUser->id,
-                'approved_at' => now(),
-            ]);
+            DB::transaction(function () use ($reconciliation, $authUser) {
+                $reconciliation->update([
+                    'status' => 'approved',
+                    'approved_by' => $authUser->id,
+                    'approved_at' => now(),
+                ]);
+
+                app(\App\Contracts\FinancialEngineInterface::class)->processReconciliationApproval($reconciliation);
+            });
 
             return api_success($reconciliation, 'تم اعتماد تسوية ومطابقة الرصيد بنجاح.');
         } catch (Throwable $e) {

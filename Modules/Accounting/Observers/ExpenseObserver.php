@@ -13,7 +13,7 @@ class ExpenseObserver
 {
     public function created(Expense $expense): void
     {
-        app(FinancialLedgerService::class)->recordExpense($expense);
+        app(\App\Contracts\FinancialEngineInterface::class)->processExpenseCreation($expense, []);
         $this->dispatchSummaryUpdate($expense);
     }
 

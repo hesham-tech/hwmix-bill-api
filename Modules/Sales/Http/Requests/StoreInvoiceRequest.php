@@ -41,8 +41,8 @@ class StoreInvoiceRequest extends FormRequest
                 'integer',
                 \Illuminate\Validation\Rule::exists('warehouses', 'id')->where('company_id', auth()->user()?->active_company_id)
             ],
-            'cash_box_id' => 'nullable|integer|exists:cash_boxes,id',
-            'user_cash_box_id' => 'nullable|integer|exists:cash_boxes,id',
+            'cash_box_id' => ['nullable', 'integer', new \App\Rules\AccessibleCashBox],
+            'user_cash_box_id' => ['nullable', 'integer', new \App\Rules\AccessibleCashBox],
             'user_id' => 'required|integer|exists:users,id',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',

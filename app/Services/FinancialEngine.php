@@ -322,18 +322,7 @@ class FinancialEngine implements FinancialEngineInterface
                 $cashBoxId = $creator?->getDefaultCashBoxForCompany($companyId)?->id;
 
                 if ($cashBoxId === null) {
-                    $cashBoxId = \App\Models\CashBox::withoutGlobalScopes()
-                        ->where('company_id', $companyId)
-                        ->whereNull('user_id')
-                        ->where('access_type', 'company_shared')
-                        ->first()?->id;
-                }
-
-                if ($cashBoxId === null) {
-                    $cashBoxId = \App\Models\CashBox::withoutGlobalScopes()
-                        ->where('company_id', $companyId)
-                        ->whereNull('user_id')
-                        ->first()?->id;
+                    throw new \Exception("لم يتم تحديد خزينة صالحة للموظف منشئ الفاتورة لإتمام العملية المالية.");
                 }
             }
 
@@ -452,18 +441,7 @@ class FinancialEngine implements FinancialEngineInterface
                 $cashBoxId = $creator?->getDefaultCashBoxForCompany($companyId)?->id;
 
                 if ($cashBoxId === null) {
-                    $cashBoxId = \App\Models\CashBox::withoutGlobalScopes()
-                        ->where('company_id', $companyId)
-                        ->whereNull('user_id')
-                        ->where('access_type', 'company_shared')
-                        ->first()?->id;
-                }
-
-                if ($cashBoxId === null) {
-                    $cashBoxId = \App\Models\CashBox::withoutGlobalScopes()
-                        ->where('company_id', $companyId)
-                        ->whereNull('user_id')
-                        ->first()?->id;
+                    throw new \Exception("لم يتم تحديد خزينة صالحة للموظف منشئ السند لإتمام العملية المالية.");
                 }
             }
             $party = User::withoutGlobalScopes()->find($invoice->user_id);
@@ -592,7 +570,7 @@ class FinancialEngine implements FinancialEngineInterface
 
         return DB::transaction(function () use ($revenue, $payload, $operationId) {
             $amount = (float)$revenue->amount;
-            $cashBoxId = $revenue->cash_box_id;
+            $cashBoxId = $revenue->wallet_id;
 
             $this->operationService->createOperation([
                 'id' => $operationId,

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('default_cash_box_id')->nullable()->constrained('cash_boxes')->nullOnDelete();
         });
 
-        // 2. ترحيل البيانات الحالية من cash_boxes.is_default
+        // 2. ترحيل البيانات الحالية من cash_boxes.is_default لـ users.default_cash_box_id
         $defaultBoxes = Illuminate\Support\Facades\DB::table('cash_boxes')
             ->where('is_default', true)
             ->whereNotNull('user_id')
@@ -27,13 +27,6 @@ return new class extends Migration
                 ->where('id', $box->user_id)
                 ->update(['default_cash_box_id' => $box->id]);
         }
-
-        // 3. إسقاط عمود is_default من جدول cash_boxes
-        Schema::table('cash_boxes', function (Blueprint $table) {
-            if (Schema::hasColumn('cash_boxes', 'is_default')) {
-                $table->dropColumn('is_default');
-            }
-        });
     }
 
     /**
@@ -41,21 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('cash_boxes', function (Blueprint $table) {
-            $table->boolean('is_default')->default(false)->after('company_id');
-        });
-
-        // استعادة البيانات الحالية
-        $users = Illuminate\Support\Facades\DB::table('users')
-            ->whereNotNull('default_cash_box_id')
-            ->get();
-
-        foreach ($users as $user) {
-            Illuminate\Support\Facades\DB::table('cash_boxes')
-                ->where('id', $user->default_cash_box_id)
-                ->update(['is_default' => true]);
-        }
-
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['default_cash_box_id']);
             $table->dropColumn('default_cash_box_id');

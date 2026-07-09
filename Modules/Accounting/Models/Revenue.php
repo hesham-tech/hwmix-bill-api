@@ -11,7 +11,10 @@ use App\Traits\FilterableByCompany;
 use App\Traits\FilterableByBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Modules\Accounting\Observers\RevenueObserver;
 
+#[ObservedBy([RevenueObserver::class])]
 /**
  * موديل الإيرادات (Revenue) - موديول المحاسبة
  */

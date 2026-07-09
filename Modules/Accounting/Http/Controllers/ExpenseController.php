@@ -42,6 +42,7 @@ class ExpenseController extends Controller
             'expense_category_id' => 'required|exists:expense_categories,id',
             'amount' => 'required|numeric|min:0.01',
             'expense_date' => 'required|date',
+            'cash_box_id' => ['required', 'integer', new \App\Rules\AccessibleCashBox],
             'notes' => 'nullable|string',
         ]);
 
@@ -60,6 +61,7 @@ class ExpenseController extends Controller
             'expense_category_id' => 'required|exists:expense_categories,id',
             'amount' => 'required|numeric|min:0.01',
             'expense_date' => 'required|date',
+            'cash_box_id' => ['required', 'integer', new \App\Rules\AccessibleCashBox],
         ]);
 
         $expense->update($request->all());
