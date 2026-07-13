@@ -69,6 +69,14 @@ class RevenueController extends Controller
                 $validatedData['created_by'] = $authUser->id;
                 $validatedData['company_id'] = $validatedData['company_id'] ?? $authUser->active_company_id;
 
+                if (empty($validatedData['wallet_id'])) {
+                    $defaultBox = $authUser->getDefaultCashBoxForCompany($validatedData['company_id']);
+                    if (!$defaultBox) {
+                        throw new \Exception('لا توجد خزنة افتراضية للمستخدم لإتمام عملية الإيراد.');
+                    }
+                    $validatedData['wallet_id'] = $defaultBox->id;
+                }
+
                 $revenue = Revenue::create($validatedData);
                 $revenue->load($this->relations);
                 DB::commit();

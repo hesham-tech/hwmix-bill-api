@@ -455,6 +455,12 @@ class AccountingRegressionTest extends TestCase
             'is_default' => false,
         ]);
 
+        // ربط الموظف بالخزينة المشتركة لترخيص الوصول عبر جدول المحور مباشرة
+        \Illuminate\Support\Facades\DB::table('cash_box_user')->insert([
+            'cash_box_id' => $sharedBox->id,
+            'user_id' => $newStaff->id,
+        ]);
+
         // Set authenticated user to the new staff
         $this->actingAs($newStaff);
 

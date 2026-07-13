@@ -18,7 +18,7 @@ class UpdateRevenueRequest extends FormRequest
             'source_id' => 'sometimes|required|integer',
             'user_id' => 'nullable|exists:users,id',
             'created_by' => 'nullable|exists:users,id',
-            'wallet_id' => ['sometimes', 'required', 'integer', new \App\Rules\AccessibleCashBox],
+            'wallet_id' => ['sometimes', 'nullable', 'integer', new \App\Rules\AccessibleCashBox],
             'company_id' => 'sometimes|required|exists:companies,id',
             'amount' => 'sometimes|required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',

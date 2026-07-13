@@ -25,6 +25,14 @@ class RevenueControllerTest extends TestCase
         $this->company = Company::factory()->create();
         $this->admin = User::factory()->create(['company_id' => $this->company->id]);
         $this->admin->givePermissionTo('admin.super');
+
+        $cashBoxType = \App\Models\CashBoxType::factory()->create(['company_id' => $this->company->id]);
+        CashBox::factory()->create([
+            'user_id' => $this->admin->id,
+            'company_id' => $this->company->id,
+            'cash_box_type_id' => $cashBoxType->id,
+            'is_default' => true,
+        ]);
     }
 
     /** @test */

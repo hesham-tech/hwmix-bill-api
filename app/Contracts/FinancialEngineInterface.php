@@ -67,15 +67,15 @@ interface FinancialEngineInterface
     /**
      * ترحيل معالجة تسجيل مصروف بالكامل
      */
-    public function processExpenseCreation(Expense $expense, array $payload): string;
+    public function processExpenseCreation(Model $expense, array $payload): string;
 
     /**
      * ترحيل معالجة تسجيل إيراد بالكامل
      */
-    public function processRevenueCreation(Revenue $revenue, array $payload): string;
+    public function processRevenueCreation(Model $revenue, array $payload): string;
 
     /**
      * ترحيل معالجة اعتماد تسوية جرد الخزنة بالكامل
      */
-    public function processReconciliationApproval(CashReconciliation $reconciliation): string;
+    public function processReconciliationApproval(Model $reconciliation): string;
 }

@@ -505,7 +505,7 @@ class FinancialEngine implements FinancialEngineInterface
     /**
      * ترحيل معالجة تسجيل مصروف بالكامل
      */
-    public function processExpenseCreation(Expense $expense, array $payload): string
+    public function processExpenseCreation(Model $expense, array $payload): string
     {
         $operationId = $payload['operation_id'] ?? (string) Str::uuid();
 
@@ -560,7 +560,7 @@ class FinancialEngine implements FinancialEngineInterface
     /**
      * ترحيل معالجة تسجيل إيراد بالكامل
      */
-    public function processRevenueCreation(Revenue $revenue, array $payload): string
+    public function processRevenueCreation(Model $revenue, array $payload): string
     {
         $operationId = $payload['operation_id'] ?? (string) Str::uuid();
 
@@ -614,7 +614,7 @@ class FinancialEngine implements FinancialEngineInterface
     /**
      * ترحيل معالجة اعتماد تسوية جرد الخزنة بالكامل
      */
-    public function processReconciliationApproval(CashReconciliation $reconciliation): string
+    public function processReconciliationApproval(Model $reconciliation): string
     {
         $operationId = (string) Str::uuid();
 
