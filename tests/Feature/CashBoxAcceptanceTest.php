@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\CashBox;
-use App\Models\Capability;
+use Modules\Companies\Models\Capability;
 use App\Models\BusinessRelation;
 use App\Models\CompanyUser;
 use Modules\Companies\Models\RelationType;
@@ -148,6 +148,7 @@ class CashBoxAcceptanceTest extends TestCase
             'branch_id' => $this->branch->id,
             'access_type' => 'company_shared',
             'status' => 'active',
+            'created_by' => $this->admin->id,
         ]);
 
         // 3. منح الوصول لموظف 1 وموظف 2
@@ -213,6 +214,7 @@ class CashBoxAcceptanceTest extends TestCase
             'branch_id' => $this->branch->id,
             'user_id' => $employee->id,
             'access_type' => 'personal',
+            'created_by' => $this->admin->id,
         ]);
         $box2 = $lifecycleService->create([
             'name' => 'Safe 2',
@@ -221,6 +223,7 @@ class CashBoxAcceptanceTest extends TestCase
             'branch_id' => $this->branch->id,
             'user_id' => $employee->id,
             'access_type' => 'personal',
+            'created_by' => $this->admin->id,
         ]);
         $box3 = $lifecycleService->create([
             'name' => 'Safe 3',
@@ -229,6 +232,7 @@ class CashBoxAcceptanceTest extends TestCase
             'branch_id' => $this->branch->id,
             'user_id' => $employee->id,
             'access_type' => 'personal',
+            'created_by' => $this->admin->id,
         ]);
 
         // 2. تغيير الخزنة الافتراضية أكثر من مرة
@@ -282,6 +286,7 @@ class CashBoxAcceptanceTest extends TestCase
             'company_id' => $company1->id,
             'branch_id' => $this->branch->id,
             'access_type' => 'company_shared',
+            'created_by' => $this->admin->id,
         ]);
 
         // خزنة في الشركة الثانية
@@ -291,6 +296,7 @@ class CashBoxAcceptanceTest extends TestCase
             'company_id' => $company2->id,
             'branch_id' => $branch2->id,
             'access_type' => 'company_shared',
+            'created_by' => $this->admin->id,
         ]);
 
         // 2. التأكد من عزل الوصول
@@ -316,6 +322,7 @@ class CashBoxAcceptanceTest extends TestCase
             'company_id' => $this->company->id,
             'branch_id' => $this->branch->id,
             'access_type' => 'company_shared',
+            'created_by' => $this->admin->id,
         ]);
 
         // 1. محاولة تعديل الرصيد مباشرة
