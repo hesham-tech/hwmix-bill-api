@@ -122,47 +122,4 @@ class Transaction extends Model
         return "المعاملة #{$this->id} ({$this->type})";
     }
 
-    public function reverseTransfer()
-    {
-        $senderBox = $this->cashbox;
-        $receiverBox = $this->targetCashbox;
-
-        if (!$senderBox || !$receiverBox) {
-            throw new Exception("الصناديق المرتبطة بالمعاملة غير موجودة.");
-        }
-
-        $senderBox->balance += $this->amount;
-        $senderBox->save();
-
-        $receiverBox->balance -= $this->amount;
-        $receiverBox->save();
-    }
-
-    public function reverseWithdraw()
-    {
-        $box = $this->cashbox;
-
-        if (!$box) {
-            throw new Exception("الصندوق المرتبط بالمعاملة غير موجود.");
-        }
-
-        $box->balance += $this->amount;
-        $box->save();
-    }
-
-    public function reverseDeposit()
-    {
-        $box = $this->cashbox;
-
-        if (!$box) {
-            throw new Exception("الصندوق المرتبط بالمعاملة غير موجود.");
-        }
-
-        if ($box->balance < $this->amount) {
-            throw new Exception("الرصيد غير كافٍ لعكس العملية.");
-        }
-
-        $box->balance -= $this->amount;
-        $box->save();
-    }
 }

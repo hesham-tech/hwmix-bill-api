@@ -190,19 +190,12 @@ class CompanyUser extends Pivot
             ->where('company_id', $this->company_id);
     }
 
-    /**
-     * الحصول على الخزنة الافتراضية للمستخدم في هذه الشركة
-     * * @return CashBox|null
-     */
     public function getDefaultCashBoxAttribute()
     {
-        if (!$this->relationLoaded('user') || !$this->user) {
+        if (!$this->user) {
             return null;
         }
 
-        return collect($this->user->cashBoxes ?? [])
-            ->where('company_id', $this->company_id)
-            ->where('is_default', true)
-            ->first();
+        return $this->user->getDefaultCashBoxForCompany($this->company_id);
     }
 }

@@ -66,15 +66,32 @@ class CashBoxController extends Controller
                 });
             }
 
+            // تطبيق فلاتر الحالة والـ scopes
+            if ($request->has('status')) {
+                $cashBoxQuery->where('status', $request->get('status'));
+            } elseif ($request->has('is_active')) {
+                $cashBoxQuery->where('status', $request->boolean('is_active') ? \App\Enums\CashBoxStatus::ACTIVE->value : \App\Enums\CashBoxStatus::INACTIVE->value);
+            } elseif ($request->boolean('include_legacy')) {
+                // جلب كل شيء بما فيها مؤرشفة
+            } elseif ($request->boolean('include_inactive')) {
+                $cashBoxQuery->whereIn('status', [
+                    \App\Enums\CashBoxStatus::ACTIVE->value,
+                    \App\Enums\CashBoxStatus::INACTIVE->value,
+                    \App\Enums\CashBoxStatus::LOCKED->value,
+                    \App\Enums\CashBoxStatus::DRAFT->value
+                ]);
+            } else {
+                // الافتراضي: usable
+                $cashBoxQuery->usable();
+            }
+
             if (!empty($request->get('name'))) {
                 $cashBoxQuery->where('name', 'like', '%' . $request->get('name') . '%');
             }
             if (!empty($request->get('account_number'))) {
                 $cashBoxQuery->where('account_number', 'like', '%' . $request->get('account_number') . '%');
             }
-            if ($request->has('is_active')) {
-                $cashBoxQuery->where('is_active', $request->boolean('is_active'));
-            }
+
             if ($request->boolean('current_user')) {
                 $cashBoxQuery->where('user_id', $authUser->id);
             }
@@ -142,13 +159,14 @@ class CashBoxController extends Controller
 
                 $validatedData['created_by'] = $authUser->id;
 
-                $cashBox = CashBox::create($validatedData);
+                $cashBox = app(\App\Services\CashBoxLifecycleService::class)->create($validatedData, $authUser);
 
                 // حفظ إعداد الخزينة الافتراضية للمستخدم في جدول المستخدمين
                 if (isset($request->is_default) && $request->is_default) {
                     $userId = $validatedData['user_id'] ?? $authUser->id;
-                    if ($userId) {
-                        \App\Models\User::withoutGlobalScopes()->where('id', $userId)->update(['default_cash_box_id' => $cashBox->id]);
+                    $targetUser = \App\Models\User::withoutGlobalScopes()->find($userId);
+                    if ($targetUser) {
+                        app(\App\Services\CashBoxLifecycleService::class)->changeDefault($targetUser, $cashBox->id, $authUser);
                     }
                 }
 
@@ -214,29 +232,52 @@ class CashBoxController extends Controller
             DB::beginTransaction();
             try {
                 $validatedData = $request->validated();
+                $lifecycle = app(\App\Services\CashBoxLifecycleService::class);
 
-                // الفحص يتم فقط إذا أراد المستخدم تغيير صاحب الخزنة لشخص مختلف
-                $newUserId = array_key_exists('user_id', $validatedData) ? $validatedData['user_id'] : null;
-                $targetCompanyId = array_key_exists('company_id', $validatedData) ? $validatedData['company_id'] : $cashBox->company_id;
-
-                if ($newUserId !== null && $newUserId !== $cashBox->user_id) {
-                    $targetUser = \App\Models\User::withoutGlobalScopes()->find($newUserId);
-                    if (!$targetUser || !$targetUser->hasCapability('has_cash_custody', $targetCompanyId)) {
-                        DB::rollBack();
-                        return api_error('المستخدم المستهدف لا يملك صلاحية/قدرة عهدة نقدية.', [], 422);
+                // 1. التعامل مع تغيير المالك المسؤول عن العهدة
+                if (array_key_exists('user_id', $validatedData)) {
+                    $newUserId = $validatedData['user_id'];
+                    if ($newUserId !== $cashBox->user_id) {
+                        $lifecycle->assignOwner($cashBox, $newUserId, $authUser);
                     }
                 }
 
-                $cashBox->update($validatedData);
+                // 2. التعامل مع الحالة وآلة الحالة
+                if (array_key_exists('status', $validatedData)) {
+                    $newStatus = \App\Enums\CashBoxStatus::from($validatedData['status']);
+                    if ($newStatus === \App\Enums\CashBoxStatus::ACTIVE) {
+                        $lifecycle->activate($cashBox, $authUser);
+                    } elseif ($newStatus === \App\Enums\CashBoxStatus::INACTIVE) {
+                        $lifecycle->deactivate($cashBox, $authUser);
+                    } elseif ($newStatus === \App\Enums\CashBoxStatus::ARCHIVED) {
+                        $lifecycle->archive($cashBox, $authUser);
+                    }
+                } elseif (array_key_exists('is_active', $validatedData)) {
+                    if ($request->boolean('is_active')) {
+                        $lifecycle->activate($cashBox, $authUser);
+                    } else {
+                        $lifecycle->deactivate($cashBox, $authUser);
+                    }
+                }
 
-                // حفظ إعداد الخزينة الافتراضية للمستخدم في جدول المستخدمين
+                // 3. تحديث باقي البيانات الوصفية (الاسم، الوصف، رقم الحساب...)
+                // نستبعد الحقول الأساسية التي تم علاجها عبر Lifecycle لضمان عدم تخطي القواعد
+                $otherData = array_diff_key($validatedData, array_flip(['user_id', 'status', 'is_active', 'balance', 'code', 'company_id', 'branch_id']));
+                if (!empty($otherData)) {
+                    $cashBox->update($otherData);
+                }
+
+                // 4. حفظ إعداد الخزينة الافتراضية للمستخدم
                 if (isset($request->is_default)) {
-                    $userId = $validatedData['user_id'] ?? $cashBox->user_id ?? $authUser->id;
-                    if ($userId) {
+                    $userId = $cashBox->user_id ?? $authUser->id;
+                    $targetUser = \App\Models\User::withoutGlobalScopes()->find($userId);
+                    if ($targetUser) {
                         if ($request->is_default) {
-                            \App\Models\User::withoutGlobalScopes()->where('id', $userId)->update(['default_cash_box_id' => $cashBox->id]);
+                            $lifecycle->changeDefault($targetUser, $cashBox->id, $authUser);
                         } else {
-                            \App\Models\User::withoutGlobalScopes()->where('id', $userId)->where('default_cash_box_id', $cashBox->id)->update(['default_cash_box_id' => null]);
+                            if ($targetUser->default_cash_box_id === $cashBox->id) {
+                                $lifecycle->changeDefault($targetUser, null, $authUser);
+                            }
                         }
                     }
                 }
@@ -274,16 +315,9 @@ class CashBoxController extends Controller
 
             DB::beginTransaction();
             try {
-                if (Transaction::where('cashbox_id', $cashBox->id)->exists() || Transaction::where('target_cashbox_id', $cashBox->id)->exists()) {
-                    DB::rollback();
-                    return api_error('لا يمكن حذف الخزنة لوجود معاملات مرتبطة.', [], 409);
-                }
-
-                $deletedCashBox = $cashBox->replicate();
-                $deletedCashBox->setRelations($cashBox->getRelations());
-                $cashBox->delete();
-                DB::commit();
-                return api_success(new CashBoxResource($deletedCashBox), 'تم حذف الخزنة بنجاح.');
+                // منع الحذف المادي نهائياً وإرجاع رسالة خطأ واضحة
+                DB::rollback();
+                return api_error('لا يمكن حذف الخزائن نهائياً من النظام لضمان النزاهة التاريخية للعمليات المالية. يرجى تعطيل أو أرشفة الخزنة بدلاً من ذلك.', [], 400);
             } catch (Throwable $e) {
                 DB::rollback();
                 return api_exception($e, 500);

@@ -81,6 +81,9 @@ class AppServiceProvider extends ServiceProvider
                 // تجنب توقف النظام
             }
         });
+
+        // تسجيل مستمع أنشطة الخزن والتدقيق الإداري
+        \Illuminate\Support\Facades\Event::subscribe(\App\Listeners\CashBoxActivityLogListener::class);
     }
 
     /**

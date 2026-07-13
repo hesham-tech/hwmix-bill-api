@@ -230,13 +230,13 @@ class FinancialEngine implements FinancialEngineInterface
             foreach ($txs as $tx) {
                 if ($tx->cashbox_id) {
                     // حركة خزنة
-                    if ($tx->type === 'deposit') {
-                        // عكس الإيداع بسحب
+                    if (in_array($tx->type, ['deposit', 'transfer_in', 'إيداع', 'تحويل_وارد', 'تحويل_مستلم'])) {
+                        // عكس الإيداع أو التحويل المستلم بعملية سحب
                         $this->cashService->withdraw((float)$tx->amount, $tx->cashbox_id, $reversalOpId, [
                             'description' => "عكس إيداع لعملية ملغاة رقم {$originalOperationId}"
                         ]);
                     } else {
-                        // عكس السحب بإيداع
+                        // عكس السحب أو التحويل الصادر بعملية إيداع
                         $this->cashService->deposit((float)$tx->amount, $tx->cashbox_id, $reversalOpId, [
                             'description' => "عكس صرف لعملية ملغاة رقم {$originalOperationId}"
                         ]);

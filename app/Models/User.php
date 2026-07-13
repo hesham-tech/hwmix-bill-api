@@ -127,78 +127,14 @@ class User extends Authenticatable
     // كاش داخلي لتجنب تكرار الاستعلامات عن الخزنة الافتراضية
     protected array $defaultCashBoxCache = [];
 
-    /**
-     * الحصول على الخزنة الافتراضية للمستخدم لشركة معينة.
-     *
-     * @param int|null $companyId
-     * @return CashBox|null
-     */
     public function getDefaultCashBoxForCompany($companyId = null)
     {
-        $companyId = $companyId ?? Auth::user()->active_company_id ?? $this->active_company_id ?? null;
-
-        if (!$companyId) {
-            return null;
-        }
-
-        // 1. إذا كانت هناك خزنة افتراضية مسجلة مباشرة كإعداد مفضل للمستخدم
-        if ($this->defaultCashBox && $this->defaultCashBox->company_id === $companyId && $this->defaultCashBox->is_active) {
-            return $this->defaultCashBox;
-        }
-
-        // 2. تراجع (Fallback): البحث في الخزن المملوكة شخصياً والمصرح بها
-        $activeBranchId = config('app.active_branch_id') ?? Auth::user()?->branch_id ?? $this->branch_id ?? null;
-        
-        $query = CashBox::withoutGlobalScopes()
-            ->where('company_id', $companyId)
-            ->where('is_active', true);
-
-        if ($activeBranchId) {
-            $query->where('branch_id', $activeBranchId);
-        }
-
-        // أولاً: خزن العهدة الشخصية
-        $ownedSafe = (clone $query)->where('user_id', $this->id)->first();
-        if ($ownedSafe) {
-            return $ownedSafe;
-        }
-
-        // ثانياً: الخزن المشتركة المصرح له بها عبر جدول cash_box_user
-        $assignedSafe = (clone $query)->whereNull('user_id')
-            ->whereHas('users', function ($q) {
-                $q->where('users.id', $this->id);
-            })
-            ->first();
-        
-        if ($assignedSafe) {
-            return $assignedSafe;
-        }
-
-        return null;
+        return app(\App\Services\DefaultCashBoxResolver::class)->resolve($this, $companyId);
     }
 
-    /**
-     * التحقق من إمكانية وصول المستخدم لخزينة معينة.
-     */
-    public function canAccessCashBox(CashBox $cashBox): bool
+    public function canAccessCashBox($cashBox): bool
     {
-        // 1. حسابات السوبر أدمن ومديري الشركات يمتلكون وصولاً كاملاً لجميع الخزن التابعة لشركتهم
-        if ($this->hasPermissionTo(perm_key('admin.super')) || $this->hasPermissionTo(perm_key('admin.company'))) {
-            return $cashBox->company_id === $this->active_company_id;
-        }
-
-        // 2. التحقق من تطابق الشركة
-        if ($cashBox->company_id !== $this->active_company_id) {
-            return false;
-        }
-
-        // 3. إذا كانت الخزينة عهدة شخصية: يجب أن تكون مملوكة له
-        if ($cashBox->user_id !== null) {
-            return $cashBox->user_id === $this->id;
-        }
-
-        // 4. إذا كانت الخزينة مشتركة: يجب أن يكون الموظف مصرحاً له بجدول cash_box_user
-        return $cashBox->users()->where('users.id', $this->id)->exists();
+        return app(\App\Services\CashBoxAccessService::class)->canAccess($this, $cashBox);
     }
 
     /**

@@ -73,7 +73,7 @@ class CashBoxControllerTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.is_active', false);
-        $this->assertDatabaseHas('cash_boxes', ['name' => 'Main Safe', 'company_id' => $this->company->id, 'is_active' => false]);
+        $this->assertDatabaseHas('cash_boxes', ['name' => 'Main Safe', 'company_id' => $this->company->id, 'status' => 'inactive']);
     }
 
     public function test_can_show_cash_box()
@@ -90,7 +90,7 @@ class CashBoxControllerTest extends TestCase
     public function test_can_update_cash_box()
     {
         $this->actingAs($this->admin);
-        $box = CashBox::factory()->create(['company_id' => $this->company->id, 'name' => 'Old Name', 'is_active' => true]);
+        $box = CashBox::factory()->create(['company_id' => $this->company->id, 'name' => 'Old Name', 'status' => 'active']);
 
         $payload = ['name' => 'Updated Name', 'is_active' => false];
 
@@ -98,7 +98,7 @@ class CashBoxControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('data.is_active', false);
-        $this->assertDatabaseHas('cash_boxes', ['id' => $box->id, 'name' => 'Updated Name', 'is_active' => false]);
+        $this->assertDatabaseHas('cash_boxes', ['id' => $box->id, 'name' => 'Updated Name', 'status' => 'inactive']);
     }
 
     public function test_can_delete_cash_box()
@@ -108,8 +108,9 @@ class CashBoxControllerTest extends TestCase
 
         $response = $this->deleteJson("/api/v1/cash-boxes/{$box->id}");
 
-        $response->assertStatus(200);
-        $this->assertDatabaseMissing('cash_boxes', ['id' => $box->id]);
+        // الحذف المادي مرفوض تماماً ويعاد 400
+        $response->assertStatus(400);
+        $this->assertDatabaseHas('cash_boxes', ['id' => $box->id]);
     }
 
     public function test_cannot_delete_cash_box_with_transactions()
@@ -128,7 +129,8 @@ class CashBoxControllerTest extends TestCase
 
         $response = $this->deleteJson("/api/v1/cash-boxes/{$box->id}");
 
-        $response->assertStatus(409);
+        // الحذف المادي مرفوض تماماً ويعاد 400
+        $response->assertStatus(400);
         $this->assertDatabaseHas('cash_boxes', ['id' => $box->id]);
     }
 

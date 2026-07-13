@@ -226,20 +226,20 @@ class StakeholderMigrationTest extends TestCase
         // 8. التحقق من أرشفة الصناديق القديمة للعملاء والموردين وسلامة خزن الموظفين
         $this->assertDatabaseHas('cash_boxes', [
             'id' => $customerBox->id,
-            'is_active' => false,
+            'status' => 'inactive',
             'access_type' => 'legacy_archived',
         ]);
 
         $this->assertDatabaseHas('cash_boxes', [
             'id' => $supplierBox->id,
-            'is_active' => false,
+            'status' => 'inactive',
             'access_type' => 'legacy_archived',
         ]);
 
         // صندوق الموظف يجب أن يظل نشطاً ومقترناً بالنوع الجديد
         $this->assertDatabaseHas('cash_boxes', [
             'id' => $employeeBox->id,
-            'is_active' => true,
+            'status' => 'active',
             'access_type' => 'user_owned',
         ]);
 

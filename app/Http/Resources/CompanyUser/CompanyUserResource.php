@@ -33,18 +33,9 @@ class CompanyUserResource extends JsonResource
                 ->first()?->url;
         });
 
-        /**
-         * الخزنة الافتراضية
-         */
+        // الخزنة الافتراضية
         $defaultCashBox = $this->whenLoaded('user', function () {
-            if (!$this->user || !$this->user->relationLoaded('cashBoxes')) {
-                return null;
-            }
-
-            return collect($this->user->cashBoxes ?? [])
-                ->where('is_default', true)
-                ->where('company_id', $this->company_id)
-                ->first();
+            return $this->user->getDefaultCashBoxForCompany($this->company_id);
         });
 
         /**

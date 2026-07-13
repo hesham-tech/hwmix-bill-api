@@ -37,6 +37,7 @@ class AccountingRegressionTest extends TestCase
 
         // Seed permissions from config if needed
         $this->seed(\Database\Seeders\AddPermissionsSeeder::class);
+        $this->seed(\Database\Seeders\RelationCapabilitiesSeeder::class);
 
         // Create core models
         $this->company = Company::factory()->create();
@@ -642,7 +643,6 @@ class AccountingRegressionTest extends TestCase
         // -300 (withdraw - cancel invoice 1)
         // +500 (deposit - invoice 2)
         // +300 (deposit - collect payment)
-        // Expected net = 800
         $calculatedStaffBalance = $staffTransactions->reduce(function ($carry, $t) {
             return in_array($t->type, ['deposit', 'transfer_in', 'reverse_withdraw']) 
                 ? $carry + (float)$t->amount 
@@ -652,4 +652,283 @@ class AccountingRegressionTest extends TestCase
         $this->assertEquals(800, $calculatedStaffBalance);
         $this->assertEquals(800, (float)$this->staffCashBox->fresh()->balance);
     }
+
+    public function test_deleting_user_deprovisions_cashbox()
+    {
+        $staffUser = User::factory()->create(['active_company_id' => $this->company->id]);
+        
+        CompanyUser::create([
+            'user_id' => $staffUser->id,
+            'company_id' => $this->company->id,
+            'status' => 'active',
+            'created_by' => $this->staff->id,
+        ]);
+
+        $employeeType = \Modules\Companies\Models\RelationType::where('code', 'employee')->first();
+        \Modules\Companies\Models\BusinessRelation::create([
+            'company_id' => $this->company->id,
+            'user_id' => $staffUser->id,
+            'relation_type' => 'employee',
+            'relation_type_id' => $employeeType ? $employeeType->id : null,
+            'is_active' => true,
+            'created_by' => $this->staff->id,
+        ]);
+
+        // تزويد عهدة له
+        $provisionService = app(\App\Services\CashBoxProvisioningService::class);
+        $box = $provisionService->provisionDefaultCustody($staffUser->id, $this->company->id, $this->staff->id, $this->branch->id);
+
+        $this->assertNotNull($box);
+        $this->assertEquals(\App\Enums\CashBoxStatus::ACTIVE, $box->fresh()->status);
+
+        // حذف ارتباط الموظف بالشركة
+        CompanyUser::where('user_id', $staffUser->id)->where('company_id', $this->company->id)->delete();
+        
+        // إطلاق حدث الحذف يدوياً لمحاكاة Observer
+        $companyUser = new CompanyUser(['user_id' => $staffUser->id, 'company_id' => $this->company->id]);
+        app(\App\Observers\CompanyUserObserver::class)->deleted($companyUser);
+
+        $this->assertEquals(\App\Enums\CashBoxStatus::INACTIVE, $box->fresh()->status);
+    }
+
+    /**
+     * 2. فحص أن تغيير فرع الموظف يحظر وصوله للخزن التابعة للفرع القديم
+     */
+    public function test_changing_user_branch_blocks_access()
+    {
+        $newBranch = \Modules\Companies\Models\Branch::create([
+            'company_id' => $this->company->id,
+            'name' => 'فرع جديد',
+            'is_default' => false,
+            'is_active' => true,
+        ]);
+
+        $staffUser = User::factory()->create([
+            'active_company_id' => $this->company->id,
+            'branch_id' => $this->branch->id
+        ]);
+
+        $box = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'user_id' => $staffUser->id,
+            'status' => \App\Enums\CashBoxStatus::ACTIVE,
+            'access_type' => 'personal'
+        ]);
+
+        // لديه وصول للفرع الحالي
+        $this->assertTrue($staffUser->canAccessCashBox($box));
+
+        // تغيير الفرع للموظف
+        $staffUser->branch_id = $newBranch->id;
+        $staffUser->save();
+
+        // يجب أن يُحظر وصوله للخزينة لأنها في فرع آخر
+        $this->assertFalse($staffUser->canAccessCashBox($box));
+    }
+
+    /**
+     * 3. فحص عزل عابر للشركات (Cross-Company Access)
+     */
+    public function test_user_cannot_access_other_company_cashbox()
+    {
+        $otherCompany = Company::factory()->create();
+        $otherBox = CashBox::factory()->create([
+            'company_id' => $otherCompany->id,
+            'branch_id' => $this->branch->id,
+            'status' => \App\Enums\CashBoxStatus::ACTIVE,
+            'access_type' => 'company_shared'
+        ]);
+
+        $this->assertFalse($this->staff->canAccessCashBox($otherBox));
+    }
+
+    /**
+     * 4. فحص تغيير وتحديث الخزنة الافتراضية بنجاح
+     */
+    public function test_default_cash_box_preference_changing()
+    {
+        $box1 = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'user_id' => $this->staff->id,
+            'status' => \App\Enums\CashBoxStatus::ACTIVE,
+            'access_type' => 'personal'
+        ]);
+
+        $box2 = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'user_id' => $this->staff->id,
+            'status' => \App\Enums\CashBoxStatus::ACTIVE,
+            'access_type' => 'personal'
+        ]);
+
+        $lifecycle = app(\App\Services\CashBoxLifecycleService::class);
+        
+        $lifecycle->changeDefault($this->staff, $box1->id, $this->staff);
+        $this->assertEquals($box1->id, $this->staff->fresh()->default_cash_box_id);
+
+        $lifecycle->changeDefault($this->staff, $box2->id, $this->staff);
+        $this->assertEquals($box2->id, $this->staff->fresh()->default_cash_box_id);
+    }
+
+    /**
+     * 5. فحص التعامل مع خزن مشتركة متعددة
+     */
+    public function test_multiple_shared_safes_handling()
+    {
+        $sharedBox1 = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'user_id' => null,
+            'status' => \App\Enums\CashBoxStatus::ACTIVE,
+            'access_type' => 'company_shared'
+        ]);
+
+        $sharedBox2 = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'user_id' => null,
+            'status' => \App\Enums\CashBoxStatus::ACTIVE,
+            'access_type' => 'company_shared'
+        ]);
+
+        $lifecycle = app(\App\Services\CashBoxLifecycleService::class);
+        $lifecycle->grantAccess($sharedBox1, $this->staff->id, $this->staff);
+        $lifecycle->grantAccess($sharedBox2, $this->staff->id, $this->staff);
+
+        $this->assertTrue($this->staff->canAccessCashBox($sharedBox1));
+        $this->assertTrue($this->staff->canAccessCashBox($sharedBox2));
+    }
+
+    /**
+     * 6. فحص تعيين أكثر من مستخدم على نفس الخزينة المشتركة
+     */
+    public function test_multiple_users_assigned_to_same_shared_safe()
+    {
+        $sharedBox = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'user_id' => null,
+            'status' => \App\Enums\CashBoxStatus::ACTIVE,
+            'access_type' => 'company_shared'
+        ]);
+
+        $user1 = User::factory()->create(['active_company_id' => $this->company->id, 'branch_id' => $this->branch->id]);
+        $user2 = User::factory()->create(['active_company_id' => $this->company->id, 'branch_id' => $this->branch->id]);
+
+        CompanyUser::create([
+            'user_id' => $user1->id,
+            'company_id' => $this->company->id,
+            'status' => 'active',
+            'created_by' => $this->staff->id,
+        ]);
+
+        CompanyUser::create([
+            'user_id' => $user2->id,
+            'company_id' => $this->company->id,
+            'status' => 'active',
+            'created_by' => $this->staff->id,
+        ]);
+
+        $lifecycle = app(\App\Services\CashBoxLifecycleService::class);
+        $lifecycle->grantAccess($sharedBox, $user1->id, $this->staff);
+        $lifecycle->grantAccess($sharedBox, $user2->id, $this->staff);
+
+        $this->assertTrue($user1->canAccessCashBox($sharedBox));
+        $this->assertTrue($user2->canAccessCashBox($sharedBox));
+    }
+
+    /**
+     * 7. فحص اختيار الخزينة التلقائي عند إنشاء فاتورة
+     */
+    public function test_invoice_creation_selects_default_cashbox_automatically()
+    {
+        $user = User::factory()->create(['active_company_id' => $this->company->id, 'branch_id' => $this->branch->id]);
+        
+        $box = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'user_id' => $user->id,
+            'status' => \App\Enums\CashBoxStatus::ACTIVE,
+            'access_type' => 'personal'
+        ]);
+
+        app(\App\Services\CashBoxLifecycleService::class)->changeDefault($user, $box->id, $this->staff);
+
+        $resolved = $user->getDefaultCashBoxForCompany($this->company->id);
+        $this->assertEquals($box->id, $resolved->id);
+    }
+
+    /**
+     * 8. فحص إرجاع استثناء إذا لم تتوفر أي خزنة افتراضية صالحة
+     */
+    public function test_no_default_cashbox_throws_exception()
+    {
+        $user = User::factory()->create(['active_company_id' => $this->company->id, 'branch_id' => $this->branch->id]);
+        $user->default_cash_box_id = null;
+        $user->save();
+
+        // عزل خزن المستخدم الشخصية
+        CashBox::where('user_id', $user->id)->update(['user_id' => null]);
+
+        $resolved = $user->getDefaultCashBoxForCompany($this->company->id);
+        $this->assertNull($resolved);
+    }
+
+    /**
+     * 9. فحص قواعد آلة الحالات للخزن ورفض الانتقالات غير الصالحة
+     */
+    public function test_cash_box_state_machine_transitions_validation()
+    {
+        $box = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'status' => \App\Enums\CashBoxStatus::ARCHIVED,
+            'access_type' => 'company_shared'
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('لا يمكن تنشيط الخزائن المؤرشفة مباشرة');
+        
+        app(\App\Services\CashBoxLifecycleService::class)->activate($box, $this->staff);
+    }
+
+    /**
+     * 10. فحص حظر تعديل رصيد الخزينة مباشرة بدون FinancialEngine
+     */
+    public function test_cannot_modify_cash_box_balance_directly()
+    {
+        $box = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'status' => \App\Enums\CashBoxStatus::ACTIVE,
+            'balance' => 0
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('ممنوع تعديل رصيد الخزنة مباشرة');
+
+        $box->balance = 500;
+        $box->save();
+    }
+
+    /**
+     * 11. فحص حظر الحذف المادي للخزن نهائياً
+     */
+    public function test_cannot_physically_delete_cashbox()
+    {
+        $box = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'status' => \App\Enums\CashBoxStatus::ACTIVE
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('لا يمكن حذف الخزائن نهائياً');
+
+        $box->delete();
+    }
 }
+

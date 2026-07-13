@@ -297,53 +297,35 @@ class TransactionController extends Controller
             $authUser = Auth::user();
             if (!$authUser) return api_unauthorized('يتطلب المصادقة.');
 
-            \App\Models\Transaction::$preventObserverLog = true;
             DB::beginTransaction();
             try {
                 $transaction = Transaction::findOrFail($transactionId);
 
-                // Permission check simplified for example
+                // Permission check
                 if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $transaction->company_id !== $authUser->active_company_id) {
                     return api_forbidden('ليس لديك إذن.');
                 }
 
-                switch ($transaction->type) {
-                    case 'transfer_out':
-                    case 'تحويل_صادر':
-                        $transaction->reverseTransfer();
-                        break;
-                    case 'withdraw':
-                    case 'سحب':
-                        $transaction->reverseWithdraw();
-                        break;
-                    case 'deposit':
-                    case 'إيداع':
-                        $transaction->reverseDeposit();
-                        break;
-                    default:
-                        throw new \Exception('نوع المعاملة غير مدعوم للعكس.');
+                if (is_null($transaction->financial_operation_id)) {
+                    return api_error('المعاملة المحددة لا تنتمي لعملية مالية مسجلة بالنظام ليمكن عكسها.', [], 422);
                 }
 
-                $reversedTransaction = Transaction::create([
-                    'created_by' => $authUser->id,
-                    'company_id' => $authUser->active_company_id,
-                    'user_id' => $transaction->user_id,
-                    'cashbox_id' => $transaction->cashbox_id,
-                    'amount' => -$transaction->amount,
-                    'balance_before' => $transaction->balance_after,
-                    'balance_after' => $transaction->balance_before,
-                    'description' => 'عكس المعاملة الأصلية رقم: ' . $transaction->id,
-                    'original_transaction_id' => $transaction->id,
-                    'type' => 'reverse_' . $transaction->type,
-                ]);
+                $engine = app(\App\Contracts\FinancialEngineInterface::class);
+                $reversalOpId = $engine->reverseOperation($transaction->financial_operation_id, 'عكس المعاملة يدوياً عبر لوحة التحكم');
+
+                $reversedTransaction = Transaction::where('financial_operation_id', $reversalOpId)
+                    ->where('cashbox_id', $transaction->cashbox_id)
+                    ->first();
+
+                if (!$reversedTransaction) {
+                    $reversedTransaction = Transaction::where('financial_operation_id', $reversalOpId)->first();
+                }
 
                 DB::commit();
                 return api_success(new TransactionResource($reversedTransaction), 'تم عكس المعاملة بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
                 return api_exception($e, 500);
-            } finally {
-                \App\Models\Transaction::$preventObserverLog = false;
             }
         } catch (Throwable $e) {
             return api_exception($e, 500);
