@@ -29,6 +29,7 @@ class FinancialEngine implements FinancialEngineInterface
     protected FinancialLedgerService $ledgerService;
     protected InvoiceStateService $invoiceStateService;
     protected CustomerCreditService $creditService;
+    protected CashBoxDomainRules $rules;
 
     public function __construct(
         FinancialOperationService $operationService,
@@ -37,7 +38,8 @@ class FinancialEngine implements FinancialEngineInterface
         PayableService $payableService,
         FinancialLedgerService $ledgerService,
         InvoiceStateService $invoiceStateService,
-        CustomerCreditService $creditService
+        CustomerCreditService $creditService,
+        CashBoxDomainRules $rules
     ) {
         $this->operationService = $operationService;
         $this->cashService = $cashService;
@@ -46,6 +48,7 @@ class FinancialEngine implements FinancialEngineInterface
         $this->ledgerService = $ledgerService;
         $this->invoiceStateService = $invoiceStateService;
         $this->creditService = $creditService;
+        $this->rules = $rules;
     }
 
     /**
@@ -62,6 +65,9 @@ class FinancialEngine implements FinancialEngineInterface
         if ($exists) {
             return;
         }
+
+        $cashBox = \Modules\Accounting\Models\CashBox::withoutGlobalScopes()->findOrFail($cashBoxId);
+        $this->rules->validateOperation($cashBox, $amount, 'deposit', $cashBox->company_id);
 
         $this->cashService->deposit($amount, $cashBoxId, $operationId, $metadata);
     }
@@ -80,6 +86,9 @@ class FinancialEngine implements FinancialEngineInterface
         if ($exists) {
             return;
         }
+
+        $cashBox = \Modules\Accounting\Models\CashBox::withoutGlobalScopes()->findOrFail($cashBoxId);
+        $this->rules->validateOperation($cashBox, $amount, 'withdraw', $cashBox->company_id);
 
         $this->cashService->withdraw($amount, $cashBoxId, $operationId, $metadata);
     }
@@ -160,9 +169,6 @@ class FinancialEngine implements FinancialEngineInterface
         $this->payableService->reduce($supplier, $amount, $operationId, $metadata);
     }
 
-    /**
-     * تحويل نقدية بين خزنتين مع قفل قاعدة البيانات الحصري
-     */
     public function transferCash(int $fromBoxId, int $toBoxId, float $amount, string $operationId, ?string $desc = null): void
     {
         $exists = Transaction::withoutGlobalScopes()
@@ -173,6 +179,12 @@ class FinancialEngine implements FinancialEngineInterface
         if ($exists) {
             return;
         }
+
+        $fromBox = \Modules\Accounting\Models\CashBox::withoutGlobalScopes()->findOrFail($fromBoxId);
+        $toBox = \Modules\Accounting\Models\CashBox::withoutGlobalScopes()->findOrFail($toBoxId);
+
+        $this->rules->validateOperation($fromBox, $amount, 'withdraw', $fromBox->company_id);
+        $this->rules->validateOperation($toBox, $amount, 'deposit', $toBox->company_id);
 
         DB::transaction(function () use ($fromBoxId, $toBoxId, $amount, $operationId, $desc) {
             $this->cashService->transfer($fromBoxId, $toBoxId, $amount, $operationId, $desc);

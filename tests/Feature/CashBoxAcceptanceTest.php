@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\CashBox;
 use Modules\Companies\Models\Capability;
-use App\Models\BusinessRelation;
+use Modules\Companies\Models\BusinessRelation;
 use App\Models\CompanyUser;
 use Modules\Companies\Models\RelationType;
 use App\Enums\CashBoxStatus;
@@ -43,13 +43,15 @@ class CashBoxAcceptanceTest extends TestCase
             'is_active' => true,
         ]);
 
+        // زرع نوع الخزنة الافتراضي باسم "نقدي" المطلوب لخدمة التزويد
         $this->cashBoxType = \App\Models\CashBoxType::create([
             'company_id' => $this->company->id,
-            'name' => 'خزينة نقدية',
+            'name' => 'نقدي',
             'is_active' => true,
         ]);
 
         $this->admin = User::factory()->create([
+            'company_id' => $this->company->id,
             'active_company_id' => $this->company->id,
             'branch_id' => $this->branch->id,
         ]);
@@ -60,28 +62,22 @@ class CashBoxAcceptanceTest extends TestCase
      */
     public function test_scenario_one_employee_lifecycle()
     {
+        $this->actingAs($this->admin);
+
         // 1. إنشاء موظف جديد يمتلك has_cash_custody
         $employee = User::factory()->create([
+            'company_id' => $this->company->id,
             'active_company_id' => $this->company->id,
             'branch_id' => $this->branch->id,
         ]);
 
-        $internalRelationType = RelationType::where('code', 'internal-employee')->first();
-        if (!$internalRelationType) {
-            $internalRelationType = RelationType::create([
-                'code' => 'internal-employee',
-                'display_name' => 'موظف داخلي',
-            ]);
-            $custodyCap = Capability::where('code', 'has_cash_custody')->first();
-            $internalCap = Capability::where('code', 'is_internal')->first();
-            $internalRelationType->capabilities()->attach([$custodyCap->id, $internalCap->id]);
-        }
+        $employeeRelationType = RelationType::where('code', 'employee')->firstOrFail();
 
         BusinessRelation::create([
             'company_id' => $this->company->id,
             'user_id' => $employee->id,
-            'relation_type' => 'internal-employee',
-            'relation_type_id' => $internalRelationType->id,
+            'relation_type' => 'employee',
+            'relation_type_id' => $employeeRelationType->id,
             'is_active' => true,
         ]);
 
@@ -96,7 +92,7 @@ class CashBoxAcceptanceTest extends TestCase
             ->where('company_id', $this->company->id)
             ->first();
         $this->assertNotNull($box);
-        $this->assertEquals('active', $box->status);
+        $this->assertEquals(CashBoxStatus::ACTIVE, $box->status);
 
         // 3. تعيينها كخزنته الافتراضية
         $lifecycleService = app(CashBoxLifecycleService::class);
@@ -105,21 +101,21 @@ class CashBoxAcceptanceTest extends TestCase
 
         // 4. إجراء إيداع
         $engine = app(FinancialEngine::class);
-        $engine->deposit($box, 1000.00, 'deposit', $employee->id);
+        $engine->receiveMoney(1000.00, $box->id, 'op-123', ['user_id' => $employee->id]);
         $this->assertEquals(1000.00, $box->fresh()->balance);
 
         // 5. سحب مبلغ
-        $engine->withdraw($box, 300.00, 'withdraw', $employee->id);
+        $engine->payMoney(300.00, $box->id, 'op-124', ['user_id' => $employee->id]);
         $this->assertEquals(700.00, $box->fresh()->balance);
 
         // 6. تعطيل الخزنة (يحاكي تعطيل الموظف أو فك ارتباطه)
         $lifecycleService->deactivate($box);
 
         // 7. التأكد من تعطيل الخزنة وعدم إمكانية استخدامها
-        $this->assertEquals('inactive', $box->fresh()->status);
+        $this->assertEquals(CashBoxStatus::INACTIVE, $box->fresh()->status);
         
         $this->expectException(Exception::class);
-        $engine->deposit($box, 100.00, 'deposit', $employee->id);
+        $engine->receiveMoney(100.00, $box->id, 'op-125', ['user_id' => $employee->id]);
     }
 
     /**
@@ -127,15 +123,19 @@ class CashBoxAcceptanceTest extends TestCase
      */
     public function test_scenario_two_shared_cash_boxes()
     {
+        $this->actingAs($this->admin);
+
         $lifecycleService = app(CashBoxLifecycleService::class);
         $accessService = app(CashBoxAccessService::class);
 
         // 1. إنشاء موظفين
         $employee1 = User::factory()->create([
+            'company_id' => $this->company->id,
             'active_company_id' => $this->company->id,
             'branch_id' => $this->branch->id,
         ]);
         $employee2 = User::factory()->create([
+            'company_id' => $this->company->id,
             'active_company_id' => $this->company->id,
             'branch_id' => $this->branch->id,
         ]);
@@ -156,21 +156,30 @@ class CashBoxAcceptanceTest extends TestCase
         $lifecycleService->grantAccess($sharedBox, $employee2->id);
 
         // 4. التأكد أن الموظفين المصرح لهم فقط يستطيعون الوصول
+        $this->actingAs($employee1);
         $this->assertTrue($accessService->canAccess($employee1, $sharedBox));
+        
+        $this->actingAs($employee2);
         $this->assertTrue($accessService->canAccess($employee2, $sharedBox));
 
         // موظف خارجي عشوائي لا يمكنه الوصول
         $randomUser = User::factory()->create([
+            'company_id' => $this->company->id,
             'active_company_id' => $this->company->id,
             'branch_id' => $this->branch->id,
         ]);
+        $this->actingAs($randomUser);
         $this->assertFalse($accessService->canAccess($randomUser, $sharedBox));
 
         // 5. إزالة صلاحية أحدهم (موظف 2)
+        $this->actingAs($this->admin);
         $lifecycleService->revokeAccess($sharedBox, $employee2->id);
 
         // 6. التأكد من رفض الوصول بعد إزالة الصلاحية
+        $this->actingAs($employee1);
         $this->assertTrue($accessService->canAccess($employee1, $sharedBox));
+        
+        $this->actingAs($employee2);
         $this->assertFalse($accessService->canAccess($employee2, $sharedBox));
     }
 
@@ -179,30 +188,24 @@ class CashBoxAcceptanceTest extends TestCase
      */
     public function test_scenario_three_multiple_cash_boxes()
     {
+        $this->actingAs($this->admin);
+
         $lifecycleService = app(CashBoxLifecycleService::class);
         $resolver = app(DefaultCashBoxResolver::class);
 
         $employee = User::factory()->create([
+            'company_id' => $this->company->id,
             'active_company_id' => $this->company->id,
             'branch_id' => $this->branch->id,
         ]);
 
-        // لمنح الموظف القدرة على امتلاك خزن
-        $internalRelationType = RelationType::where('code', 'internal-employee')->first();
-        if (!$internalRelationType) {
-            $internalRelationType = RelationType::create([
-                'code' => 'internal-employee',
-                'display_name' => 'موظف داخلي',
-            ]);
-            $custodyCap = Capability::where('code', 'has_cash_custody')->first();
-            $internalCap = Capability::where('code', 'is_internal')->first();
-            $internalRelationType->capabilities()->attach([$custodyCap->id, $internalCap->id]);
-        }
+        $employeeRelationType = RelationType::where('code', 'employee')->firstOrFail();
+
         BusinessRelation::create([
             'company_id' => $this->company->id,
             'user_id' => $employee->id,
-            'relation_type' => 'internal-employee',
-            'relation_type_id' => $internalRelationType->id,
+            'relation_type' => 'employee',
+            'relation_type_id' => $employeeRelationType->id,
             'is_active' => true,
         ]);
 
@@ -256,6 +259,8 @@ class CashBoxAcceptanceTest extends TestCase
      */
     public function test_scenario_four_isolation()
     {
+        $this->actingAs($this->admin);
+
         $lifecycleService = app(CashBoxLifecycleService::class);
         $accessService = app(CashBoxAccessService::class);
 
@@ -271,10 +276,12 @@ class CashBoxAcceptanceTest extends TestCase
         ]);
 
         $employee1 = User::factory()->create([
+            'company_id' => $company1->id,
             'active_company_id' => $company1->id,
             'branch_id' => $this->branch->id,
         ]);
         $employee2 = User::factory()->create([
+            'company_id' => $company2->id,
             'active_company_id' => $company2->id,
             'branch_id' => $branch2->id,
         ]);
@@ -303,9 +310,11 @@ class CashBoxAcceptanceTest extends TestCase
         $lifecycleService->grantAccess($boxCompany1, $employee1->id);
         $lifecycleService->grantAccess($boxCompany2, $employee2->id);
 
+        $this->actingAs($employee1);
         $this->assertTrue($accessService->canAccess($employee1, $boxCompany1));
         $this->assertFalse($accessService->canAccess($employee1, $boxCompany2));
 
+        $this->actingAs($employee2);
         $this->assertTrue($accessService->canAccess($employee2, $boxCompany2));
         $this->assertFalse($accessService->canAccess($employee2, $boxCompany1));
     }
@@ -315,6 +324,8 @@ class CashBoxAcceptanceTest extends TestCase
      */
     public function test_scenario_five_balance_protection()
     {
+        $this->actingAs($this->admin);
+
         $lifecycleService = app(CashBoxLifecycleService::class);
         $box = $lifecycleService->create([
             'name' => 'Safe Test Protection',

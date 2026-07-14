@@ -14,7 +14,7 @@ class CashBoxService extends CashBoxProvisioningService
     /**
      * الاسم القديم لدالة التزويد
      */
-    public function createDefaultCashBoxForUserCompany(int $userId, int $companyId, int $createdById, ?int $branchId = null): ?CashBox
+    public function createDefaultCashBoxForUserCompany(int $userId, int $companyId, int $createdById, ?int $branchId = null)
     {
         return $this->provisionDefaultCustody($userId, $companyId, $createdById, $branchId);
     }

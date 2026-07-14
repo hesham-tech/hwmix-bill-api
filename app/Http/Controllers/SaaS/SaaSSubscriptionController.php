@@ -300,10 +300,14 @@ class SaaSSubscriptionController extends Controller
             $request->validate([
                 'company_id' => 'required|integer|exists:companies,id',
                 'plan_id' => 'required|integer|exists:plans,id',
+                'duration' => 'nullable|integer|min:1',
+                'duration_unit' => 'nullable|string|in:days,months,years,day,month,year',
             ]);
 
             $companyId = (int) $request->input('company_id');
             $planId = (int) $request->input('plan_id');
+            $duration = $request->input('duration') ? (int) $request->input('duration') : null;
+            $durationUnit = $request->input('duration_unit');
 
             // التحقق من أن الباقة نشطة
             $plan = \App\Models\Plan::where('id', $planId)->where('is_active', true)->first();
@@ -311,8 +315,8 @@ class SaaSSubscriptionController extends Controller
                 return api_error('الباقة المطلوبة غير متوفرة حالياً أو تم تعطيلها.', [], 422);
             }
 
-            // ترقية أو تغيير باقة الشركة مع تخطي الفترة التجريبية
-            $subscription = \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId, 1, null, true);
+            // ترقية أو تغيير باقة الشركة مع تخطي الفترة التجريبية وتمرير المدة والوحدة المخصصة
+            $subscription = \App\Services\SaaS\SubscriptionService::upgradePlan($companyId, $planId, 1, null, true, $duration, $durationUnit);
 
             // تفعيل الاشتراك مباشرة وتجاوز الدفع المعلق وتأكيد إلغاء فترة التجربة
             $subscription->update([

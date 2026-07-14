@@ -14,11 +14,18 @@ class SubscriptionService
     /**
      * تفعيل واشتراك باقة جديدة لشركة مع خيار تحديد الأشهر والكوبون.
      */
-    public static function initializeSubscription(int $companyId, int $planId, int $months = 1, ?string $couponCode = null, bool $skipTrial = false): CompanySubscription
-    {
+    public static function initializeSubscription(
+        int $companyId,
+        int $planId,
+        int $months = 1,
+        ?string $couponCode = null,
+        bool $skipTrial = false,
+        ?int $customDuration = null,
+        ?string $customDurationUnit = null
+    ): CompanySubscription {
         $plan = Plan::findOrFail($planId);
 
-        // 1. حساب السعر والخصومات والكوبونات بدقة عبرPricingCalculator
+        // 1. حساب السعر والخصومات والكوبونات بدقة عبر PricingCalculator
         $pricing = PricingCalculator::calculate($planId, $months, $couponCode);
         $totalPrice = $pricing['total_price'] ?: 0.00;
 
@@ -27,8 +34,20 @@ class SubscriptionService
         $trialEndsAt = $trialDays > 0 ? Carbon::now()->addDays($trialDays) : null;
         $status = $trialDays > 0 ? 'trial' : ($totalPrice > 0 ? 'pending' : 'active');
 
-        // حساب تاريخ انتهاء الاشتراك بناء على الأشهر المختارة
-        $endsAt = Carbon::now()->addMonths($months);
+        // حساب تاريخ انتهاء الاشتراك بناء على المدة والوحدة المحددة (سواء مخصصة أو أشهر افتراضية)
+        $duration = $customDuration ?? $months;
+        $unit = strtolower($customDurationUnit ?? 'months');
+
+        $endsAt = Carbon::now();
+        if ($unit === 'day' || $unit === 'days') {
+            $endsAt->addDays($duration);
+        } elseif ($unit === 'month' || $unit === 'months') {
+            $endsAt->addMonths($duration);
+        } elseif ($unit === 'year' || $unit === 'years') {
+            $endsAt->addYears($duration);
+        } else {
+            $endsAt->addMonths($duration);
+        }
 
         // في حال وجود تجربة، يبدأ وقت انتهاء الاشتراك الفعلي بعد انتهاء التجربة
         if ($trialEndsAt) {
@@ -71,10 +90,17 @@ class SubscriptionService
     /**
      * ترقية الباقة لشركة حالية مع تحديد الأشهر والكوبون.
      */
-    public static function upgradePlan(int $companyId, int $newPlanId, int $months = 1, ?string $couponCode = null, bool $skipTrial = true): CompanySubscription
-    {
-        // نقوم بإنشاء اشتراك جديد بالباقة الجديدة تلقائياً مع خيار تخطي التجربة
-        return self::initializeSubscription($companyId, $newPlanId, $months, $couponCode, $skipTrial);
+    public static function upgradePlan(
+        int $companyId,
+        int $newPlanId,
+        int $months = 1,
+        ?string $couponCode = null,
+        bool $skipTrial = true,
+        ?int $customDuration = null,
+        ?string $customDurationUnit = null
+    ): CompanySubscription {
+        // نقوم بإنشاء اشتراك جديد بالباقة الجديدة تلقائياً مع خيار تخطي التجربة وتمرير المدة والوحدة المخصصة
+        return self::initializeSubscription($companyId, $newPlanId, $months, $couponCode, $skipTrial, $customDuration, $customDurationUnit);
     }
 
     /**
