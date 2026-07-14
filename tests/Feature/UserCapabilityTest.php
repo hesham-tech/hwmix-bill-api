@@ -46,6 +46,14 @@ class UserCapabilityTest extends TestCase
             'company_id' => $this->company->id,
         ]);
 
+        // إنشاء الفرع الرئيسي الافتراضي للشركة
+        \Modules\Companies\Models\Branch::create([
+            'name' => 'الفرع الرئيسي',
+            'company_id' => $this->company->id,
+            'is_default' => true,
+            'created_by' => $this->admin->id,
+        ]);
+
         // زرع نوع الخزنة الافتراضي لتمكين عمليات الإنشاء في الخدمة
         \App\Models\CashBoxType::create([
             'name' => 'نقدي',
