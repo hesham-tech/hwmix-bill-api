@@ -22,10 +22,22 @@ if (!function_exists('api_success')) {
 
         // ✅ إضافة سياق المستخدم الموثق (الرصيد المحدث للشركة النشطة)
         if (auth()->check()) {
+            $user = auth()->user();
+            $companyId = $user->active_company_id ?? $user->company_id;
+            
+            $isStaff = false;
+            if ($companyId) {
+                $isStaff = $user->hasCapability('is_internal', $companyId)
+                    || $user->hasPermissionTo(perm_key('admin.super'))
+                    || $user->hasPermissionTo(perm_key('admin.company'));
+            }
+            
+            $balance = $isStaff ? $user->active_branch_balance : $user->balance;
+
             $response['auth'] = [
                 'user' => [
-                    'id' => auth()->id(),
-                    'balance' => (float) auth()->user()->balance,
+                    'id' => $user->id,
+                    'balance' => (float) $balance,
                 ]
             ];
         }
