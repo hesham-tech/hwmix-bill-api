@@ -127,9 +127,9 @@ class User extends Authenticatable
     // كاش داخلي لتجنب تكرار الاستعلامات عن الخزنة الافتراضية
     protected array $defaultCashBoxCache = [];
 
-    public function getDefaultCashBoxForCompany($companyId = null)
+    public function getDefaultCashBoxForCompany($companyId = null, ?int $branchId = null)
     {
-        return app(\App\Services\DefaultCashBoxResolver::class)->resolve($this, $companyId);
+        return app(\App\Services\DefaultCashBoxResolver::class)->resolve($this, $companyId, $branchId);
     }
 
     public function canAccessCashBox($cashBox): bool
@@ -139,10 +139,25 @@ class User extends Authenticatable
 
     /**
      * علاقة الحصول على الخزنة الافتراضية.
+     * @deprecated تم نقل الخزنة الافتراضية إلى علاقة المستخدم بالفرع branch_user
      */
     public function defaultCashBox()
     {
         return $this->belongsTo(CashBox::class, 'default_cash_box_id');
+    }
+
+    /**
+     * الحصول على سجل العضوية والإعدادات الخاصة بالمستخدم في فرع معين
+     */
+    public function branchMembership(?int $branchId = null): ?\App\Models\BranchUser
+    {
+        $branchId = $branchId ?? $this->branch_id;
+        if (!$branchId) {
+            return null;
+        }
+        return \App\Models\BranchUser::where('user_id', $this->id)
+            ->where('branch_id', $branchId)
+            ->first();
     }
 
     /**
@@ -369,12 +384,11 @@ class User extends Authenticatable
         return $this->hasMany(\Modules\Companies\Models\Branch::class, 'company_id', 'active_company_id');
     }
 
-    /**
-     * علاقة الفروع المخصصة للمستخدم عبر الجدول الوسيط branch_user
-     */
     public function branches(): BelongsToMany
     {
         return $this->belongsToMany(\Modules\Companies\Models\Branch::class, 'branch_user', 'user_id', 'branch_id')
+            ->using(\App\Models\BranchUser::class)
+            ->withPivot('default_cash_box_id', 'default_warehouse_id')
             ->withTimestamps();
     }
 

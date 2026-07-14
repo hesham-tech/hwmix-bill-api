@@ -74,19 +74,19 @@ class CashBoxHealthCheck extends Command
         }
 
         // 4. فحص وجود افتراضية للمستخدم تشير لخزنة غير نشطة
-        $inactiveDefaults = User::withoutGlobalScopes()
+        $inactiveDefaults = DB::table('branch_user')
             ->whereNotNull('default_cash_box_id')
             ->get()
-            ->filter(function($user) {
-                $box = CashBox::withoutGlobalScopes()->find($user->default_cash_box_id);
+            ->filter(function($row) {
+                $box = CashBox::withoutGlobalScopes()->find($row->default_cash_box_id);
                 return $box && $box->status !== CashBoxStatus::ACTIVE;
             });
 
         if ($inactiveDefaults->isNotEmpty()) {
             $errors++;
-            $this->error('❌ خطأ: مستخدمون لديهم خزنة افتراضية غير نشطة!');
-            foreach ($inactiveDefaults as $user) {
-                $this->line("   - مستخدم ID: {$user->id}، خزنة افتراضية: {$user->default_cash_box_id}");
+            $this->error('❌ خطأ: مستخدمون لديهم خزنة افتراضية غير نشطة في فروعهم!');
+            foreach ($inactiveDefaults as $row) {
+                $this->line("   - مستخدم ID: {$row->user_id}، فرع ID: {$row->branch_id}، خزنة افتراضية: {$row->default_cash_box_id}");
             }
         }
 
@@ -127,19 +127,21 @@ class CashBoxHealthCheck extends Command
         }
 
         // 8. فحص مستخدم لديه default ولا يملك صلاحية وصول عليها
-        $usersNoAccessDefault = User::withoutGlobalScopes()
+        $usersNoAccessDefault = DB::table('branch_user')
             ->whereNotNull('default_cash_box_id')
             ->get()
-            ->filter(function($user) {
-                $box = CashBox::withoutGlobalScopes()->find($user->default_cash_box_id);
-                return $box && !$user->canAccessCashBox($box);
+            ->filter(function($row) {
+                $user = User::withoutGlobalScopes()->find($row->user_id);
+                $box = CashBox::withoutGlobalScopes()->find($row->default_cash_box_id);
+                return $user && $box && !$user->canAccessCashBox($box);
             });
 
         if ($usersNoAccessDefault->isNotEmpty()) {
             $errors++;
-            $this->error('❌ خطأ: مستخدمون لديهم خزنة افتراضية لا يملكون صلاحية الوصول إليها!');
-            foreach ($usersNoAccessDefault as $user) {
-                $this->line("   - مستخدم ID: {$user->id}، الاسم: {$user->name}، خزنة: {$user->default_cash_box_id}");
+            $this->error('❌ خطأ: مستخدمون لديهم خزنة افتراضية لا يملكون صلاحية الوصول إليها في فروعهم!');
+            foreach ($usersNoAccessDefault as $row) {
+                $user = User::withoutGlobalScopes()->find($row->user_id);
+                $this->line("   - مستخدم ID: {$row->user_id}، الاسم: " . ($user ? $user->name : 'N/A') . "، فرع ID: {$row->branch_id}، خزنة: {$row->default_cash_box_id}");
             }
         }
 

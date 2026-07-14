@@ -161,12 +161,12 @@ class CashBoxController extends Controller
 
                 $cashBox = app(\App\Services\CashBoxLifecycleService::class)->create($validatedData, $authUser);
 
-                // حفظ إعداد الخزينة الافتراضية للمستخدم في جدول المستخدمين
+                // حفظ إعداد الخزينة الافتراضية للمستخدم في الفرع
                 if (isset($request->is_default) && $request->is_default) {
                     $userId = $validatedData['user_id'] ?? $authUser->id;
                     $targetUser = \App\Models\User::withoutGlobalScopes()->find($userId);
                     if ($targetUser) {
-                        app(\App\Services\CashBoxLifecycleService::class)->changeDefault($targetUser, $cashBox->id, $authUser);
+                        app(\App\Services\CashBoxLifecycleService::class)->changeDefault($targetUser, $cashBox->id, $authUser, $cashBox->branch_id);
                     }
                 }
 
@@ -273,10 +273,11 @@ class CashBoxController extends Controller
                     $targetUser = \App\Models\User::withoutGlobalScopes()->find($userId);
                     if ($targetUser) {
                         if ($request->is_default) {
-                            $lifecycle->changeDefault($targetUser, $cashBox->id, $authUser);
+                            $lifecycle->changeDefault($targetUser, $cashBox->id, $authUser, $cashBox->branch_id);
                         } else {
-                            if ($targetUser->default_cash_box_id === $cashBox->id) {
-                                $lifecycle->changeDefault($targetUser, null, $authUser);
+                            $membership = $targetUser->branchMembership($cashBox->branch_id);
+                            if ($membership && $membership->default_cash_box_id === $cashBox->id) {
+                                $lifecycle->changeDefault($targetUser, null, $authUser, $cashBox->branch_id);
                             }
                         }
                     }

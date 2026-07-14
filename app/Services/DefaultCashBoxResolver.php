@@ -14,28 +14,35 @@ class DefaultCashBoxResolver
     /**
      * تحديد الخزينة الافتراضية للشركة والفرع الحالي للمستخدم
      */
-    public function resolve(User $user, ?int $companyId = null): ?CashBox
+    public function resolve(User $user, ?int $companyId = null, ?int $branchId = null): ?CashBox
     {
         $companyId = $companyId ?? $user->active_company_id;
         if (!$companyId) {
             return null;
         }
 
-        // 1. جلب التفضيل المخزن في جدول المستخدمين (users.default_cash_box_id)
-        if ($user->default_cash_box_id) {
-            $defaultBox = CashBox::withoutGlobalScopes()
-                ->where('id', $user->default_cash_box_id)
-                ->where('status', CashBoxStatus::ACTIVE)
-                ->first();
+        $branchId = $branchId ?? $user->branch_id;
 
-            if ($defaultBox && $defaultBox->company_id === $companyId) {
-                // التحقق من تطابق الفرع للمستخدمين العاديين
-                if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company'))) {
-                    if ($defaultBox->branch_id === $user->branch_id) {
+        // 1. جلب التفضيل المخزن في جدول العضوية بالفرع (branch_user.default_cash_box_id)
+        if ($branchId) {
+            $membership = $user->branchMembership($branchId);
+            $defaultCashBoxId = $membership ? $membership->default_cash_box_id : null;
+
+            if ($defaultCashBoxId) {
+                $defaultBox = CashBox::withoutGlobalScopes()
+                    ->where('id', $defaultCashBoxId)
+                    ->where('status', CashBoxStatus::ACTIVE)
+                    ->first();
+
+                if ($defaultBox && $defaultBox->company_id === $companyId) {
+                    // التحقق من تطابق الفرع للمستخدمين العاديين
+                    if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company'))) {
+                        if ($defaultBox->branch_id === $branchId) {
+                            return $defaultBox;
+                        }
+                    } else {
                         return $defaultBox;
                     }
-                } else {
-                    return $defaultBox;
                 }
             }
         }
@@ -47,7 +54,9 @@ class DefaultCashBoxResolver
             ->where('status', CashBoxStatus::ACTIVE);
 
         if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company'))) {
-            $personalQuery->where('branch_id', $user->branch_id);
+            if ($branchId) {
+                $personalQuery->where('branch_id', $branchId);
+            }
         }
 
         $personalBox = $personalQuery->first();
@@ -65,7 +74,9 @@ class DefaultCashBoxResolver
             });
 
         if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company'))) {
-            $sharedQuery->where('branch_id', $user->branch_id);
+            if ($branchId) {
+                $sharedQuery->where('branch_id', $branchId);
+            }
         }
 
         return $sharedQuery->first();

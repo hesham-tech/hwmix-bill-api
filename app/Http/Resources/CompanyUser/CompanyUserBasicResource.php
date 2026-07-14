@@ -23,7 +23,7 @@ class CompanyUserBasicResource extends JsonResource
 
         // الحصول على الخزنة الافتراضية للشركة الحالية
         $defaultCashBox = $this->whenLoaded('user', function () {
-            return $this->user->getDefaultCashBoxForCompany($this->company_id);
+            return $this->user->getDefaultCashBoxForCompany($this->company_id, $this->branch_id ?? $this->user->branch_id);
         });
 
         return [

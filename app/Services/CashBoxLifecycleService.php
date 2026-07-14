@@ -83,10 +83,13 @@ class CashBoxLifecycleService
             $cashBox->status = CashBoxStatus::INACTIVE;
             $cashBox->save();
 
-            // فحص سحب الخزنة الافتراضية إذا تم تعطيلها
-            $users = User::withoutGlobalScopes()->where('default_cash_box_id', $cashBox->id)->get();
-            foreach ($users as $user) {
-                $this->changeDefault($user, null, $actor);
+            // فحص سحب الخزنة الافتراضية إذا تم تعطيلها من علاقات الفروع
+            $memberships = DB::table('branch_user')->where('default_cash_box_id', $cashBox->id)->get();
+            foreach ($memberships as $membership) {
+                $user = User::withoutGlobalScopes()->find($membership->user_id);
+                if ($user) {
+                    $this->changeDefault($user, null, $actor, $membership->branch_id);
+                }
             }
 
             event(new CashBoxDeactivated($cashBox, $actor));
@@ -104,10 +107,13 @@ class CashBoxLifecycleService
             $cashBox->status = CashBoxStatus::ARCHIVED;
             $cashBox->save();
 
-            // إزالة تعيينها كخزنة افتراضية لأي مستخدم
-            $users = User::withoutGlobalScopes()->where('default_cash_box_id', $cashBox->id)->get();
-            foreach ($users as $user) {
-                $this->changeDefault($user, null, $actor);
+            // إزالة تعيينها كخزنة افتراضية لأي مستخدم من علاقات الفروع
+            $memberships = DB::table('branch_user')->where('default_cash_box_id', $cashBox->id)->get();
+            foreach ($memberships as $membership) {
+                $user = User::withoutGlobalScopes()->find($membership->user_id);
+                if ($user) {
+                    $this->changeDefault($user, null, $actor, $membership->branch_id);
+                }
             }
 
             event(new CashBoxArchived($cashBox, $actor));
@@ -133,11 +139,14 @@ class CashBoxLifecycleService
             $cashBox->access_type = $userId ? 'personal' : 'company_shared';
             $cashBox->save();
 
-            // إذا أصبحت مشتركة، نقوم بإلغاء ارتباطها كافتراضية للمستخدم القديم
+            // إذا أصبحت مشتركة، نقوم بإلغاء ارتباطها كافتراضية للمستخدم القديم في هذا الفرع
             if (is_null($userId) && $oldData['user_id']) {
                 $oldUser = User::withoutGlobalScopes()->find($oldData['user_id']);
-                if ($oldUser && $oldUser->default_cash_box_id === $cashBox->id) {
-                    $this->changeDefault($oldUser, null, $actor);
+                if ($oldUser) {
+                    $membership = $oldUser->branchMembership($cashBox->branch_id);
+                    if ($membership && $membership->default_cash_box_id === $cashBox->id) {
+                        $this->changeDefault($oldUser, null, $actor, $cashBox->branch_id);
+                    }
                 }
             }
         });
@@ -162,13 +171,8 @@ class CashBoxLifecycleService
     /**
      * تغيير الخزنة الافتراضية المفضلة للمستخدم
      */
-    public function changeDefault(User $user, ?int $cashBoxId, ?User $actor = null): void
+    public function changeDefault(User $user, ?int $cashBoxId, ?User $actor = null, ?int $branchId = null): void
     {
-        $oldId = $user->default_cash_box_id;
-        if ($oldId === $cashBoxId) {
-            return;
-        }
-
         $cashBox = null;
         if ($cashBoxId) {
             $cashBox = \Modules\Accounting\Models\CashBox::withoutGlobalScopes()->find($cashBoxId);
@@ -183,9 +187,38 @@ class CashBoxLifecycleService
             }
         }
 
-        DB::transaction(function () use ($user, $cashBoxId, $cashBox, $oldId, $actor) {
-            $user->default_cash_box_id = $cashBoxId;
-            $user->save();
+        $targetBranchId = $branchId ?? ($cashBox ? $cashBox->branch_id : $user->branch_id);
+
+        if (!$targetBranchId) {
+            throw new Exception("تعذر تحديد الفرع لتعيين الخزينة الافتراضية.");
+        }
+
+        // جلب المعرف القديم لتمريره لحدث التغيير
+        $oldId = null;
+        $membership = $user->branchMembership($targetBranchId);
+        if ($membership) {
+            $oldId = $membership->default_cash_box_id;
+        }
+
+        if ($oldId === $cashBoxId) {
+            return;
+        }
+
+        DB::transaction(function () use ($user, $cashBoxId, $cashBox, $oldId, $actor, $targetBranchId) {
+            // تحديث أو إنشاء علاقة العضوية بالفرع
+            DB::table('branch_user')->updateOrInsert(
+                ['user_id' => $user->id, 'branch_id' => $targetBranchId],
+                [
+                    'default_cash_box_id' => $cashBoxId,
+                    'updated_at' => now()
+                ]
+            );
+
+            // الحفاظ على توافق الحقل القديم مؤقتاً للتوافق للخلف
+            if ($user->branch_id == $targetBranchId) {
+                $user->default_cash_box_id = $cashBoxId;
+                $user->save();
+            }
 
             event(new DefaultCashBoxChanged($cashBox, $user, $oldId, $cashBoxId, $actor));
         });
@@ -221,9 +254,10 @@ class CashBoxLifecycleService
             if ($cashBox->users()->where('users.id', $user->id)->exists()) {
                 $cashBox->users()->detach($user->id);
 
-                // إزالة الافتراضية إذا كانت هي الخزينة المفضلة لديه
-                if ($user->default_cash_box_id === $cashBox->id) {
-                    $this->changeDefault($user, null, $actor);
+                // إزالة الافتراضية إذا كانت هي الخزينة المفضلة لديه في هذا الفرع
+                $membership = $user->branchMembership($cashBox->branch_id);
+                if ($membership && $membership->default_cash_box_id === $cashBox->id) {
+                    $this->changeDefault($user, null, $actor, $cashBox->branch_id);
                 }
 
                 event(new CashBoxAccessRevoked($cashBox, $user, $actor));

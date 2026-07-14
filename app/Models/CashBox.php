@@ -123,8 +123,11 @@ class CashBox extends Model
     public function getIsDefaultAttribute(): bool
     {
         $user = auth()->user();
-        if ($user && $user->default_cash_box_id === $this->id) {
-            return true;
+        if ($user) {
+            $defaultBox = $user->getDefaultCashBoxForCompany($this->company_id, $this->branch_id);
+            if ($defaultBox && $defaultBox->id === $this->id) {
+                return true;
+            }
         }
         return (bool)($this->attributes['is_default'] ?? false);
     }

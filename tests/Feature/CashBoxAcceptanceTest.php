@@ -14,6 +14,7 @@ use App\Enums\CashBoxStatus;
 use App\Services\CashBoxLifecycleService;
 use App\Services\CashBoxAccessService;
 use App\Services\DefaultCashBoxResolver;
+use App\Services\DefaultWarehouseResolver;
 use App\Services\FinancialEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
@@ -97,7 +98,7 @@ class CashBoxAcceptanceTest extends TestCase
         // 3. تعيينها كخزنته الافتراضية
         $lifecycleService = app(CashBoxLifecycleService::class);
         $lifecycleService->changeDefault($employee, $box->id);
-        $this->assertEquals($box->id, $employee->fresh()->default_cash_box_id);
+        $this->assertEquals($box->id, $employee->getDefaultCashBoxForCompany($this->company->id, $this->branch->id)->id);
 
         // 4. إجراء إيداع
         $engine = app(FinancialEngine::class);
@@ -350,5 +351,111 @@ class CashBoxAcceptanceTest extends TestCase
         // تشغيل الأمر والتأكد من سلامة قاعدة البيانات
         $exitCode = Artisan::call('cashboxes:health-check');
         $this->assertEquals(0, $exitCode);
+    }
+
+    /**
+     * السيناريو السابع: فحص تعيين خزن ومستودعات افتراضية مختلفة لكل فرع لنفس الموظف
+     */
+    public function test_branch_specific_default_cash_boxes_and_warehouses()
+    {
+        $this->actingAs($this->admin);
+
+        $lifecycleService = app(CashBoxLifecycleService::class);
+        $cashBoxResolver = app(DefaultCashBoxResolver::class);
+        $warehouseResolver = app(DefaultWarehouseResolver::class);
+
+        // 1. إنشاء فرع ثاني
+        $branch2 = \Modules\Companies\Models\Branch::create([
+            'company_id' => $this->company->id,
+            'name' => 'الفرع الثاني الفرعي',
+            'is_default' => false,
+            'is_active' => true,
+        ]);
+
+        $employee = User::factory()->create([
+            'company_id' => $this->company->id,
+            'active_company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+        ]);
+
+        $employeeRelationType = RelationType::where('code', 'employee')->firstOrFail();
+
+        BusinessRelation::create([
+            'company_id' => $this->company->id,
+            'user_id' => $employee->id,
+            'relation_type' => 'employee',
+            'relation_type_id' => $employeeRelationType->id,
+            'is_active' => true,
+        ]);
+
+        // 2. إنشاء خزنتين شخصيتين للموظف (واحدة بكل فرع)
+        $boxBranch1 = $lifecycleService->create([
+            'name' => 'خزينة الفرع الأول',
+            'cash_box_type_id' => $this->cashBoxType->id,
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'user_id' => $employee->id,
+            'access_type' => 'personal',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $boxBranch2 = $lifecycleService->create([
+            'name' => 'خزينة الفرع الثاني',
+            'cash_box_type_id' => $this->cashBoxType->id,
+            'company_id' => $this->company->id,
+            'branch_id' => $branch2->id,
+            'user_id' => $employee->id,
+            'access_type' => 'personal',
+            'created_by' => $this->admin->id,
+        ]);
+
+        // 3. تعيين الافتراضية لكل فرع مع محاكاة تغيير الفرع النشط للموظف
+        $employee->branch_id = $this->branch->id;
+        $employee->save();
+        $lifecycleService->changeDefault($employee, $boxBranch1->id, $this->admin, $this->branch->id);
+
+        $employee->branch_id = $branch2->id;
+        $employee->save();
+        $lifecycleService->changeDefault($employee, $boxBranch2->id, $this->admin, $branch2->id);
+
+        // 4. التحقق من دقة الحل لكل فرع على حدة
+        $resolvedBox1 = $cashBoxResolver->resolve($employee, $this->company->id, $this->branch->id);
+        $this->assertEquals($boxBranch1->id, $resolvedBox1->id);
+
+        $resolvedBox2 = $cashBoxResolver->resolve($employee, $this->company->id, $branch2->id);
+        $this->assertEquals($boxBranch2->id, $resolvedBox2->id);
+
+        // 5. إنشاء مستودعين (واحد بكل فرع)
+        $warehouseBranch1 = \Modules\Inventory\Models\Warehouse::create([
+            'name' => 'مستودع الفرع الأول',
+            'company_id' => $this->company->id,
+            'branch_id' => $this->branch->id,
+            'is_default' => false,
+        ]);
+
+        $warehouseBranch2 = \Modules\Inventory\Models\Warehouse::create([
+            'name' => 'مستودع الفرع الثاني',
+            'company_id' => $this->company->id,
+            'branch_id' => $branch2->id,
+            'is_default' => false,
+        ]);
+
+        // 6. تعيين المستودعات الافتراضية للموظف في جدول branch_user
+        \DB::table('branch_user')
+            ->where('user_id', $employee->id)
+            ->where('branch_id', $this->branch->id)
+            ->update(['default_warehouse_id' => $warehouseBranch1->id]);
+
+        \DB::table('branch_user')
+            ->where('user_id', $employee->id)
+            ->where('branch_id', $branch2->id)
+            ->update(['default_warehouse_id' => $warehouseBranch2->id]);
+
+        // 7. التحقق من حل المستودعات الافتراضية عبر الـ Resolver
+        $resolvedWarehouse1 = $warehouseResolver->resolve($employee, $this->company->id, $this->branch->id);
+        $this->assertEquals($warehouseBranch1->id, $resolvedWarehouse1->id);
+
+        $resolvedWarehouse2 = $warehouseResolver->resolve($employee, $this->company->id, $branch2->id);
+        $this->assertEquals($warehouseBranch2->id, $resolvedWarehouse2->id);
     }
 }

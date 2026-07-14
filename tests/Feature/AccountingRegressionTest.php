@@ -767,10 +767,10 @@ class AccountingRegressionTest extends TestCase
         $lifecycle = app(\App\Services\CashBoxLifecycleService::class);
         
         $lifecycle->changeDefault($this->staff, $box1->id, $this->staff);
-        $this->assertEquals($box1->id, $this->staff->fresh()->default_cash_box_id);
+        $this->assertEquals($box1->id, $this->staff->getDefaultCashBoxForCompany($this->company->id, $this->branch->id)->id);
 
         $lifecycle->changeDefault($this->staff, $box2->id, $this->staff);
-        $this->assertEquals($box2->id, $this->staff->fresh()->default_cash_box_id);
+        $this->assertEquals($box2->id, $this->staff->getDefaultCashBoxForCompany($this->company->id, $this->branch->id)->id);
     }
 
     /**
