@@ -663,7 +663,12 @@ class User extends Authenticatable
             return 0.0;
         }
 
-        $cashBox = $this->getDefaultCashBoxForCompany($activeCompanyId);
+        $activeBranchId = config('app.active_branch_id') ?? $this->branch_id;
+        if ($activeBranchId === 'all') {
+            $activeBranchId = $this->branch_id;
+        }
+
+        $cashBox = $this->getDefaultCashBoxForCompany($activeCompanyId, $activeBranchId);
         return $cashBox ? (float) $cashBox->balance : 0.0;
     }
 

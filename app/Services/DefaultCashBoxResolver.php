@@ -21,7 +21,10 @@ class DefaultCashBoxResolver
             return null;
         }
 
-        $branchId = $branchId ?? $user->branch_id;
+        $branchId = $branchId ?? config('app.active_branch_id') ?? $user->branch_id;
+        if ($branchId === 'all') {
+            $branchId = $user->branch_id;
+        }
 
         // 1. جلب التفضيل المخزن في جدول العضوية بالفرع (branch_user.default_cash_box_id)
         if ($branchId) {
@@ -53,10 +56,8 @@ class DefaultCashBoxResolver
             ->where('company_id', $companyId)
             ->where('status', CashBoxStatus::ACTIVE);
 
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company'))) {
-            if ($branchId) {
-                $personalQuery->where('branch_id', $branchId);
-            }
+        if ($branchId) {
+            $personalQuery->where('branch_id', $branchId);
         }
 
         $personalBox = $personalQuery->first();
@@ -73,10 +74,8 @@ class DefaultCashBoxResolver
                 $q->where('users.id', $user->id);
             });
 
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company'))) {
-            if ($branchId) {
-                $sharedQuery->where('branch_id', $branchId);
-            }
+        if ($branchId) {
+            $sharedQuery->where('branch_id', $branchId);
         }
 
         return $sharedQuery->first();

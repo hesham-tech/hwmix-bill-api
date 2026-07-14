@@ -125,9 +125,7 @@ class CashBox extends Model
         $user = auth()->user();
         if ($user) {
             $defaultBox = $user->getDefaultCashBoxForCompany($this->company_id, $this->branch_id);
-            if ($defaultBox && $defaultBox->id === $this->id) {
-                return true;
-            }
+            return $defaultBox && $defaultBox->id === $this->id;
         }
         return (bool)($this->attributes['is_default'] ?? false);
     }

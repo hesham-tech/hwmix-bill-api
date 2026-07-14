@@ -163,6 +163,9 @@ class Company extends Model
         if (!isset($settings['date_format'])) {
             $settings['date_format'] = 'dddd D / M / YYYY';
         }
+        if (!isset($settings['installment_interest_rate'])) {
+            $settings['installment_interest_rate'] = 30;
+        }
         return $settings;
     }
 

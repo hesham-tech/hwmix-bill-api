@@ -20,7 +20,10 @@ class DefaultWarehouseResolver
             return null;
         }
 
-        $branchId = $branchId ?? $user->branch_id;
+        $branchId = $branchId ?? config('app.active_branch_id') ?? $user->branch_id;
+        if ($branchId === 'all') {
+            $branchId = $user->branch_id;
+        }
 
         // 1. جلب التفضيل المخزن في جدول العضوية بالفرع (branch_user.default_warehouse_id)
         if ($branchId) {
