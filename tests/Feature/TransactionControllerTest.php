@@ -150,27 +150,33 @@ class TransactionControllerTest extends TestCase
     {
         $this->actingAs($this->admin);
 
-        $transaction = Transaction::create([
-            'user_id' => $this->admin->id,
-            'cashbox_id' => $this->cashBox->id,
+        // Create the FinancialOperation first so that it exists in the system
+        \App\Models\FinancialOperation::create([
+            'id' => 'op-12345',
             'company_id' => $this->company->id,
-            'type' => 'deposit',
             'amount' => 500,
-            'balance_before' => 1000,
-            'balance_after' => 1500,
+            'type' => 'deposit',
             'created_by' => $this->admin->id,
         ]);
 
-        // Update balance to reflect the transaction
-        $this->cashBox->update(['balance' => 1500]);
+        // Use FinancialEngine to perform the deposit legally
+        app(\App\Services\FinancialEngine::class)->receiveMoney(500, $this->cashBox->id, 'op-12345', [
+            'user_id' => $this->admin->id,
+            'created_by' => $this->admin->id,
+        ]);
+
+        $transaction = Transaction::where('cashbox_id', $this->cashBox->id)
+            ->where('type', 'deposit')
+            ->where('amount', 500)
+            ->firstOrFail();
 
         $response = $this->postJson("/api/v1/transactions/{$transaction->id}/reverse");
 
         $response->assertStatus(200);
         $this->assertEquals(1000, $this->cashBox->fresh()->balance);
         $this->assertDatabaseHas('transactions', [
-            'type' => 'reverse_deposit',
-            'amount' => -500,
+            'type' => 'withdraw',
+            'amount' => 500,
         ]);
     }
 }

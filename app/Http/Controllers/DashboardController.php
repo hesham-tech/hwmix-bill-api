@@ -123,7 +123,7 @@ class DashboardController extends Controller
         // حساب السيولة الصافية (Assets vs Liabilities) من الخزن النشطة الخاصة بالشركة والموظفين فقط
         $liquidityStats = DB::table('cash_boxes')
             ->where('company_id', $companyId)
-            ->where('is_active', true)
+            ->where('status', 'active')
              ->where(function ($q) use ($companyId) {
                   $q->whereNull('user_id')
                     ->orWhereExists(function ($sub) use ($companyId) {

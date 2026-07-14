@@ -400,7 +400,7 @@ class CashBoxController extends Controller
             $summaryData = DB::table('cash_boxes')
                 ->join('cash_box_types', 'cash_boxes.cash_box_type_id', '=', 'cash_box_types.id')
                 ->where('cash_boxes.company_id', $companyId)
-                ->where('cash_boxes.is_active', true)
+                ->where('cash_boxes.status', 'active')
                 ->select(
                     DB::raw("SUM(CASE WHEN cash_box_types.name = 'نقدي' THEN cash_boxes.balance ELSE 0 END) as total_cash"),
                     DB::raw("SUM(CASE WHEN cash_box_types.name = 'حساب بنكي' THEN cash_boxes.balance ELSE 0 END) as total_bank"),

@@ -320,7 +320,7 @@ class UserCapabilityTest extends TestCase
         $this->assertDatabaseHas('cash_boxes', [
             'user_id' => $user->id,
             'company_id' => $this->company->id,
-            'is_active' => 1,
+            'status' => 'active',
         ]);
 
         // ب) يجب إنشاء سجل ذمم مالية تلقائياً لوجود قدرة track_receivable
