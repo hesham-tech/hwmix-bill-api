@@ -111,12 +111,17 @@ class SmsGatewayService
                         ->first();
                 }
                 
-                // 2. المطابقة البديلة برقم منفذ الشريحة (slot_index) أو معرف الاشتراك
+                // 2. المطابقة البديلة برقم منفذ الشريحة (slot_index) أو معرف الاشتراك (فقط إذا لم يكن لها رقم هاتف مسجل أو كان الرقم متطابقاً)
                 if (!$lineModel) {
                     $lineModel = SmsLine::where('device_android_id', $androidId)
                         ->where(function($query) use ($sim) {
                             $query->where('subscription_id', $sim['subscription_id'])
                                   ->orWhere('slot_index', $sim['slot_index']);
+                        })
+                        ->where(function($query) use ($phoneNumber) {
+                            $query->whereNull('phone_number')
+                                  ->orWhere('phone_number', '')
+                                  ->orWhere('phone_number', $phoneNumber);
                         })
                         ->first();
                 }
