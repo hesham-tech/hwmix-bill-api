@@ -12,10 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. جعل حقل android_id فريداً في جدول الأجهزة
+        // 1. جعل حقل android_id فريداً في جدول الأجهزة (مع تجنب أخطاء الفهارس غير الموجودة)
+        try {
+            Schema::table('smsgate_devices', function (Blueprint $table) {
+                $table->dropIndex('smsgate_devices_android_id_index');
+            });
+        } catch (\Throwable $e) {
+            // تجاهل خطأ عدم وجود الفهرس لتفادي فشل الترحيل بالسيرفر
+        }
+
         Schema::table('smsgate_devices', function (Blueprint $table) {
-            // حذف الفهرس العادي القديم أولاً لتجنب التكرار
-            $table->dropIndex('smsgate_devices_android_id_index');
             $table->string('android_id')->unique()->change();
         });
 
@@ -31,7 +37,11 @@ return new class extends Migration
 
         // 4. حذف قيد المفتاح الأجنبي القديم والعمود القديم، وتعيين العمود الجديد كـ NOT NULL ومفتاح أجنبي
         Schema::table('smsgate_lines', function (Blueprint $table) {
-            $table->dropForeign('smsgate_lines_sms_device_id_foreign');
+            try {
+                $table->dropForeign('smsgate_lines_sms_device_id_foreign');
+            } catch (\Throwable $e) {
+                // تجاهل إذا لم يكن القيد موجوداً بالسيرفر
+            }
             $table->dropColumn('sms_device_id');
             
             $table->string('device_android_id')->nullable(false)->change();
@@ -49,7 +59,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('smsgate_lines', function (Blueprint $table) {
-            $table->dropForeign(['device_android_id']);
+            try {
+                $table->dropForeign(['device_android_id']);
+            } catch (\Throwable $e) {
+                // تجاهل
+            }
             
             $table->unsignedBigInteger('sms_device_id')->nullable()->after('id');
         });
@@ -69,7 +83,11 @@ return new class extends Migration
         });
 
         Schema::table('smsgate_devices', function (Blueprint $table) {
-            $table->dropUnique('smsgate_devices_android_id_unique');
+            try {
+                $table->dropUnique('smsgate_devices_android_id_unique');
+            } catch (\Throwable $e) {
+                // تجاهل
+            }
             $table->string('android_id')->index()->change();
         });
     }
