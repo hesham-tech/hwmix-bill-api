@@ -28,7 +28,12 @@ class DeviceController extends Controller
 
         // تنسيق المخرجات وتحديد حالة الاتصال الفعلية (is_online) وحالة الجهاز الإدارية (status)
         $formatted = array_map(function($dev) {
-            $isOnline = $dev->lastSeenAt && ($dev->lastSeenAt->getTimestamp() >= time() - 300);
+            // جلب الإعدادات الخاصة بهذا الجهاز لتحديد مهلة عدم الاتصال ديناميكياً (1.5 ضعف مدة النبضة)
+            $settings = \Modules\SmsGateway\Models\SmsDeviceSetting::where('sms_device_id', $dev->id)->first();
+            $pollingInterval = $settings ? $settings->polling_interval_seconds : 30;
+            $thresholdSeconds = max(15, (int)($pollingInterval * 1.5));
+
+            $isOnline = $dev->lastSeenAt && ($dev->lastSeenAt->getTimestamp() >= time() - $thresholdSeconds);
 
             return [
                 'id' => $dev->id,
