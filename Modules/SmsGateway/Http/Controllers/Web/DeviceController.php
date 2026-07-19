@@ -26,19 +26,31 @@ class DeviceController extends Controller
 
         $devices = $this->deviceRepo->getCompanyDevices($user->company_id);
 
-        // تنسيق المخرجات
-        $formatted = array_map(fn($dev) => [
-            'id' => $dev->id,
-            'device_name' => $dev->deviceName,
-            'hardware_name' => $dev->hardwareName,
-            'brand' => $dev->brand,
-            'model' => $dev->model,
-            'android_version' => $dev->androidVersion,
-            'app_version' => $dev->appVersion,
-            'status' => $dev->status->value,
-            'capabilities' => $dev->capabilities,
-            'last_seen_at' => $dev->lastSeenAt?->format('Y-m-d H:i:s'),
-        ], $devices);
+        // تنسيق المخرجات وتحديد حالة الاتصال الفعلية بناءً على آخر ظهور (last_seen_at)
+        $formatted = array_map(function($dev) {
+            $status = $dev->status->value;
+
+            // إذا كان الجهاز نشطاً ولكن آخر ظهور له تجاوز 5 دقائق، نعتبره غير متصل (offline)
+            if ($status === 'active') {
+                $isOnline = $dev->lastSeenAt && ($dev->lastSeenAt->getTimestamp() >= time() - 300);
+                if (!$isOnline) {
+                    $status = 'offline';
+                }
+            }
+
+            return [
+                'id' => $dev->id,
+                'device_name' => $dev->deviceName,
+                'hardware_name' => $dev->hardwareName,
+                'brand' => $dev->brand,
+                'model' => $dev->model,
+                'android_version' => $dev->androidVersion,
+                'app_version' => $dev->appVersion,
+                'status' => $status,
+                'capabilities' => $dev->capabilities,
+                'last_seen_at' => $dev->lastSeenAt?->format('Y-m-d H:i:s'),
+            ];
+        }, $devices);
 
         return api_success($formatted, 'تم جلب قائمة الأجهزة بنجاح.');
     }
