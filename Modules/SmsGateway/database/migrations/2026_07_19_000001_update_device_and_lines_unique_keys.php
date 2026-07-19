@@ -21,36 +21,73 @@ return new class extends Migration
             // تجاهل خطأ عدم وجود الفهرس لتفادي فشل الترحيل بالسيرفر
         }
 
-        Schema::table('smsgate_devices', function (Blueprint $table) {
-            $table->string('android_id')->unique()->change();
-        });
+        try {
+            Schema::table('smsgate_devices', function (Blueprint $table) {
+                $table->string('android_id')->unique()->change();
+            });
+        } catch (\Throwable $e) {
+            // تجاهل إذا تم تعيينه فريداً بالفعل
+        }
 
-        // 2. إضافة العمود الجديد مؤقتاً كـ nullable لترحيل البيانات
-        Schema::table('smsgate_lines', function (Blueprint $table) {
-            $table->string('device_android_id')->nullable()->after('id')->index();
-        });
+        // 2. إضافة العمود الجديد مؤقتاً كـ nullable لترحيل البيانات (فقط إذا لم يكن موجوداً)
+        if (!Schema::hasColumn('smsgate_lines', 'device_android_id')) {
+            Schema::table('smsgate_lines', function (Blueprint $table) {
+                $table->string('device_android_id')->nullable()->after('id')->index();
+            });
+        }
 
         // 3. ترحيل البيانات القديمة بربطها بمعرف الأندرويد للخطوط الحالية
-        \DB::table('smsgate_lines')
-            ->join('smsgate_devices', 'smsgate_lines.sms_device_id', '=', 'smsgate_devices.id')
-            ->update(['smsgate_lines.device_android_id' => \DB::raw('smsgate_devices.android_id')]);
-
-        // 4. حذف قيد المفتاح الأجنبي القديم والعمود القديم، وتعيين العمود الجديد كـ NOT NULL ومفتاح أجنبي
-        Schema::table('smsgate_lines', function (Blueprint $table) {
+        if (Schema::hasColumn('smsgate_lines', 'sms_device_id') && Schema::hasColumn('smsgate_lines', 'device_android_id')) {
             try {
-                $table->dropForeign('smsgate_lines_sms_device_id_foreign');
+                \DB::table('smsgate_lines')
+                    ->join('smsgate_devices', 'smsgate_lines.sms_device_id', '=', 'smsgate_devices.id')
+                    ->update(['smsgate_lines.device_android_id' => \DB::raw('smsgate_devices.android_id')]);
+            } catch (\Throwable $e) {
+                // تجاهل أخطاء التحديث
+            }
+        }
+
+        // 4. حذف قيد المفتاح الأجنبي القديم والعمود القديم
+        if (Schema::hasColumn('smsgate_lines', 'sms_device_id')) {
+            try {
+                Schema::table('smsgate_lines', function (Blueprint $table) {
+                    $table->dropForeign('smsgate_lines_sms_device_id_foreign');
+                });
             } catch (\Throwable $e) {
                 // تجاهل إذا لم يكن القيد موجوداً بالسيرفر
             }
-            $table->dropColumn('sms_device_id');
-            
-            $table->string('device_android_id')->nullable(false)->change();
-            $table->foreign('device_android_id')
-                ->references('android_id')
-                ->on('smsgate_devices')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-        });
+
+            try {
+                Schema::table('smsgate_lines', function (Blueprint $table) {
+                    $table->dropColumn('sms_device_id');
+                });
+            } catch (\Throwable $e) {
+                // تجاهل إذا تم حذفه مسبقاً
+            }
+        }
+
+        // 5. تعيين العمود الجديد كـ NOT NULL ومفتاح أجنبي
+        if (Schema::hasColumn('smsgate_lines', 'device_android_id')) {
+            try {
+                Schema::table('smsgate_lines', function (Blueprint $table) {
+                    $table->string('device_android_id')->nullable(false)->change();
+                });
+            } catch (\Throwable $e) {
+                // تجاهل
+            }
+
+            try {
+                Schema::table('smsgate_lines', function (Blueprint $table) {
+                    $table->foreign('device_android_id')
+                        ->references('android_id')
+                        ->on('smsgate_devices')
+                        ->onDelete('cascade')
+                        ->onUpdate('cascade');
+                });
+            } catch (\Throwable $e) {
+                // تجاهل إذا كان القيد موجوداً بالفعل
+            }
+        }
     }
 
     /**
@@ -58,29 +95,62 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('smsgate_lines', function (Blueprint $table) {
+        if (Schema::hasColumn('smsgate_lines', 'device_android_id')) {
             try {
-                $table->dropForeign(['device_android_id']);
+                Schema::table('smsgate_lines', function (Blueprint $table) {
+                    $table->dropForeign(['device_android_id']);
+                });
             } catch (\Throwable $e) {
                 // تجاهل
             }
-            
-            $table->unsignedBigInteger('sms_device_id')->nullable()->after('id');
-        });
+        }
 
-        \DB::table('smsgate_lines')
-            ->join('smsgate_devices', 'smsgate_lines.device_android_id', '=', 'smsgate_devices.android_id')
-            ->update(['smsgate_lines.sms_device_id' => \DB::raw('smsgate_devices.id')]);
+        if (!Schema::hasColumn('smsgate_lines', 'sms_device_id')) {
+            Schema::table('smsgate_lines', function (Blueprint $table) {
+                $table->unsignedBigInteger('sms_device_id')->nullable()->after('id');
+            });
+        }
 
-        Schema::table('smsgate_lines', function (Blueprint $table) {
-            $table->dropColumn('device_android_id');
-            
-            $table->unsignedBigInteger('sms_device_id')->nullable(false)->change();
-            $table->foreign('sms_device_id')
-                ->references('id')
-                ->on('smsgate_devices')
-                ->onDelete('cascade');
-        });
+        if (Schema::hasColumn('smsgate_lines', 'device_android_id') && Schema::hasColumn('smsgate_lines', 'sms_device_id')) {
+            try {
+                \DB::table('smsgate_lines')
+                    ->join('smsgate_devices', 'smsgate_lines.device_android_id', '=', 'smsgate_devices.android_id')
+                    ->update(['smsgate_lines.sms_device_id' => \DB::raw('smsgate_devices.id')]);
+            } catch (\Throwable $e) {
+                // تجاهل
+            }
+        }
+
+        if (Schema::hasColumn('smsgate_lines', 'device_android_id')) {
+            try {
+                Schema::table('smsgate_lines', function (Blueprint $table) {
+                    $table->dropColumn('device_android_id');
+                });
+            } catch (\Throwable $e) {
+                // تجاهل
+            }
+        }
+
+        if (Schema::hasColumn('smsgate_lines', 'sms_device_id')) {
+            try {
+                Schema::table('smsgate_lines', function (Blueprint $table) {
+                    $table->unsignedBigInteger('sms_device_id')->nullable(false)->change();
+                });
+            } catch (\Throwable $e) {
+                // تجاهل
+            }
+
+            try {
+                Schema::table('smsgate_lines', function (Blueprint $table) {
+                    $table->foreign('sms_device_id')
+                        ->references('id')
+                        ->on('smsgate_devices')
+                        ->onDelete('cascade');
+                });
+            } catch (\Throwable $e) {
+                // تجاهل
+            }
+        }
 
         Schema::table('smsgate_devices', function (Blueprint $table) {
             try {
@@ -88,7 +158,11 @@ return new class extends Migration
             } catch (\Throwable $e) {
                 // تجاهل
             }
-            $table->string('android_id')->index()->change();
+            try {
+                $table->string('android_id')->index()->change();
+            } catch (\Throwable $e) {
+                // تجاهل
+            }
         });
     }
 };
