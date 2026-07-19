@@ -26,17 +26,9 @@ class DeviceController extends Controller
 
         $devices = $this->deviceRepo->getCompanyDevices($user->company_id);
 
-        // تنسيق المخرجات وتحديد حالة الاتصال الفعلية بناءً على آخر ظهور (last_seen_at)
+        // تنسيق المخرجات وتحديد حالة الاتصال الفعلية (is_online) وحالة الجهاز الإدارية (status)
         $formatted = array_map(function($dev) {
-            $status = $dev->status->value;
-
-            // إذا كان الجهاز نشطاً ولكن آخر ظهور له تجاوز 5 دقائق، نعتبره غير متصل (offline)
-            if ($status === 'active') {
-                $isOnline = $dev->lastSeenAt && ($dev->lastSeenAt->getTimestamp() >= time() - 300);
-                if (!$isOnline) {
-                    $status = 'offline';
-                }
-            }
+            $isOnline = $dev->lastSeenAt && ($dev->lastSeenAt->getTimestamp() >= time() - 300);
 
             return [
                 'id' => $dev->id,
@@ -46,7 +38,8 @@ class DeviceController extends Controller
                 'model' => $dev->model,
                 'android_version' => $dev->androidVersion,
                 'app_version' => $dev->appVersion,
-                'status' => $status,
+                'status' => $dev->status->value, // نشط (active) أو معطل/موقوف
+                'is_online' => $isOnline, // متصل (true) أو غير متصل (false)
                 'capabilities' => $dev->capabilities,
                 'last_seen_at' => $dev->lastSeenAt?->format('Y-m-d H:i:s'),
             ];
