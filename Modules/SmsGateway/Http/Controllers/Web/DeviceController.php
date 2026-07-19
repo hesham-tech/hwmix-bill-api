@@ -33,7 +33,7 @@ class DeviceController extends Controller
             $pollingInterval = $settings ? $settings->polling_interval_seconds : 30;
             $thresholdSeconds = max(15, (int)($pollingInterval * 1.5));
 
-            $isOnline = $dev->lastSeenAt && ($dev->lastSeenAt->getTimestamp() >= time() - $thresholdSeconds);
+            $isOnline = $dev->lastSeenAt && $dev->lastSeenAt->greaterThanOrEqualTo(now()->subSeconds($thresholdSeconds));
 
             return [
                 'id' => $dev->id,
