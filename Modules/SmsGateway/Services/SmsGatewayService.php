@@ -25,22 +25,8 @@ class SmsGatewayService
     public function registerDevice(array $data, ?int $companyId, int $userId): Device
     {
         return DB::transaction(function () use ($data, $companyId, $userId) {
-            // البحث عن الجهاز بالـ UUID أو الـ Android ID
-            $existingDevice = $this->deviceRepo->findByUuid($data['uuid']) 
-                ?? $this->deviceRepo->findByAndroidId($data['android_id']);
-
-            // لمنع تكرار الأجهزة عند إعادة تثبيت التطبيق: نبحث عن جهاز بنفس الموديل والمستخدم (بما في ذلك الأجهزة المحذوفة)
-            if (!$existingDevice) {
-                $dbDevice = SmsDevice::withTrashed()
-                    ->where('created_by', $userId)
-                    ->where('brand', $data['brand'])
-                    ->where('model', $data['model'])
-                    ->orderBy('id', 'desc')
-                    ->first();
-                if ($dbDevice) {
-                    $existingDevice = $this->deviceRepo->findById($dbDevice->id);
-                }
-            }
+            // البحث عن الجهاز بمعرف الـ Android ID الفريد فقط (بما في ذلك الأجهزة المحذوفة)
+            $existingDevice = $this->deviceRepo->findByAndroidId($data['android_id']);
 
             $deviceId = $existingDevice?->id;
 
@@ -100,8 +86,11 @@ class SmsGatewayService
                 SmsDevice::where('id', $deviceId)->update(['device_name' => $deviceName]);
             }
 
+            $device = SmsDevice::findOrFail($deviceId);
+            $androidId = $device->android_id;
+
             // تعطيل كافة الشرائح السابقة للجهاز مؤقتاً لتثبيت التغيير الجديد
-            SmsLine::where('sms_device_id', $deviceId)->update(['status' => LineStatus::Disabled->value]);
+            SmsLine::where('device_android_id', $androidId)->update(['status' => LineStatus::Disabled->value]);
 
             foreach ($sims as $sim) {
                 $phoneNumber = !empty($sim['phone_number']) ? trim($sim['phone_number']) : null;
@@ -109,7 +98,7 @@ class SmsGatewayService
                 // لمنع تكرار الأرقام على السيرفر عبر الأجهزة المختلفة:
                 if ($phoneNumber) {
                     SmsLine::where('phone_number', $phoneNumber)
-                        ->where('sms_device_id', '!=', $deviceId)
+                        ->where('device_android_id', '!=', $androidId)
                         ->delete();
                 }
 
@@ -117,14 +106,14 @@ class SmsGatewayService
                 
                 // 1. محاولة المطابقة برقم الهاتف الفعلي إذا كان متوفراً
                 if ($phoneNumber) {
-                    $lineModel = SmsLine::where('sms_device_id', $deviceId)
+                    $lineModel = SmsLine::where('device_android_id', $androidId)
                         ->where('phone_number', $phoneNumber)
                         ->first();
                 }
                 
                 // 2. المطابقة البديلة برقم منفذ الشريحة (slot_index) أو معرف الاشتراك
                 if (!$lineModel) {
-                    $lineModel = SmsLine::where('sms_device_id', $deviceId)
+                    $lineModel = SmsLine::where('device_android_id', $androidId)
                         ->where(function($query) use ($sim) {
                             $query->where('subscription_id', $sim['subscription_id'])
                                   ->orWhere('slot_index', $sim['slot_index']);
@@ -150,7 +139,7 @@ class SmsGatewayService
                     $lineModel->update($updateData);
                 } else {
                     $lineModel = SmsLine::create(array_merge([
-                        'sms_device_id' => $deviceId,
+                        'device_android_id' => $androidId,
                     ], $updateData));
 
                     // إطلاق حدث إدخال شريحة جديدة

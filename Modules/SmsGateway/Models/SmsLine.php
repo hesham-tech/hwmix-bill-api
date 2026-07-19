@@ -18,7 +18,7 @@ class SmsLine extends Model
     protected $table = 'smsgate_lines';
 
     protected $fillable = [
-        'sms_device_id',
+        'device_android_id',
         'company_id',
         'created_by',
         'slot_index',
@@ -46,7 +46,7 @@ class SmsLine extends Model
 
     public function device()
     {
-        return $this->belongsTo(SmsDevice::class, 'sms_device_id');
+        return $this->belongsTo(SmsDevice::class, 'device_android_id', 'android_id');
     }
 
     public function messages()

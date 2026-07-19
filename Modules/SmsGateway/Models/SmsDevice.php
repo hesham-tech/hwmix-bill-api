@@ -74,7 +74,7 @@ class SmsDevice extends Model
      */
     public function lines()
     {
-        return $this->hasMany(SmsLine::class, 'sms_device_id');
+        return $this->hasMany(SmsLine::class, 'device_android_id', 'android_id');
     }
 
     /**

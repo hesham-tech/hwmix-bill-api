@@ -90,8 +90,8 @@ class EloquentSmsDeviceRepository implements SmsDeviceRepositoryInterface
             }
             $model->update($data);
         } else {
-            // التحقق مما إذا كان هناك جهاز محذوف بنفس الـ UUID أو الـ Android ID لمنع أخطاء القيد الفريد Unique constraint
-            $model = SmsDevice::withTrashed()->where('uuid', $device->uuid)->first();
+            // التحقق مما إذا كان هناك جهاز محذوف بنفس الـ Android ID لمنع أخطاء القيد الفريد Unique constraint
+            $model = SmsDevice::withTrashed()->where('android_id', $device->androidId)->first();
             if ($model) {
                 if ($model->trashed()) {
                     $model->restore();

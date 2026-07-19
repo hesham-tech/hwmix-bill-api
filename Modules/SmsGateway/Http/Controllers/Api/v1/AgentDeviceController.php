@@ -270,7 +270,8 @@ class AgentDeviceController extends Controller
             'device_id' => 'required|integer|exists:smsgate_devices,id',
         ]);
 
-        $lines = \Modules\SmsGateway\Models\SmsLine::where('sms_device_id', $validated['device_id'])
+        $device = \Modules\SmsGateway\Models\SmsDevice::findOrFail($validated['device_id']);
+        $lines = $device->lines()
             ->where('status', \Modules\SmsGateway\Domain\Enums\LineStatus::Active->value)
             ->get();
 

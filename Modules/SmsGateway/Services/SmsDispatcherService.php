@@ -40,7 +40,8 @@ class SmsDispatcherService
             }
 
             // البحث عن الشريحة المستلمة لمطابقتها بالـ line_id
-            $line = SmsLine::where('sms_device_id', $deviceId)
+            $device = SmsDevice::findOrFail($deviceId);
+            $line = SmsLine::where('device_android_id', $device->android_id)
                 ->where('subscription_id', $data['subscription_id'])
                 ->first();
 

@@ -20,25 +20,52 @@ class AgentCommandController extends Controller
             'device_id' => 'required|integer',
         ]);
 
-        // جلب الأوامر المعلقة
+        // جلب الأوامر المعلقة: الأوامر بوضعية pending أو التي بوضعية sending وتجاوزت 5 دقائق دون تحديث
         $commands = SmsDeviceCommand::where('sms_device_id', $validated['device_id'])
-            ->whereIn('status', [CommandStatus::Pending->value, CommandStatus::Sending->value])
+            ->where(function($query) {
+                $query->where('status', CommandStatus::Pending->value)
+                      ->orWhere(function($q) {
+                          $q->where('status', CommandStatus::Sending->value)
+                            ->where('updated_at', '<', now()->subMinutes(5));
+                      });
+            })
             ->orderBy('id', 'asc')
             ->limit(20)
             ->get();
 
-        // تحديث حالة الأوامر إلى sending للإشارة إلى استلامها من الهاتف
+        $formatted = [];
         foreach ($commands as $command) {
+            // تحقق إضافي لمنع تكرار إرسال الرسائل الناجحة أو الفاشلة بالفعل
+            if ($command->command_type === 'SEND_SMS' && isset($command->payload['message_id'])) {
+                $message = \Modules\SmsGateway\Models\SmsMessage::find($command->payload['message_id']);
+                if ($message && in_array($message->status, [
+                    \Modules\SmsGateway\Domain\Enums\SmsMessageStatus::Sent->value,
+                    \Modules\SmsGateway\Domain\Enums\SmsMessageStatus::Delivered->value,
+                    \Modules\SmsGateway\Domain\Enums\SmsMessageStatus::Failed->value
+                ])) {
+                    // إذا تم إرسال الرسالة أو فشلها سابقاً، يتم استبعاد الأمر وتحديث حالته بالسيرفر
+                    $statusValue = $message->status === \Modules\SmsGateway\Domain\Enums\SmsMessageStatus::Failed->value 
+                        ? CommandStatus::Failed->value 
+                        : CommandStatus::Executed->value;
+                    $command->update([
+                        'status' => $statusValue,
+                        'executed_at' => now(),
+                    ]);
+                    continue;
+                }
+            }
+
+            // تحديث حالة الأمر المعلق إلى sending
             if ($command->status === CommandStatus::Pending->value) {
                 $command->update(['status' => CommandStatus::Sending->value]);
             }
-        }
 
-        $formatted = $commands->map(fn($cmd) => [
-            'id' => $cmd->id,
-            'command_type' => $cmd->command_type,
-            'payload' => $cmd->payload,
-        ]);
+            $formatted[] = [
+                'id' => $command->id,
+                'command_type' => $command->command_type,
+                'payload' => $command->payload,
+            ];
+        }
 
         return api_success($formatted, 'تم جلب الأوامر المعلقة بنجاح.');
     }
