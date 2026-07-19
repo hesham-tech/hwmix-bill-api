@@ -83,7 +83,7 @@ class SmsDispatcherService
                 id: null,
                 companyId: $companyId,
                 createdBy: $userId,
-                deviceId: $line->sms_device_id,
+                deviceId: $line->device?->id,
                 lineId: $line->id,
                 phoneNumber: $data['phone_number'],
                 messageBody: $data['message_body'],
