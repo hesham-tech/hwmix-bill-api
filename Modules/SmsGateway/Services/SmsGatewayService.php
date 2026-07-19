@@ -89,29 +89,26 @@ class SmsGatewayService
             $device = SmsDevice::findOrFail($deviceId);
             $androidId = $device->android_id;
 
-            // تعطيل كافة الشرائح السابقة للجهاز مؤقتاً لتثبيت التغيير الجديد
-            SmsLine::where('device_android_id', $androidId)->update(['status' => LineStatus::Disabled->value]);
+            // تم إزالة التعطيل التلقائي لشرائح الهاتف السابقة للحفاظ عليها نشطة ومعرفة آخر هاتف عملت عليه كما طلب المستخدم
 
             foreach ($sims as $sim) {
                 $phoneNumber = !empty($sim['phone_number']) ? trim($sim['phone_number']) : null;
                 
-                // لمنع تكرار الأرقام على السيرفر عبر الأجهزة المختلفة:
-                if ($phoneNumber) {
-                    SmsLine::where('phone_number', $phoneNumber)
-                        ->where('device_android_id', '!=', $androidId)
-                        ->delete();
-                }
-
                 $lineModel = null;
                 
-                // 1. محاولة المطابقة برقم الهاتف الفعلي إذا كان متوفراً
+                // 1. محاولة المطابقة برقم الهاتف الفعلي إذا كان متوفراً (بحث عالمي عبر كل الأجهزة لنقل الخط ديناميكياً)
                 if ($phoneNumber) {
-                    $lineModel = SmsLine::where('device_android_id', $androidId)
-                        ->where('phone_number', $phoneNumber)
-                        ->first();
+                    $lineModel = SmsLine::where('phone_number', $phoneNumber)->first();
+                    
+                    // تنظيف أي سجل مكرر قديم لنفس الرقم لضمان التفرد
+                    if ($lineModel) {
+                        SmsLine::where('phone_number', $phoneNumber)
+                            ->where('id', '!=', $lineModel->id)
+                            ->delete();
+                    }
                 }
                 
-                // 2. المطابقة البديلة برقم منفذ الشريحة (slot_index) أو معرف الاشتراك (فقط إذا لم يكن لها رقم هاتف مسجل أو كان الرقم متطابقاً)
+                // 2. المطابقة البديلة برقم منفذ الشريحة (slot_index) أو معرف الاشتراك للجهاز الحالي (فقط إذا لم يكن لها رقم هاتف مسجل أو كان الرقم متطابقاً)
                 if (!$lineModel) {
                     $lineModel = SmsLine::where('device_android_id', $androidId)
                         ->where(function($query) use ($sim) {
@@ -127,6 +124,7 @@ class SmsGatewayService
                 }
 
                 $updateData = [
+                    'device_android_id' => $androidId, // تحديث ربط الهاتف ديناميكياً في حال نقل الخط
                     'company_id' => $companyId,
                     'created_by' => $userId,
                     'slot_index' => $sim['slot_index'],
@@ -143,9 +141,7 @@ class SmsGatewayService
                 if ($lineModel) {
                     $lineModel->update($updateData);
                 } else {
-                    $lineModel = SmsLine::create(array_merge([
-                        'device_android_id' => $androidId,
-                    ], $updateData));
+                    $lineModel = SmsLine::create($updateData);
 
                     // إطلاق حدث إدخال شريحة جديدة
                     event(new \Modules\SmsGateway\Events\SimInserted($lineModel));
