@@ -67,6 +67,8 @@ class AgentCommandController extends Controller
             ];
         }
 
+        \Log::info("Pending commands request for device {$validated['device_id']}: found " . count($formatted) . " commands", ['commands' => array_column($formatted, 'id')]);
+
         return api_success($formatted, 'تم جلب الأوامر المعلقة بنجاح.');
     }
 
@@ -88,6 +90,8 @@ class AgentCommandController extends Controller
         if (!$command) {
             return api_error('لم يتم العثور على الأمر المحدد للجهاز.', [], 404);
         }
+
+        \Log::info("Command {$id} execution update received: status={$validated['status']}", ['device_id' => $validated['device_id']]);
 
         // تحديث حالة الأمر
         $statusValue = $validated['status'] === 'executed' ? CommandStatus::Executed->value : CommandStatus::Failed->value;
