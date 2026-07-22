@@ -28,6 +28,7 @@ Route::prefix('v1/agent')->group(function () {
         Route::get('device/config', [AgentDeviceController::class, 'config']);
         Route::get('device/lines', [AgentDeviceController::class, 'getLines']);
         Route::post('device/decouple', [AgentDeviceController::class, 'decouple']);
+        Route::post('device/log', [AgentDeviceController::class, 'log']);
         
         // الأوامر التشغيلية والـ SMS
         Route::get('commands/pending', [AgentCommandController::class, 'pending']);

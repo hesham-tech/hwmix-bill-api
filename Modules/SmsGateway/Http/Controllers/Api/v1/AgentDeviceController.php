@@ -293,6 +293,23 @@ class AgentDeviceController extends Controller
     }
 
     /**
+     * استقبال سجلات التشخيص والتتبع من الهاتف.
+     */
+    public function log(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'device_id' => 'required|integer',
+            'tag' => 'required|string',
+            'message' => 'required|string',
+            'details' => 'nullable|array',
+        ]);
+
+        \Log::info("Remote Diagnostic Log [Device: {$validated['device_id']}] Tag: [{$validated['tag']}]: {$validated['message']}", $validated['details'] ?? []);
+
+        return api_success(null, 'تم حفظ سجل التشخيص بنجاح.');
+    }
+
+    /**
      * التحقق مما إذا كان الجهاز ملغى ربطه (موجود في المحذوفات مؤقتاً).
      */
     protected function checkDeviceStatus(int $deviceId): ?JsonResponse
