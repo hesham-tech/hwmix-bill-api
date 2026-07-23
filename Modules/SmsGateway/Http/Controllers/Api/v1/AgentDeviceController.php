@@ -162,7 +162,7 @@ class AgentDeviceController extends Controller
             if (is_dir($directory)) {
                 $files = scandir($directory);
                 foreach ($files as $file) {
-                    if (preg_match('/^sms-agent-v([\d\.]+)\.apk$/i', $file, $matches)) {
+                    if (preg_match('/^sms-agent-v([a-zA-Z\d\.\-]+)\.apk$/i', $file, $matches)) {
                         $versionName = $matches[1];
                         // استنتاج رقم الكود بتحويل رقم الإصدار، مثل 1.0.11 -> 1011
                         $cleanVersion = str_replace('.', '', $versionName);
@@ -200,7 +200,7 @@ class AgentDeviceController extends Controller
         $apkFiles = [];
 
         foreach ($files as $file) {
-            if (preg_match('/^sms-agent-v([\d\.]+)\.apk$/i', $file, $matches)) {
+            if (preg_match('/^sms-agent-v([a-zA-Z\d\.\-]+)\.apk$/i', $file, $matches)) {
                 $version = $matches[1];
                 $apkFiles[$version] = $directory . '/' . $file;
             }
@@ -239,7 +239,7 @@ class AgentDeviceController extends Controller
         if (is_dir($directory)) {
             $files = scandir($directory);
             foreach ($files as $file) {
-                if (preg_match('/^sms-agent-v([\d\.]+)\.apk$/i', $file, $matches)) {
+                if (preg_match('/^sms-agent-v([a-zA-Z\d\.\-]+)\.apk$/i', $file, $matches)) {
                     $version = $matches[1];
                     $filePath = $directory . '/' . $file;
                     $apkFiles[] = [
