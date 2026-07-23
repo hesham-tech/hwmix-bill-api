@@ -60,13 +60,13 @@ class AgentSmsController extends Controller
             return api_error('الرسالة غير متوفرة أو لا تتبع هذا الجهاز.', [], 404);
         }
 
-        $this->messageRepo->updateStatus($validated['message_id'], $statusEnum, $validated['failure_reason']);
+        $this->messageRepo->updateStatus($validated['message_id'], $statusEnum, $validated['failure_reason'] ?? null);
 
         // إطلاق أحداث الحالة
         if ($statusEnum === SmsMessageStatus::Sent) {
             event(new \Modules\SmsGateway\Events\SmsSent($validated['message_id']));
         } elseif ($statusEnum === SmsMessageStatus::Failed) {
-            event(new \Modules\SmsGateway\Events\SmsFailed($validated['message_id'], $validated['failure_reason']));
+            event(new \Modules\SmsGateway\Events\SmsFailed($validated['message_id'], $validated['failure_reason'] ?? null));
         }
 
         return api_success(null, 'تم تحديث حالة الرسالة بنجاح.');
