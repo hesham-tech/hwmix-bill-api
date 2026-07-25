@@ -35,10 +35,10 @@ class SyncSimLinesAction
                     'subscription_id' => $sim->subscriptionId,
                     'carrier' => $sim->carrier,
                     'phone_number' => $sim->phoneNumber,
-                    'daily_withdraw_limit' => $sim->dailyWithdrawLimit,
-                    'daily_deposit_limit' => $sim->dailyDepositLimit,
-                    'monthly_withdraw_limit' => $sim->monthlyWithdrawLimit,
-                    'monthly_deposit_limit' => $sim->monthlyDepositLimit,
+                    'daily_withdraw_limit' => $sim->dailyWithdrawLimit ?? 60000.00,
+                    'daily_deposit_limit' => $sim->dailyDepositLimit ?? 60000.00,
+                    'monthly_withdraw_limit' => $sim->monthlyWithdrawLimit ?? 200000.00,
+                    'monthly_deposit_limit' => $sim->monthlyDepositLimit ?? 200000.00,
                     'status' => 'active',
                 ]
             );
