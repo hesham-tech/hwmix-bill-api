@@ -1,0 +1,21 @@
+{
+    "name": "nwidart/hwnixcash",
+    "description": "HwnixCash module for HWNix ERP",
+    "authors": [
+        {
+            "name": "Hesham Mohamed",
+            "email": "hesham@example.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\HwnixCash\\": ""
+        }
+    }
+}

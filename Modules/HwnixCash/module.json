@@ -1,0 +1,11 @@
+{
+    "name": "HwnixCash",
+    "alias": "hwnixcash",
+    "description": "HwnixCash module for HWNix ERP",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\HwnixCash\\Providers\\HwnixCashServiceProvider"
+    ],
+    "files": []
+}

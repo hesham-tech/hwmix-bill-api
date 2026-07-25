@@ -807,5 +807,47 @@ return [
         'update_all' => ['key' => 'legal_documents.update_all', 'label' => 'تعديل أو صياغة إصدار جديد'],
         'delete_all' => ['key' => 'legal_documents.delete_all', 'label' => 'حذف مسودة مستند أو إصدار غير منشور'],
     ],
+    // => HWNIX CASH
+    'hwnix_cash' => [
+        'name' => ['key' => 'hwnix_cash', 'label' => 'صلاحيات كاش هونكس'],
+        'page' => ['key' => 'hwnix_cash.page', 'label' => 'صفحة كاش هونكس'],
+        'view_all' => ['key' => 'hwnix_cash.view_all', 'label' => 'عرض جميع أجهزة وشرائح كاش هونكس'],
+        'view_self' => ['key' => 'hwnix_cash.view_self', 'label' => 'عرض أجهزة وشرائح كاش هونكس الخاصة'],
+        'edit_all' => ['key' => 'hwnix_cash.edit_all', 'label' => 'تعديل جميع خطوط وشرائح كاش هونكس'],
+        'edit_self' => ['key' => 'hwnix_cash.edit_self', 'label' => 'تعديل خطوط وشرائح كاش هونكس الخاصة'],
+        'delete_all' => ['key' => 'hwnix_cash.delete_all', 'label' => 'حذف وإلغاء ربط أجهزة كاش هونكس'],
+    ],
+    // => HWNIX CASH MESSAGES
+    'hwnix_cash_messages' => [
+        'name' => ['key' => 'hwnix_cash_messages', 'label' => 'صلاحيات رسائل كاش هونكس'],
+        'page' => ['key' => 'hwnix_cash_messages.page', 'label' => 'صفحة سجلات رسائل كاش هونكس'],
+        'view_all' => ['key' => 'hwnix_cash_messages.view_all', 'label' => 'عرض جميع رسائل كاش هونكس'],
+        'view_self' => ['key' => 'hwnix_cash_messages.view_self', 'label' => 'عرض رسائل كاش هونكس الخاصة'],
+        'create' => ['key' => 'hwnix_cash_messages.create', 'label' => 'إرسال رسائل جديدة عبر كاش هونكس'],
+    ],
+    // => HWNIX CASH WALLET TRANSACTIONS
+    'hwnix_cash_wallet_transactions' => [
+        'name' => ['key' => 'hwnix_cash_wallet_transactions', 'label' => 'صلاحيات معاملات المحافظ الإلكترونية لكاش هونكس'],
+        'page' => ['key' => 'hwnix_cash_wallet_transactions.page', 'label' => 'صفحة معاملات المحافظ الإلكترونية'],
+        'view_all' => ['key' => 'hwnix_cash_wallet_transactions.view_all', 'label' => 'عرض جميع معاملات المحافظ'],
+        'view_self' => ['key' => 'hwnix_cash_wallet_transactions.view_self', 'label' => 'عرض معاملات المحافظ الخاصة'],
+        'create' => ['key' => 'hwnix_cash_wallet_transactions.create', 'label' => 'إضافة معاملة محفظة جديدة'],
+        'edit_all' => ['key' => 'hwnix_cash_wallet_transactions.edit_all', 'label' => 'تعديل جميع معاملات المحافظ'],
+        'edit_self' => ['key' => 'hwnix_cash_wallet_transactions.edit_self', 'label' => 'تعديل معاملات المحافظ الخاصة'],
+        'delete_all' => ['key' => 'hwnix_cash_wallet_transactions.delete_all', 'label' => 'حذف معاملة محفظة إلكترونية'],
+    ],
+    // => HWNIX CASH MESSAGE SOURCES
+    'hwnix_cash_message_sources' => [
+        'name' => ['key' => 'hwnix_cash_message_sources', 'label' => 'صلاحيات مصادر الرسائل المعتمدة لكاش هونكس'],
+        'page' => ['key' => 'hwnix_cash_message_sources.page', 'label' => 'صفحة مصادر الرسائل المعتمدة'],
+        'view_all' => ['key' => 'hwnix_cash_message_sources.view_all', 'label' => 'عرض جميع مصادر الرسائل المعتمدة'],
+        'view_self' => ['key' => 'hwnix_cash_message_sources.view_self', 'label' => 'عرض مصادر الرسائل الخاصة'],
+        'create' => ['key' => 'hwnix_cash_message_sources.create', 'label' => 'إضافة مصدر رسائل معتمد'],
+        'edit_all' => ['key' => 'hwnix_cash_message_sources.edit_all', 'label' => 'تعديل جميع مصادر الرسائل'],
+        'edit_self' => ['key' => 'hwnix_cash_message_sources.edit_self', 'label' => 'تعديل مصادر الرسائل الخاصة'],
+        'delete_all' => ['key' => 'hwnix_cash_message_sources.delete_all', 'label' => 'حذف مصدر رسائل معتمد'],
+    ],
 ];
+
+
 

@@ -9,5 +9,6 @@
     "Notification": true,
     "ExportImport": true,
     "Media": true,
-    "Legal": true
+    "Legal": true,
+    "HwnixCash": true
 }

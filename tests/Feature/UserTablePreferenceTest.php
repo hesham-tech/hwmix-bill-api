@@ -187,4 +187,30 @@ class UserTablePreferenceTest extends TestCase
             ]);
         $this->assertEquals('name', data_get($response->json(), ['data', 'screen_preferences', 'products.index', 'columns', 0, 'key']));
     }
+
+    /**
+     * اختبار حفظ تفضيلات لوحة التحكم (dashboard.admin_dashboard).
+     */
+    public function test_user_can_save_dashboard_preferences(): void
+    {
+        $payload = [
+            'table_key' => 'dashboard.admin_dashboard',
+            'preferences' => [
+                'widgetInstances' => [
+                    ['id' => 'inst_1', 'widgetId' => 'kpi_total_sales', 'x' => 0, 'y' => 0, 'w' => 3, 'h' => 2, 'visible' => true]
+                ]
+            ]
+        ];
+
+        $response = $this->postJson('/api/v1/ui-preferences', $payload);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.widgetInstances.0.id', 'inst_1');
+
+        $this->assertDatabaseHas('user_table_preferences', [
+            'user_id' => $this->user->id,
+            'company_id' => $this->company->id,
+            'table_key' => 'dashboard.admin_dashboard',
+        ]);
+    }
 }

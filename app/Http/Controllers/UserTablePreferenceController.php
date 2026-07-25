@@ -76,6 +76,12 @@ class UserTablePreferenceController extends Controller
             'quickActions', 'recentInvoices', 'upcomingPayments',
             'upcomingInstallments', 'profitSummaryWidget', 'reportsQuickLinks'
         ],
+        'dashboard.admin_dashboard' => [
+            'analyticsStats', 'basicStats', 'productIntelligenceTable',
+            'salesTrendChart', 'dashboardTasksWidget', 'topProductsChart',
+            'quickActions', 'recentInvoices', 'upcomingPayments',
+            'upcomingInstallments', 'profitSummaryWidget', 'reportsQuickLinks'
+        ],
         'branches.index' => [
             'name', 'phone', 'email', 'address', 'is_default', 'actions'
         ],
@@ -177,15 +183,16 @@ class UserTablePreferenceController extends Controller
 
             $tableKey = $validated['table_key'];
             $prefs = $validated['preferences'];
+            $isDashboardKey = str_starts_with($tableKey, 'dashboard.');
 
-            // 1. التحقق الأمني: هل الجدول معرف مسبقاً؟
-            if (!isset(self::$allowedTables[$tableKey])) {
+            // 1. التحقق الأمني: هل الجدول معرف مسبقاً أو ينتمي للوحات التحكم؟
+            if (!isset(self::$allowedTables[$tableKey]) && !$isDashboardKey) {
                 return api_error("مفتاح الجدول الممرر غير مصرح به: {$tableKey}", [], 422);
             }
 
-            // 2. التحقق الأمني: هل الأعمدة الممرضة صالحة؟
-            if (isset($prefs['columns']) && is_array($prefs['columns'])) {
-                $allowedColumns = self::$allowedTables[$tableKey];
+            // 2. التحقق الأمني: هل الأعمدة الممرضة صالحة؟ (في حال الجداول العادية)
+            if (!$isDashboardKey && isset($prefs['columns']) && is_array($prefs['columns'])) {
+                $allowedColumns = self::$allowedTables[$tableKey] ?? [];
                 foreach ($prefs['columns'] as $col) {
                     if (!isset($col['key']) || !in_array($col['key'], $allowedColumns)) {
                         return api_error("مفتاح العمود غير مصرح به: " . ($col['key'] ?? 'N/A'), [], 422);
