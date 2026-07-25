@@ -229,11 +229,15 @@ class AgentDeviceController extends Controller
             return version_compare($b['version'], $a['version']);
         });
 
-        return response()->json([
-            'status' => true,
-            'message' => 'قائمة ملفات التطبيق المتوفرة للتحميل',
-            'latest_download_url' => url('download-app/latest'),
-            'files' => $apkFiles,
-        ]);
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'status' => true,
+                'message' => 'قائمة ملفات التطبيق المتوفرة للتحميل',
+                'latest_download_url' => url('download-app/latest'),
+                'files' => $apkFiles,
+            ]);
+        }
+
+        return view('hwnixcash::downloads', compact('apkFiles'));
     }
 }

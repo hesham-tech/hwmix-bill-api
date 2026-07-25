@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تنزيل تطبيق HWNix SMS Agent</title>
+    <title>تنزيل تطبيق كاش هونكس (HWNix Cash)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -173,8 +173,8 @@
 
 <div class="container">
     <div class="header">
-        <h1>HWNix SMS Gateway</h1>
-        <p>اختر إصدار تطبيق الأندرويد للتحميل والتثبيت</p>
+        <h1>كاش هونكس | HWNix Cash</h1>
+        <p>اختر إصدار تطبيق الأندرويد للتحميل والتثبيت المباشر</p>
     </div>
 
     <div class="apk-list">
