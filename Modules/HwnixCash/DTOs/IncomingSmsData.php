@@ -14,14 +14,14 @@ class IncomingSmsData
         public ?string $sentAt = null
     ) {}
 
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data, ?int $fallbackDeviceId = null): self
     {
         return new self(
-            deviceId: $data['device_id'],
-            subscriptionId: $data['subscription_id'] ?? null,
-            phoneNumber: $data['phone_number'],
-            messageBody: $data['message_body'],
-            messageRef: $data['message_ref'],
+            deviceId: (int) ($data['device_id'] ?? $fallbackDeviceId ?? 0),
+            subscriptionId: isset($data['subscription_id']) ? (string) $data['subscription_id'] : null,
+            phoneNumber: (string) ($data['phone_number'] ?? ''),
+            messageBody: (string) ($data['message_body'] ?? ''),
+            messageRef: (string) ($data['message_ref'] ?? ''),
             sentAt: $data['sent_at'] ?? null
         );
     }

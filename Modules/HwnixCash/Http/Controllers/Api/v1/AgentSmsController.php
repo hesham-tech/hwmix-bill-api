@@ -66,11 +66,14 @@ class AgentSmsController extends Controller
     public function batchSync(BatchSyncSmsRequest $request): JsonResponse
     {
         $user = $request->user();
-        $messages = $request->validated()['messages'];
+        $validated = $request->validated();
+        $deviceId = (int) $validated['device_id'];
+        $messages = $validated['messages'];
 
         \Log::info('📦 [AgentSmsController@batchSync] Processing SMS Batch', [
             'user_id' => $user->id,
             'company_id' => $user->company_id,
+            'device_id' => $deviceId,
             'count' => count($messages),
             'ip' => $request->ip(),
             'messages_sample' => array_slice($messages, 0, 3),
@@ -78,7 +81,8 @@ class AgentSmsController extends Controller
 
         $processedCount = 0;
         foreach ($messages as $msg) {
-            $dto = IncomingSmsData::fromArray($msg);
+            $msg['device_id'] = $deviceId;
+            $dto = IncomingSmsData::fromArray($msg, $deviceId);
             $this->processIncomingSmsAction->execute($dto, $user->company_id, $user->id);
             $processedCount++;
         }
