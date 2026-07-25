@@ -15,7 +15,7 @@ class LineController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash.view_self'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash.view_self'))) {
             return api_forbidden('غير مصرح لك بعرض الخطوط.');
         }
 
@@ -29,7 +29,7 @@ class LineController extends Controller
     public function update(UpdateLineRequest $request, int $id): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash.edit_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash.edit_self'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash.edit_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash.edit_self'))) {
             return api_forbidden('غير مصرح لك بتعديل الخطوط.');
         }
 

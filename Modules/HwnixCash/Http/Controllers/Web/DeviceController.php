@@ -18,7 +18,7 @@ class DeviceController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash.view_self'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash.view_self'))) {
             return api_forbidden('غير مصرح لك بعرض أجهزة كاش هونكس.');
         }
 
@@ -30,7 +30,7 @@ class DeviceController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash.delete_all'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash.delete_all'))) {
             return api_forbidden('غير مصرح لك بحذف الأجهزة.');
         }
 

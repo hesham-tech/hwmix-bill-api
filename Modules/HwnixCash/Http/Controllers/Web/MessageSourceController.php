@@ -22,7 +22,7 @@ class MessageSourceController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.view_self'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.view_self'))) {
             return api_forbidden('غير مصرح لك بعرض مصادر الرسائل المعتمدة.');
         }
 
@@ -34,7 +34,7 @@ class MessageSourceController extends Controller
     public function store(StoreMessageSourceRequest $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.create'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.create'))) {
             return api_forbidden('غير مصرح لك بإضافة مصدر رسائل جديد.');
         }
 
@@ -61,7 +61,7 @@ class MessageSourceController extends Controller
     public function update(UpdateMessageSourceRequest $request, int $id): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.edit_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.edit_self'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.edit_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.edit_self'))) {
             return api_forbidden('غير مصرح لك بتعديل مصدر الرسائل.');
         }
 
@@ -82,7 +82,7 @@ class MessageSourceController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.delete_all'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.delete_all'))) {
             return api_forbidden('غير مصرح لك بحذف مصدر الرسائل.');
         }
 

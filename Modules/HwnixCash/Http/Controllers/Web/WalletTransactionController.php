@@ -22,7 +22,7 @@ class WalletTransactionController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_self'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_self'))) {
             return api_forbidden('غير مصرح لك بعرض معاملات المحافظ الإلكترونية.');
         }
 
@@ -49,28 +49,20 @@ class WalletTransactionController extends Controller
             $query->where('source', $request->source);
         }
 
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_all'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_all'))) {
             $query->where('created_by', $user->id);
         }
 
         $transactions = $query->orderBy('id', 'desc')
             ->paginate($request->per_page ?? 20);
 
-        return api_success([
-            'items' => WalletTransactionResource::collection($transactions->getCollection()),
-            'meta' => [
-                'current_page' => $transactions->currentPage(),
-                'last_page' => $transactions->lastPage(),
-                'per_page' => $transactions->perPage(),
-                'total' => $transactions->total(),
-            ]
-        ], 'تم جلب قائمة معاملات المحافظ بنجاح.');
+        return api_success(WalletTransactionResource::collection($transactions), 'تم جلب قائمة معاملات المحافظ بنجاح.');
     }
 
     public function store(StoreWalletTransactionRequest $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.create'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.create'))) {
             return api_forbidden('غير مصرح لك بإضافة معاملات محفظة.');
         }
 
@@ -97,7 +89,7 @@ class WalletTransactionController extends Controller
     public function update(UpdateWalletTransactionRequest $request, int $id): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.edit_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.edit_self'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.edit_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.edit_self'))) {
             return api_forbidden('غير مصرح لك بتعديل معاملة المحفظة.');
         }
 
@@ -118,7 +110,7 @@ class WalletTransactionController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.delete_all'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.delete_all'))) {
             return api_forbidden('غير مصرح لك بحذف المعاملة.');
         }
 

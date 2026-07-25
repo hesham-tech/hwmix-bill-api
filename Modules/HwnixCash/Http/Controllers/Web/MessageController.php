@@ -21,7 +21,7 @@ class MessageController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_messages.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_messages.view_self'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_messages.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_messages.view_self'))) {
             return api_forbidden('غير مصرح لك بعرض الرسائل.');
         }
 
@@ -40,22 +40,14 @@ class MessageController extends Controller
             $query->where('sms_device_id', $request->device_id);
         }
 
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('hwnix_cash_messages.view_all'))) {
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_messages.view_all'))) {
             $query->where('created_by', $user->id);
         }
 
         $messages = $query->orderBy('id', 'desc')
             ->paginate($request->per_page ?? 20);
 
-        return api_success([
-            'items' => SmsMessageResource::collection($messages->getCollection()),
-            'meta' => [
-                'current_page' => $messages->currentPage(),
-                'last_page' => $messages->lastPage(),
-                'per_page' => $messages->perPage(),
-                'total' => $messages->total(),
-            ]
-        ], 'تم جلب قائمة الرسائل بنجاح.');
+        return api_success(SmsMessageResource::collection($messages), 'تم جلب قائمة الرسائل بنجاح.');
     }
 
     public function store(StoreMessageRequest $request): JsonResponse
