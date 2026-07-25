@@ -40,8 +40,14 @@ class LineResource extends JsonResource
             'monthly_deposit_remaining' => $this->monthly_deposit_remaining,
 
             'status' => $this->status,
+            'is_active' => $this->status === 'active',
+            'provider' => $this->carrier,
             'note' => $this->note,
-            'device_name' => $this->device?->device_name,
+            'device_name' => $this->device?->device_name ?? 'غير محدد',
+            'device' => [
+                'name' => $this->device?->device_name ?? 'غير محدد',
+                'identifier' => $this->device_android_id,
+            ],
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }
