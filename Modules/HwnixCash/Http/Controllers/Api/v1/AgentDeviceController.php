@@ -116,13 +116,124 @@ class AgentDeviceController extends Controller
         return api_success(null, 'تم إلغاء ربط الجهاز بنجاح.');
     }
 
+    /**
+     * التحقق من وجود تحديث جديد لتطبيق الأندرويد dynamically.
+     */
     public function checkAppUpdate(Request $request): JsonResponse
     {
+        $jsonPath = public_path('downloads/app-version.json');
+        $highestVersionCode = 52;
+        $highestVersionName = '1.0.52';
+        $downloadUrl = url('download-app/latest');
+
+        if (file_exists($jsonPath)) {
+            $jsonData = json_decode(file_get_contents($jsonPath), true);
+            if (isset($jsonData['version_code']) && isset($jsonData['version_name'])) {
+                $highestVersionCode = (int) $jsonData['version_code'];
+                $highestVersionName = $jsonData['version_name'];
+            }
+        } else {
+            $directory = public_path('downloads');
+            if (is_dir($directory)) {
+                $files = scandir($directory);
+                foreach ($files as $file) {
+                    if (preg_match('/^(hwnix-cash|sms-agent)-v([a-zA-Z\d\.\-]+)\.apk$/i', $file, $matches)) {
+                        $versionName = $matches[2];
+                        $cleanVersion = str_replace('.', '', $versionName);
+                        $versionCode = (int) $cleanVersion;
+
+                        if ($versionCode > $highestVersionCode) {
+                            $highestVersionCode = $versionCode;
+                            $highestVersionName = $versionName;
+                        }
+                    }
+                }
+            }
+        }
+
         return api_success([
-            'has_update' => false,
-            'latest_version' => '1.0.0',
-            'download_url' => route('hwnix-cash.downloads.app'),
-            'force_update' => false,
-        ], 'لا يوجد تحديثات جديدة حالياً.');
+            'version_code' => $highestVersionCode,
+            'version_name' => $highestVersionName,
+            'download_url' => $downloadUrl,
+            'changelog' => 'دعم استقرار وتجاوز قيود الواجهات التشغيلية لـ HWNix Cash.',
+            'force_update' => false
+        ], 'معلومات التحديث المتاحة.');
+    }
+
+    /**
+     * تحميل أعلى إصدار متوفر من تطبيق الأندرويد تلقائياً.
+     */
+    public function downloadLatestApp()
+    {
+        $directory = public_path('downloads');
+        if (!is_dir($directory)) {
+            return response()->json(['message' => 'مجلد التحميلات غير موجود على السيرفر.'], 404);
+        }
+
+        $files = scandir($directory);
+        $apkFiles = [];
+
+        foreach ($files as $file) {
+            if (preg_match('/^(hwnix-cash|sms-agent)-v([a-zA-Z\d\.\-]+)\.apk$/i', $file, $matches)) {
+                $version = $matches[2];
+                $apkFiles[$version] = $directory . '/' . $file;
+            }
+        }
+
+        if (empty($apkFiles)) {
+            return response()->json(['message' => 'لا توجد أي إصدارات APK متوفرة للتحميل حالياً.'], 404);
+        }
+
+        uksort($apkFiles, function ($a, $b) {
+            return version_compare($b, $a);
+        });
+
+        $latestVersion = array_key_first($apkFiles);
+        $filePath = $apkFiles[$latestVersion];
+
+        if (!file_exists($filePath)) {
+            return response()->json(['message' => 'ملف الإصدار الأخير غير موجود.'], 404);
+        }
+
+        return response()->download($filePath, basename($filePath), [
+            'Content-Type' => 'application/vnd.android.package-archive'
+        ]);
+    }
+
+    /**
+     * عرض صفحة أو قائمة تحميل الإصدارات المتوفرة لتطبيق الأندرويد.
+     */
+    public function showDownloadsPage()
+    {
+        $directory = public_path('downloads');
+        $apkFiles = [];
+
+        if (is_dir($directory)) {
+            $files = scandir($directory);
+            foreach ($files as $file) {
+                if (preg_match('/^(hwnix-cash|sms-agent)-v([a-zA-Z\d\.\-]+)\.apk$/i', $file, $matches)) {
+                    $version = $matches[2];
+                    $filePath = $directory . '/' . $file;
+                    $apkFiles[] = [
+                        'version' => $version,
+                        'filename' => $file,
+                        'size' => round(filesize($filePath) / (1024 * 1024), 2) . ' MB',
+                        'date' => date('Y-m-d H:i:s', filemtime($filePath)),
+                        'url' => asset('downloads/' . $file)
+                    ];
+                }
+            }
+        }
+
+        usort($apkFiles, function ($a, $b) {
+            return version_compare($b['version'], $a['version']);
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'قائمة ملفات التطبيق المتوفرة للتحميل',
+            'latest_download_url' => url('download-app/latest'),
+            'files' => $apkFiles,
+        ]);
     }
 }
