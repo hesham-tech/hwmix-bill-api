@@ -20,6 +20,7 @@ class IncomingSmsRequest extends FormRequest
             'phone_number' => 'required|string',
             'message_body' => 'required|string',
             'message_ref' => 'required|string',
+            'contact_name' => 'nullable|string',
             'sent_at' => 'nullable|string',
         ];
     }

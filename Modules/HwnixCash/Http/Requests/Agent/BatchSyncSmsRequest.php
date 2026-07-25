@@ -21,6 +21,7 @@ class BatchSyncSmsRequest extends FormRequest
             'messages.*.phone_number' => 'required|string',
             'messages.*.message_body' => 'nullable|string',
             'messages.*.message_ref' => 'required|string',
+            'messages.*.contact_name' => 'nullable|string',
             'messages.*.sent_at' => 'nullable|string',
         ];
     }

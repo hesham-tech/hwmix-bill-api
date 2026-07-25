@@ -31,6 +31,7 @@ class EloquentHwnixCashMessageRepository implements HwnixCashMessageRepositoryIn
             'sms_device_id' => $dto->deviceId,
             'sms_line_id' => $line?->id,
             'phone_number' => $dto->phoneNumber,
+            'sender_name' => $dto->contactName,
             'message_body' => $dto->messageBody,
             'direction' => 'incoming',
             'status' => 'received',

@@ -11,7 +11,8 @@ class IncomingSmsData
         public string $phoneNumber,
         public string $messageBody,
         public string $messageRef,
-        public ?string $sentAt = null
+        public ?string $sentAt = null,
+        public ?string $contactName = null
     ) {}
 
     public static function fromArray(array $data, ?int $fallbackDeviceId = null): self
@@ -22,7 +23,8 @@ class IncomingSmsData
             phoneNumber: (string) ($data['phone_number'] ?? ''),
             messageBody: (string) ($data['message_body'] ?? ''),
             messageRef: (string) ($data['message_ref'] ?? ''),
-            sentAt: $data['sent_at'] ?? null
+            sentAt: $data['sent_at'] ?? null,
+            contactName: isset($data['contact_name']) ? (string) $data['contact_name'] : null
         );
     }
 }
