@@ -1,0 +1,15 @@
+{
+    "name": "AiPlatform",
+    "alias": "ai-platform",
+    "description": "منصة الذكاء الاصطناعي المستقلة — HWNix AI Platform",
+    "keywords": ["ai", "platform", "llm", "orchestration"],
+    "priority": 9,
+    "providers": [
+        "Modules\\AiPlatform\\Providers\\AiPlatformServiceProvider"
+    ],
+    "aliases": {
+        "AI": "Modules\\AiPlatform\\Facades\\AI"
+    },
+    "files": [],
+    "requires": []
+}

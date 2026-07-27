@@ -1,0 +1,23 @@
+<?php
+
+namespace Modules\AiPlatform\Enums;
+
+/**
+ * قاموس رموز الأخطاء الموحد لمنصة الذكاء الاصطناعي (Error Taxonomy)
+ */
+enum AiErrorCode: string
+{
+    case AI_ROUTER_NO_PROVIDER       = 'AI_ROUTER_NO_PROVIDER';
+    case AI_ROUTER_NO_MODEL          = 'AI_ROUTER_NO_MODEL';
+    case AI_PROMPT_NOT_FOUND         = 'AI_PROMPT_NOT_FOUND';
+    case AI_PROMPT_VARIABLE_MISSING  = 'AI_PROMPT_VARIABLE_MISSING';
+    case AI_PROVIDER_TIMEOUT         = 'AI_PROVIDER_TIMEOUT';
+    case AI_PROVIDER_RATE_LIMIT      = 'AI_PROVIDER_RATE_LIMIT';
+    case AI_PROVIDER_AUTH_FAILED     = 'AI_PROVIDER_AUTH_FAILED';
+    case AI_PROVIDER_QUOTA_EXCEEDED  = 'AI_PROVIDER_QUOTA_EXCEEDED';
+    case AI_DRIVER_NETWORK_ERROR     = 'AI_DRIVER_NETWORK_ERROR';
+    case AI_DRIVER_RESPONSE_INVALID  = 'AI_DRIVER_RESPONSE_INVALID';
+    case AI_VAULT_DECRYPT_FAILED     = 'AI_VAULT_DECRYPT_FAILED';
+    case AI_POLICY_DENIED            = 'AI_POLICY_DENIED';
+    case AI_EXECUTION_FAILED         = 'AI_EXECUTION_FAILED';
+}

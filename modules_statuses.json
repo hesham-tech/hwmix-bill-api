@@ -10,5 +10,6 @@
     "ExportImport": true,
     "Media": true,
     "Legal": true,
-    "HwnixCash": true
+    "HwnixCash": true,
+    "AiPlatform": true
 }

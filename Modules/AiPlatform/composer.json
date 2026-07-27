@@ -1,0 +1,41 @@
+{
+    "name": "hwnix/ai-platform",
+    "description": "HWNix AI Platform — Orchestration Layer (Laravel Package Ready)",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^11.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0",
+        "phpunit/phpunit": "^11.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\AiPlatform\\Providers\\AiPlatformServiceProvider"
+            ],
+            "aliases": {
+                "AI": "Modules\\AiPlatform\\Facades\\AI"
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\AiPlatform\\": "",
+            "Modules\\AiPlatform\\Database\\Factories\\": "database/factories/",
+            "Modules\\AiPlatform\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\AiPlatform\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
