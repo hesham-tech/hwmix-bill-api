@@ -251,4 +251,49 @@ class FinancialLedgerService
                 break;
         }
     }
+
+    /**
+     * تسجيل القيود المزدوجة لعمليات الشركاء
+     * 
+     * @param Model $operation (PartnerOperation)
+     */
+    public function recordPartnerOperation(Model $operation): void
+    {
+        $amount = (float) $operation->amount;
+        $notes = $operation->notes ? " - {$operation->notes}" : "";
+        $partnerName = $operation->partner?->nickname ?? $operation->partner?->name ?? "الشريك #{$operation->partner_id}";
+        $date = $operation->operation_date ? \Carbon\Carbon::parse($operation->operation_date) : null;
+
+        switch ($operation->type) {
+            case 'capital_increase':
+                $this->recordEntry($operation, 'asset', $amount, 'debit', "زيادة رأس مال بالنقدية ({$partnerName}){$notes}", $date);
+                $this->recordEntry($operation, 'equity', $amount, 'credit', "إثبات زيادة رأس المال ({$partnerName}){$notes}", $date);
+                break;
+
+            case 'capital_withdrawal':
+                $this->recordEntry($operation, 'equity', $amount, 'debit', "تخفيض/سحب من رأس المال ({$partnerName}){$notes}", $date);
+                $this->recordEntry($operation, 'asset', $amount, 'credit', "صرف مسحوبات من رأس المال ({$partnerName}){$notes}", $date);
+                break;
+
+            case 'partner_loan_given':
+                $this->recordEntry($operation, 'asset', $amount, 'debit', "استلام قرض من الشريك ({$partnerName}){$notes}", $date);
+                $this->recordEntry($operation, 'liability', $amount, 'credit', "إثبات التزام قرض الشريك ({$partnerName}){$notes}", $date);
+                break;
+
+            case 'partner_loan_repaid':
+                $this->recordEntry($operation, 'liability', $amount, 'debit', "سداد قرض الشريك ({$partnerName}){$notes}", $date);
+                $this->recordEntry($operation, 'asset', $amount, 'credit', "صرف سداد قرض الشريك من الخزينة ({$partnerName}){$notes}", $date);
+                break;
+
+            case 'profit_distribution':
+                $this->recordEntry($operation, 'equity', $amount, 'debit', "توزيع أرباح للشريك ({$partnerName}){$notes}", $date);
+                $this->recordEntry($operation, 'asset', $amount, 'credit', "صرف أرباح نقدية للشريك ({$partnerName}){$notes}", $date);
+                break;
+
+            case 'loss_coverage':
+                $this->recordEntry($operation, 'asset', $amount, 'debit', "استلام نقدية لتغطية خسائر من الشريك ({$partnerName}){$notes}", $date);
+                $this->recordEntry($operation, 'equity', $amount, 'credit', "إثبات تغطية الخسائر من الشريك ({$partnerName}){$notes}", $date);
+                break;
+        }
+    }
 }

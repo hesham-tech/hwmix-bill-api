@@ -67,6 +67,16 @@ class AiPlatformSeeder extends Seeder
                 'created_at'   => now(),
                 'updated_at'   => now(),
             ],
+            'groq' => [
+                'key'          => 'groq',
+                'label'        => 'Groq AI (Llama 3)',
+                'type'         => 'llm',
+                'driver_class' => 'Modules\AiPlatform\Drivers\GroqDriver',
+                'base_url'     => 'https://api.groq.com/openai/v1',
+                'is_active'    => true,
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ],
         ];
 
         $providers = [];
@@ -77,6 +87,18 @@ class AiPlatformSeeder extends Seeder
 
         // 3. إدراج النماذج الأولى الافتراضية
         $models = [
+            [
+                'ai_provider_id'     => $providers['groq'],
+                'model_id'           => 'llama-3.1-8b-instant',
+                'label'              => 'Llama 3.1 8B Instant (Groq)',
+                'max_context_tokens' => 131072,
+                'max_output_tokens'  => 8192,
+                'input_price_per_1k' => 0.00005,
+                'output_price_per_1k'=> 0.00008,
+                'is_active'          => true,
+                'created_at'         => now(),
+                'updated_at'         => now(),
+            ],
             [
                 'ai_provider_id'     => $providers['gemini'],
                 'model_id'           => 'gemini-pro-latest',

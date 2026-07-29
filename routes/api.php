@@ -298,6 +298,15 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
 
     // ================== Financials (Expenses & Ledger) (Moved to Accounting Module) ==================
 
+    // ================== Partner Financial Operations ==================
+    Route::controller(\App\Http\Controllers\PartnerOperationController::class)->group(function () {
+        Route::get('partner-operations/types', 'types');
+        Route::get('partner-operations/statement/{partner}', 'statement');
+        Route::get('partner-operations', 'index');
+        Route::post('partner-operations', 'store');
+        Route::get('partner-operations/{partnerOperation}', 'show');
+    });
+
     // Summary Reports (High Performance)
     Route::get('reports/profit-loss-summary', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'profitLossSummary']);
 

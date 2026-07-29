@@ -62,7 +62,9 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'priority' => 'required|in:urgent,high,medium,low',
             'deadline' => 'nullable|date',
-            'assignments' => 'required|array', // Array of {type: 'user'|'group', id: number}
+            'assignments' => 'nullable|array', // Optional array of {type: 'user'|'group', id: number}
+            'assignments.*.type' => 'nullable|string|in:user,group',
+            'assignments.*.id' => 'nullable|integer',
         ]);
 
         DB::beginTransaction();
@@ -77,8 +79,13 @@ class TaskController extends Controller
                 'created_by' => $request->user()->id,
             ]);
 
-            foreach ($validated['assignments'] as $assign) {
-                $type = $assign['type'] === 'user' ? \App\Models\User::class : \App\Models\TaskGroup::class;
+            $assignments = !empty($validated['assignments']) ? $validated['assignments'] : [
+                ['type' => 'user', 'id' => $request->user()->id]
+            ];
+
+            foreach ($assignments as $assign) {
+                if (empty($assign['id'])) continue;
+                $type = ($assign['type'] ?? 'user') === 'user' ? \App\Models\User::class : \App\Models\TaskGroup::class;
                 $task->assignments()->create([
                     'assignable_type' => $type,
                     'assignable_id' => $assign['id'],
@@ -94,9 +101,12 @@ class TaskController extends Controller
 
             DB::commit();
 
-            event(new \App\Events\TaskUpdated($task, 'تم إنشاء مهمة جديدة'));
-
-            // TODO: Dispatch real-time event
+            // حماية بث الأحداث المباشرة تفادياً لتوقف الاستجابة على الاستضافات المشتركة عند غياب الـ WebSockets
+            try {
+                event(new \App\Events\TaskUpdated($task, 'تم إنشاء مهمة جديدة'));
+            } catch (\Throwable $broadcastEx) {
+                \Illuminate\Support\Facades\Log::warning('Task event broadcast skipped: ' . $broadcastEx->getMessage());
+            }
 
             return api_success($task->load(['assignments.assignable', 'creator']), 'تم إنشاء المهمة بنجاح');
         } catch (\Exception $e) {

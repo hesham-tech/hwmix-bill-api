@@ -163,6 +163,12 @@ if (!function_exists('api_exception')) {
                 'message' => $e->getMessage() ?: 'ليس لديك صلاحية لإجراء هذه العملية.',
                 'error'   => $e->getMessage(),
             ], 403);
+        } elseif ($e instanceof \InvalidArgumentException || $e instanceof \DomainException) {
+            return response()->json([
+                'status'  => false,
+                'message' => $e->getMessage(),
+                'error'   => $e->getMessage(),
+            ], 400);
         } elseif ($e instanceof \Illuminate\Database\QueryException) {
             // التعامل مع أخطاء الاستعلام وقواعد البيانات
             $errorCode = $e->errorInfo[1] ?? null;

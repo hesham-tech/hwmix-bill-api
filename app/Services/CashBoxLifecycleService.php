@@ -180,17 +180,17 @@ class CashBoxLifecycleService
                 $cashBox = \App\Models\CashBox::withoutGlobalScopes()->findOrFail($cashBoxId);
             }
             if (!$user->canAccessCashBox($cashBox)) {
-                throw new Exception("لا يمكن تعيين الخزينة كخيار افتراضي لأن المستخدم لا يملك صلاحيات وصول إليها.");
+                throw new \InvalidArgumentException("لا يمكن تعيين الخزينة كخيار افتراضي لأن المستخدم لا يملك صلاحيات وصول إليها.");
             }
             if ($cashBox->status !== CashBoxStatus::ACTIVE) {
-                throw new Exception("لا يمكن تعيين الخزينة كخيار افتراضي لأنها ليست نشطة.");
+                throw new \InvalidArgumentException("لا يمكن تعيين الخزينة كخيار افتراضي لأنها ليست نشطة.");
             }
         }
 
         $targetBranchId = $branchId ?? ($cashBox ? $cashBox->branch_id : $user->branch_id);
 
         if (!$targetBranchId) {
-            throw new Exception("تعذر تحديد الفرع لتعيين الخزينة الافتراضية.");
+            throw new \InvalidArgumentException("تعذر تحديد الفرع لتعيين الخزينة الافتراضية.");
         }
 
         // جلب المعرف القديم لتمريره لحدث التغيير
