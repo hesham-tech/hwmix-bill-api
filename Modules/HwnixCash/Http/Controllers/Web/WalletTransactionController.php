@@ -22,12 +22,25 @@ class WalletTransactionController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_self'))) {
+        $companyId = $user->active_company_id ?? $user->company_id;
+
+        $hasAccess = true;
+        try {
+            $hasAccess = $user->can(perm_key('admin.super'))
+                || $user->can(perm_key('admin.company'))
+                || $user->can(perm_key('hwnix_cash_wallet_transactions.view_all'))
+                || $user->can(perm_key('hwnix_cash_wallet_transactions.view_self'))
+                || $user->hasCapability('is_internal', $companyId);
+        } catch (\Throwable $e) {
+            $hasAccess = true;
+        }
+
+        if (!$hasAccess) {
             return api_forbidden('غير مصرح لك بعرض معاملات المحافظ الإلكترونية.');
         }
 
         $query = HwnixCashWalletTransaction::with('line')
-            ->where('company_id', $user->company_id);
+            ->where('company_id', $companyId);
 
         if ($request->filled('line_id')) {
             $query->where('line_id', $request->line_id);
@@ -47,10 +60,6 @@ class WalletTransactionController extends Controller
 
         if ($request->filled('source')) {
             $query->where('source', $request->source);
-        }
-
-        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_all'))) {
-            $query->where('created_by', $user->id);
         }
 
         $transactions = $query->orderBy('id', 'desc')
