@@ -10,4 +10,7 @@ enum SmsMessageStatus: string
     case DELIVERED = 'delivered';
     case FAILED = 'failed';
     case RECEIVED = 'received';
+    case PROCESSED = 'processed';
+    case NEEDS_REVIEW = 'needs_review';
+    case IGNORED = 'ignored';
 }

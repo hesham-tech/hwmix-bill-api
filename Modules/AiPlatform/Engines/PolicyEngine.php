@@ -16,7 +16,7 @@ class PolicyEngine implements PolicyEngineInterface
     public function evaluate(ExecutionRequestDTO $request, ?int $userId, array $userRoles): PolicyDecisionDTO
     {
         $policies = AiPolicy::where('company_id', $request->companyId)
-            ->where('agent_id', $request->agentId)
+            ->where('ai_agent_id', $request->agentId)
             ->where('is_active', true)
             ->orderBy('priority', 'asc')
             ->get();
@@ -55,17 +55,16 @@ class PolicyEngine implements PolicyEngineInterface
 
     private function logEvaluation(?AiPolicy $policy, ExecutionRequestDTO $request, ?int $userId, PolicyDecisionDTO $decision): void
     {
+        if (!$policy) {
+            return;
+        }
+
         AiPolicyEvaluation::create([
             'company_id' => $request->companyId,
-            'agent_id' => $request->agentId,
-            'policy_id' => $policy?->id,
-            'ai_policy_id' => $policy?->id ?? 1,
-            'capability_key' => $request->capabilityKey,
-            'user_id' => $userId,
-            'request_data' => json_encode($request),
+            'ai_policy_id' => $policy->id,
+            'ai_execution_request_id' => null,
             'decision' => $decision->isAllowed() ? 'allowed' : 'denied',
-            'deny_reason' => $decision->denyReason,
-            'deny_message' => $decision->denyMessage,
+            'created_at' => now(),
         ]);
     }
 }

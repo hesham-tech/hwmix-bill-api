@@ -682,9 +682,14 @@ class User extends Authenticatable
             return 0.0;
         }
 
-        $isEmployee = $this->hasCapability('is_internal', $companyId)
-            || $this->hasPermissionTo(perm_key('admin.super'))
-            || $this->hasPermissionTo(perm_key('admin.company'));
+        $isEmployee = false;
+        try {
+            $isEmployee = $this->hasCapability('is_internal', $companyId)
+                || (function_exists('perm_key') && $this->can(perm_key('admin.super')))
+                || (function_exists('perm_key') && $this->can(perm_key('admin.company')));
+        } catch (\Throwable $e) {
+            $isEmployee = false;
+        }
         if ($isEmployee) {
             return $this->active_branch_balance;
         }

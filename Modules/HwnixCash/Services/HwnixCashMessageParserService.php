@@ -30,7 +30,7 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
 
     public function parse(SmsMessage $message): void
     {
-        Log::info("[HwnixCashMessageParserService Orchestrator v" . self::PARSER_VERSION . "] Received incoming SMS ID {$message->id} from {$message->phoneNumber}");
+        Log::info("🧠 [HWNixCash SMS Pipeline] Step 4/5: Starting AI Structural Analysis for Message ID {$message->id} from Sender '{$message->phoneNumber}'");
 
         try {
             // 1. طلب التحليل الهيكلي المنظم وتثبيت النتيجة في المنصة (Single Source of Truth)
@@ -43,6 +43,20 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                 providerKey: 'general'
             ));
 
+            Log::info("📊 [HWNixCash SMS Pipeline] AI Structural Analysis Output for Message ID {$message->id}:", [
+                'message_id' => $message->id,
+                'is_transaction' => $analysisResult->isTransaction,
+                'message_type' => $analysisResult->messageType,
+                'amount' => $analysisResult->amount,
+                'currency' => $analysisResult->currency,
+                'target_phone' => $analysisResult->targetPhone,
+                'target_name' => $analysisResult->targetName,
+                'transaction_id' => $analysisResult->transactionId,
+                'available_balance' => $analysisResult->availableBalance,
+                'confidence_score' => $analysisResult->confidenceScore,
+                'validation_errors' => $analysisResult->validationErrors,
+            ]);
+
             // 2. تنفيذ العمليات المحاسبية والقيود داخل DB Transaction ذرية ومحمية
             DB::transaction(function () use ($message, $analysisResult) {
 
@@ -50,13 +64,16 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                 $line = $this->resolveLine($message);
 
                 if (!$line) {
-                    Log::warning("[HwnixCashMessageParserService] No matching line found for Message ID {$message->id} in Company {$message->companyId}");
+                    Log::warning("⚠️ [HWNixCash SMS Pipeline] Step 4.1/5: FAILED - No matching SIM line found for Message ID {$message->id} in Company ID {$message->companyId}. Marked as 'needs_review'");
                     $this->messageFinalizer->markAsNeedsReview($message->id, 'لم يتم العثور على خط مالي مرابط بالرسالة');
                     return;
                 }
 
+                Log::info("📱 [HWNixCash SMS Pipeline] Step 4.1/5: Resolved SIM Line ID {$line->id} ('{$line->phone_number}') for Message ID {$message->id}");
+
                 // 3. تحديث الرصيد الفعلي (actual_balance) إذا ثبت وجوده بالرسالة كـ Source of Truth
                 if ($analysisResult->balanceFound && $analysisResult->availableBalance !== null) {
+                    Log::info("💵 [HWNixCash SMS Pipeline] Updating Actual Line Balance to {$analysisResult->availableBalance} EGP for Line ID {$line->id}");
                     $this->balanceUpdater->updateActualBalance($line, $analysisResult->availableBalance);
                 }
 
@@ -64,6 +81,7 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                 if ($analysisResult->messageType === 'unknown' || !empty($analysisResult->validationErrors)) {
                     // توجيه الرسالة لقائمة المراجعة البشرية (Unknown Queue)
                     $errorText = implode('; ', $analysisResult->validationErrors) ?: 'نوع الحركة غير معروف وتم توجيهه للمراجعة البشرية';
+                    Log::warning("⚠️ [HWNixCash SMS Pipeline] Step 4.2/5: Message ID {$message->id} classified as unknown or contains validation errors. Marked as 'needs_review'. Error: {$errorText}");
                     $this->messageFinalizer->markAsNeedsReview($message->id, $errorText);
                     return;
                 }
@@ -71,7 +89,7 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                 if ($analysisResult->isTransaction && $analysisResult->amount !== null && $analysisResult->amount > 0) {
                     // فحص التكرار عبر المستودع
                     if ($this->duplicateChecker->isDuplicateTransaction($message->companyId, $line->id, $analysisResult->transactionId, $message->id)) {
-                        Log::info("[HwnixCashMessageParserService] Duplicate transaction skipped for Message ID {$message->id}");
+                        Log::info("ℹ️ [HWNixCash SMS Pipeline] Step 4.3/5: Duplicate transaction ID '{$analysisResult->transactionId}' skipped for Message ID {$message->id}");
                         $this->messageFinalizer->markAsProcessed($message->id);
                         return;
                     }
@@ -98,7 +116,12 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                     );
 
                     // إنشاء المعاملة المالية وتعديل الرصيد الحسابي بدفتر الأستاذ
-                    $this->transactionCreator->createTransaction($line, $message, $normalizedDto);
+                    $walletTx = $this->transactionCreator->createTransaction($line, $message, $normalizedDto);
+                    if ($walletTx) {
+                        Log::info("💰 [HWNixCash SMS Pipeline] Step 5/5: SUCCESS! Created Wallet Transaction ID {$walletTx->id} for Message ID {$message->id}. Amount: {$walletTx->amount} EGP");
+                    }
+                } else {
+                    Log::info("ℹ️ [HWNixCash SMS Pipeline] Step 5/5: Message ID {$message->id} is non-transactional (Amount: {$analysisResult->amount}, IsTx: {$analysisResult->isTransaction}). Processing complete without financial mutation.");
                 }
 
                 // 5. إنهاء المعالجة وتثبيت الحالة بنجاح
@@ -106,8 +129,11 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
             });
 
         } catch (Throwable $e) {
-            Log::error("[HwnixCashMessageParserService] Exception during parsing Message ID {$message->id}: " . $e->getMessage(), [
-                'exception' => $e
+            Log::error("❌ [HWNixCash SMS Pipeline] EXCEPTION during parsing Message ID {$message->id}: {$e->getMessage()}", [
+                'message_id' => $message->id,
+                'exception' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ]);
             $this->messageFinalizer->markAsNeedsReview($message->id, 'حدث خطأ استثنائي أثناء معالجة الرسالة: ' . $e->getMessage());
         }

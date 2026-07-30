@@ -27,9 +27,11 @@ if (!function_exists('api_success')) {
             
             $isStaff = false;
             if ($companyId) {
-                $isStaff = $user->hasCapability('is_internal', $companyId)
-                    || $user->hasPermissionTo(perm_key('admin.super'))
-                    || $user->hasPermissionTo(perm_key('admin.company'));
+                try {
+                    $isStaff = $user->hasCapability('is_internal', $companyId);
+                } catch (\Throwable $e) {
+                    $isStaff = false;
+                }
             }
             
             $balance = $isStaff ? $user->active_branch_balance : $user->balance;
@@ -156,7 +158,8 @@ if (!function_exists('api_exception')) {
         } elseif (
             $e instanceof \Illuminate\Auth\Access\AuthorizationException ||
             $e instanceof \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException ||
-            $e instanceof \Spatie\Permission\Exceptions\UnauthorizedException
+            $e instanceof \Spatie\Permission\Exceptions\UnauthorizedException ||
+            $e instanceof \Spatie\Permission\Exceptions\PermissionDoesNotExist
         ) {
             return response()->json([
                 'status'  => false,
