@@ -32,7 +32,7 @@ class LineController extends Controller
             return api_forbidden('غير مصرح لك بعرض الخطوط.');
         }
 
-        $lines = HwnixCashLine::with('device')
+        $lines = HwnixCashLine::with(['device', 'financialAccounts.messageSource'])
             ->where('company_id', $companyId)
             ->get();
 
