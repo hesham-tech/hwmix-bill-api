@@ -18,4 +18,8 @@ interface HwnixCashWalletTransactionRepositoryInterface
     public function delete(int $id): bool;
 
     public function getLineTransactions(int $lineId, int $companyId): Collection;
+
+    public function existsByOperationNumber(int $companyId, int $lineId, string $operationNumber): bool;
+
+    public function existsByMessageId(int $companyId, int $lineId, int $messageId): bool;
 }

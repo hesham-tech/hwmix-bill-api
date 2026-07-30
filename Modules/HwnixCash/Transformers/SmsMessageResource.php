@@ -30,8 +30,10 @@ class SmsMessageResource extends JsonResource
             'created_at' => $this->created_at?->toIso8601String(),
             'device' => $this->device ? [
                 'id' => $this->device->id,
-                'name' => $this->device->name ?: ($this->device->brand . ' ' . $this->device->model),
-                'device_name' => $this->device->name ?: ($this->device->brand . ' ' . $this->device->model),
+                'name' => $this->device->name ?: $this->device->device_name,
+                'device_name' => $this->device->device_name ?: trim(($this->device->brand ?? '') . ' ' . ($this->device->model ?? '')),
+                'brand' => $this->device->brand,
+                'model' => $this->device->model,
             ] : null,
             'line' => $this->line ? [
                 'id' => $this->line->id,
