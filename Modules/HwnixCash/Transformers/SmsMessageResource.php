@@ -1,5 +1,5 @@
 <?php
-// محول استجابة بيانات سجلات الرسائل القصيرة للـ API.
+// محول استجابة بيانات سجلات الرسائل القصيرة للـ API مع تفاصيل الجهاز والشريحة.
 
 namespace Modules\HwnixCash\Transformers;
 
@@ -28,6 +28,17 @@ class SmsMessageResource extends JsonResource
             'error_message' => $this->error_message,
             'sent_at' => $this->sent_at?->toIso8601String() ?? $this->created_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
+            'device' => $this->device ? [
+                'id' => $this->device->id,
+                'name' => $this->device->name ?: ($this->device->brand . ' ' . $this->device->model),
+                'device_name' => $this->device->name ?: ($this->device->brand . ' ' . $this->device->model),
+            ] : null,
+            'line' => $this->line ? [
+                'id' => $this->line->id,
+                'phone_number' => $this->line->phone_number,
+                'carrier' => $this->line->carrier,
+                'slot_index' => $this->line->slot_index,
+            ] : null,
         ];
     }
 }
