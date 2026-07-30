@@ -157,7 +157,7 @@ class FinancialAccountController extends Controller
         return api_success(null, 'تم حذف الحساب المالي بنجاح.');
     }
 
-    public function reconcile(int $id, Request $request): JsonResponse
+    public function reconcile(int $id, \Modules\HwnixCash\Http\Requests\ReconcileFinancialAccountRequest $request): JsonResponse
     {
         $user = $request->user();
         $companyId = $user->active_company_id ?? $user->company_id;
@@ -165,6 +165,7 @@ class FinancialAccountController extends Controller
         $account = HwnixCashFinancialAccount::where('company_id', $companyId)
             ->findOrFail($id);
 
+        $reason = trim($request->validated('reason'));
         $oldBalance = (float) $account->balance;
         $newBalance = (float) $account->actual_balance;
         $difference = round($newBalance - $oldBalance, 2);
@@ -173,7 +174,7 @@ class FinancialAccountController extends Controller
             return api_error('الرصيد الحسابي مطابق بالفعل للرصيد الفعلي، لا توجد تسوية مضافة.', 422);
         }
 
-        DB::transaction(function () use ($account, $oldBalance, $newBalance, $difference, $companyId, $user) {
+        DB::transaction(function () use ($account, $oldBalance, $newBalance, $difference, $reason, $companyId, $user) {
             $account->update([
                 'balance' => $newBalance,
             ]);
@@ -195,11 +196,12 @@ class FinancialAccountController extends Controller
                 'operation_at' => now(),
                 'target_phone' => null,
                 'target_name' => 'تسوية رصيد حساب مالي',
-                'raw_sms' => "تسوية يدوية للرصيد الحسابي من {$oldBalance} إلى {$newBalance} EGP",
+                'raw_sms' => "تسوية يدوية للرصيد الحسابي من {$oldBalance} إلى {$newBalance} EGP - السبب: {$reason}",
                 'metadata' => [
                     'old_balance' => $oldBalance,
                     'new_balance' => $newBalance,
                     'difference' => $difference,
+                    'reason' => $reason,
                     'reconciled_by' => $user->id,
                 ],
             ]);

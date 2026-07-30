@@ -135,7 +135,15 @@ class FinancialAccountRefactoringTest extends TestCase
             'status' => 'active',
         ]);
 
-        $response = $this->postJson("/api/v1/hwnix-cash/financial-accounts/{$account->id}/reconcile");
+        // تجربة تنفيذ التسوية بدون سبب ويجب أن تفشل بترجيع 422
+        $failResponse = $this->postJson("/api/v1/hwnix-cash/financial-accounts/{$account->id}/reconcile", []);
+        $failResponse->assertStatus(422)
+            ->assertJsonValidationErrors(['reason']);
+
+        // تنفيذ التسوية بنجاح عند توفر سبب التسوية
+        $response = $this->postJson("/api/v1/hwnix-cash/financial-accounts/{$account->id}/reconcile", [
+            'reason' => 'تسوية بعد مراجعة كشف المحفظة',
+        ]);
 
         $response->assertStatus(200)
             ->assertJsonPath('status', true)
