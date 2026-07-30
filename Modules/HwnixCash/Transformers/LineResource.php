@@ -10,15 +10,22 @@ class LineResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $balance = (float) $this->balance;
+        $actualBalance = (float) $this->actual_balance;
+        $balanceDifference = round($actualBalance - $balance, 2);
+
         return [
             'id' => $this->id,
             'device_android_id' => $this->device_android_id,
             'slot_index' => $this->slot_index,
+            'slot_label' => 'شريحة ' . ($this->slot_index + 1),
             'subscription_id' => $this->subscription_id,
             'carrier' => $this->carrier,
             'phone_number' => $this->phone_number,
-            'balance' => (float) $this->balance,
-            'actual_balance' => (float) $this->actual_balance,
+            'balance' => $balance,
+            'actual_balance' => $actualBalance,
+            'balance_difference' => $balanceDifference,
+            'has_balance_mismatch' => abs($balanceDifference) > 0.01,
             'daily_limit' => $this->daily_limit,
             
             // حدود المحافظ الإلكترونية المخزنة
@@ -44,8 +51,13 @@ class LineResource extends JsonResource
             'provider' => $this->carrier,
             'note' => $this->note,
             'device_name' => $this->device?->device_name ?? 'غير محدد',
+            'device_brand' => $this->device?->brand ?? null,
+            'device_model' => $this->device?->model ?? null,
             'device' => [
+                'id' => $this->device?->id,
                 'name' => $this->device?->device_name ?? 'غير محدد',
+                'brand' => $this->device?->brand,
+                'model' => $this->device?->model,
                 'identifier' => $this->device_android_id,
             ],
             'created_at' => $this->created_at?->toIso8601String(),

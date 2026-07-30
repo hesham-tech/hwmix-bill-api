@@ -49,6 +49,7 @@ Route::middleware(['auth:sanctum'])->prefix('v1/hwnix-cash')->group(function () 
     
     Route::get('lines', [\Modules\HwnixCash\Http\Controllers\Web\LineController::class, 'index']);
     Route::put('lines/{id}', [\Modules\HwnixCash\Http\Controllers\Web\LineController::class, 'update']);
+    Route::post('lines/{id}/reconcile', [\Modules\HwnixCash\Http\Controllers\Web\LineController::class, 'reconcile']);
     
     Route::get('messages', [\Modules\HwnixCash\Http\Controllers\Web\MessageController::class, 'index']);
     Route::post('messages/send', [\Modules\HwnixCash\Http\Controllers\Web\MessageController::class, 'store']);

@@ -15,5 +15,6 @@ enum WalletOperationType: string
     case REFUND = 'refund';
     case REVERSAL = 'reversal';
     case BALANCE_INQUIRY = 'balance_inquiry';
+    case RECONCILIATION = 'reconciliation';
     case OTHER = 'other';
 }
