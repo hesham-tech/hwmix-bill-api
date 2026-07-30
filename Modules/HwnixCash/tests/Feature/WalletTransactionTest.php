@@ -140,10 +140,27 @@ class WalletTransactionTest extends TestCase
      */
     public function test_dynamic_limit_calculations_in_line_resource(): void
     {
+        $source = \Modules\HwnixCash\Models\HwnixCashMessageSource::create([
+            'company_id' => $this->company->id,
+            'sender_identifier' => 'VF-Cash',
+            'provider' => 'vodafone_cash',
+            'is_active' => true,
+        ]);
+
+        $account = \Modules\HwnixCash\Models\HwnixCashFinancialAccount::create([
+            'company_id' => $this->company->id,
+            'line_id' => $this->line->id,
+            'message_source_id' => $source->id,
+            'name' => 'محفظة فودافون كاش',
+            'daily_withdraw_limit' => 10000.00,
+            'daily_deposit_limit' => 20000.00,
+        ]);
+
         // 1. إضافة سحب
         HwnixCashWalletTransaction::create([
             'company_id' => $this->company->id,
             'created_by' => $this->user->id,
+            'financial_account_id' => $account->id,
             'line_id' => $this->line->id,
             'operation_type' => 'cash_withdraw',
             'provider' => 'vodafone_cash',
@@ -159,6 +176,7 @@ class WalletTransactionTest extends TestCase
         HwnixCashWalletTransaction::create([
             'company_id' => $this->company->id,
             'created_by' => $this->user->id,
+            'financial_account_id' => $account->id,
             'line_id' => $this->line->id,
             'operation_type' => 'cash_deposit',
             'provider' => 'vodafone_cash',
@@ -170,13 +188,13 @@ class WalletTransactionTest extends TestCase
             'raw_sms' => 'تم إيداع 5000'
         ]);
 
-        $response = $this->getJson('/api/v1/hwnix-cash/lines');
+        $response = $this->getJson('/api/v1/hwnix-cash/financial-accounts');
 
         $response->assertStatus(200)
             ->assertJsonPath('status', true)
             ->assertJsonPath('data.0.daily_withdraw_used', 3000)
             ->assertJsonPath('data.0.daily_deposit_used', 5000)
-            ->assertJsonPath('data.0.daily_withdraw_remaining', 7000) // 10000 - 3000
-            ->assertJsonPath('data.0.daily_deposit_remaining', 15000); // 20000 - 5000
+            ->assertJsonPath('data.0.daily_withdraw_remaining', 7000)
+            ->assertJsonPath('data.0.daily_deposit_remaining', 15000);
     }
 }

@@ -60,7 +60,7 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
             // 2. تنفيذ العمليات المحاسبية والقيود داخل DB Transaction ذرية ومحمية
             DB::transaction(function () use ($message, $analysisResult) {
 
-                // البحث عن الخط المالي المناسب مع قفل التزامن للحماية من Race Conditions
+                // البحث عن الخط المالي الفيزيائي ومصدر الرسائل المعتمد والحساب المالي المرتبط بهما
                 $line = $this->resolveLine($message);
 
                 if (!$line) {
@@ -69,12 +69,37 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                     return;
                 }
 
-                Log::info("📱 [HWNixCash SMS Pipeline] Step 4.1/5: Resolved SIM Line ID {$line->id} ('{$line->phone_number}') for Message ID {$message->id}");
+                $matchingSource = \Modules\HwnixCash\Models\HwnixCashMessageSource::where('company_id', $message->companyId)
+                    ->where('sender_identifier', $message->phoneNumber)
+                    ->where('is_active', true)
+                    ->first();
 
-                // 3. تحديث الرصيد الفعلي (actual_balance) إذا ثبت وجوده بالرسالة كـ Source of Truth
+                if (!$matchingSource) {
+                    Log::warning("⚠️ [HWNixCash SMS Pipeline] Step 4.1/5: FAILED - Sender identifier '{$message->phoneNumber}' is not active MessageSource");
+                    $this->messageFinalizer->markAsNeedsReview($message->id, 'مصدر الرسالة غير مسجل كمصدر معتمد بالشركة');
+                    return;
+                }
+
+                // المطابقة باستخدام الزوج (Line + MessageSource)
+                $financialAccount = \Modules\HwnixCash\Models\HwnixCashFinancialAccount::where('company_id', $message->companyId)
+                    ->where('line_id', $line->id)
+                    ->where('message_source_id', $matchingSource->id)
+                    ->where('status', 'active')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$financialAccount) {
+                    Log::warning("⚠️ [HWNixCash SMS Pipeline] Step 4.1/5: FAILED - No active FinancialAccount linked to Line ID {$line->id} and MessageSource ID {$matchingSource->id} ('{$message->phoneNumber}')");
+                    $this->messageFinalizer->markAsNeedsReview($message->id, "لم يتم العثور على حساب مالي مرتبط بالخط ورسائل '{$message->phoneNumber}'");
+                    return;
+                }
+
+                Log::info("📱 [HWNixCash SMS Pipeline] Step 4.1/5: Resolved FinancialAccount ID {$financialAccount->id} ('{$financialAccount->name}') on Line ID {$line->id} for Message ID {$message->id}");
+
+                // 3. تحديث الرصيد الفعلي (actual_balance) على مستوى الحساب المالي كـ Source of Truth
                 if ($analysisResult->balanceFound && $analysisResult->availableBalance !== null) {
-                    Log::info("💵 [HWNixCash SMS Pipeline] Updating Actual Line Balance to {$analysisResult->availableBalance} EGP for Line ID {$line->id}");
-                    $this->balanceUpdater->updateActualBalance($line, $analysisResult->availableBalance);
+                    Log::info("💵 [HWNixCash SMS Pipeline] Updating Actual Balance to {$analysisResult->availableBalance} EGP for FinancialAccount ID {$financialAccount->id}");
+                    $this->balanceUpdater->updateActualBalance($financialAccount, $analysisResult->availableBalance);
                 }
 
                 // 4. طبقة القرار التجارية بالنظام (System Decision Layer)
@@ -88,7 +113,7 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
 
                 if ($analysisResult->isTransaction && $analysisResult->amount !== null && $analysisResult->amount > 0) {
                     // فحص التكرار عبر المستودع
-                    if ($this->duplicateChecker->isDuplicateTransaction($message->companyId, $line->id, $analysisResult->transactionId, $message->id)) {
+                    if ($this->duplicateChecker->isDuplicateTransaction($message->companyId, $financialAccount->id, $analysisResult->transactionId, $message->id)) {
                         Log::info("ℹ️ [HWNixCash SMS Pipeline] Step 4.3/5: Duplicate transaction ID '{$analysisResult->transactionId}' skipped for Message ID {$message->id}");
                         $this->messageFinalizer->markAsProcessed($message->id);
                         return;
@@ -115,10 +140,10 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                         rawAiOutput: $analysisResult->normalizedJson
                     );
 
-                    // إنشاء المعاملة المالية وتعديل الرصيد الحسابي بدفتر الأستاذ
-                    $walletTx = $this->transactionCreator->createTransaction($line, $message, $normalizedDto);
+                    // إنشاء المعاملة المالية وتعديل الرصيد الحسابي بدفتر الأستاذ على كيان الحساب المالي
+                    $walletTx = $this->transactionCreator->createTransaction($financialAccount, $message, $normalizedDto);
                     if ($walletTx) {
-                        Log::info("💰 [HWNixCash SMS Pipeline] Step 5/5: SUCCESS! Created Wallet Transaction ID {$walletTx->id} for Message ID {$message->id}. Amount: {$walletTx->amount} EGP");
+                        Log::info("💰 [HWNixCash SMS Pipeline] Step 5/5: SUCCESS! Created Wallet Transaction ID {$walletTx->id} for FinancialAccount ID {$financialAccount->id}. Amount: {$walletTx->amount} EGP");
                     }
                 } else {
                     Log::info("ℹ️ [HWNixCash SMS Pipeline] Step 5/5: Message ID {$message->id} is non-transactional (Amount: {$analysisResult->amount}, IsTx: {$analysisResult->isTransaction}). Processing complete without financial mutation.");

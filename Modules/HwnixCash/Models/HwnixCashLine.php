@@ -26,12 +26,6 @@ class HwnixCashLine extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
-        'balance' => 'decimal:2',
-        'actual_balance' => 'decimal:2',
-        'daily_withdraw_limit' => 'decimal:2',
-        'daily_deposit_limit' => 'decimal:2',
-        'monthly_withdraw_limit' => 'decimal:2',
-        'monthly_deposit_limit' => 'decimal:2',
         'status' => LineStatus::class,
     ];
 
@@ -50,114 +44,28 @@ class HwnixCashLine extends Model
         return $this->belongsTo(HwnixCashDevice::class, 'device_android_id', 'android_id');
     }
 
+    public function financialAccounts(): HasMany
+    {
+        return $this->hasMany(HwnixCashFinancialAccount::class, 'line_id');
+    }
+
     public function messages(): HasMany
     {
         return $this->hasMany(HwnixCashMessage::class, 'sms_line_id');
     }
 
-    public function walletTransactions(): HasMany
-    {
-        return $this->hasMany(HwnixCashWalletTransaction::class, 'line_id');
-    }
-
     public function logLabel(): string
     {
-        return "خط محفظة كاش هونكس ({$this->phone_number})";
+        return "خط هاتف كاش هونكس ({$this->phone_number})";
     }
 
-    // --- الدوال المحسوبة ديناميكياً لاستنزاف ومتبقي الحدود دون تخزين في قاعدة البيانات ---
-
-    public function getDailyWithdrawUsedAttribute(): float
+    public function getTotalBalanceAttribute(): float
     {
-        $types = [
-            WalletOperationType::CASH_WITHDRAW->value,
-            WalletOperationType::TRANSFER->value,
-            WalletOperationType::BILL_PAYMENT->value,
-            WalletOperationType::MERCHANT_PAYMENT->value,
-            WalletOperationType::CARD_PURCHASE->value,
-        ];
-
-        return (float) $this->walletTransactions()
-            ->where('status', 'success')
-            ->whereIn('operation_type', $types)
-            ->whereDate('operation_at', today())
-            ->sum('amount');
+        return (float) $this->financialAccounts()->sum('balance');
     }
 
-    public function getDailyDepositUsedAttribute(): float
+    public function getTotalActualBalanceAttribute(): float
     {
-        $types = [
-            WalletOperationType::CASH_DEPOSIT->value,
-            WalletOperationType::RECEIVE->value,
-            WalletOperationType::REFUND->value,
-        ];
-
-        return (float) $this->walletTransactions()
-            ->where('status', 'success')
-            ->whereIn('operation_type', $types)
-            ->whereDate('operation_at', today())
-            ->sum('amount');
-    }
-
-    public function getMonthlyWithdrawUsedAttribute(): float
-    {
-        $types = [
-            WalletOperationType::CASH_WITHDRAW->value,
-            WalletOperationType::TRANSFER->value,
-            WalletOperationType::BILL_PAYMENT->value,
-            WalletOperationType::MERCHANT_PAYMENT->value,
-            WalletOperationType::CARD_PURCHASE->value,
-        ];
-
-        return (float) $this->walletTransactions()
-            ->where('status', 'success')
-            ->whereIn('operation_type', $types)
-            ->whereMonth('operation_at', now()->month)
-            ->whereYear('operation_at', now()->year)
-            ->sum('amount');
-    }
-
-    public function getMonthlyDepositUsedAttribute(): float
-    {
-        $types = [
-            WalletOperationType::CASH_DEPOSIT->value,
-            WalletOperationType::RECEIVE->value,
-            WalletOperationType::REFUND->value,
-        ];
-
-        return (float) $this->walletTransactions()
-            ->where('status', 'success')
-            ->whereIn('operation_type', $types)
-            ->whereMonth('operation_at', now()->month)
-            ->whereYear('operation_at', now()->year)
-            ->sum('amount');
-    }
-
-    public function getDailyWithdrawRemainingAttribute(): ?float
-    {
-        return $this->daily_withdraw_limit !== null
-            ? max(0, (float) $this->daily_withdraw_limit - $this->daily_withdraw_used)
-            : null;
-    }
-
-    public function getDailyDepositRemainingAttribute(): ?float
-    {
-        return $this->daily_deposit_limit !== null
-            ? max(0, (float) $this->daily_deposit_limit - $this->daily_deposit_used)
-            : null;
-    }
-
-    public function getMonthlyWithdrawRemainingAttribute(): ?float
-    {
-        return $this->monthly_withdraw_limit !== null
-            ? max(0, (float) $this->monthly_withdraw_limit - $this->monthly_withdraw_used)
-            : null;
-    }
-
-    public function getMonthlyDepositRemainingAttribute(): ?float
-    {
-        return $this->monthly_deposit_limit !== null
-            ? max(0, (float) $this->monthly_deposit_limit - $this->monthly_deposit_used)
-            : null;
+        return (float) $this->financialAccounts()->sum('actual_balance');
     }
 }

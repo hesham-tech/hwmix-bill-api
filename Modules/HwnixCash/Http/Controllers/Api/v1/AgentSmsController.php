@@ -83,7 +83,7 @@ class AgentSmsController extends Controller
         foreach ($messages as $msg) {
             $msg['device_id'] = $deviceId;
             $dto = IncomingSmsData::fromArray($msg, $deviceId);
-            $this->processIncomingSmsAction->execute($dto, $user->company_id, $user->id);
+            $this->processIncomingSmsAction->execute($dto, $user->company_id, $user->id, false);
             $processedCount++;
         }
 

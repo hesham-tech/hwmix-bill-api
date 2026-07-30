@@ -12,7 +12,8 @@ class WalletTransactionResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'line_id' => $this->line_id,
+            'financial_account_id' => $this->financial_account_id,
+            'line_id' => $this->financialAccount?->line_id,
             'operation_type' => $this->operation_type,
             'transaction_type' => $this->operation_type,
             'provider' => $this->provider,
@@ -31,15 +32,21 @@ class WalletTransactionResource extends JsonResource
             'bill_number' => $this->bill_number,
             'raw_sms' => $this->raw_sms,
             'metadata' => $this->metadata,
-            'line' => $this->line ? [
-                'id' => $this->line->id,
-                'phone_number' => $this->line->phone_number,
-                'carrier' => $this->line->carrier,
-                'provider' => $this->line->carrier,
-                'device_name' => $this->line->device?->device_name ?? 'غير محدد',
-                'device_brand' => $this->line->device?->brand,
-                'device_model' => $this->line->device?->model,
-                'slot_index' => $this->line->slot_index,
+            'financial_account' => $this->financialAccount ? [
+                'id' => $this->financialAccount->id,
+                'name' => $this->financialAccount->name,
+                'sender_identifier' => $this->financialAccount->messageSource?->sender_identifier,
+                'account_number' => $this->financialAccount->account_number,
+            ] : null,
+            'line' => $this->financialAccount?->line ? [
+                'id' => $this->financialAccount->line->id,
+                'phone_number' => $this->financialAccount->line->phone_number,
+                'carrier' => $this->financialAccount->line->carrier,
+                'provider' => $this->financialAccount->line->carrier,
+                'device_name' => $this->financialAccount->line->device?->device_name ?? 'غير محدد',
+                'device_brand' => $this->financialAccount->line->device?->brand,
+                'device_model' => $this->financialAccount->line->device?->model,
+                'slot_index' => $this->financialAccount->line->slot_index,
             ] : null,
             'created_at' => $this->created_at?->toIso8601String(),
         ];

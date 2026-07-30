@@ -38,6 +38,11 @@ class HwnixCashMessageSource extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function financialAccounts(): HasMany
+    {
+        return $this->hasMany(HwnixCashFinancialAccount::class, 'message_source_id');
+    }
+
     public function logLabel(): string
     {
         return "مصدر رسائل معتمد ({$this->sender_identifier})";

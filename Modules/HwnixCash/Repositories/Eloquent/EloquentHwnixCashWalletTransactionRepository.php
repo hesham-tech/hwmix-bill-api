@@ -89,18 +89,18 @@ class EloquentHwnixCashWalletTransactionRepository implements HwnixCashWalletTra
             ->get();
     }
 
-    public function existsByOperationNumber(int $companyId, int $lineId, string $operationNumber): bool
+    public function existsByOperationNumber(int $companyId, int $financialAccountId, string $operationNumber): bool
     {
         return HwnixCashWalletTransaction::where('company_id', $companyId)
-            ->where('line_id', $lineId)
+            ->where('financial_account_id', $financialAccountId)
             ->where('operation_number', $operationNumber)
             ->exists();
     }
 
-    public function existsByMessageId(int $companyId, int $lineId, int $messageId): bool
+    public function existsByMessageId(int $companyId, int $financialAccountId, int $messageId): bool
     {
         return HwnixCashWalletTransaction::where('company_id', $companyId)
-            ->where('line_id', $lineId)
+            ->where('financial_account_id', $financialAccountId)
             ->whereJsonContains('metadata->message_id', $messageId)
             ->exists();
     }

@@ -48,9 +48,9 @@ class HwnixCashWalletTransaction extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function line(): BelongsTo
+    public function financialAccount(): BelongsTo
     {
-        return $this->belongsTo(HwnixCashLine::class, 'line_id');
+        return $this->belongsTo(HwnixCashFinancialAccount::class, 'financial_account_id');
     }
 
     public function logLabel(): string

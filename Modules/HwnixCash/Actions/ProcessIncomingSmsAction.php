@@ -19,7 +19,7 @@ class ProcessIncomingSmsAction
         protected HwnixCashMessageParserInterface $messageParser
     ) {}
 
-    public function execute(IncomingSmsData $dto, int $companyId, int $userId): SmsMessage
+    public function execute(IncomingSmsData $dto, int $companyId, int $userId, bool $shouldParse = true): SmsMessage
     {
         // 1. حفظ الرسالة أولاً في جدول الرسائل الحالية
         if ($this->messageRepo->isDuplicateIncoming($dto->deviceId, $dto->messageRef)) {
@@ -47,6 +47,12 @@ class ProcessIncomingSmsAction
         } else {
             $messageEntity = $this->messageRepo->createIncoming($dto, $companyId, $userId);
             \Illuminate\Support\Facades\Log::info("💾 [HWNixCash SMS Pipeline] Step 2/5: Saved incoming SMS to database. Message ID: {$messageEntity->id}, Sender Phone/Identifier: '{$messageEntity->phoneNumber}'");
+        }
+
+        // إذا كان الطلب للأرشفة فقط (مثل المزامنة الأولى): نكتفي بالتخزين دون إحداث أي أثر مالي أو إنشاء مصادر
+        if (!$shouldParse) {
+            \Illuminate\Support\Facades\Log::info("📦 [HWNixCash SMS Pipeline] Archiving only for Message ID {$messageEntity->id}. Financial parsing skipped.");
+            return $messageEntity;
         }
 
         // 2. فحص ما إذا كانت الرسالة قادمة من مصدر معتمد ومفعل بالشركة

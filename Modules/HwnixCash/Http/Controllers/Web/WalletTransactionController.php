@@ -39,11 +39,17 @@ class WalletTransactionController extends Controller
             return api_forbidden('غير مصرح لك بعرض معاملات المحافظ الإلكترونية.');
         }
 
-        $query = HwnixCashWalletTransaction::with('line')
+        $query = HwnixCashWalletTransaction::with(['financialAccount.line', 'financialAccount.messageSource'])
             ->where('company_id', $companyId);
 
+        if ($request->filled('financial_account_id')) {
+            $query->where('financial_account_id', $request->financial_account_id);
+        }
+
         if ($request->filled('line_id')) {
-            $query->where('line_id', $request->line_id);
+            $query->whereHas('financialAccount', function ($q) use ($request) {
+                $q->where('line_id', $request->line_id);
+            });
         }
 
         if ($request->filled('operation_type')) {

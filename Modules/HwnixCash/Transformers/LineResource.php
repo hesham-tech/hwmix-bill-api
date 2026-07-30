@@ -22,30 +22,9 @@ class LineResource extends JsonResource
             'subscription_id' => $this->subscription_id,
             'carrier' => $this->carrier,
             'phone_number' => $this->phone_number,
-            'balance' => $balance,
-            'actual_balance' => $actualBalance,
-            'balance_difference' => $balanceDifference,
-            'has_balance_mismatch' => abs($balanceDifference) > 0.01,
-            'daily_limit' => $this->daily_limit,
-            
-            // حدود المحافظ الإلكترونية المخزنة
-            'daily_withdraw_limit' => $this->daily_withdraw_limit !== null ? (float) $this->daily_withdraw_limit : null,
-            'daily_deposit_limit' => $this->daily_deposit_limit !== null ? (float) $this->daily_deposit_limit : null,
-            'monthly_withdraw_limit' => $this->monthly_withdraw_limit !== null ? (float) $this->monthly_withdraw_limit : null,
-            'monthly_deposit_limit' => $this->monthly_deposit_limit !== null ? (float) $this->monthly_deposit_limit : null,
-
-            // المستهلكات المحسوبة ديناميكياً من واقع جدول المعاملات بدون تخزين
-            'daily_withdraw_used' => $this->daily_withdraw_used,
-            'daily_deposit_used' => $this->daily_deposit_used,
-            'monthly_withdraw_used' => $this->monthly_withdraw_used,
-            'monthly_deposit_used' => $this->monthly_deposit_used,
-
-            // المتبقيات المحسوبة ديناميكياً
-            'daily_withdraw_remaining' => $this->daily_withdraw_remaining,
-            'daily_deposit_remaining' => $this->daily_deposit_remaining,
-            'monthly_withdraw_remaining' => $this->monthly_withdraw_remaining,
-            'monthly_deposit_remaining' => $this->monthly_deposit_remaining,
-
+            'total_balance' => (float) $this->total_balance,
+            'total_actual_balance' => (float) $this->total_actual_balance,
+            'financial_accounts' => FinancialAccountResource::collection($this->whenLoaded('financialAccounts', fn() => $this->financialAccounts, fn() => $this->financialAccounts()->with('messageSource')->get())),
             'status' => $this->status,
             'is_active' => $this->status === 'active',
             'provider' => $this->carrier,

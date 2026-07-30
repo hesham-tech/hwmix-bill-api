@@ -10,22 +10,22 @@ use Modules\HwnixCash\Domain\Enums\WalletProvider;
 use Modules\HwnixCash\Domain\Enums\WalletTransactionSource;
 use Modules\HwnixCash\Domain\Enums\WalletTransactionStatus;
 use Modules\HwnixCash\DTOs\NormalizedFinancialSmsDTO;
-use Modules\HwnixCash\Models\HwnixCashLine;
+use Modules\HwnixCash\Models\HwnixCashFinancialAccount;
 use Modules\HwnixCash\Models\HwnixCashWalletTransaction;
 
 class WalletTransactionCreator
 {
     /**
-     * إنشاء معاملة مالية جديدة وتعديل الرصيد الحسابي (balance) طبقاً لنوع ونية المعاملة.
+     * إنشاء معاملة مالية جديدة وتعديل الرصيد الحسابي (balance) للحساب المالي طبقاً لنوع ونية المعاملة.
      */
-    public function createTransaction(HwnixCashLine $line, SmsMessage $message, NormalizedFinancialSmsDTO $dto): ?HwnixCashWalletTransaction
+    public function createTransaction(HwnixCashFinancialAccount $account, SmsMessage $message, NormalizedFinancialSmsDTO $dto): ?HwnixCashWalletTransaction
     {
         $amount = $dto->amount;
         if ($amount === null || $amount <= 0) {
             return null;
         }
 
-        $currentBookBalance = (float) $line->balance;
+        $currentBookBalance = (float) $account->balance;
         $newBookBalance = $currentBookBalance;
 
         // طبقة القرار التجارية بالنظام (System Decision Layer)
@@ -54,12 +54,15 @@ class WalletTransactionCreator
             $currency = strtoupper($dto->currency);
         }
 
+        $provider = $account->messageSource?->provider?->value ?? $this->detectProvider($account->line?->carrier, $message->phoneNumber);
+
         $walletTx = HwnixCashWalletTransaction::create([
             'company_id' => $message->companyId,
             'created_by' => $message->createdBy,
-            'line_id' => $line->id,
+            'financial_account_id' => $account->id,
+            'line_id' => $account->line_id,
             'operation_type' => $operationType->value,
-            'provider' => $this->detectProvider($line->carrier, $message->phoneNumber),
+            'provider' => $provider,
             'status' => WalletTransactionStatus::SUCCESS->value,
             'source' => WalletTransactionSource::SMS->value,
             'amount' => $amount,
@@ -77,10 +80,10 @@ class WalletTransactionCreator
             ],
         ]);
 
-        // تحديث الرصيد الحسابي للخط
-        $line->update(['balance' => $newBookBalance]);
+        // تحديث الرصيد الحسابي للحساب المالي
+        $account->update(['balance' => $newBookBalance]);
 
-        Log::info("[WalletTransactionCreator] Wallet Transaction ID {$walletTx->id} created successfully. New Book Balance: {$newBookBalance}");
+        Log::info("[WalletTransactionCreator] Wallet Transaction ID {$walletTx->id} created successfully for FinancialAccount ID {$account->id}. New Book Balance: {$newBookBalance}");
 
         return $walletTx;
     }
