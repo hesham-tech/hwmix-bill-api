@@ -49,6 +49,11 @@ class WalletTransactionCreator
 
         $operationType = $this->mapToOperationType($dto->messageType);
 
+        $currency = 'EGP';
+        if (!empty($dto->currency) && strlen($dto->currency) <= 3 && preg_match('/^[A-Z]{3}$/i', $dto->currency)) {
+            $currency = strtoupper($dto->currency);
+        }
+
         $walletTx = HwnixCashWalletTransaction::create([
             'company_id' => $message->companyId,
             'created_by' => $message->createdBy,
@@ -60,7 +65,7 @@ class WalletTransactionCreator
             'amount' => $amount,
             'fee' => 0.00,
             'balance_after' => $newBookBalance,
-            'currency' => $dto->currency ?? 'EGP',
+            'currency' => $currency,
             'operation_number' => $dto->transactionId,
             'operation_at' => !empty($dto->datetime) ? date('Y-m-d H:i:s', strtotime($dto->datetime)) : now(),
             'target_phone' => $dto->targetPhone,
