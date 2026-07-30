@@ -62,6 +62,7 @@ Route::middleware(['auth:sanctum'])->prefix('v1/hwnix-cash')->group(function () 
     Route::apiResource('message-sources', \Modules\HwnixCash\Http\Controllers\Web\MessageSourceController::class);
 
     // مسارات إدارة الحسابات المالية (Financial Accounts)
+    Route::get('financial-accounts/limit-alerts', [\Modules\HwnixCash\Http\Controllers\Web\FinancialAccountController::class, 'limitAlerts']);
     Route::get('financial-accounts/distinct-senders', [\Modules\HwnixCash\Http\Controllers\Web\FinancialAccountController::class, 'distinctSenders']);
     Route::post('financial-accounts/{id}/reconcile', [\Modules\HwnixCash\Http\Controllers\Web\FinancialAccountController::class, 'reconcile']);
     Route::apiResource('financial-accounts', \Modules\HwnixCash\Http\Controllers\Web\FinancialAccountController::class);

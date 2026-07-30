@@ -237,4 +237,70 @@ class FinancialAccountRefactoringTest extends TestCase
             'actual_balance' => 1339.50,
         ]);
     }
+
+    public function test_limit_alerts_endpoint_and_custom_thresholds(): void
+    {
+        $device = HwnixCashDevice::create([
+            'company_id' => $this->company->id,
+            'android_id' => 'ANDROID_ALERT_TEST',
+            'device_name' => 'Alert Test Phone',
+        ]);
+
+        $line = HwnixCashLine::create([
+            'company_id' => $this->company->id,
+            'device_android_id' => $device->android_id,
+            'phone_number' => '01099998888',
+            'slot_index' => 0,
+            'status' => 'active',
+        ]);
+
+        $source = HwnixCashMessageSource::create([
+            'company_id' => $this->company->id,
+            'sender_identifier' => 'VF-Cash',
+            'provider' => 'vodafone_cash',
+            'is_active' => true,
+        ]);
+
+        $account = HwnixCashFinancialAccount::create([
+            'company_id' => $this->company->id,
+            'line_id' => $line->id,
+            'message_source_id' => $source->id,
+            'name' => 'حساب اختبار التنبيهات',
+            'daily_withdraw_limit' => 10000.00,
+            'daily_withdraw_alert_type' => 'amount',
+            'daily_withdraw_alert_value' => 5000.00,
+            'status' => 'active',
+        ]);
+
+        // 1. استدعاء Endpoint للتنبيهات الحالية ويجب أن يكون فارغاً لعدم وجود استهلاك
+        $res1 = $this->getJson('/api/v1/hwnix-cash/financial-accounts/limit-alerts');
+        $res1->assertStatus(200)
+            ->assertJsonCount(0, 'data');
+
+        // 2. تسجيل معاملة سحب ناجحة بقيمة 6000 EGP وتتجاوز مبلغ التنبيه (5000 EGP)
+        \Modules\HwnixCash\Models\HwnixCashWalletTransaction::create([
+            'company_id' => $this->company->id,
+            'created_by' => $this->user->id,
+            'financial_account_id' => $account->id,
+            'line_id' => $line->id,
+            'operation_type' => 'cash_withdraw',
+            'provider' => 'vodafone_cash',
+            'status' => 'success',
+            'amount' => 6000.00,
+            'currency' => 'EGP',
+            'operation_number' => 'TEST-ALERT-001',
+            'operation_at' => now(),
+            'raw_sms' => 'سحب نقدي بقيمة 6000 جنيه',
+        ]);
+
+        // 3. استدعاء Endpoint التنبيهات ويجب أن يُرجع الحساب ومحتوى التنبيه
+        $res2 = $this->getJson('/api/v1/hwnix-cash/financial-accounts/limit-alerts');
+        $res2->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $account->id)
+            ->assertJsonPath('data.0.has_any_alert_triggered', true)
+            ->assertJsonPath('data.0.triggered_alerts.0.limit_key', 'daily_withdraw')
+            ->assertJsonPath('data.0.triggered_alerts.0.alert_type', 'amount')
+            ->assertJsonPath('data.0.triggered_alerts.0.alert_value', 5000);
+    }
 }

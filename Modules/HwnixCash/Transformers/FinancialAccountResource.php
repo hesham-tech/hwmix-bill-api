@@ -36,6 +36,31 @@ class FinancialAccountResource extends JsonResource
             'daily_deposit_remaining' => $this->daily_deposit_remaining,
             'monthly_withdraw_remaining' => $this->monthly_withdraw_remaining,
             'monthly_deposit_remaining' => $this->monthly_deposit_remaining,
+
+            // إعدادات وحالات حد التنبيه لكل حد مالي
+            'daily_withdraw_alert_type' => $this->daily_withdraw_alert_type ?? 'percentage',
+            'daily_withdraw_alert_value' => (float) ($this->daily_withdraw_alert_value ?? 80),
+            'daily_withdraw_alert_threshold' => (float) $this->getLimitAlertThreshold('daily_withdraw'),
+            'daily_withdraw_alert_triggered' => (bool) $this->isLimitAlertTriggered('daily_withdraw'),
+
+            'daily_deposit_alert_type' => $this->daily_deposit_alert_type ?? 'percentage',
+            'daily_deposit_alert_value' => (float) ($this->daily_deposit_alert_value ?? 80),
+            'daily_deposit_alert_threshold' => (float) $this->getLimitAlertThreshold('daily_deposit'),
+            'daily_deposit_alert_triggered' => (bool) $this->isLimitAlertTriggered('daily_deposit'),
+
+            'monthly_withdraw_alert_type' => $this->monthly_withdraw_alert_type ?? 'percentage',
+            'monthly_withdraw_alert_value' => (float) ($this->monthly_withdraw_alert_value ?? 80),
+            'monthly_withdraw_alert_threshold' => (float) $this->getLimitAlertThreshold('monthly_withdraw'),
+            'monthly_withdraw_alert_triggered' => (bool) $this->isLimitAlertTriggered('monthly_withdraw'),
+
+            'monthly_deposit_alert_type' => $this->monthly_deposit_alert_type ?? 'percentage',
+            'monthly_deposit_alert_value' => (float) ($this->monthly_deposit_alert_value ?? 80),
+            'monthly_deposit_alert_threshold' => (float) $this->getLimitAlertThreshold('monthly_deposit'),
+            'monthly_deposit_alert_triggered' => (bool) $this->isLimitAlertTriggered('monthly_deposit'),
+
+            'has_any_alert_triggered' => (bool) $this->has_any_alert_triggered,
+            'triggered_alerts' => $this->getTriggeredAlertsDetails(),
+
             'status' => $this->status,
             'note' => $this->note,
             'created_at' => $this->created_at?->toIso8601String(),

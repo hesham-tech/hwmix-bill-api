@@ -99,6 +99,16 @@ class FinancialAccountController extends Controller
                 'daily_deposit_limit' => $validated['daily_deposit_limit'] ?? null,
                 'monthly_withdraw_limit' => $validated['monthly_withdraw_limit'] ?? null,
                 'monthly_deposit_limit' => $validated['monthly_deposit_limit'] ?? null,
+
+                'daily_withdraw_alert_type' => $validated['daily_withdraw_alert_type'] ?? 'percentage',
+                'daily_withdraw_alert_value' => $validated['daily_withdraw_alert_value'] ?? 80.00,
+                'daily_deposit_alert_type' => $validated['daily_deposit_alert_type'] ?? 'percentage',
+                'daily_deposit_alert_value' => $validated['daily_deposit_alert_value'] ?? 80.00,
+                'monthly_withdraw_alert_type' => $validated['monthly_withdraw_alert_type'] ?? 'percentage',
+                'monthly_withdraw_alert_value' => $validated['monthly_withdraw_alert_value'] ?? 80.00,
+                'monthly_deposit_alert_type' => $validated['monthly_deposit_alert_type'] ?? 'percentage',
+                'monthly_deposit_alert_value' => $validated['monthly_deposit_alert_value'] ?? 80.00,
+
                 'status' => 'active',
                 'note' => $validated['note'] ?? null,
             ]);
@@ -212,6 +222,24 @@ class FinancialAccountController extends Controller
         return api_success(
             new FinancialAccountResource($account),
             'تمت تسوية الرصيد الحسابي بالرصيد الفعلي بنجاح وتسجيل قيد التسوية.'
+        );
+    }
+
+    public function limitAlerts(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $companyId = $user->active_company_id ?? $user->company_id;
+
+        $accounts = HwnixCashFinancialAccount::with(['line.device', 'messageSource'])
+            ->where('company_id', $companyId)
+            ->where('status', 'active')
+            ->get()
+            ->filter(fn ($account) => $account->has_any_alert_triggered)
+            ->values();
+
+        return api_success(
+            FinancialAccountResource::collection($accounts),
+            'تم جلب قائمة الحسابات المالية التي تجاوزت حدود التنبيه بنجاح.'
         );
     }
 }

@@ -32,6 +32,10 @@ class HwnixCashFinancialAccount extends Model
         'daily_deposit_limit' => 'decimal:2',
         'monthly_withdraw_limit' => 'decimal:2',
         'monthly_deposit_limit' => 'decimal:2',
+        'daily_withdraw_alert_value' => 'decimal:2',
+        'daily_deposit_alert_value' => 'decimal:2',
+        'monthly_withdraw_alert_value' => 'decimal:2',
+        'monthly_deposit_alert_value' => 'decimal:2',
     ];
 
     public function company(): BelongsTo
@@ -168,5 +172,74 @@ class HwnixCashFinancialAccount extends Model
     public function getHasBalanceMismatchAttribute(): bool
     {
         return abs($this->balance_difference) > 0.01;
+    }
+
+    // --- حساب عتبة التنبيه وتجاوز الحدود ديناميكياً بدون تخزين حالة مشتقة ---
+
+    public function getLimitAlertThreshold(string $limitType): float
+    {
+        $limit = (float) ($this->{"{$limitType}_limit"} ?? 0);
+        $alertType = $this->{"{$limitType}_alert_type"} ?? 'percentage';
+        $alertValue = (float) ($this->{"{$limitType}_alert_value"} ?? 80);
+
+        if ($alertType === 'amount') {
+            return $alertValue;
+        }
+
+        return ($alertValue / 100) * $limit;
+    }
+
+    public function isLimitAlertTriggered(string $limitType): bool
+    {
+        $limit = (float) ($this->{"{$limitType}_limit"} ?? 0);
+        if ($limit <= 0) {
+            return false;
+        }
+
+        $used = (float) $this->{"{$limitType}_used"};
+        $threshold = $this->getLimitAlertThreshold($limitType);
+
+        return $threshold > 0 && $used >= $threshold;
+    }
+
+    public function getTriggeredAlertsDetails(): array
+    {
+        $limitTypes = [
+            'daily_withdraw' => 'السحب اليومي',
+            'daily_deposit' => 'الإيداع اليومي',
+            'monthly_withdraw' => 'السحب الشهري',
+            'monthly_deposit' => 'الإيداع الشهري',
+        ];
+
+        $triggered = [];
+        foreach ($limitTypes as $key => $label) {
+            if ($this->isLimitAlertTriggered($key)) {
+                $limit = (float) ($this->{"{$key}_limit"} ?? 0);
+                $used = (float) $this->{"{$key}_used"};
+                $alertType = $this->{"{$key}_alert_type"} ?? 'percentage';
+                $alertValue = (float) ($this->{"{$key}_alert_value"} ?? 80);
+                $threshold = $this->getLimitAlertThreshold($key);
+                $usedPercentage = $limit > 0 ? round(($used / $limit) * 100, 1) : 0;
+
+                $triggered[] = [
+                    'limit_key' => $key,
+                    'limit_label' => $label,
+                    'limit_amount' => $limit,
+                    'used_amount' => $used,
+                    'remaining_amount' => max(0, $limit - $used),
+                    'alert_type' => $alertType,
+                    'alert_value' => $alertValue,
+                    'threshold_amount' => $threshold,
+                    'used_percentage' => $usedPercentage,
+                ];
+            }
+        }
+
+        return $triggered;
+    }
+
+    public function getHasAnyAlertTriggeredAttribute(): bool
+    {
+        return !empty($this->getTriggeredAlertsDetails());
     }
 }
