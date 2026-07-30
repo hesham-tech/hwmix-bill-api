@@ -30,8 +30,9 @@ class AiPlatformServiceProvider extends ServiceProvider
             'ai-platform'
         );
 
-        // تسجيل Plugin Registry كـ Singleton
+        // تسجيل Plugin Registry و Analyzer Registry كـ Singleton
         $this->app->singleton(AiPlatformPluginRegistry::class);
+        $this->app->singleton(\Modules\AiPlatform\Engines\AnalysisEngine\AnalyzerRegistry::class);
 
         // تسجيل Secret Vault
         $this->app->singleton(SecretVaultInterface::class, AesSecretVault::class);
@@ -50,6 +51,7 @@ class AiPlatformServiceProvider extends ServiceProvider
         $this->app->singleton(CostEngineInterface::class, \Modules\AiPlatform\Engines\CostEngine::class);
         $this->app->singleton(AgentEngineInterface::class, \Modules\AiPlatform\Engines\AgentEngine::class);
         $this->app->singleton(WorkflowEngineInterface::class, \Modules\AiPlatform\Engines\WorkflowEngine::class);
+        $this->app->singleton(\Modules\AiPlatform\Contracts\Engines\AnalysisEngineInterface::class, \Modules\AiPlatform\Engines\AnalysisEngine::class);
 
         // تسجيل الـ Platform Facade accessor
         $this->app->singleton('ai-platform', function ($app) {
@@ -70,6 +72,11 @@ class AiPlatformServiceProvider extends ServiceProvider
         $registry = $this->app->make(AiPlatformPluginRegistry::class);
         $registry->registerDriver(\Modules\AiPlatform\Drivers\GeminiDriver::class);
         $registry->registerDriver(\Modules\AiPlatform\Drivers\OpenAiDriver::class);
+
+        // تسجيل المحللات الافتراضية في الـ AnalyzerRegistry
+        /** @var \Modules\AiPlatform\Engines\AnalysisEngine\AnalyzerRegistry $analyzerRegistry */
+        $analyzerRegistry = $this->app->make(\Modules\AiPlatform\Engines\AnalysisEngine\AnalyzerRegistry::class);
+        $analyzerRegistry->register($this->app->make(\Modules\AiPlatform\Engines\AnalysisEngine\Analyzers\FinancialSmsAnalyzer::class));
 
         // نشر ملف الإعدادات
         $this->publishes([

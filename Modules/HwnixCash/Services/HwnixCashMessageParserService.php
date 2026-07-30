@@ -1,11 +1,12 @@
 <?php
-// كلاس التنسيق الرئيسي لإدارة معالجة الرسائل المالية وتوجيه العمليات بين كلاسات النظام والتحقق المتقدم.
+// كلاس التنسيق الرئيسي لإدارة معالجة الرسائل المالية وتوجيه المعاملات استناداً إلى منصة الذكاء الاصطناعي HWNix AI Platform.
 
 namespace Modules\HwnixCash\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Modules\HwnixCash\Domain\Contracts\FinancialSmsAnalyzerInterface;
+use Modules\AiPlatform\Contracts\Engines\AnalysisEngineInterface;
+use Modules\AiPlatform\DTOs\AnalysisRequestDTO;
 use Modules\HwnixCash\Domain\Contracts\HwnixCashMessageParserInterface;
 use Modules\HwnixCash\Domain\Entities\SmsMessage;
 use Modules\HwnixCash\Models\HwnixCashLine;
@@ -17,8 +18,10 @@ use Throwable;
 
 class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
 {
+    public const PARSER_VERSION = '1.0.0';
+
     public function __construct(
-        protected FinancialSmsAnalyzerInterface $analyzer,
+        protected AnalysisEngineInterface $analysisEngine,
         protected DuplicateChecker $duplicateChecker,
         protected WalletBalanceUpdater $balanceUpdater,
         protected WalletTransactionCreator $transactionCreator,
@@ -27,14 +30,21 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
 
     public function parse(SmsMessage $message): void
     {
-        Log::info("[HwnixCashMessageParserService Orchestrator] Received incoming SMS ID {$message->id} from {$message->phoneNumber}");
+        Log::info("[HwnixCashMessageParserService Orchestrator v" . self::PARSER_VERSION . "] Received incoming SMS ID {$message->id} from {$message->phoneNumber}");
 
         try {
-            // 1. تحليل وتطهير الرسالة بواسطة طبقة التجريد وتوليد DTO المعير المفحوص
-            $dto = $this->analyzer->analyze($message->messageBody, $message->companyId ?? 1);
+            // 1. طلب التحليل الهيكلي المنظم وتثبيت النتيجة في المنصة (Single Source of Truth)
+            $analysisResult = $this->analysisEngine->analyze(new AnalysisRequestDTO(
+                analysisType: 'financial_sms',
+                content: $message->messageBody,
+                companyId: $message->companyId ?? 1,
+                sourceType: 'hwnix_cash_message',
+                sourceId: $message->id,
+                providerKey: 'general'
+            ));
 
             // 2. تنفيذ العمليات المحاسبية والقيود داخل DB Transaction ذرية ومحمية
-            DB::transaction(function () use ($message, $dto) {
+            DB::transaction(function () use ($message, $analysisResult) {
 
                 // البحث عن الخط المالي المناسب مع قفل التزامن للحماية من Race Conditions
                 $line = $this->resolveLine($message);
@@ -46,28 +56,49 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                 }
 
                 // 3. تحديث الرصيد الفعلي (actual_balance) إذا ثبت وجوده بالرسالة كـ Source of Truth
-                if ($dto->balanceFound && $dto->availableBalance !== null) {
-                    $this->balanceUpdater->updateActualBalance($line, $dto->availableBalance);
+                if ($analysisResult->balanceFound && $analysisResult->availableBalance !== null) {
+                    $this->balanceUpdater->updateActualBalance($line, $analysisResult->availableBalance);
                 }
 
-                // 4. طبقة القرار التجارية بالنظام (System Decision Layer based on messageType & confidence)
-                if ($dto->messageType === 'unknown' || !empty($dto->validationErrors)) {
-                    // رسالة غير معروفة أو تحتوي على أخطاء تدقيق -> تحول لقائمة المراجعة البشرية بدلاً من تجاهلها
-                    $errorText = implode('; ', $dto->validationErrors) ?: 'نوع الحركة غير معروف وتم توجيهه للمراجعة البشرية';
+                // 4. طبقة القرار التجارية بالنظام (System Decision Layer)
+                if ($analysisResult->messageType === 'unknown' || !empty($analysisResult->validationErrors)) {
+                    // توجيه الرسالة لقائمة المراجعة البشرية (Unknown Queue)
+                    $errorText = implode('; ', $analysisResult->validationErrors) ?: 'نوع الحركة غير معروف وتم توجيهه للمراجعة البشرية';
                     $this->messageFinalizer->markAsNeedsReview($message->id, $errorText);
                     return;
                 }
 
-                if ($dto->isTransaction && $dto->amount !== null && $dto->amount > 0) {
-                    // فحص التكرار عبر مستودع البيانات (Idempotency Check)
-                    if ($this->duplicateChecker->isDuplicateTransaction($message->companyId, $line->id, $dto->transactionId, $message->id)) {
+                if ($analysisResult->isTransaction && $analysisResult->amount !== null && $analysisResult->amount > 0) {
+                    // فحص التكرار عبر المستودع
+                    if ($this->duplicateChecker->isDuplicateTransaction($message->companyId, $line->id, $analysisResult->transactionId, $message->id)) {
                         Log::info("[HwnixCashMessageParserService] Duplicate transaction skipped for Message ID {$message->id}");
                         $this->messageFinalizer->markAsProcessed($message->id);
                         return;
                     }
 
+                    // تحويل AnalysisResultDTO إلى NormalizedFinancialSmsDTO مؤقت متوافق لـ TransactionCreator
+                    $normalizedDto = new \Modules\HwnixCash\DTOs\NormalizedFinancialSmsDTO(
+                        messageType: $analysisResult->messageType,
+                        isTransaction: $analysisResult->isTransaction,
+                        amount: $analysisResult->amount,
+                        currency: $analysisResult->currency,
+                        targetPhone: $analysisResult->targetPhone,
+                        targetName: $analysisResult->targetName,
+                        transactionId: $analysisResult->transactionId,
+                        datetime: $analysisResult->datetime,
+                        balanceFound: $analysisResult->balanceFound,
+                        availableBalance: $analysisResult->availableBalance,
+                        confidenceScore: $analysisResult->confidenceScore,
+                        schemaVersion: $analysisResult->schemaVersion,
+                        promptVersion: $analysisResult->promptVersion,
+                        parserVersion: self::PARSER_VERSION,
+                        validationErrors: $analysisResult->validationErrors,
+                        executionMetadata: $analysisResult->executionMetadata,
+                        rawAiOutput: $analysisResult->normalizedJson
+                    );
+
                     // إنشاء المعاملة المالية وتعديل الرصيد الحسابي بدفتر الأستاذ
-                    $this->transactionCreator->createTransaction($line, $message, $dto);
+                    $this->transactionCreator->createTransaction($line, $message, $normalizedDto);
                 }
 
                 // 5. إنهاء المعالجة وتثبيت الحالة بنجاح

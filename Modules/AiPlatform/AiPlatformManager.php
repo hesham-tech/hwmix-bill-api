@@ -17,6 +17,22 @@ class AiPlatformManager
     ) {}
 
     /**
+     * بدء طلب تحليل هيكلي منظم عبر محرك التحليل المنصي
+     */
+    public function analyze(string $analysisType, string $content, int $companyId, array $options = []): \Modules\AiPlatform\DTOs\AnalysisResultDTO
+    {
+        /** @var \Modules\AiPlatform\Contracts\Engines\AnalysisEngineInterface $analysisEngine */
+        $analysisEngine = $this->app->make(\Modules\AiPlatform\Contracts\Engines\AnalysisEngineInterface::class);
+
+        return $analysisEngine->analyze(new \Modules\AiPlatform\DTOs\AnalysisRequestDTO(
+            analysisType: $analysisType,
+            content: $content,
+            companyId: $companyId,
+            options: $options
+        ));
+    }
+
+    /**
      * بدء بناء طلب Direct Capability
      */
     public function capability(string $key): CapabilityBuilder

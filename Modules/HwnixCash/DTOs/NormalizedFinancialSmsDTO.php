@@ -1,5 +1,5 @@
 <?php
-// كلاس نقل البيانات المعيرة لنواتج تحليل الرسائل المالية مع دعم اصدار المخطط ونسبة الثقة وسجلات التدقيق.
+// كلاس نقل البيانات المعيرة لنواتج تحليل الرسائل المالية مع دعم اصدار المخطط ونسبة الثقة وإصدار الـ Parser وسجلات التدقيق.
 
 namespace Modules\HwnixCash\DTOs;
 
@@ -19,6 +19,7 @@ final class NormalizedFinancialSmsDTO
         public readonly int $confidenceScore = 100, // نسبة الثقة المحسوبة برمجياً (0 - 100%)
         public readonly string $schemaVersion = '1.0',
         public readonly string $promptVersion = '1.0',
+        public readonly string $parserVersion = '1.0.0', // إصدار منطق معالجة الـ Parser بالنظام
         public readonly array $validationErrors = [],
         public readonly array $executionMetadata = [],
         public readonly array $rawAiOutput = []

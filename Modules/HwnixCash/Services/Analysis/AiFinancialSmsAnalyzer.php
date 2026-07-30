@@ -1,5 +1,5 @@
 <?php
-// محول استدعاء منصة الذكاء الاصطناعي وتطبيق البرومبت المخصص لكل مصدر مع تتبع تفاصيل التنفيذ.
+// محول استدعاء منصة الذكاء الاصطناعي وتطبيق البرومبت المخصص لكل مصدر مع تتبع تفاصيل التنفيذ الشاملة.
 
 namespace Modules\HwnixCash\Services\Analysis;
 
@@ -7,9 +7,10 @@ use Illuminate\Support\Facades\Log;
 use Modules\AiPlatform\Contracts\Engines\ExecutionEngineInterface;
 use Modules\AiPlatform\DTOs\ExecutionRequestDTO;
 use Modules\HwnixCash\Domain\Contracts\FinancialSmsAnalyzerInterface;
+use Modules\HwnixCash\Domain\Contracts\StructuredMessageAnalyzerInterface;
 use Modules\HwnixCash\DTOs\NormalizedFinancialSmsDTO;
 
-class AiFinancialSmsAnalyzer implements FinancialSmsAnalyzerInterface
+class AiFinancialSmsAnalyzer implements StructuredMessageAnalyzerInterface, FinancialSmsAnalyzerInterface
 {
     public function __construct(
         protected ExecutionEngineInterface $executionEngine,
@@ -17,10 +18,10 @@ class AiFinancialSmsAnalyzer implements FinancialSmsAnalyzerInterface
         protected SmsResultValidator $validator
     ) {}
 
-    public function analyze(string $smsBody, int $companyId): NormalizedFinancialSmsDTO
+    public function analyze(string $smsBody, int $companyId, string $driverKey = 'financial_sms'): NormalizedFinancialSmsDTO
     {
         $startTime = microtime(true);
-        $resolvedPrompt = $this->promptResolver->resolvePrompt($smsBody);
+        $resolvedPrompt = $this->promptResolver->resolvePrompt($smsBody, $driverKey);
 
         try {
             $request = new ExecutionRequestDTO(
@@ -50,6 +51,7 @@ class AiFinancialSmsAnalyzer implements FinancialSmsAnalyzerInterface
                 'tokens_used' => $aiResult->totalTokens ?? 0,
                 'cost' => $aiResult->cost ?? 0.0,
                 'trace_id' => $aiResult->traceId ?? null,
+                'ai_model' => 'gemini-flash',
             ];
 
             if (!$aiResult->successful || empty($aiResult->content)) {

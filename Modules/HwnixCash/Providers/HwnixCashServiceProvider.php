@@ -41,7 +41,8 @@ class HwnixCashServiceProvider extends ModuleServiceProvider
         $this->app->bind(HwnixCashWalletTransactionRepositoryInterface::class, EloquentHwnixCashWalletTransactionRepository::class);
         $this->app->bind(HwnixCashMessageSourceRepositoryInterface::class, EloquentHwnixCashMessageSourceRepository::class);
 
-        // ربط واجهة تحليل الرسائل المالية مع محرك الذكاء الاصطناعي المعزول
+        // ربط واجهة تحليل الرسائل المنظمة الشاملة ومحلل الرسائل المالية مع محرك الذكاء الاصطناعي المعزول
+        $this->app->bind(\Modules\HwnixCash\Domain\Contracts\StructuredMessageAnalyzerInterface::class, \Modules\HwnixCash\Services\Analysis\AiFinancialSmsAnalyzer::class);
         $this->app->bind(\Modules\HwnixCash\Domain\Contracts\FinancialSmsAnalyzerInterface::class, \Modules\HwnixCash\Services\Analysis\AiFinancialSmsAnalyzer::class);
 
         // ربط المنسق الرئيسي HwnixCashMessageParserService

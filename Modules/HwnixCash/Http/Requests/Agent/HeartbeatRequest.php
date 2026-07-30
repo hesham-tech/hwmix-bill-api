@@ -15,7 +15,7 @@ class HeartbeatRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'device_id' => 'required|integer|exists:hwnix_cash_devices,id',
+            'device_id' => 'required|integer',
             'network_type' => 'nullable|string',
             'battery_level' => 'required|integer',
             'is_internet_available' => 'required|boolean',

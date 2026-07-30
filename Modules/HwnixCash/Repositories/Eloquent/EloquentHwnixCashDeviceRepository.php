@@ -26,23 +26,36 @@ class EloquentHwnixCashDeviceRepository implements HwnixCashDeviceRepositoryInte
 
     public function createOrUpdate(DeviceData $dto, int $companyId, int $userId): Device
     {
-        $device = HwnixCashDevice::updateOrCreate(
-            ['android_id' => $dto->androidId],
-            [
-                'company_id' => $companyId,
-                'created_by' => $userId,
-                'uuid' => $dto->uuid,
-                'device_name' => $dto->deviceName,
-                'brand' => $dto->brand,
-                'model' => $dto->model,
-                'android_version' => $dto->androidVersion,
-                'app_version' => $dto->appVersion,
-                'fcm_token' => $dto->fcmToken,
-                'capabilities' => $dto->capabilities,
-                'status' => 'active',
-                'last_seen_at' => now(),
-            ]
-        );
+        // 1. البحث بدون فلاتر الشركة لمعالجة نقل/إعادة استخدام الأجهزة المستعملة بين الحسابات
+        $device = HwnixCashDevice::withoutGlobalScopes()
+            ->withTrashed()
+            ->where('android_id', $dto->androidId)
+            ->first();
+
+        $attributes = [
+            'company_id' => $companyId,
+            'created_by' => $userId,
+            'uuid' => $dto->uuid,
+            'device_name' => $dto->deviceName,
+            'brand' => $dto->brand,
+            'model' => $dto->model,
+            'android_version' => $dto->androidVersion,
+            'app_version' => $dto->appVersion,
+            'fcm_token' => $dto->fcmToken,
+            'capabilities' => $dto->capabilities,
+            'status' => 'active',
+            'last_seen_at' => now(),
+        ];
+
+        if ($device) {
+            if ($device->trashed()) {
+                $device->restore();
+            }
+            $device->update($attributes);
+        } else {
+            $attributes['android_id'] = $dto->androidId;
+            $device = HwnixCashDevice::create($attributes);
+        }
 
         $device->settings()->firstOrCreate([], [
             'heartbeat_interval_seconds' => 60,

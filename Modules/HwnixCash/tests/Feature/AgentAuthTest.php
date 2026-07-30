@@ -51,6 +51,7 @@ class AgentAuthTest extends TestCase
     public function test_agent_can_register_successfully(): void
     {
         $payload = [
+            'company_name' => 'شركة أندرويد كاش للتجربة',
             'full_name' => 'محمد أحمد',
             'nickname' => 'أبو أحمد',
             'phone' => '0599123456',

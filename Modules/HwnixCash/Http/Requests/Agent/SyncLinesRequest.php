@@ -15,7 +15,7 @@ class SyncLinesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'device_id' => 'required|integer|exists:hwnix_cash_devices,id',
+            'device_id' => 'required|integer',
             'device_name' => 'nullable|string',
             'sims' => 'required|array',
             'sims.*.slot_index' => 'required|integer',

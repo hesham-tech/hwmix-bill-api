@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * حسابات مزودي الخدمة وإعدادات الوصول
+ * حسابات مزودي الخدمة وإعدادات الوصول ونطاق الحسابات
  */
 class AiProviderAccount extends Model
 {
@@ -14,6 +14,7 @@ class AiProviderAccount extends Model
 
     protected $fillable = [
         'company_id',
+        'account_scope', // SYSTEM, COMPANY, SHARED
         'ai_provider_id',
         'label',
         'api_key_encrypted',
