@@ -13,34 +13,29 @@ use Modules\HwnixCash\Http\Requests\Agent\LoginAgentRequest;
 use Modules\HwnixCash\Http\Requests\Agent\RefreshAgentRequest;
 use Modules\HwnixCash\Http\Requests\Agent\RegisterAgentRequest;
 
+use App\Actions\Company\ProvisionNewCompanyAction;
+
 class AgentAuthController extends Controller
 {
     /**
-     * تسجيل مستخدم جديد من التطبيق.
+     * تسجيل شركة جديدة ومستخدم مدير من تطبيق الأندرويد.
      */
-    public function register(RegisterAgentRequest $request): JsonResponse
+    public function register(RegisterAgentRequest $request, ProvisionNewCompanyAction $provisionAction): JsonResponse
     {
         try {
             $validated = $request->validated();
-            $company = Company::first();
-            $companyId = $company ? $company->id : 1;
-
-            $user = User::create([
+            
+            $result = $provisionAction->execute([
+                'company_name' => $validated['company_name'],
+                'full_name' => $validated['full_name'],
+                'nickname' => $validated['nickname'] ?? $validated['full_name'],
                 'phone' => $validated['phone'],
                 'email' => $validated['email'] ?? null,
-                'company_id' => $companyId,
-                'full_name' => $validated['full_name'],
-                'nickname' => $validated['nickname'],
-                'password' => Hash::make($validated['password']),
+                'password' => $validated['password'],
             ]);
 
-            if (method_exists($user, 'companies')) {
-                $user->companies()->attach($companyId, [
-                    'created_by' => $user->id,
-                    'full_name_in_company' => $user->full_name,
-                    'nickname_in_company' => $user->nickname,
-                ]);
-            }
+            $user = $result['user'];
+            $company = $result['company'];
 
             $tokenName = 'Hwnix_Cash_Agent_' . $validated['device_uuid'];
             $token = $user->createToken($tokenName, ['*'], now()->addDays(30))->plainTextToken;
@@ -54,12 +49,13 @@ class AgentAuthController extends Controller
                     'phone' => $user->phone,
                 ],
                 'company' => [
-                    'id' => $user->company_id,
+                    'id' => $company->id,
+                    'name' => $company->name,
                 ]
-            ], 'تم إنشاء الحساب بنجاح وتوليد رمز الوصول.', 201);
+            ], 'تم إنشاء الشركة وتجهيز حساب المدير بنجاح.', 201);
 
         } catch (\Exception $e) {
-            return api_error('حدث خطأ في السيرفر أثناء إنشاء الحساب: ' . $e->getMessage(), [], 500);
+            return api_error('حدث خطأ في السيرفر أثناء إنشاء الشركة: ' . $e->getMessage(), [], 500);
         }
     }
 
