@@ -48,7 +48,9 @@ class LineReconciliationTest extends TestCase
         ]);
 
         $response = $this->actingAs($user, 'sanctum')
-            ->postJson("/api/v1/hwnix-cash/financial-accounts/{$account->id}/reconcile");
+            ->postJson("/api/v1/hwnix-cash/financial-accounts/{$account->id}/reconcile", [
+                'reason' => 'تسوية مطابقة رصيد الخط',
+            ]);
 
         $response->assertStatus(200)
             ->assertJsonPath('status', true)
