@@ -53,6 +53,7 @@ Route::middleware(['auth:sanctum'])->prefix('v1/hwnix-cash')->group(function () 
     
     Route::get('messages', [\Modules\HwnixCash\Http\Controllers\Web\MessageController::class, 'index']);
     Route::post('messages/send', [\Modules\HwnixCash\Http\Controllers\Web\MessageController::class, 'store']);
+    Route::post('messages/{id}/reparse', [\Modules\HwnixCash\Http\Controllers\Web\MessageController::class, 'reparse']);
 
     // مسارات إدارة معاملات المحافظ الإلكترونية
     Route::apiResource('wallet-transactions', \Modules\HwnixCash\Http\Controllers\Web\WalletTransactionController::class);

@@ -20,9 +20,14 @@ class EloquentHwnixCashMessageSourceRepository implements HwnixCashMessageSource
 
     public function findActiveByIdentifier(string $senderIdentifier, int $companyId): ?MessageSourceEntity
     {
+        $trimmed = trim($senderIdentifier);
         $model = HwnixCashMessageSource::where('company_id', $companyId)
-            ->where('sender_identifier', $senderIdentifier)
             ->where('is_active', true)
+            ->where(function ($q) use ($trimmed) {
+                $q->where('sender_identifier', $trimmed)
+                  ->orWhere('sender_identifier', 'LIKE', "%{$trimmed}%")
+                  ->orWhereRaw('LOWER(sender_identifier) = LOWER(?)', [$trimmed]);
+            })
             ->first();
 
         return $model ? $this->toEntity($model) : null;

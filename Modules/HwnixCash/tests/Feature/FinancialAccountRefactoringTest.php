@@ -142,9 +142,91 @@ class FinancialAccountRefactoringTest extends TestCase
             ->assertJsonPath('data.balance', 1500);
 
         $this->assertDatabaseHas('hwnix_cash_wallet_transactions', [
+            'company_id' => 1,
             'financial_account_id' => $account->id,
             'operation_type' => 'reconciliation',
             'amount' => 500.00,
+            'balance_after' => 1500.00,
+        ]);
+    }
+
+    public function test_reparsing_balance_inquiry_updates_actual_balance(): void
+    {
+        $device = HwnixCashDevice::create([
+            'company_id' => $this->company->id,
+            'android_id' => 'ANDROID_TEST_555',
+            'device_name' => 'Test Phone 3',
+        ]);
+
+        $line = HwnixCashLine::create([
+            'company_id' => $this->company->id,
+            'device_android_id' => $device->android_id,
+            'phone_number' => '01012345678',
+            'slot_index' => 0,
+            'status' => 'active',
+        ]);
+
+        $source = HwnixCashMessageSource::create([
+            'company_id' => $this->company->id,
+            'sender_identifier' => 'VF-Cash',
+            'provider' => 'vodafone_cash',
+            'is_active' => true,
+        ]);
+
+        $account = HwnixCashFinancialAccount::create([
+            'company_id' => $this->company->id,
+            'line_id' => $line->id,
+            'message_source_id' => $source->id,
+            'name' => 'محفظة فودافون كاش',
+            'balance' => 0.00,
+            'actual_balance' => 0.00,
+            'status' => 'active',
+        ]);
+
+        $message = HwnixCashMessage::create([
+            'company_id' => $this->company->id,
+            'sms_device_id' => $device->id,
+            'sms_line_id' => $line->id,
+            'phone_number' => 'VF-Cash',
+            'message_body' => 'رصيد حسابك فى فودافون كاش الحالي 1339.50 جنيه؛ تاريخ العملية 23:31 26-07-30 رقم العملية 022215083304.',
+            'status' => 'received',
+            'direction' => 'inbound',
+        ]);
+
+        $mockEngine = \Mockery::mock(\Modules\AiPlatform\Contracts\Engines\AnalysisEngineInterface::class);
+        $mockEngine->shouldReceive('analyze')->andReturn(new \Modules\AiPlatform\DTOs\AnalysisResultDTO(
+            resultId: 1,
+            correlationId: 'test-corr-id',
+            analysisType: 'financial_sms',
+            messageType: 'balance_inquiry',
+            isValid: true,
+            isTransaction: false,
+            amount: null,
+            currency: 'EGP',
+            targetPhone: null,
+            targetName: null,
+            transactionId: null,
+            datetime: '2026-07-30 23:31:00',
+            balanceFound: true,
+            availableBalance: 1339.50,
+            confidenceScore: 100,
+            schemaVersion: '1.0',
+            promptVersion: '1.0',
+            parserVersion: '1.0.0',
+            validationErrors: [],
+            executionMetadata: [],
+            normalizedJson: []
+        ));
+        $this->app->instance(\Modules\AiPlatform\Contracts\Engines\AnalysisEngineInterface::class, $mockEngine);
+
+        $response = $this->postJson("/api/v1/hwnix-cash/messages/{$message->id}/reparse");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('status', true);
+
+        $this->assertDatabaseHas('hwnix_cash_financial_accounts', [
+            'id' => $account->id,
+            'actual_balance' => 1339.50,
         ]);
     }
 }

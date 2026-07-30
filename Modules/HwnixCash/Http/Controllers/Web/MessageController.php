@@ -74,4 +74,37 @@ class MessageController extends Controller
             'status' => $messageEntity->status->value,
         ], 'تم جدولة إرسال الرسالة بنجاح.');
     }
+
+    public function reparse(int $id, Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $companyId = $user->active_company_id ?? $user->company_id;
+
+        $messageModel = HwnixCashMessage::where('company_id', $companyId)->findOrFail($id);
+
+        $dto = new \Modules\HwnixCash\Domain\Entities\SmsMessage(
+            id: $messageModel->id,
+            companyId: $messageModel->company_id,
+            createdBy: $messageModel->created_by,
+            smsDeviceId: $messageModel->sms_device_id,
+            smsLineId: $messageModel->sms_line_id,
+            phoneNumber: $messageModel->phone_number,
+            messageBody: $messageModel->message_body,
+            direction: $messageModel->direction,
+            status: $messageModel->status instanceof \Modules\HwnixCash\Domain\Enums\SmsMessageStatus ? $messageModel->status : \Modules\HwnixCash\Domain\Enums\SmsMessageStatus::from($messageModel->status),
+            messageRef: $messageModel->message_ref,
+            errorCode: $messageModel->error_code,
+            errorMessage: $messageModel->error_message,
+            sentAt: $messageModel->sent_at?->toIso8601String()
+        );
+
+        app(\Modules\HwnixCash\Domain\Contracts\HwnixCashMessageParserInterface::class)->parse($dto);
+
+        $fresh = $messageModel->fresh();
+
+        return api_success(
+            new SmsMessageResource($fresh),
+            'تمت إعادة تحليل الرسالة وتحديث البيانات المالية بنجاح.'
+        );
+    }
 }
