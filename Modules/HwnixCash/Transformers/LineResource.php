@@ -16,6 +16,7 @@ class LineResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'company_id' => $this->company_id,
             'device_android_id' => $this->device_android_id,
             'slot_index' => $this->slot_index,
             'slot_label' => 'شريحة ' . ($this->slot_index + 1),
