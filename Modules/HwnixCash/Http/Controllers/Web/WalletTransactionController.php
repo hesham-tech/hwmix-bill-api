@@ -89,6 +89,10 @@ class WalletTransactionController extends Controller
 
     public function show(Request $request, $id): JsonResponse
     {
+        if (!is_numeric($id)) {
+            return api_error('المعاملة غير متوفرة أو المعرف غير صالح.', [], 404);
+        }
+
         $user = $request->user();
         $transaction = HwnixCashWalletTransaction::where('id', $id)
             ->where('company_id', $user->company_id)
@@ -103,6 +107,10 @@ class WalletTransactionController extends Controller
 
     public function update(UpdateWalletTransactionRequest $request, $id): JsonResponse
     {
+        if (!is_numeric($id)) {
+            return api_error('المعاملة غير متوفرة أو المعرف غير صالح.', [], 404);
+        }
+
         $user = $request->user();
         if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.edit_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.edit_self'))) {
             return api_forbidden('غير مصرح لك بتعديل معاملة المحفظة.');
@@ -124,6 +132,10 @@ class WalletTransactionController extends Controller
 
     public function destroy(Request $request, $id): JsonResponse
     {
+        if (!is_numeric($id)) {
+            return api_error('المعاملة غير متوفرة أو المعرف غير صالح.', [], 404);
+        }
+
         $user = $request->user();
         if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.delete_all'))) {
             return api_forbidden('غير مصرح لك بحذف المعاملة.');

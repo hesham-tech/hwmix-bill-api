@@ -39,8 +39,12 @@ class LineController extends Controller
         return api_success(LineResource::collection($lines), 'تم جلب قائمة الخطوط بنجاح.');
     }
 
-    public function update(UpdateLineRequest $request, int $id): JsonResponse
+    public function update(UpdateLineRequest $request, $id): JsonResponse
     {
+        if (!is_numeric($id)) {
+            return api_error('المعرف غير صالح.', [], 400);
+        }
+
         $user = $request->user();
         $companyId = $user->active_company_id ?? $user->company_id;
 
@@ -49,7 +53,7 @@ class LineController extends Controller
             ->first();
 
         if (!$line) {
-            return api_error('الخط غير متوفر أو لا ينتمي لشركتك.', [], 404);
+            return api_error('الخط غير متوفر أو لا ينتمي لشركتك.', [], 400);
         }
 
         $line->update($request->validated());
@@ -57,8 +61,11 @@ class LineController extends Controller
         return api_success(new LineResource($line->load('device')), 'تم تحديث بيانات الخط بنجاح.');
     }
 
-    public function reconcile(Request $request, int $id): JsonResponse
+    public function reconcile(Request $request, $id): JsonResponse
     {
+        if (!is_numeric($id)) {
+            return api_error('المعرف غير صالح.', [], 400);
+        }
         $user = $request->user();
         $companyId = $user->active_company_id ?? $user->company_id;
 

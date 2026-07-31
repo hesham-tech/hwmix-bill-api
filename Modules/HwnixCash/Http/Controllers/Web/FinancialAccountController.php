@@ -122,8 +122,12 @@ class FinancialAccountController extends Controller
         );
     }
 
-    public function show(int $id, Request $request): JsonResponse
+    public function show($id, Request $request): JsonResponse
     {
+        if (!is_numeric($id)) {
+            return api_error('المعرف التابع للحساب غير صالح.', [], 400);
+        }
+
         $user = $request->user();
         $companyId = $user->active_company_id ?? $user->company_id;
 
@@ -137,8 +141,12 @@ class FinancialAccountController extends Controller
         );
     }
 
-    public function update(int $id, UpdateFinancialAccountRequest $request): JsonResponse
+    public function update($id, UpdateFinancialAccountRequest $request): JsonResponse
     {
+        if (!is_numeric($id)) {
+            return api_error('المعرف التابع للحساب غير صالح.', [], 400);
+        }
+
         $user = $request->user();
         $companyId = $user->active_company_id ?? $user->company_id;
 
@@ -154,8 +162,12 @@ class FinancialAccountController extends Controller
         );
     }
 
-    public function destroy(int $id, Request $request): JsonResponse
+    public function destroy($id, Request $request): JsonResponse
     {
+        if (!is_numeric($id)) {
+            return api_error('المعرف التابع للحساب غير صالح.', [], 400);
+        }
+
         $user = $request->user();
         $companyId = $user->active_company_id ?? $user->company_id;
 
