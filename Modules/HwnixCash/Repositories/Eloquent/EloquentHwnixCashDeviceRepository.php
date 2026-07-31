@@ -32,6 +32,17 @@ class EloquentHwnixCashDeviceRepository implements HwnixCashDeviceRepositoryInte
             ->where('android_id', $dto->androidId)
             ->first();
 
+        // ── نقل الملكية التلقائي ──────────────────────────────────────────────────
+        // إذا كان الجهاز موجوداً لكن تحت شركة مختلفة (بيع الجهاز لشركة أخرى)
+        // نقوم بفصل الجهاز عن الخطوط القديمة (بدلاً من حذفها) للحفاظ على السجلات
+        if ($device && $device->company_id !== $companyId) {
+            \Log::info("[DeviceTransfer] Device {$dto->androidId} transferring from company {$device->company_id} to company {$companyId}");
+
+            // فصل جميع خطوط الشركة القديمة المرتبطة بهذا الجهاز لتصبح مجمّدة
+            \Modules\HwnixCash\Models\HwnixCashLine::where('device_android_id', $dto->androidId)->update(['device_android_id' => null]);
+        }
+        // ─────────────────────────────────────────────────────────────────────────
+
         $attributes = [
             'company_id' => $companyId,
             'created_by' => $userId,
