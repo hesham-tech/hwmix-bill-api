@@ -29,6 +29,18 @@ class SmsGatewayService
             $existingDevice = $this->deviceRepo->findByAndroidId($data['android_id']);
 
             $deviceId = $existingDevice?->id;
+            $isNewDevice = !$deviceId;
+
+            // ── نقل الملكية التلقائي ──────────────────────────────────────────────────
+            // إذا كان الجهاز موجوداً لكن تحت شركة مختلفة (بيع الجهاز لشركة أخرى)
+            // نقوم بفصل الجهاز عن الخطوط القديمة (بدلاً من حذفها) للحفاظ على السجلات
+            if ($existingDevice && $existingDevice->companyId !== $companyId) {
+                \Log::info("[DeviceTransfer] Device {$data['android_id']} transferring from company {$existingDevice->companyId} to company {$companyId}");
+
+                // فصل جميع خطوط الشركة القديمة المرتبطة بهذا الجهاز لتصبح مجمّدة
+                SmsLine::where('device_android_id', $data['android_id'])->update(['device_android_id' => null]);
+            }
+            // ─────────────────────────────────────────────────────────────────────────
 
             $device = new Device(
                 id: $deviceId,
@@ -43,14 +55,14 @@ class SmsGatewayService
                 androidVersion: $data['android_version'],
                 appVersion: $data['app_version'],
                 capabilities: $data['capabilities'] ?? [],
-                status: $existingDevice?->status ?? DeviceStatus::Active,
+                status: DeviceStatus::Active,
                 lastSeenAt: now()
             );
 
             $savedDevice = $this->deviceRepo->save($device);
 
             // التحقق من وجود الإعدادات وإنشاؤها إذا لم تكن موجودة
-            $settingModel = SmsDeviceSetting::firstOrCreate(
+            SmsDeviceSetting::firstOrCreate(
                 ['sms_device_id' => $savedDevice->id],
                 [
                     'configuration_version' => 1,
@@ -68,7 +80,7 @@ class SmsGatewayService
             );
 
             // إطلاق حدث التسجيل إذا كان جهازاً جديداً
-            if (!$deviceId) {
+            if ($isNewDevice) {
                 event(new \Modules\SmsGateway\Events\DeviceRegistered($savedDevice));
             }
 
@@ -89,61 +101,60 @@ class SmsGatewayService
             $device = SmsDevice::findOrFail($deviceId);
             $androidId = $device->android_id;
 
-            // تم إزالة التعطيل التلقائي لشرائح الهاتف السابقة للحفاظ عليها نشطة ومعرفة آخر هاتف عملت عليه كما طلب المستخدم
+            // ── ضمان عدم التعارض ─────────────────────────────────────────────────────
+            // قبل مزامنة الخطوط: التأكد أن كل خطوط هذا الجهاز تنتمي لنفس الشركة الحالية
+            // إذا وُجد خط لشركة مختلفة على هذا الجهاز يُفصل فوراً (حالة البيع المكتشفة متأخراً)
+            SmsLine::where('device_android_id', $androidId)
+                ->where('company_id', '!=', $companyId)
+                ->update(['device_android_id' => null]);
+            // ─────────────────────────────────────────────────────────────────────────
 
             foreach ($sims as $sim) {
                 $phoneNumber = !empty($sim['phone_number']) ? trim($sim['phone_number']) : null;
-                
+
                 $lineModel = null;
-                
-                // 1. محاولة المطابقة برقم الهاتف الفعلي إذا كان متوفراً (بحث عالمي عبر كل الأجهزة لنقل الخط ديناميكياً)
+
+                // 1. مطابقة برقم الهاتف الفعلي (فقط ضمن نطاق الشركة الحالية)
                 if ($phoneNumber) {
-                    $lineModel = SmsLine::where('phone_number', $phoneNumber)->first();
-                    
-                    // تنظيف أي سجل مكرر قديم لنفس الرقم لضمان التفرد
-                    if ($lineModel) {
-                        SmsLine::where('phone_number', $phoneNumber)
-                            ->where('id', '!=', $lineModel->id)
-                            ->delete();
-                    }
+                    // نفضل الخطوط المرتبطة بنفس الجهاز أو المجمّدة لتجنب أخذ خط نشط لجهاز آخر إن أمكن
+                    $lineModel = SmsLine::where('phone_number', $phoneNumber)
+                        ->where('company_id', $companyId)
+                        ->orderByRaw('device_android_id = ? DESC', [$androidId])
+                        ->first();
+                        
+                    // تمت إزالة كود حذف الخطوط المكررة للحفاظ على السجلات التاريخية
                 }
-                
-                // 2. المطابقة البديلة برقم منفذ الشريحة (slot_index) أو معرف الاشتراك للجهاز الحالي (فقط إذا لم يكن لها رقم هاتف مسجل أو كان الرقم متطابقاً)
+
+                // 2. المطابقة بـ slot_index أو subscription_id على نفس الجهاز ونفس الشركة
                 if (!$lineModel) {
                     $lineModel = SmsLine::where('device_android_id', $androidId)
-                        ->where(function($query) use ($sim) {
+                        ->where('company_id', $companyId)
+                        ->where(function ($query) use ($sim) {
                             $query->where('subscription_id', $sim['subscription_id'])
                                   ->orWhere('slot_index', $sim['slot_index']);
-                        })
-                        ->where(function($query) use ($phoneNumber) {
-                            $query->whereNull('phone_number')
-                                  ->orWhere('phone_number', '')
-                                  ->orWhere('phone_number', $phoneNumber);
                         })
                         ->first();
                 }
 
                 $updateData = [
-                    'device_android_id' => $androidId, // تحديث ربط الهاتف ديناميكياً في حال نقل الخط
-                    'company_id' => $companyId,
-                    'created_by' => $userId,
-                    'slot_index' => $sim['slot_index'],
-                    'subscription_id' => $sim['subscription_id'],
-                    'carrier' => !empty($sim['carrier']) ? $sim['carrier'] : 'Unknown',
-                    'mcc' => $sim['mcc'] ?? null,
-                    'mnc' => $sim['mnc'] ?? null,
-                    'phone_number' => $phoneNumber,
-                    'network_type' => $sim['network_type'] ?? null,
-                    'signal_strength' => $sim['signal_strength'] ?? null,
-                    'status' => LineStatus::Active->value,
+                    'device_android_id' => $androidId,
+                    'company_id'        => $companyId,
+                    'created_by'        => $userId,
+                    'slot_index'        => $sim['slot_index'],
+                    'subscription_id'   => $sim['subscription_id'],
+                    'carrier'           => !empty($sim['carrier']) ? $sim['carrier'] : 'Unknown',
+                    'mcc'               => $sim['mcc'] ?? null,
+                    'mnc'               => $sim['mnc'] ?? null,
+                    'phone_number'      => $phoneNumber,
+                    'network_type'      => $sim['network_type'] ?? null,
+                    'signal_strength'   => $sim['signal_strength'] ?? null,
+                    'status'            => LineStatus::Active->value,
                 ];
 
                 if ($lineModel) {
                     $lineModel->update($updateData);
                 } else {
                     $lineModel = SmsLine::create($updateData);
-
-                    // إطلاق حدث إدخال شريحة جديدة
                     event(new \Modules\SmsGateway\Events\SimInserted($lineModel));
                 }
             }
