@@ -197,4 +197,18 @@ class WalletTransactionTest extends TestCase
             ->assertJsonPath('data.0.daily_withdraw_remaining', 7000)
             ->assertJsonPath('data.0.daily_deposit_remaining', 15000);
     }
+
+    /**
+     * اختبار معالجة النظراء والمعرفات النصية غير الصحيحة مثل 'undefined' بدلاً من رفع خطأ 500.
+     */
+    public function test_handling_undefined_or_invalid_transaction_id_returns_404(): void
+    {
+        $responseShow = $this->getJson('/api/v1/hwnix-cash/wallet-transactions/undefined');
+        $responseShow->assertStatus(404)
+            ->assertJsonPath('status', false);
+
+        $responseDelete = $this->deleteJson('/api/v1/hwnix-cash/wallet-transactions/undefined');
+        $responseDelete->assertStatus(404)
+            ->assertJsonPath('status', false);
+    }
 }

@@ -44,7 +44,7 @@ class MessageSourceController extends Controller
         return api_success(new MessageSourceResource(HwnixCashMessageSource::find($entity->id)), 'تم إضافة مصدر الرسائل المعتمد بنجاح.', 201);
     }
 
-    public function show(Request $request, int $id): JsonResponse
+    public function show(Request $request, $id): JsonResponse
     {
         $user = $request->user();
         $source = HwnixCashMessageSource::where('id', $id)
@@ -58,7 +58,7 @@ class MessageSourceController extends Controller
         return api_success(new MessageSourceResource($source), 'تم جلب تفاصيل مصدر الرسائل بنجاح.');
     }
 
-    public function update(UpdateMessageSourceRequest $request, int $id): JsonResponse
+    public function update(UpdateMessageSourceRequest $request, $id): JsonResponse
     {
         $user = $request->user();
         if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.edit_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.edit_self'))) {
@@ -74,12 +74,12 @@ class MessageSourceController extends Controller
         }
 
         $dto = MessageSourceData::fromArray($request->validated());
-        $updatedEntity = $this->repository->update($id, $dto);
+        $updatedEntity = $this->repository->update((int) $id, $dto);
 
         return api_success(new MessageSourceResource(HwnixCashMessageSource::find($updatedEntity->id)), 'تم تحديث بيانات مصدر الرسائل بنجاح.');
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, $id): JsonResponse
     {
         $user = $request->user();
         if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_message_sources.delete_all'))) {
@@ -94,7 +94,7 @@ class MessageSourceController extends Controller
             return api_error('مصدر الرسائل غير متوفر.', [], 404);
         }
 
-        $this->repository->delete($id);
+        $this->repository->delete((int) $id);
 
         return api_success(null, 'تم حذف مصدر الرسائل المعتمد بنجاح.');
     }

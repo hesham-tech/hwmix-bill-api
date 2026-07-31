@@ -27,19 +27,19 @@ class DeviceController extends Controller
         return api_success(DeviceResource::collection($devices), 'تم جلب قائمة أجهزة كاش هونكس بنجاح.');
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, $id): JsonResponse
     {
         $user = $request->user();
         if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash.delete_all'))) {
             return api_forbidden('غير مصرح لك بحذف الأجهزة.');
         }
 
-        $device = $this->deviceRepo->findById($id);
+        $device = $this->deviceRepo->findById((int) $id);
         if (!$device || $device->companyId !== $user->company_id) {
             return api_error('الجهاز غير متوفر أو لا ينتمي لشركتك.', [], 404);
         }
 
-        $this->deviceRepo->delete($id);
+        $this->deviceRepo->delete((int) $id);
 
         return api_success(null, 'تم إلغاء ربط وحذف الجهاز بنجاح.');
     }

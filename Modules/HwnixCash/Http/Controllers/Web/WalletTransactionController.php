@@ -87,7 +87,7 @@ class WalletTransactionController extends Controller
         return api_success(new WalletTransactionResource(HwnixCashWalletTransaction::find($entity->id)), 'تم تسجيل معاملة المحفظة بنجاح.', 201);
     }
 
-    public function show(Request $request, int $id): JsonResponse
+    public function show(Request $request, $id): JsonResponse
     {
         $user = $request->user();
         $transaction = HwnixCashWalletTransaction::where('id', $id)
@@ -101,7 +101,7 @@ class WalletTransactionController extends Controller
         return api_success(new WalletTransactionResource($transaction), 'تم جلب تفاصيل المعاملة بنجاح.');
     }
 
-    public function update(UpdateWalletTransactionRequest $request, int $id): JsonResponse
+    public function update(UpdateWalletTransactionRequest $request, $id): JsonResponse
     {
         $user = $request->user();
         if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.edit_all')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.edit_self'))) {
@@ -117,12 +117,12 @@ class WalletTransactionController extends Controller
         }
 
         $dto = WalletTransactionData::fromArray($request->validated());
-        $updatedEntity = $this->repository->update($id, $dto);
+        $updatedEntity = $this->repository->update((int) $id, $dto);
 
         return api_success(new WalletTransactionResource(HwnixCashWalletTransaction::find($updatedEntity->id)), 'تم تحديث بيانات المعاملة بنجاح.');
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, $id): JsonResponse
     {
         $user = $request->user();
         if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company')) && !$user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.delete_all'))) {
@@ -137,7 +137,7 @@ class WalletTransactionController extends Controller
             return api_error('المعاملة غير متوفرة.', [], 404);
         }
 
-        $this->repository->delete($id);
+        $this->repository->delete((int) $id);
 
         return api_success(null, 'تم حذف المعاملة بنجاح.');
     }
