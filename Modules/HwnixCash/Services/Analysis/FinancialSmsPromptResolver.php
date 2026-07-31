@@ -24,6 +24,7 @@ Rules:
 - Never guess, infer, or convert words to numbers.
 - Any missing or invalid value must be null.
 - Always return every required field.
+- Explicitly extract the name of the sender, receiver, merchant, or target person into "transaction.name" if found in the message (e.g. "تم تحويل لفلان", "استلمت من فلان").
 - If the message is not a financial transaction (promotion, advertisement, instruction, notification, etc.), set "is_transaction" to false.
 - If the message contains the current wallet/account balance, set "balance.found" to true and extract the numeric value into "balance.available".
 - Otherwise set "balance.found" to false and "balance.available" to null.
