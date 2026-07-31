@@ -21,12 +21,20 @@ class EloquentHwnixCashMessageRepository implements HwnixCashMessageRepositoryIn
 
     public function createIncoming(IncomingSmsData $dto, int $companyId, int $userId): SmsMessage
     {
-        $line = HwnixCashLine::where('subscription_id', $dto->subscriptionId)
-            ->where('company_id', $companyId)
-            ->first();
+        $device = HwnixCashDevice::find($dto->deviceId);
+        
+        $line = null;
+        if ($device) {
+            $line = HwnixCashLine::where('subscription_id', $dto->subscriptionId)
+                ->where('device_android_id', $device->android_id)
+                ->first();
+        }
+
+        // Use the line's company_id if available to correctly attribute SMS to the owner of the SIM
+        $actualCompanyId = $line ? $line->company_id : $companyId;
 
         $message = HwnixCashMessage::create([
-            'company_id' => $companyId,
+            'company_id' => $actualCompanyId,
             'created_by' => $userId,
             'sms_device_id' => $dto->deviceId,
             'sms_line_id' => $line?->id,

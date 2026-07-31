@@ -55,8 +55,8 @@ class ProcessIncomingSmsAction
             return $messageEntity;
         }
 
-        // 2. فحص ما إذا كانت الرسالة قادمة من مصدر معتمد ومفعل بالشركة
-        $matchingSource = $this->sourceRepo->findActiveByIdentifier($messageEntity->phoneNumber, $companyId);
+        // 2. فحص ما إذا كانت الرسالة قادمة من مصدر معتمد ومفعل بالشركة التابع لها الخط
+        $matchingSource = $this->sourceRepo->findActiveByIdentifier($messageEntity->phoneNumber, $messageEntity->companyId);
 
         // 3. إن كان هناك مصدر معتمد ومفعل: تمرير الرسالة إلى نقطة التوسع المعمارية
         if ($matchingSource) {
@@ -68,10 +68,10 @@ class ProcessIncomingSmsAction
             ]);
             $this->messageParser->parse($messageEntity);
         } else {
-            \Illuminate\Support\Facades\Log::warning("⛔ [HWNixCash SMS Pipeline] Step 3/5: SKIPPED PARSING! Sender identifier '{$messageEntity->phoneNumber}' is NOT registered as an active Message Source for Company ID {$companyId}. Please add '{$messageEntity->phoneNumber}' to Message Sources (مصادر الرسائل المعتمدة).", [
+            \Illuminate\Support\Facades\Log::warning("⛔ [HWNixCash SMS Pipeline] Step 3/5: SKIPPED PARSING! Sender identifier '{$messageEntity->phoneNumber}' is NOT registered as an active Message Source for Company ID {$messageEntity->companyId}. Please add '{$messageEntity->phoneNumber}' to Message Sources (مصادر الرسائل المعتمدة).", [
                 'message_id' => $messageEntity->id,
                 'sender_phone' => $messageEntity->phoneNumber,
-                'company_id' => $companyId,
+                'company_id' => $messageEntity->companyId,
             ]);
         }
 
