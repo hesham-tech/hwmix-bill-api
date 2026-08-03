@@ -8,6 +8,7 @@ use Modules\HwnixCash\Domain\Entities\SmsMessage;
 use Modules\HwnixCash\Domain\Enums\SmsMessageStatus;
 use Modules\HwnixCash\DTOs\IncomingSmsData;
 use Modules\HwnixCash\DTOs\OutgoingSmsData;
+use Modules\HwnixCash\Models\HwnixCashDevice;
 use Modules\HwnixCash\Models\HwnixCashLine;
 use Modules\HwnixCash\Models\HwnixCashMessage;
 

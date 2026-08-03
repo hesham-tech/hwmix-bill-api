@@ -169,7 +169,7 @@ class User extends Authenticatable
      */
     public function scopeWithDefaultCashBox($query, $companyId = null)
     {
-        $companyId = $companyId ?? Auth::user()->active_company_id ?? null;
+        $companyId = $companyId ?? app(\App\Services\CurrentCompanyResolver::class)->resolve() ?? null;
 
         return $query->with([
             'cashBoxes' => function ($q) use ($companyId) {
@@ -229,7 +229,7 @@ class User extends Authenticatable
      */
     public function activeCompanyUser(): HasOne
     {
-        $activeCompanyId = $this->active_company_id ?? null;
+        $activeCompanyId = app(\App\Services\CurrentCompanyResolver::class)->resolve();
 
         return $this->hasOne(CompanyUser::class, 'user_id')
             ->where('company_id', $activeCompanyId);
@@ -261,7 +261,7 @@ class User extends Authenticatable
      */
     public function getCashBoxesForCompany($companyId = null)
     {
-        $companyId = $companyId ?? $this->active_company_id ?? Auth::user()->active_company_id ?? null;
+        $companyId = $companyId ?? app(\App\Services\CurrentCompanyResolver::class)->resolve() ?? null;
 
         if (!$companyId) {
             return collect();
@@ -420,7 +420,7 @@ class User extends Authenticatable
     public function getDescendantUserIds(): array
     {
         // يتطلب استيراد CompanyUser
-        $companyId = Auth::user()->active_company_id ?? null;
+        $companyId = app(\App\Services\CurrentCompanyResolver::class)->resolve() ?? null;
 
         if (is_null($companyId)) {
             return [];
@@ -620,25 +620,23 @@ class User extends Authenticatable
     public static function bootFilterableByCompany()
     {
         static::addGlobalScope('company_filter', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            $companyId = app(\App\Services\CurrentCompanyResolver::class)->resolve();
             $user = Auth::user();
 
-            if ($user) {
-                $activeCompanyId = $user->active_company_id;
-                if ($activeCompanyId) {
-                    $builder->where(function ($query) use ($activeCompanyId) {
-                        // 1. المستخدم ينتمي مباشرة لهذه الشركة
-                        $query->where('users.active_company_id', $activeCompanyId)
-                            // 2. أو المستخدم مرتبط بهذه الشركة عبر الجدول الوسيط
-                            ->orWhereExists(function ($subQuery) use ($activeCompanyId) {
-                                $subQuery->select(\DB::raw(1))
-                                    ->from('company_user')
-                                    ->whereColumn('company_user.user_id', 'users.id')
-                                    ->where('company_user.company_id', $activeCompanyId);
-                            });
-                    });
-                } elseif (!$user->hasPermissionTo(perm_key('admin.super'))) {
-                    $builder->whereRaw('1 = 0');
-                }
+            if ($companyId) {
+                $builder->where(function ($query) use ($companyId) {
+                    // 1. المستخدم ينتمي مباشرة لهذه الشركة
+                    $query->where('users.active_company_id', $companyId)
+                        // 2. أو المستخدم مرتبط بهذه الشركة عبر الجدول الوسيط
+                        ->orWhereExists(function ($subQuery) use ($companyId) {
+                            $subQuery->select(\DB::raw(1))
+                                ->from('company_user')
+                                ->whereColumn('company_user.user_id', 'users.id')
+                                ->where('company_user.company_id', $companyId);
+                        });
+                });
+            } elseif ($user && !$user->hasPermissionTo(perm_key('admin.super'))) {
+                $builder->whereRaw('1 = 0');
             }
         });
     }
@@ -658,7 +656,7 @@ class User extends Authenticatable
      */
     public function getActiveBranchBalanceAttribute(): float
     {
-        $activeCompanyId = Auth::user()->active_company_id ?? $this->active_company_id ?? null;
+        $activeCompanyId = app(\App\Services\CurrentCompanyResolver::class)->resolve() ?? $this->active_company_id ?? null;
         if (!$activeCompanyId) {
             return 0.0;
         }
@@ -706,7 +704,7 @@ class User extends Authenticatable
      */
     public function getTotalBranchesBalanceAttribute(): ?float
     {
-        $activeCompanyId = Auth::user()->active_company_id ?? $this->active_company_id;
+        $activeCompanyId = app(\App\Services\CurrentCompanyResolver::class)->resolve() ?? $this->active_company_id;
 
         if (!$activeCompanyId) {
             return 0.0;
@@ -735,7 +733,7 @@ class User extends Authenticatable
      */
     public function getCompanyIdAttribute()
     {
-        return $this->active_company_id;
+        return app(\App\Services\CurrentCompanyResolver::class)->resolve() ?? $this->active_company_id;
     }
 
     /**

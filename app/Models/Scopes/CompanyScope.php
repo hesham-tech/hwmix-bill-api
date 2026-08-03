@@ -17,14 +17,10 @@ class CompanyScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        $authUser = Auth::user();
+        $companyId = app(\App\Services\CurrentCompanyResolver::class)->resolve();
 
-        if ($authUser) {
-            $companyId = $authUser->active_company_id;
-
-            if ($companyId !== null) {
-                $builder->where('company_id', $companyId);
-            }
+        if ($companyId !== null) {
+            $builder->where('company_id', $companyId);
         }
     }
 }

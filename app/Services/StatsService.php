@@ -49,12 +49,12 @@ class StatsService
             ['company_id' => $item->company_id]
         );
 
-        $stats->increment('total_sold_quantity', $item->quantity);
-        $stats->increment('total_revenue', $item->total);
+        $stats->increment('total_sold_quantity', (float) $item->quantity);
+        $stats->increment('total_revenue', (float) $item->total);
 
         // Profit calculation: (Price - Cost) * Quantity
-        $profit = ($item->unit_price - $item->cost_price) * $item->quantity;
-        $stats->increment('total_profit', $profit);
+        $profit = ((float) $item->unit_price - (float) $item->cost_price) * (float) $item->quantity;
+        $stats->increment('total_profit', (float) $profit);
 
         $stats->increment('total_orders_count');
         $stats->update(['last_sold_at' => now()]);
@@ -70,7 +70,7 @@ class StatsService
             ['company_id' => $invoice->company_id]
         );
 
-        $stats->increment('total_spent', $invoice->total_amount);
+        $stats->increment('total_spent', (float) $invoice->total_amount);
         $stats->increment('orders_count');
         $stats->update(['last_order_at' => now()]);
 
@@ -90,8 +90,8 @@ class StatsService
             ['company_id' => $item->company_id]
         );
 
-        $stats->increment('total_quantity', $item->quantity);
-        $stats->increment('total_spent', $item->total);
+        $stats->increment('total_quantity', (float) $item->quantity);
+        $stats->increment('total_spent', (float) $item->total);
         $stats->increment('purchase_count');
         $stats->update(['last_purchased_at' => now()]);
     }
