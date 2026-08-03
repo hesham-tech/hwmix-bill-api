@@ -6,6 +6,7 @@ use Modules\HwnixCash\Http\Controllers\Api\v1\AgentAuthController;
 use Modules\HwnixCash\Http\Controllers\Api\v1\AgentDeviceController;
 use Modules\HwnixCash\Http\Controllers\Api\v1\AgentCommandController;
 use Modules\HwnixCash\Http\Controllers\Api\v1\AgentSmsController;
+use Modules\HwnixCash\Http\Controllers\Api\v1\AgentOnboardingController;
 
 Route::prefix('v1/agent')->group(function () {
     // مسارات عامة للمصادقة والتحديثات
@@ -17,6 +18,16 @@ Route::prefix('v1/agent')->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('auth/refresh', [AgentAuthController::class, 'refresh']);
         Route::get('companies', [AgentAuthController::class, 'getCompanies']);
+        
+        // مسارات التهيئة (Onboarding) تعتمد على سياق الشركة
+        Route::middleware([\Modules\HwnixCash\Http\Middleware\MobileCompanyContextMiddleware::class])->group(function () {
+            Route::get('wallets', [AgentOnboardingController::class, 'getWallets']);
+            Route::post('validate-onboarding', [AgentOnboardingController::class, 'validateField']);
+            
+            Route::middleware([\Modules\HwnixCash\Http\Middleware\IdempotencyMiddleware::class])->group(function () {
+                Route::post('onboarding/complete', [AgentOnboardingController::class, 'completeOnboarding']);
+            });
+        });
         
         // الأجهزة وإعداداتها (تطبيق الـ Idempotency)
         Route::middleware([\Modules\HwnixCash\Http\Middleware\IdempotencyMiddleware::class])->group(function () {
