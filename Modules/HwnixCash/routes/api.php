@@ -16,6 +16,7 @@ Route::prefix('v1/agent')->group(function () {
     // مسارات تتطلب مصادقة الـ Token
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('auth/refresh', [AgentAuthController::class, 'refresh']);
+        Route::get('companies', [AgentAuthController::class, 'getCompanies']);
         
         // الأجهزة وإعداداتها (تطبيق الـ Idempotency)
         Route::middleware([\Modules\HwnixCash\Http\Middleware\IdempotencyMiddleware::class])->group(function () {

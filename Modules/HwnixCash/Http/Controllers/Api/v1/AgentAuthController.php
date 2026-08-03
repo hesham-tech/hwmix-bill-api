@@ -123,4 +123,64 @@ class AgentAuthController extends Controller
             'token' => $newToken,
         ], 'تم تجديد الرمز بنجاح.');
     }
+
+    /**
+     * جلب الشركات التي يمتلك المستخدم (Agent) صلاحية الوصول إليها.
+     * يستخدم هذا المسار في شاشة اختيار الشركة داخل تطبيق الأندرويد.
+     */
+    public function getCompanies(): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        if (!$user) {
+            return api_error('غير مصرح بالعملية.', [], 401);
+        }
+
+        // جلب الشركات المرتبطة بالمستخدم بشكل مباشر بناءً على الصلاحيات
+        // سنستخدم نفس منطق الـ CompanyController لضمان توافق الصلاحيات.
+        $query = Company::withoutGlobalScopes()->whereNull('deleted_at');
+
+        if (
+            $user->hasPermissionTo(perm_key('admin.super')) ||
+            $user->hasPermissionTo(perm_key('companies.view_all'))
+        ) {
+            // وصول مطلق — يرى جميع الشركات
+        } elseif ($user->hasPermissionTo(perm_key('companies.view_children'))) {
+            // يرى ما أنشأه هو أو مرؤوسيه، بالإضافة إلى الشركات المرتبطة به عبر جدول company_user
+            $descendantIds = method_exists($user, 'getDescendantUserIds')
+                ? $user->getDescendantUserIds()
+                : [];
+            
+            $query->where(function($q) use ($user, $descendantIds) {
+                $q->whereIn('created_by', array_merge([$user->id], $descendantIds))
+                  ->orWhereHas('users', function($q2) use ($user) {
+                      $q2->where('users.id', $user->id);
+                  });
+            });
+        } else {
+            // وصول عادي — يرى الشركات المرتبطة به فقط عبر جدول company_user أو التي أنشأها
+            $query->where(function($q) use ($user) {
+                $q->where('created_by', $user->id)
+                  ->orWhereHas('users', function($q2) use ($user) {
+                      $q2->where('users.id', $user->id);
+                  });
+            });
+        }
+
+        $companies = $query->orderBy('name', 'asc')->get();
+
+        $formattedCompanies = $companies->map(function ($company) {
+            return [
+                'id' => $company->id,
+                'name' => $company->name,
+                // يمكن إضافة logo إذا كانت مدعومة في الأندرويد
+                // 'logo' => $company->logo_url 
+            ];
+        });
+
+        return api_success(
+            $formattedCompanies,
+            $companies->isEmpty() ? 'لم يتم العثور على شركات.' : 'تم جلب الشركات بنجاح.'
+        );
+    }
 }
