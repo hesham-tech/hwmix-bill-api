@@ -13,6 +13,7 @@ use Modules\HwnixCash\Services\Parsers\Factories\ParsedSmsResultFactory;
 use Modules\HwnixCash\Services\Parsers\Providers\VfCash\Patterns\VfBalancePattern;
 use Modules\HwnixCash\Services\Parsers\Providers\VfCash\Patterns\VfPromotionPattern;
 use Modules\HwnixCash\Services\Parsers\Providers\VfCash\Patterns\VfReceivePattern;
+use Modules\HwnixCash\Services\Parsers\Providers\VfCash\Patterns\VfRechargePattern;
 use Modules\HwnixCash\Services\Parsers\Providers\VfCash\Patterns\VfSendPattern;
 use Modules\HwnixCash\Services\Parsers\Providers\VfCash\Patterns\VfWrongPinPattern;
 
@@ -27,6 +28,7 @@ final class VfCashParser implements ProviderParserInterface
             $patterns = [
                 new VfReceivePattern(),
                 new VfSendPattern(),
+                new VfRechargePattern(),
                 new VfBalancePattern(),
                 new VfWrongPinPattern(),
                 new VfPromotionPattern(),

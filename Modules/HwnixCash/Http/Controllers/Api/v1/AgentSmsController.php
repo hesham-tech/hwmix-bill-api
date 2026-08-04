@@ -91,6 +91,43 @@ class AgentSmsController extends Controller
             'processed_count' => $processedCount,
         ]);
 
-        return api_success(null, 'تمت مزامنة دفعة الرسائل بنجاح.');
+        $device = \Modules\HwnixCash\Models\HwnixCashDevice::find($deviceId);
+        $linesSummary = [];
+        if ($device) {
+            $lines = \Modules\HwnixCash\Models\HwnixCashLine::where('device_android_id', $device->android_id)
+                ->with('financialAccounts')
+                ->get();
+
+            foreach ($lines as $line) {
+                $dailyDepositLimit = 0.0;
+                $dailyDepositUsed = 0.0;
+                $monthlyDepositLimit = 0.0;
+                $monthlyDepositUsed = 0.0;
+
+                foreach ($line->financialAccounts as $acc) {
+                    $dailyDepositLimit += (float) ($acc->daily_deposit_limit ?? 0);
+                    $dailyDepositUsed += (float) $acc->daily_deposit_used;
+                    $monthlyDepositLimit += (float) ($acc->monthly_deposit_limit ?? 0);
+                    $monthlyDepositUsed += (float) $acc->monthly_deposit_used;
+                }
+
+                $linesSummary[] = [
+                    'slot_index' => (int) $line->slot_index,
+                    'phone_number' => $line->phone_number,
+                    'carrier' => $line->carrier,
+                    'total_balance' => (float) $line->total_balance,
+                    'total_actual_balance' => (float) $line->total_actual_balance,
+                    'daily_deposit_limit' => $dailyDepositLimit,
+                    'daily_deposit_used' => $dailyDepositUsed,
+                    'monthly_deposit_limit' => $monthlyDepositLimit,
+                    'monthly_deposit_used' => $monthlyDepositUsed,
+                ];
+            }
+        }
+
+        return api_success([
+            'processed_count' => $processedCount,
+            'lines_summary' => $linesSummary,
+        ], 'تمت مزامنة دفعة الرسائل بنجاح.');
     }
 }

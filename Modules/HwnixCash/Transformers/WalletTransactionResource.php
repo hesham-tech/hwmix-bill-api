@@ -33,8 +33,8 @@ class WalletTransactionResource extends JsonResource
             'provider' => $this->provider,
             'status' => $this->status,
             'source' => $this->source,
-            'parsed_by' => $this->when($canViewParsedBy, $this->parsed_by ?? $this->metadata['parsed_by'] ?? $this->metadata['normalized_dto']['executionMetadata']['ai_model'] ?? null),
-            'parser_stage' => $this->when($canViewParserStage, $this->parser_stage ?? $this->metadata['parser_stage'] ?? (isset($this->metadata['normalized_dto']) ? 'ai' : null)),
+            'parsed_by' => $this->when($canViewParsedBy, $this->resolveParsedBy()),
+            'parser_stage' => $this->when($canViewParserStage, $this->resolveParserStage()),
             'amount' => (float) $this->amount,
             'fee' => (float) $this->fee,
             'balance_after' => $this->balance_after !== null ? (float) $this->balance_after : null,
@@ -66,5 +66,48 @@ class WalletTransactionResource extends JsonResource
             ] : null,
             'created_at' => $this->created_at?->toIso8601String(),
         ];
+    }
+
+    protected function resolveParsedBy(): ?string
+    {
+        if ($this->parsed_by !== null) {
+            return $this->parsed_by;
+        }
+        if (is_array($this->metadata) && isset($this->metadata['parsed_by'])) {
+            return $this->metadata['parsed_by'];
+        }
+        if (is_array($this->metadata) && isset($this->metadata['normalized_dto']['executionMetadata']['ai_model'])) {
+            return $this->metadata['normalized_dto']['executionMetadata']['ai_model'];
+        }
+        if ($this->operation_type === 'reconciliation' || isset($this->metadata['reconciled_by'])) {
+            return 'SystemReconciliation';
+        }
+        if ($this->source === 'system') {
+            return 'SystemAction';
+        }
+        if ($this->source === 'manual') {
+            return 'ManualEntry';
+        }
+        return null;
+    }
+
+    protected function resolveParserStage(): ?string
+    {
+        if ($this->parser_stage !== null) {
+            return $this->parser_stage;
+        }
+        if (is_array($this->metadata) && isset($this->metadata['parser_stage'])) {
+            return $this->metadata['parser_stage'];
+        }
+        if (is_array($this->metadata) && isset($this->metadata['normalized_dto'])) {
+            return 'ai';
+        }
+        if ($this->source === 'system' || $this->operation_type === 'reconciliation') {
+            return 'system';
+        }
+        if ($this->source === 'manual') {
+            return 'manual';
+        }
+        return null;
     }
 }

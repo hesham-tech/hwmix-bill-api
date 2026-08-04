@@ -210,6 +210,8 @@ class FinancialAccountController extends Controller
                 'provider' => $account->messageSource?->provider?->value ?? WalletProvider::OTHER->value,
                 'status' => 'success',
                 'source' => 'system',
+                'parsed_by' => 'SystemReconciliation',
+                'parser_stage' => 'system',
                 'amount' => abs($difference),
                 'fee' => 0.00,
                 'balance_after' => $newBalance,
