@@ -127,6 +127,15 @@ if (!function_exists('api_success')) {
 if (!function_exists('api_error')) {
     function api_error(string $message = 'حدث خطأ ما', array $errors = [], int $code = 400): JsonResponse
     {
+        Log::warning("[HWNixCash API Error Response] Code: {$code} - Message: {$message}", [
+            'url' => request()?->fullUrl(),
+            'method' => request()?->method(),
+            'ip' => request()?->ip(),
+            'user_id' => auth()->id(),
+            'payload' => request()?->except(['password', 'password_confirmation']),
+            'errors' => $errors,
+        ]);
+
         return response()->json([
             'status' => false,
             'message' => $message,
@@ -143,6 +152,15 @@ if (!function_exists('api_exception')) {
     {
         // التعامل مع أنواع محددة من الأخطاء
         if ($e instanceof ValidationException) {
+            Log::warning("[HWNixCash API Validation Failed]", [
+                'url' => request()?->fullUrl(),
+                'method' => request()?->method(),
+                'ip' => request()?->ip(),
+                'user_id' => auth()->id(),
+                'payload' => request()?->except(['password', 'password_confirmation']),
+                'errors' => $e->errors(),
+            ]);
+
             return response()->json([
                 'status'  => false,
                 'message' => 'خطأ في التحقق من البيانات',

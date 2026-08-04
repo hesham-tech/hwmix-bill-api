@@ -17,7 +17,7 @@ class LoginAgentRequest extends FormRequest
         return [
             'login' => 'required|string',
             'password' => 'required|string',
-            'device_uuid' => 'required|string',
+            'device_uuid' => 'nullable|string',
         ];
     }
 }

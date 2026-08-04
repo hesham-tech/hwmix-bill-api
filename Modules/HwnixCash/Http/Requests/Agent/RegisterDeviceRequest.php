@@ -16,12 +16,12 @@ class RegisterDeviceRequest extends FormRequest
     {
         return [
             'android_id' => 'required|string',
-            'uuid' => 'required|string',
-            'device_name' => 'required|string',
-            'brand' => 'required|string',
-            'model' => 'required|string',
-            'android_version' => 'required|string',
-            'app_version' => 'required|string',
+            'uuid' => 'nullable|string',
+            'device_name' => 'nullable|string',
+            'brand' => 'nullable|string',
+            'model' => 'nullable|string',
+            'android_version' => 'nullable|string',
+            'app_version' => 'nullable|string',
             'capabilities' => 'nullable|array',
         ];
     }

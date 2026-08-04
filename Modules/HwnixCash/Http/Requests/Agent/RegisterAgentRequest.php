@@ -21,7 +21,7 @@ class RegisterAgentRequest extends FormRequest
             'phone' => 'required|string|unique:users,phone',
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'device_uuid' => 'required|string',
+            'device_uuid' => 'nullable|string',
         ];
     }
 }
