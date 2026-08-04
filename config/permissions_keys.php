@@ -835,6 +835,8 @@ return [
         'edit_all' => ['key' => 'hwnix_cash_wallet_transactions.edit_all', 'label' => 'تعديل جميع معاملات المحافظ'],
         'edit_self' => ['key' => 'hwnix_cash_wallet_transactions.edit_self', 'label' => 'تعديل معاملات المحافظ الخاصة'],
         'delete_all' => ['key' => 'hwnix_cash_wallet_transactions.delete_all', 'label' => 'حذف معاملة محفظة إلكترونية'],
+        'view_parsed_by' => ['key' => 'hwnix_cash_wallet_transactions.view_parsed_by', 'label' => 'عرض منفذ تحليل المعاملة'],
+        'view_parser_stage' => ['key' => 'hwnix_cash_wallet_transactions.view_parser_stage', 'label' => 'عرض مرحلة تحليل المعاملة'],
     ],
     // => HWNIX CASH MESSAGE SOURCES
     'hwnix_cash_message_sources' => [

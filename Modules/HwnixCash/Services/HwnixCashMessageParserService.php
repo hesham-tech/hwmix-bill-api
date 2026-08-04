@@ -150,6 +150,7 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                             'pattern_id' => $parsedResult->metadata->patternId,
                             'parser_stage' => $parsedResult->metadata->parserStage,
                             'provider_key' => $parsedResult->metadata->providerKey,
+                            'parsed_by' => $parsedResult->metadata->parsedBy ?? $parsedResult->parserName,
                         ],
                         rawAiOutput: json_encode($parsedResult)
                     );

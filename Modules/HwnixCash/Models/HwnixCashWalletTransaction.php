@@ -38,6 +38,18 @@ class HwnixCashWalletTransaction extends Model
         'metadata' => 'array',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function ($transaction) {
+            if ($transaction->isDirty('parsed_by')) {
+                $transaction->parsed_by = $transaction->getOriginal('parsed_by');
+            }
+            if ($transaction->isDirty('parser_stage')) {
+                $transaction->parser_stage = $transaction->getOriginal('parser_stage');
+            }
+        });
+    }
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);

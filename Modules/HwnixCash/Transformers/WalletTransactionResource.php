@@ -10,6 +10,20 @@ class WalletTransactionResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $user = $request->user();
+
+        $canViewParsedBy = $user && (
+            $user->hasPermissionTo(perm_key('admin.super')) ||
+            $user->hasPermissionTo(perm_key('admin.company')) ||
+            $user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_parsed_by'))
+        );
+
+        $canViewParserStage = $user && (
+            $user->hasPermissionTo(perm_key('admin.super')) ||
+            $user->hasPermissionTo(perm_key('admin.company')) ||
+            $user->hasPermissionTo(perm_key('hwnix_cash_wallet_transactions.view_parser_stage'))
+        );
+
         return [
             'id' => $this->id,
             'financial_account_id' => $this->financial_account_id,
@@ -19,6 +33,8 @@ class WalletTransactionResource extends JsonResource
             'provider' => $this->provider,
             'status' => $this->status,
             'source' => $this->source,
+            'parsed_by' => $this->when($canViewParsedBy, $this->parsed_by),
+            'parser_stage' => $this->when($canViewParserStage, $this->parser_stage),
             'amount' => (float) $this->amount,
             'fee' => (float) $this->fee,
             'balance_after' => $this->balance_after !== null ? (float) $this->balance_after : null,

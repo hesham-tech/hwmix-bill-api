@@ -99,7 +99,8 @@ final class VfCashParser implements ProviderParserInterface
                     parserVersion: $this->getVersion(),
                     providerKey: $this->getProviderKey(),
                     senderAlias: $context->normalizedSender,
-                    stage: 'rule_based'
+                    stage: 'rule_based',
+                    parsedBy: class_basename($pattern)
                 );
             }
         }

@@ -56,6 +56,9 @@ class WalletTransactionCreator
 
         $provider = $account->messageSource?->provider?->value ?? $this->detectProvider($account->line?->carrier, $message->phoneNumber);
 
+        $parsedBy = $dto->executionMetadata['parsed_by'] ?? ($dto->executionMetadata['pattern_id'] ?: 'UnknownParser');
+        $parserStage = $dto->executionMetadata['parser_stage'] ?? 'rule_based';
+
         $walletTx = HwnixCashWalletTransaction::create([
             'company_id' => $message->companyId,
             'created_by' => $message->createdBy,
@@ -65,6 +68,8 @@ class WalletTransactionCreator
             'provider' => $provider,
             'status' => WalletTransactionStatus::SUCCESS->value,
             'source' => WalletTransactionSource::SMS->value,
+            'parsed_by' => $parsedBy,
+            'parser_stage' => $parserStage,
             'amount' => $amount,
             'fee' => 0.00,
             'balance_after' => $newBookBalance,
@@ -76,6 +81,8 @@ class WalletTransactionCreator
             'raw_sms' => $message->messageBody,
             'metadata' => [
                 'message_id' => $message->id,
+                'parsed_by' => $parsedBy,
+                'parser_stage' => $parserStage,
                 'normalized_dto' => (array) $dto,
             ],
         ]);

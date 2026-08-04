@@ -10,6 +10,7 @@ final class ParserMetadata
         public readonly string $parserStage,
         public readonly string $providerKey,
         public readonly string $senderAlias,
-        public readonly array $extra = []
+        public readonly array $extra = [],
+        public readonly ?string $parsedBy = null
     ) {}
 }

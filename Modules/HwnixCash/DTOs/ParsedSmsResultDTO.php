@@ -53,7 +53,8 @@ final class ParsedSmsResultDTO
                 patternId: '',
                 parserStage: 'rule_based',
                 providerKey: $providerKey,
-                senderAlias: ''
+                senderAlias: '',
+                parsedBy: $parserName
             )
         );
     }
@@ -81,7 +82,8 @@ final class ParsedSmsResultDTO
                 patternId: '',
                 parserStage: 'pipeline_fallback',
                 providerKey: 'unknown',
-                senderAlias: ''
+                senderAlias: '',
+                parsedBy: 'PipelineMessageParser'
             )
         );
     }

@@ -16,14 +16,16 @@ final class ParsedSmsResultFactory
         string $parserVersion,
         string $providerKey,
         string $senderAlias,
-        string $stage = 'rule_based'
+        string $stage = 'rule_based',
+        ?string $parsedBy = null
     ): ParsedSmsResultDTO {
         $metadata = new ParserMetadata(
             patternId: $match->patternId,
             parserStage: $stage,
             providerKey: $providerKey,
             senderAlias: $senderAlias,
-            extra: $match->extractedMetadata
+            extra: $match->extractedMetadata,
+            parsedBy: $parsedBy ?? $parserName
         );
 
         return new ParsedSmsResultDTO(
