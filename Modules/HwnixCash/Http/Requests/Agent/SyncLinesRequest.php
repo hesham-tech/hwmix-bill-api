@@ -19,7 +19,7 @@ class SyncLinesRequest extends FormRequest
             'device_name' => 'nullable|string',
             'sims' => 'required|array',
             'sims.*.slot_index' => 'required|integer',
-            'sims.*.subscription_id' => 'required|string',
+            'sims.*.subscription_id' => 'nullable|string',
             'sims.*.carrier' => 'nullable|string',
             'sims.*.mcc' => 'nullable|string',
             'sims.*.mnc' => 'nullable|string',
