@@ -45,9 +45,14 @@ final class VfBalancePattern implements MessagePatternInterface
         $availableBalance = null;
         $balanceFound = false;
 
-        if (preg_match('/رصيد(?:ك| حسابك)\s+الحالي\s*:?\s*([\d\.]+)/u', $body, $matches)) {
+        if (preg_match('/رصيد(?:ك| حسابك)?(?:\s+فى\s+فودافون\s+كاش)?\s*الحالي\s*:?\s*([\d\.]+)/u', $body, $matches)) {
             $availableBalance = (float) $matches[1];
             $balanceFound = true;
+        }
+
+        $transactionId = null;
+        if (preg_match('/(?:كود|رقم)\s*العملية\s*:?\s*(\d+)/u', $body, $matches)) {
+            $transactionId = $matches[1];
         }
 
         return new PatternMatchResult(
@@ -62,7 +67,7 @@ final class VfBalancePattern implements MessagePatternInterface
             currency: 'EGP',
             targetPhone: null,
             targetName: null,
-            transactionId: null,
+            transactionId: $transactionId,
             datetime: $context->originalContext->receivedAt,
             balanceFound: $balanceFound,
             availableBalance: $availableBalance,

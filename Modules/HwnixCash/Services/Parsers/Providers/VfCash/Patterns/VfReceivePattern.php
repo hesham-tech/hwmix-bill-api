@@ -54,16 +54,22 @@ final class VfReceivePattern implements MessagePatternInterface
             $targetPhone = $matches[1];
         }
 
-        // 3. استخراج كود أو رقم العملية (مثال: كود العملية: 105234919 أو رقم العملية 105234919)
+        // 3. استخراج اسم مرسل المبلغ إن وجد (مثال: المسجل بإسم Mohamed M Sweilam)
+        $targetName = null;
+        if (preg_match('/المسجل\s+(?:بإسم|باسم)\s+([^\.\n\r]+?)(?=\s+على|\s+رقم|\s+كود|\s*$)/u', $body, $matches)) {
+            $targetName = trim($matches[1]);
+        }
+
+        // 4. استخراج كود أو رقم العملية (مثال: كود العملية: 105234919 أو رقم العملية 105234919)
         $transactionId = null;
-        if (preg_match('/(?:كود|رقم)\s+العملية\s*:?\s*(\d+)/u', $body, $matches)) {
+        if (preg_match('/(?:كود|رقم)\s*العملية\s*:?\s*(\d+)/u', $body, $matches)) {
             $transactionId = $matches[1];
         }
 
-        // 4. استخراج الرصيد الحالي إن وجد (مثال: رصيد حسابك الحالي 1950.50 ج.م)
+        // 5. استخراج الرصيد الحالي إن وجد (مثال: رصيد حسابك الحالي 1950.50 ج.م أو رصيدك الحالي: 3459.83)
         $availableBalance = null;
         $balanceFound = false;
-        if (preg_match('/رصيد(?:ك| حسابك)\s+الحالي\s*:?\s*([\d\.]+)/u', $body, $matches)) {
+        if (preg_match('/رصيد(?:ك| حسابك)?(?:\s+فى\s+فودافون\s+كاش)?\s*الحالي\s*:?\s*([\d\.]+)/u', $body, $matches)) {
             $availableBalance = (float) $matches[1];
             $balanceFound = true;
         }
@@ -79,7 +85,7 @@ final class VfReceivePattern implements MessagePatternInterface
             amount: $amount,
             currency: 'EGP',
             targetPhone: $targetPhone,
-            targetName: null,
+            targetName: $targetName,
             transactionId: $transactionId,
             datetime: $context->originalContext->receivedAt,
             balanceFound: $balanceFound,

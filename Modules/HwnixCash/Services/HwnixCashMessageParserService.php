@@ -39,7 +39,7 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                 body: $message->messageBody,
                 sender: $message->phoneNumber,
                 rawMessage: $message,
-                receivedAt: $message->receivedAt ? (string) $message->receivedAt : now()->toIso8601String(),
+                receivedAt: $message->sentAt ? (string) $message->sentAt : now()->toIso8601String(),
                 providerKeyHint: null,
                 deviceId: $message->smsDeviceId
             );
