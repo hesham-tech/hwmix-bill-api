@@ -146,7 +146,7 @@ class UserControllerTest extends TestCase
         $response = $this->putJson("/api/v1/change-company/{$user->id}", $payload);
 
         $response->assertStatus(200);
-        $this->assertEquals($newCompany->id, $user->fresh()->company_id);
+        $this->assertEquals($newCompany->id, $user->fresh()->active_company_id);
     }
 
     public function test_can_batch_delete_users()

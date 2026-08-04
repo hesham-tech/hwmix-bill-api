@@ -45,6 +45,33 @@ class HwnixCashServiceProvider extends ModuleServiceProvider
         $this->app->bind(\Modules\HwnixCash\Domain\Contracts\StructuredMessageAnalyzerInterface::class, \Modules\HwnixCash\Services\Analysis\AiFinancialSmsAnalyzer::class);
         $this->app->bind(\Modules\HwnixCash\Domain\Contracts\FinancialSmsAnalyzerInterface::class, \Modules\HwnixCash\Services\Analysis\AiFinancialSmsAnalyzer::class);
 
+        // 🚀 تسجيل محرك تحليل الرسائل المعماري v5 Lite (ParserRegistry, Pipeline, Provider Parsers)
+        $this->app->singleton(\Modules\HwnixCash\Services\Parsers\ParserRegistry::class, function ($app) {
+            $registry = new \Modules\HwnixCash\Services\Parsers\ParserRegistry([
+                new \Modules\HwnixCash\Services\Parsers\Providers\VfCash\VfCashParser(),
+            ]);
+            $registry->warmUp();
+            return $registry;
+        });
+
+        $this->app->singleton(\Modules\HwnixCash\Contracts\Parsers\MessageParserInterface::class, function ($app) {
+            $registry = $app->make(\Modules\HwnixCash\Services\Parsers\ParserRegistry::class);
+            $normalizer = new \Modules\HwnixCash\Services\Parsers\Normalizers\TextNormalizer();
+
+            $analysisEngine = $app->make(\Modules\AiPlatform\Contracts\Engines\AnalysisEngineInterface::class);
+
+            $stages = [
+                new \Modules\HwnixCash\Services\Parsers\Stages\RuleBasedParserStage(),
+                new \Modules\HwnixCash\Services\Parsers\Stages\AiParserStage($analysisEngine),
+            ];
+
+            return new \Modules\HwnixCash\Services\Parsers\PipelineMessageParser(
+                registry: $registry,
+                normalizer: $normalizer,
+                stages: $stages
+            );
+        });
+
         // ربط المنسق الرئيسي HwnixCashMessageParserService
         $this->app->bind(HwnixCashMessageParserInterface::class, HwnixCashMessageParserService::class);
 
