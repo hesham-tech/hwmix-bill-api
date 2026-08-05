@@ -3,6 +3,7 @@
 
 namespace Modules\HwnixCash\Services\Parsers\Providers\VfCash\Patterns;
 
+use Illuminate\Support\Facades\Log;
 use Modules\HwnixCash\Contracts\Parsers\MessagePatternInterface;
 use Modules\HwnixCash\Domain\Enums\MessageCategory;
 use Modules\HwnixCash\Domain\Enums\ParserResultStatus;
