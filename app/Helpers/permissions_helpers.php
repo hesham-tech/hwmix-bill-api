@@ -20,9 +20,19 @@ if (!function_exists('perm_key')) {
             return $permissions[$entity][$action]['key'];
         }
 
-        // إذا لم يتم العثور على المفتاح، يمكنك اختيار رمي استثناء أو إرجاع المفتاح الأصلي
-        // إرجاع المفتاح الأصلي يمكن أن يكون مفيدًا للتصحيح أو إذا كنت تتوقع مفاتيح غير معرفة أحيانًا.
-        // ولكن يفضل رمي استثناء لتجنب الأخطاء الصامتة.
-        throw new \InvalidArgumentException("Permission key '{$permissionKey}' not found in permissions registry.");
+        // التفتيش داخل مصفوفات المجموعات المجمعة بحثاً عن المفتاح المباشر
+        if (is_array($permissions)) {
+            foreach ($permissions as $group) {
+                if (is_array($group)) {
+                    foreach ($group as $item) {
+                        if (is_array($item) && isset($item['key']) && $item['key'] === $permissionKey) {
+                            return $item['key'];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $permissionKey;
     }
 }
