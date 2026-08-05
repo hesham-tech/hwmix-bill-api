@@ -53,6 +53,7 @@ final class AiParserStage implements ParserStageInterface
                 transactionType: $analysisResult->isTransaction ? 'financial' : 'none',
                 isTransaction: $analysisResult->isTransaction,
                 amount: $analysisResult->amount,
+                fee: (float) ($analysisResult->fee ?? 0.0),
                 currency: $analysisResult->currency ?? 'EGP',
                 targetPhone: $analysisResult->targetPhone,
                 targetName: $analysisResult->targetName,

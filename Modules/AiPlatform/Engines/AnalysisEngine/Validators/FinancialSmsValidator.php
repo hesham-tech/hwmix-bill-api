@@ -76,7 +76,10 @@ class FinancialSmsValidator
 
         $confidenceScore = max(0, min(100, $confidenceScore));
 
-        // 5. تطهير الحقول النصية
+        // 5. تطهير الحقول النصية والمالية
+        $rawFee = $jsonArray['transaction']['fee'] ?? null;
+        $fee = (is_numeric($rawFee) && (float) $rawFee >= 0) ? round((float) $rawFee, 2) : 0.0;
+
         $currency = !empty($jsonArray['transaction']['currency']) ? strtoupper(trim((string) $jsonArray['transaction']['currency'])) : 'EGP';
         $targetPhone = !empty($jsonArray['transaction']['phone']) ? trim((string) $jsonArray['transaction']['phone']) : null;
         $targetName = !empty($jsonArray['transaction']['name']) ? trim((string) $jsonArray['transaction']['name']) : null;
@@ -88,6 +91,7 @@ class FinancialSmsValidator
             'is_valid' => empty($validationErrors) && $messageType !== 'unknown',
             'is_transaction' => $isTx && $amount !== null && $amount > 0,
             'amount' => $amount,
+            'fee' => $fee,
             'currency' => $currency,
             'target_phone' => $targetPhone,
             'target_name' => $targetName,

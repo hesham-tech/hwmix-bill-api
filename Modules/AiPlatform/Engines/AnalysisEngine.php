@@ -129,6 +129,7 @@ class AnalysisEngine implements AnalysisEngineInterface
             isValid: $normalized['is_valid'] ?? false,
             isTransaction: $normalized['is_transaction'] ?? false,
             amount: $normalized['amount'] ?? null,
+            fee: $normalized['fee'] ?? 0.0,
             currency: $normalized['currency'] ?? 'EGP',
             targetPhone: $normalized['target_phone'] ?? null,
             targetName: $normalized['target_name'] ?? null,

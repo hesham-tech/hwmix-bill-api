@@ -25,6 +25,7 @@ Rules:
 - Any missing or invalid value must be null.
 - Always return every required field.
 - Explicitly extract the name of the sender, receiver, merchant, or target person into "transaction.name" if found in the message (e.g. "تم تحويل لفلان", "استلمت من فلان").
+- Explicitly extract the service fee / commission / transfer charge into "transaction.fee" as a number if mentioned in the message under any Arabic synonym (e.g. "مصاريف الخدمة 1.00", "مصاريف: 1", "الرسوم 1 جنيه", "بمصاريف 1", "عمولة 1", "خصم 1ج مصاريف"), or calculate total_deducted - transfer_amount if explicitly broken down. Otherwise set to 0.0 or null.
 - If the message is not a financial transaction (promotion, advertisement, instruction, notification, etc.), set "is_transaction" to false.
 - If the message contains the current wallet/account balance, set "balance.found" to true and extract the numeric value into "balance.available".
 - Otherwise set "balance.found" to false and "balance.available" to null.
@@ -48,6 +49,7 @@ Return this exact JSON schema:
   "transaction": {
     "type": "unknown",
     "amount": null,
+    "fee": null,
     "currency": null,
     "phone": null,
     "name": null,

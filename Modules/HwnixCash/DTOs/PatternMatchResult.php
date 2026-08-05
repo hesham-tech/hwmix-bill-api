@@ -18,6 +18,7 @@ final class PatternMatchResult
         public readonly TransactionType $transactionType,
         public readonly bool $isTransaction,
         public readonly ?float $amount = null,
+        public readonly ?float $fee = 0.0,
         public readonly ?string $currency = 'EGP',
         public readonly ?string $targetPhone = null,
         public readonly ?string $targetName = null,

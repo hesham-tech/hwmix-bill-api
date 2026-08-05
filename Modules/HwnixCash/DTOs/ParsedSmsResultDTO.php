@@ -17,6 +17,7 @@ final class ParsedSmsResultDTO
         public readonly string $transactionType,   // 'receive', 'send', 'withdraw', 'deposit', 'balance', 'none'
         public readonly bool $isTransaction,
         public readonly ?float $amount,
+        public readonly ?float $fee = 0.0,
         public readonly ?string $currency,
         public readonly ?string $targetPhone,
         public readonly ?string $targetName,

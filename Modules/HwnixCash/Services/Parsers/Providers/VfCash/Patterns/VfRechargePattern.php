@@ -53,13 +53,13 @@ final class VfRechargePattern implements MessagePatternInterface
             $deductedAmount = (float) $matches[1];
         }
 
-        // المبلغ النهائي المؤثر على رصيد المحفظة هو المبلغ المخصوم إن وجد، وإلا قيمة الشحن
-        $amount = $deductedAmount ?? $rechargeAmount;
-
-        // حساب مصاريف الخدمة/الضريبة إن وجدت
-        $serviceFee = null;
+        // حساب مصاريف الخدمة/الضريبة إن وجدت والمبلغ الأساسي
+        $serviceFee = 0.0;
         if ($deductedAmount !== null && $rechargeAmount !== null && $deductedAmount >= $rechargeAmount) {
             $serviceFee = round($deductedAmount - $rechargeAmount, 2);
+            $amount = $rechargeAmount;
+        } else {
+            $amount = $deductedAmount ?? $rechargeAmount;
         }
 
         // 3. استخراج رقم المستلم الشحن (مثال: إلى رقم 01020906804)
@@ -91,6 +91,7 @@ final class VfRechargePattern implements MessagePatternInterface
             transactionType: TransactionType::RECHARGE,
             isTransaction: true,
             amount: $amount,
+            fee: $serviceFee,
             currency: 'EGP',
             targetPhone: $targetPhone,
             targetName: 'شحن رصيد كارت/موبايل',

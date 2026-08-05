@@ -25,6 +25,8 @@ class WalletTransactionCreator
             return null;
         }
 
+        $fee = max(0, (float) ($dto->fee ?? 0.0));
+
         $currentBookBalance = (float) $account->balance;
         $newBookBalance = $currentBookBalance;
 
@@ -33,13 +35,13 @@ class WalletTransactionCreator
             case 'wallet_receive':
             case 'wallet_deposit':
             case 'wallet_refund':
-                $newBookBalance = $currentBookBalance + $amount;
+                $newBookBalance = $currentBookBalance + ($amount - $fee);
                 break;
 
             case 'wallet_send':
             case 'wallet_withdraw':
             case 'wallet_payment':
-                $newBookBalance = $currentBookBalance - $amount;
+                $newBookBalance = $currentBookBalance - ($amount + $fee);
                 break;
 
             default:
@@ -71,7 +73,7 @@ class WalletTransactionCreator
             'parsed_by' => $parsedBy,
             'parser_stage' => $parserStage,
             'amount' => $amount,
-            'fee' => 0.00,
+            'fee' => $fee,
             'balance_after' => $newBookBalance,
             'currency' => $currency,
             'operation_number' => $dto->transactionId,

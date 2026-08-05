@@ -9,6 +9,7 @@ final class NormalizedFinancialSmsDTO
         public readonly string $messageType,        // wallet_receive, wallet_send, wallet_withdraw, wallet_deposit, wallet_payment, wallet_refund, balance_inquiry, promotion, unknown
         public readonly bool $isTransaction,
         public readonly ?float $amount,
+        public readonly ?float $fee = 0.0,
         public readonly ?string $currency,
         public readonly ?string $targetPhone,
         public readonly ?string $targetName,

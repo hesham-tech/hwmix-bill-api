@@ -28,6 +28,8 @@ final class ParsedSmsResultFactory
             parsedBy: $parsedBy ?? $parserName
         );
 
+        $fee = (float) ($match->fee ?? ($match->extractedMetadata['service_fee'] ?? 0.0));
+
         return new ParsedSmsResultDTO(
             status: $match->status,
             isSupported: true,
@@ -38,6 +40,7 @@ final class ParsedSmsResultFactory
             transactionType: $match->transactionType->value,
             isTransaction: $match->isTransaction,
             amount: $match->amount,
+            fee: $fee,
             currency: $match->currency ?? 'EGP',
             targetPhone: $match->targetPhone,
             targetName: $match->targetName,

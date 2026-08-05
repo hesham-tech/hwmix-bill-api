@@ -87,11 +87,13 @@ class SmsResultValidator
         $targetName = !empty($jsonArray['transaction']['name']) ? trim((string) $jsonArray['transaction']['name']) : null;
         $transactionId = !empty($jsonArray['transaction']['transaction_id']) ? trim((string) $jsonArray['transaction']['transaction_id']) : null;
         $datetime = !empty($jsonArray['transaction']['datetime']) ? trim((string) $jsonArray['transaction']['datetime']) : null;
+        $fee = isset($jsonArray['transaction']['fee']) ? (float) $jsonArray['transaction']['fee'] : (isset($jsonArray['transaction']['service_fee']) ? (float) $jsonArray['transaction']['service_fee'] : 0.0);
 
         return new NormalizedFinancialSmsDTO(
             messageType: $messageType,
             isTransaction: $isTx && $amount !== null && $amount > 0,
             amount: $amount,
+            fee: $fee,
             currency: $currency,
             targetPhone: $targetPhone,
             targetName: $targetName,

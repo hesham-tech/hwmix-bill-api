@@ -151,11 +151,28 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                         return;
                     }
 
+                    // تحديد نوع الرسالة المالية بدقة للـ TransactionCreator
+                    $normalizedMessageType = match ($parsedResult->messageType) {
+                        'wallet_receive', 'wallet_send', 'wallet_withdraw', 'wallet_deposit', 'wallet_payment', 'wallet_refund' => $parsedResult->messageType,
+                        default => match ($parsedResult->transactionType) {
+                            'receive' => 'wallet_receive',
+                            'send', 'transfer' => 'wallet_send',
+                            'withdraw' => 'wallet_withdraw',
+                            'deposit' => 'wallet_deposit',
+                            'payment', 'recharge', 'bill' => 'wallet_payment',
+                            'refund' => 'wallet_refund',
+                            default => 'wallet_send',
+                        }
+                    };
+
+                    $fee = (float) ($parsedResult->fee ?? ($parsedResult->metadata->extra['service_fee'] ?? $parsedResult->metadata->extra['fee'] ?? 0.0));
+
                     // تحويل ParsedSmsResultDTO إلى NormalizedFinancialSmsDTO لـ TransactionCreator
                     $normalizedDto = new \Modules\HwnixCash\DTOs\NormalizedFinancialSmsDTO(
-                        messageType: $parsedResult->messageType,
+                        messageType: $normalizedMessageType,
                         isTransaction: $parsedResult->isTransaction,
                         amount: $parsedResult->amount,
+                        fee: $fee,
                         currency: $parsedResult->currency,
                         targetPhone: $parsedResult->targetPhone,
                         targetName: $parsedResult->targetName,
@@ -174,13 +191,15 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                             'provider_key' => $parsedResult->metadata->providerKey,
                             'parsed_by' => $parsedResult->metadata->parsedBy ?? $parsedResult->parserName,
                         ],
-                        rawAiOutput: json_encode($parsedResult)
+                        rawAiOutput: (array) json_decode(json_encode($parsedResult), true)
                     );
 
                     // إنشاء المعاملة المالية وتعديل الرصيد الحسابي بدفتر الأستاذ على كيان الحساب المالي
                     $walletTx = $this->transactionCreator->createTransaction($financialAccount, $message, $normalizedDto);
                     if ($walletTx) {
                         Log::info("💰 [HWNixCash SMS Pipeline] SUCCESS! Created Wallet Transaction ID {$walletTx->id} for FinancialAccount ID {$financialAccount->id}. Amount: {$walletTx->amount} EGP");
+                    } else {
+                        Log::warning("⚠️ [HWNixCash SMS Pipeline] WalletTransactionCreator returned null for Message ID {$message->id} with messageType: {$normalizedMessageType}");
                     }
                 } else {
                     Log::info("ℹ️ [HWNixCash SMS Pipeline] Message ID {$message->id} is non-transactional (Amount: {$parsedResult->amount}, IsTx: {$parsedResult->isTransaction}). Processing complete without financial mutation.");
