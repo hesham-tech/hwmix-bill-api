@@ -26,56 +26,83 @@ class EloquentHwnixCashDeviceRepository implements HwnixCashDeviceRepositoryInte
 
     public function createOrUpdate(DeviceData $dto, int $companyId, int $userId): Device
     {
-        // 1. البحث بدون فلاتر الشركة لمعالجة نقل/إعادة استخدام الأجهزة المستعملة بين الحسابات
-        $device = HwnixCashDevice::withoutGlobalScopes()
-            ->withTrashed()
-            ->where('android_id', $dto->androidId)
-            ->first();
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($dto, $companyId, $userId) {
+            // 1. البحث بدون فلاتر الشركة لمعالجة نقل/إعادة استخدام الأجهزة المستعملة بين الحسابات
+            $device = HwnixCashDevice::withoutGlobalScopes()
+                ->withTrashed()
+                ->where('android_id', $dto->androidId)
+                ->first();
 
-        // ── نقل الملكية التلقائي ──────────────────────────────────────────────────
-        // إذا كان الجهاز موجوداً لكن تحت شركة مختلفة (بيع الجهاز لشركة أخرى)
-        // نقوم بفصل الجهاز عن الخطوط القديمة (بدلاً من حذفها) للحفاظ على السجلات
-        if ($device && $device->company_id !== $companyId) {
-            \Log::info("[DeviceTransfer] Device {$dto->androidId} transferring from company {$device->company_id} to company {$companyId}");
+            // ── منطق نقل الملكية التلقائي بين الشركات ─────────────────────────────────────
+            if ($device && (int)$device->company_id !== (int)$companyId) {
+                $oldCompanyId = $device->company_id;
+                $mode = $dto->transferMode ?? 'with_lines';
 
-            // فصل جميع خطوط الشركة القديمة المرتبطة بهذا الجهاز لتصبح مجمّدة
-            \Modules\HwnixCash\Models\HwnixCashLine::where('device_android_id', $dto->androidId)->update(['device_android_id' => null]);
-        }
-        // ─────────────────────────────────────────────────────────────────────────
+                \Log::info("[DeviceTransfer] Device {$dto->androidId} transferring from company {$oldCompanyId} to company {$companyId} (Mode: {$mode})");
 
-        $attributes = [
-            'company_id' => $companyId,
-            'created_by' => $userId,
-            'uuid' => $dto->uuid,
-            'device_name' => $dto->deviceName,
-            'brand' => $dto->brand,
-            'model' => $dto->model,
-            'android_version' => $dto->androidVersion,
-            'app_version' => $dto->appVersion,
-            'fcm_token' => $dto->fcmToken,
-            'capabilities' => $dto->capabilities,
-            'status' => 'active',
-            'last_seen_at' => now(),
-        ];
+                if ($mode === 'device_only') {
+                    // المسار 1: بيع/نقل الهاتف فقط بدون الخطوط
+                    // فصل خطوط الشركة القديمة بتفريغ device_android_id وتحديث حالتها إلى unlinked
+                    $linesToDetach = \Modules\HwnixCash\Models\HwnixCashLine::where('device_android_id', $dto->androidId)->get();
+                    foreach ($linesToDetach as $line) {
+                        $line->update([
+                            'device_android_id' => null,
+                            'status' => 'unlinked',
+                        ]);
+                    }
+                } else {
+                    // المسار 2: نقل الهاتف ومعه خطوط الاتصال والمحافظ المالية التابعة لها (with_lines)
+                    $linesToTransfer = \Modules\HwnixCash\Models\HwnixCashLine::where('device_android_id', $dto->androidId)->get();
+                    foreach ($linesToTransfer as $line) {
+                        $line->update([
+                            'company_id' => $companyId,
+                            'created_by' => $userId,
+                        ]);
 
-        if ($device) {
-            if ($device->trashed()) {
-                $device->restore();
+                        // نقل الحسابات والمحافظ المالية التابعة للخطوط لضمان اتساق company_id
+                        \Modules\HwnixCash\Models\HwnixCashFinancialAccount::where('line_id', $line->id)->update([
+                            'company_id' => $companyId,
+                            'created_by' => $userId,
+                        ]);
+                    }
+                }
             }
-            $device->update($attributes);
-        } else {
-            $attributes['android_id'] = $dto->androidId;
-            $device = HwnixCashDevice::create($attributes);
-        }
+            // ─────────────────────────────────────────────────────────────────────────
 
-        $device->settings()->firstOrCreate([], [
-            'heartbeat_interval_seconds' => 60,
-            'max_retry_attempts' => 3,
-            'is_active' => true,
-            'version' => 1,
-        ]);
+            $attributes = [
+                'company_id' => $companyId,
+                'created_by' => $userId,
+                'uuid' => $dto->uuid,
+                'device_name' => $dto->deviceName,
+                'brand' => $dto->brand,
+                'model' => $dto->model,
+                'android_version' => $dto->androidVersion,
+                'app_version' => $dto->appVersion,
+                'fcm_token' => $dto->fcmToken,
+                'capabilities' => $dto->capabilities,
+                'status' => 'active',
+                'last_seen_at' => now(),
+            ];
 
-        return $this->toEntity($device);
+            if ($device) {
+                if ($device->trashed()) {
+                    $device->restore();
+                }
+                $device->update($attributes);
+            } else {
+                $attributes['android_id'] = $dto->androidId;
+                $device = HwnixCashDevice::create($attributes);
+            }
+
+            $device->settings()->firstOrCreate([], [
+                'heartbeat_interval_seconds' => 60,
+                'max_retry_attempts' => 3,
+                'is_active' => true,
+                'version' => 1,
+            ]);
+
+            return $this->toEntity($device);
+        });
     }
 
     public function getCompanyDevices(int $companyId): Collection

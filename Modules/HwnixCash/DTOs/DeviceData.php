@@ -14,7 +14,8 @@ class DeviceData
         public ?string $androidVersion = null,
         public ?string $appVersion = null,
         public ?string $fcmToken = null,
-        public ?array $capabilities = null
+        public ?array $capabilities = null,
+        public string $transferMode = 'with_lines'
     ) {}
 
     public static function fromArray(array $data): self
@@ -28,7 +29,8 @@ class DeviceData
             androidVersion: $data['android_version'] ?? null,
             appVersion: $data['app_version'] ?? null,
             fcmToken: $data['fcm_token'] ?? null,
-            capabilities: $data['capabilities'] ?? null
+            capabilities: $data['capabilities'] ?? null,
+            transferMode: $data['transfer_mode'] ?? 'with_lines'
         );
     }
 }

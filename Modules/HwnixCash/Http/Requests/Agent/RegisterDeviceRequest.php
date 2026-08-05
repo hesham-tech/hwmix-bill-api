@@ -23,6 +23,7 @@ class RegisterDeviceRequest extends FormRequest
             'android_version' => 'nullable|string',
             'app_version' => 'nullable|string',
             'capabilities' => 'nullable|array',
+            'transfer_mode' => 'nullable|string|in:with_lines,device_only',
         ];
     }
 }
