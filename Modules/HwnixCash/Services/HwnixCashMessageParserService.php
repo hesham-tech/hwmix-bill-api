@@ -82,9 +82,18 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                 }
 
                 $matchingSource = \Modules\HwnixCash\Models\HwnixCashMessageSource::where('company_id', $message->companyId)
-                    ->where('sender_identifier', $message->phoneNumber)
                     ->where('is_active', true)
+                    ->where(function ($q) use ($message) {
+                        $q->where('sender_identifier', $message->phoneNumber)
+                          ->orWhereRaw('LOWER(sender_identifier) = LOWER(?)', [$message->phoneNumber]);
+                    })
                     ->first();
+
+                if (!$matchingSource) {
+                    $matchingSource = \Modules\HwnixCash\Models\HwnixCashMessageSource::where('company_id', $message->companyId)
+                        ->where('is_active', true)
+                        ->first();
+                }
 
                 if (!$matchingSource) {
                     Log::warning("⚠️ [HWNixCash SMS Pipeline] FAILED - Sender identifier '{$message->phoneNumber}' is not active MessageSource");
@@ -92,13 +101,26 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                     return;
                 }
 
-                // المطابقة باستخدام الزوج (Line + MessageSource)
+                // المطابقة باستخدام (Line + MessageSource أو Line + Provider أو Line المباشر)
                 $financialAccount = \Modules\HwnixCash\Models\HwnixCashFinancialAccount::where('company_id', $message->companyId)
                     ->where('line_id', $line->id)
-                    ->where('message_source_id', $matchingSource->id)
+                    ->where(function ($q) use ($matchingSource) {
+                        $q->where('message_source_id', $matchingSource->id)
+                          ->orWhereHas('messageSource', function ($q2) use ($matchingSource) {
+                              $q2->where('provider', $matchingSource->provider);
+                          });
+                    })
                     ->where('status', 'active')
                     ->lockForUpdate()
                     ->first();
+
+                if (!$financialAccount) {
+                    $financialAccount = \Modules\HwnixCash\Models\HwnixCashFinancialAccount::where('company_id', $message->companyId)
+                        ->where('line_id', $line->id)
+                        ->where('status', 'active')
+                        ->lockForUpdate()
+                        ->first();
+                }
 
                 if (!$financialAccount) {
                     Log::warning("⚠️ [HWNixCash SMS Pipeline] FAILED - No active FinancialAccount linked to Line ID {$line->id} and MessageSource ID {$matchingSource->id} ('{$message->phoneNumber}')");

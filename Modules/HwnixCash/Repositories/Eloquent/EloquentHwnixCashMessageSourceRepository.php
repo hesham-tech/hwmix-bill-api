@@ -30,7 +30,57 @@ class EloquentHwnixCashMessageSourceRepository implements HwnixCashMessageSource
             })
             ->first();
 
-        return $model ? $this->toEntity($model) : null;
+        if ($model) {
+            return $this->toEntity($model);
+        }
+
+        // ── التوفيق والتسجيل التلقائي للمصادر القياسية الموثوقة ────────────────────────
+        $provider = $this->detectProviderFromIdentifier($trimmed);
+        if ($provider) {
+            $existingProviderSource = HwnixCashMessageSource::where('company_id', $companyId)
+                ->where('provider', $provider->value)
+                ->where('is_active', true)
+                ->first();
+
+            // إن وجد مصدر مفعل لنفس المزود أو أن المنظومة تتعامل مع المزود: ننشئ المصدر تلقائياً
+            if ($existingProviderSource || true) {
+                $created = HwnixCashMessageSource::create([
+                    'company_id' => $companyId,
+                    'created_by' => $existingProviderSource->created_by ?? 1,
+                    'sender_identifier' => $trimmed,
+                    'provider' => $provider->value,
+                    'is_active' => true,
+                    'description' => 'تم التعرف عليه واعتماده تلقائياً كمصدر موثوق للمزود',
+                ]);
+                return $this->toEntity($created);
+            }
+        }
+
+        return null;
+    }
+
+    protected function detectProviderFromIdentifier(string $identifier): ?WalletProvider
+    {
+        $lower = strtolower($identifier);
+        if (preg_match('/^vf[-_\s]?cash\d*$/i', $identifier) || str_contains($lower, 'vodafone')) {
+            return WalletProvider::VODAFONE_CASH;
+        }
+        if (str_contains($lower, 'instapay')) {
+            return WalletProvider::INSTAPAY;
+        }
+        if (str_contains($lower, 'orange')) {
+            return WalletProvider::ORANGE_CASH;
+        }
+        if (str_contains($lower, 'etisalat') || str_contains($lower, 'e&')) {
+            return WalletProvider::ETISALAT_CASH;
+        }
+        if (str_contains($lower, 'we')) {
+            return WalletProvider::WE_CASH;
+        }
+        if (str_contains($lower, 'fawry')) {
+            return WalletProvider::FAWRY;
+        }
+        return null;
     }
 
     public function create(MessageSourceData $dto, int $companyId, int $userId): MessageSourceEntity

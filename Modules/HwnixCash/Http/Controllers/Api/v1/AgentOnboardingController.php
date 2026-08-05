@@ -141,8 +141,12 @@ class AgentOnboardingController extends Controller
             );
 
             // 3. إنشاء مصدر الرسالة (Message Source)
+            $companyId = $user->active_company_id ?? $user->company_id;
             $messageSource = HwnixCashMessageSource::firstOrCreate(
-                ['sender_identifier' => $validated['sender']],
+                [
+                    'company_id' => $companyId,
+                    'sender_identifier' => trim($validated['sender']),
+                ],
                 [
                     'provider' => WalletProvider::OTHER,
                     'is_active' => true,
