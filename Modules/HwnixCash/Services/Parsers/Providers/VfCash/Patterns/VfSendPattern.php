@@ -112,6 +112,8 @@ final class VfSendPattern implements MessagePatternInterface
             $amount = round($totalDeducted - $serviceFee, 2);
         }
 
+        Log::info("🔍 [FEE_DIAGNOSTIC] [VfSendPattern] Body: '{$body}' | Extracted Amount: {$amount} | TotalDeducted: {$totalDeducted} | ServiceFee: {$serviceFee}");
+
         return new PatternMatchResult(
             isMatched: true,
             status: ParserResultStatus::SUCCESS,

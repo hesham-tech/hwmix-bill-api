@@ -166,6 +166,7 @@ class HwnixCashMessageParserService implements HwnixCashMessageParserInterface
                     };
 
                     $fee = (float) ($parsedResult->fee ?? ($parsedResult->metadata->extra['service_fee'] ?? $parsedResult->metadata->extra['fee'] ?? 0.0));
+                    Log::info("🔍 [FEE_DIAGNOSTIC] [HwnixCashMessageParserService] ParsedResult Amount: {$parsedResult->amount} | Fee: {$parsedResult->fee} | Extracted Fee: {$fee} | MsgType: {$normalizedMessageType}");
 
                     // تحويل ParsedSmsResultDTO إلى NormalizedFinancialSmsDTO لـ TransactionCreator
                     $normalizedDto = new \Modules\HwnixCash\DTOs\NormalizedFinancialSmsDTO(

@@ -49,6 +49,8 @@ class WalletTransactionCreator
                 return null;
         }
 
+        Log::info("🔍 [FEE_DIAGNOSTIC] [WalletTransactionCreator] Account ID: {$account->id} | MsgType: {$dto->messageType} | Amount: {$amount} | Fee: {$fee} | Total Deducted: " . ($amount + $fee) . " | Old Bal: {$currentBookBalance} | New Bal: {$newBookBalance}");
+
         $operationType = $this->mapToOperationType($dto->messageType);
 
         $currency = 'EGP';

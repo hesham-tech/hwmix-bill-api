@@ -43,6 +43,8 @@ final class AiParserStage implements ParserStageInterface
                 ? ParserResultStatus::UNKNOWN_PATTERN
                 : ParserResultStatus::SUCCESS;
 
+            \Illuminate\Support\Facades\Log::info("🔍 [FEE_DIAGNOSTIC] [AiParserStage] AI returned fee: " . ($analysisResult->fee ?? 'null') . " | Amount: {$analysisResult->amount}");
+
             return new ParsedSmsResultDTO(
                 status: $status,
                 isSupported: $status === ParserResultStatus::SUCCESS,

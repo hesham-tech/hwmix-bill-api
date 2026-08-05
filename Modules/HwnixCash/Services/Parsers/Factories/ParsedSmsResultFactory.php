@@ -29,6 +29,7 @@ final class ParsedSmsResultFactory
         );
 
         $fee = (float) ($match->fee ?? ($match->extractedMetadata['service_fee'] ?? 0.0));
+        \Illuminate\Support\Facades\Log::info("🔍 [FEE_DIAGNOSTIC] [ParsedSmsResultFactory] Fee extracted from match: {$fee} | Amount: {$match->amount}");
 
         return new ParsedSmsResultDTO(
             status: $match->status,
