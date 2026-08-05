@@ -9,6 +9,7 @@ enum TransactionType: string
     case SEND = 'send';
     case WITHDRAW = 'withdraw';
     case DEPOSIT = 'deposit';
+    case RECHARGE = 'recharge';
     case BALANCE = 'balance';
     case WRONG_PIN = 'wrong_pin';
     case NONE = 'none';

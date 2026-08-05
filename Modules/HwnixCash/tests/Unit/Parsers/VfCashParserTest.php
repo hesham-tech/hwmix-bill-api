@@ -207,10 +207,33 @@ class VfCashParserTest extends TestCase
         $this->assertEquals(ParserResultStatus::SUCCESS, $result->status);
         $this->assertTrue($result->isSupported);
         $this->assertTrue($result->isFinancial);
-        $this->assertEquals('send', $result->transactionType);
+        $this->assertEquals('recharge', $result->transactionType);
         $this->assertEquals(15.00, $result->amount);
         $this->assertEquals('01020906804', $result->targetPhone);
         $this->assertEquals(1553.50, $result->availableBalance);
+        $this->assertEquals('VF_RECHARGE_001', $result->metadata->patternId);
+        $this->assertEquals('VfRechargePattern', $result->metadata->parsedBy);
+    }
+
+    public function test_parses_recharge_002_from_corpus(): void
+    {
+        $corpusPath = base_path('Modules/HwnixCash/tests/Corpus/Vodafone/Recharge/002.txt');
+        $this->assertFileExists($corpusPath);
+
+        $body = file_get_contents($corpusPath);
+        $context = new IncomingSmsContext(
+            body: $body,
+            sender: 'VF-Cash'
+        );
+
+        $result = $this->pipeline->parse($context);
+
+        $this->assertEquals(ParserResultStatus::SUCCESS, $result->status);
+        $this->assertTrue($result->isSupported);
+        $this->assertTrue($result->isFinancial);
+        $this->assertEquals('recharge', $result->transactionType);
+        $this->assertEquals(10.00, $result->amount);
+        $this->assertEquals(1543.50, $result->availableBalance);
         $this->assertEquals('VF_RECHARGE_001', $result->metadata->patternId);
         $this->assertEquals('VfRechargePattern', $result->metadata->parsedBy);
     }

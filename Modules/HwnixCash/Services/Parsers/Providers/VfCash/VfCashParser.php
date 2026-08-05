@@ -83,6 +83,7 @@ final class VfCashParser implements ProviderParserInterface
         return [
             TransactionType::RECEIVE,
             TransactionType::SEND,
+            TransactionType::RECHARGE,
             TransactionType::BALANCE,
             TransactionType::WRONG_PIN,
             TransactionType::NONE,

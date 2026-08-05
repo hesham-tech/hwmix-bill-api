@@ -41,9 +41,9 @@ final class VfRechargePattern implements MessagePatternInterface
     {
         $body = $context->normalizedBody;
 
-        // 1. استخراج قيمة الشحن الأصلية (مثال: تم شحن رصيد ب 10.5 ج)
+        // 1. استخراج قيمة الشحن الأصلية (مثال: تم شحن رصيد ب 10.5 ج أو تم شحن رصيد موبايلك ب 7)
         $rechargeAmount = null;
-        if (preg_match('/(?:تم\s+)?شحن\s+رصيد\s+ب\s*([\d\.]+)\s*(?:ج|ج\.م|جنيه)?/u', $body, $matches)) {
+        if (preg_match('/(?:تم\s+)?شحن\s+رصيد(?:\s+[\p{L}]+)?\s+ب\s*([\d\.]+)\s*(?:ج|ج\.م|جنيه)?/u', $body, $matches)) {
             $rechargeAmount = (float) $matches[1];
         }
 
@@ -88,7 +88,7 @@ final class VfRechargePattern implements MessagePatternInterface
             isFinancial: true,
             patternId: $this->getPatternId(),
             messageCategory: MessageCategory::TRANSACTION,
-            transactionType: TransactionType::SEND,
+            transactionType: TransactionType::RECHARGE,
             isTransaction: true,
             amount: $amount,
             currency: 'EGP',
