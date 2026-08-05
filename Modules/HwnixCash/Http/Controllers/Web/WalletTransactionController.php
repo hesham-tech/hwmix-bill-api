@@ -68,6 +68,67 @@ class WalletTransactionController extends Controller
             $query->where('source', $request->source);
         }
 
+        // 1. البحث الشامل (Search Query)
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('operation_number', 'like', "%{$search}%")
+                    ->orWhere('target_phone', 'like', "%{$search}%")
+                    ->orWhere('target_name', 'like', "%{$search}%")
+                    ->orWhere('raw_sms', 'like', "%{$search}%")
+                    ->orWhere('bill_number', 'like', "%{$search}%")
+                    ->orWhere('id', 'like', "%{$search}%")
+                    ->orWhereHas('financialAccount', function ($faQuery) use ($search) {
+                        $faQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('sender_identifier', 'like', "%{$search}%")
+                            ->orWhereHas('line', function ($lineQuery) use ($search) {
+                                $lineQuery->where('phone_number', 'like', "%{$search}%")
+                                    ->orWhere('device_name', 'like', "%{$search}%");
+                            });
+                    });
+
+                if (is_numeric($search)) {
+                    $q->orWhere('amount', (float) $search);
+                }
+            });
+        }
+
+        // 2. تصفية التواريخ (Date Range Filter)
+        if ($request->filled('date_from')) {
+            $query->whereDate('operation_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('operation_at', '<=', $request->date_to);
+        }
+
+        // 3. تصفية منفذ التحليل (Parser Executor Filter)
+        if ($request->filled('parsed_by')) {
+            $parsedBy = $request->parsed_by;
+            if ($parsedBy === 'rule_based') {
+                $query->where(function ($q) {
+                    $q->where('metadata->parser_stage', 'rule_based')
+                        ->orWhere('metadata->parsed_by', 'like', '%Pattern%')
+                        ->orWhere('metadata->parsed_by', 'like', '%Vf%')
+                        ->orWhere('metadata->parsed_by', 'like', '%rule_based%');
+                });
+            } elseif ($parsedBy === 'ai') {
+                $query->where(function ($q) {
+                    $q->where('metadata->parser_stage', 'ai')
+                        ->orWhere('metadata->parsed_by', 'like', '%AI%')
+                        ->orWhereNotNull('metadata->normalized_dto->executionMetadata->ai_model');
+                });
+            } elseif ($parsedBy === 'system') {
+                $query->where(function ($q) {
+                    $q->where('operation_type', 'reconciliation')
+                        ->orWhere('source', 'system')
+                        ->orWhere('metadata->parsed_by', 'SystemReconciliation')
+                        ->orWhereNotNull('metadata->reconciled_by');
+                });
+            } elseif ($parsedBy === 'manual') {
+                $query->where('source', 'manual');
+            }
+        }
+
         $transactions = $query->orderBy('id', 'desc')
             ->paginate($request->per_page ?? 20);
 
