@@ -10,41 +10,47 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('phone')->unique();
-            $table->string('password');
-            $table->string('email')->unique()->nullable();
-            $table->string('username')->unique()->nullable();
-            $table->string('nickname')->nullable();
-            $table->string('full_name')->nullable();
-            $table->string('position')->nullable();
-            $table->string('settings')->nullable();
-            $table->timestamp('last_login_at')->nullable();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->decimal('balance', 10, 2)->default(0);
-            $table->string('status')->default('1')->nullable();
-            $table->string('customer_type')->default(value: 'retail')->comment('retail or wholesale'); //'wholesale' عميل جمبه //  'retail'عميل تجئة
-            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
-            $table->foreignId('company_id')->nullable()->constrained()->onDelete('set null');
-            $table->rememberToken();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('users')) {
+            Schema::create('users', function (Blueprint $table) {
+                $table->id();
+                $table->string('phone')->unique();
+                $table->string('password');
+                $table->string('email')->unique()->nullable();
+                $table->string('username')->unique()->nullable();
+                $table->string('nickname')->nullable();
+                $table->string('full_name')->nullable();
+                $table->string('position')->nullable();
+                $table->string('settings')->nullable();
+                $table->timestamp('last_login_at')->nullable();
+                $table->timestamp('email_verified_at')->nullable();
+                $table->decimal('balance', 10, 2)->default(0);
+                $table->string('status')->default('1')->nullable();
+                $table->string('customer_type')->default(value: 'retail')->comment('retail or wholesale'); //'wholesale' عميل جمبة //  'retail'عميل تجئة
+                $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+                $table->foreignId('company_id')->nullable()->constrained()->onDelete('set null');
+                $table->rememberToken();
+                $table->timestamps();
+            });
+        }
 
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
+        if (!Schema::hasTable('password_reset_tokens')) {
+            Schema::create('password_reset_tokens', function (Blueprint $table) {
+                $table->string('email')->primary();
+                $table->string('token');
+                $table->timestamp('created_at')->nullable();
+            });
+        }
 
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->longText('payload');
-            $table->integer('last_activity')->index();
-        });
+        if (!Schema::hasTable('sessions')) {
+            Schema::create('sessions', function (Blueprint $table) {
+                $table->string('id')->primary();
+                $table->foreignId('user_id')->nullable()->index();
+                $table->string('ip_address', 45)->nullable();
+                $table->text('user_agent')->nullable();
+                $table->longText('payload');
+                $table->integer('last_activity')->index();
+            });
+        }
     }
 
     /**
