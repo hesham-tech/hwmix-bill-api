@@ -56,6 +56,7 @@ Route::prefix('v1/agent')->group(function () {
 
 // مسارات لوحة التحكم بالويب (Vue UI API لكاش هونكس)
 Route::middleware(['auth:sanctum'])->prefix('v1/hwnix-cash')->group(function () {
+    Route::get('dashboard/stats', [\Modules\HwnixCash\Http\Controllers\Web\DashboardController::class, 'stats']);
     Route::get('devices', [\Modules\HwnixCash\Http\Controllers\Web\DeviceController::class, 'index']);
     Route::delete('devices/{id}', [\Modules\HwnixCash\Http\Controllers\Web\DeviceController::class, 'destroy']);
     

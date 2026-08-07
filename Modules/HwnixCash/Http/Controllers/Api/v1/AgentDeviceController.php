@@ -71,10 +71,12 @@ class AgentDeviceController extends Controller
     {
         $dto = HeartbeatData::fromArray($request->validated());
         $this->recordHeartbeatAction->execute($dto);
+        $linesSummary = $this->buildLinesSummary($dto->deviceId);
 
         return api_success([
             'settings_updated' => false,
             'update_policy' => 'none',
+            'lines_summary' => $linesSummary,
         ], 'تم تسجيل نبضة التشغيل بنجاح.');
     }
 
@@ -96,11 +98,54 @@ class AgentDeviceController extends Controller
     {
         $deviceId = $request->validated()['device_id'];
         $device = HwnixCashDevice::find($deviceId);
+        $linesSummary = $this->buildLinesSummary($deviceId);
 
         return api_success([
             'device' => $device ? new DeviceResource($device) : null,
             'heartbeat_interval' => 60,
+            'lines_summary' => $linesSummary,
         ], 'تم جلب إعدادات الجهاز بنجاح.');
+    }
+
+    protected function buildLinesSummary(int $deviceId): array
+    {
+        $lines = HwnixCashLine::where('device_id', $deviceId)->get();
+        if ($lines->isEmpty()) {
+            $device = HwnixCashDevice::find($deviceId);
+            if ($device) {
+                $lines = HwnixCashLine::where('device_android_id', $device->android_id)->get();
+            }
+        }
+
+        $linesSummary = [];
+        foreach ($lines as $line) {
+            $accounts = \Modules\HwnixCash\Models\HwnixCashFinancialAccount::where('line_id', $line->id)->get();
+            $dailyDepositLimit = 0.0;
+            $dailyDepositUsed = 0.0;
+            $monthlyDepositLimit = 0.0;
+            $monthlyDepositUsed = 0.0;
+
+            foreach ($accounts as $acc) {
+                $dailyDepositLimit += (float) ($acc->daily_deposit_limit ?? 0);
+                $dailyDepositUsed += (float) $acc->daily_deposit_used;
+                $monthlyDepositLimit += (float) ($acc->monthly_deposit_limit ?? 0);
+                $monthlyDepositUsed += (float) $acc->monthly_deposit_used;
+            }
+
+            $linesSummary[] = [
+                'slot_index' => (int) $line->slot_index,
+                'phone_number' => $line->phone_number,
+                'carrier' => $line->carrier,
+                'total_balance' => (float) $line->total_balance,
+                'total_actual_balance' => (float) $line->total_actual_balance,
+                'daily_deposit_limit' => $dailyDepositLimit,
+                'daily_deposit_used' => $dailyDepositUsed,
+                'monthly_deposit_limit' => $monthlyDepositLimit,
+                'monthly_deposit_used' => $monthlyDepositUsed,
+            ];
+        }
+
+        return $linesSummary;
     }
 
     public function log(LogRequest $request): JsonResponse
