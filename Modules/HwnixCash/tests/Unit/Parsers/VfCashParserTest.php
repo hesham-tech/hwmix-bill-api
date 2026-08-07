@@ -208,7 +208,8 @@ class VfCashParserTest extends TestCase
         $this->assertTrue($result->isSupported);
         $this->assertTrue($result->isFinancial);
         $this->assertEquals('recharge', $result->transactionType);
-        $this->assertEquals(15.00, $result->amount);
+        $this->assertEquals(10.50, $result->amount);
+        $this->assertEquals(4.50, $result->fee);
         $this->assertEquals('01020906804', $result->targetPhone);
         $this->assertEquals(1553.50, $result->availableBalance);
         $this->assertEquals('VF_RECHARGE_001', $result->metadata->patternId);
@@ -232,7 +233,8 @@ class VfCashParserTest extends TestCase
         $this->assertTrue($result->isSupported);
         $this->assertTrue($result->isFinancial);
         $this->assertEquals('recharge', $result->transactionType);
-        $this->assertEquals(10.00, $result->amount);
+        $this->assertEquals(7.00, $result->amount);
+        $this->assertEquals(3.00, $result->fee);
         $this->assertEquals(1543.50, $result->availableBalance);
         $this->assertEquals('VF_RECHARGE_001', $result->metadata->patternId);
         $this->assertEquals('VfRechargePattern', $result->metadata->parsedBy);

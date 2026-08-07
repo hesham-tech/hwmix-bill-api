@@ -210,6 +210,7 @@ class FinancialAccountRefactoringTest extends TestCase
             isValid: true,
             isTransaction: false,
             amount: null,
+            fee: 0.0,
             currency: 'EGP',
             targetPhone: null,
             targetName: null,

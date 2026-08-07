@@ -20,7 +20,7 @@ Route::prefix('v1/agent')->group(function () {
         Route::get('companies', [AgentAuthController::class, 'getCompanies']);
         
         // مسارات التهيئة (Onboarding) تعتمد على سياق الشركة
-        Route::middleware([\Modules\HwnixCash\Http\Middleware\MobileCompanyContextMiddleware::class])->group(function () {
+        Route::middleware([\App\Http\Middleware\MobileCompanyContextMiddleware::class])->group(function () {
             Route::get('wallets', [AgentOnboardingController::class, 'getWallets']);
             Route::post('validate-onboarding', [AgentOnboardingController::class, 'validateField']);
             
