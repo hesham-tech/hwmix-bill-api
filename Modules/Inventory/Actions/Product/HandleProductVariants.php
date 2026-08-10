@@ -54,9 +54,16 @@ class HandleProductVariants
     {
         $variant->attributes()->delete();
         foreach ($attributes as $attr) {
+            $attributeId = $attr['attribute_id'] ?? ($attr['id'] ?? null);
+            $attributeValueId = $attr['attribute_value_id'] ?? ($attr['value_id'] ?? null);
+
+            if (empty($attributeId) || empty($attributeValueId)) {
+                continue;
+            }
+
             $variant->attributes()->create([
-                'attribute_id' => $attr['attribute_id'] ?? ($attr['id'] ?? null),
-                'attribute_value_id' => $attr['attribute_value_id'] ?? ($attr['value_id'] ?? null),
+                'attribute_id' => $attributeId,
+                'attribute_value_id' => $attributeValueId,
                 'company_id' => $companyId,
                 'created_by' => $userId,
             ]);

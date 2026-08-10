@@ -1,5 +1,7 @@
 <?php
 
+// متحكم استلام واستعراض تقارير الأخطاء من الواجهات وتطبيق النظام.
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -77,45 +79,37 @@ class ErrorReportController extends Controller
             $userId = $user ? $user->id : null;
             $companyId = $user ? $user->active_company_id : null;
 
-            $report = ErrorReport::create([
-                'user_id' => $userId,
-                'company_id' => $companyId,
-                'type' => $validated['type'] ?? 'error',
-                'message' => $validated['message'],
-                'stack_trace' => $validated['stack_trace'] ?? null,
-                'url' => $validated['url'] ?? null,
-                'browser' => $validated['browser'] ?? null,
-                'os' => $validated['os'] ?? null,
-                'user_notes' => $validated['user_notes'] ?? null,
-                'payload' => $payload,
-                'severity' => $validated['severity'] ?? 'medium',
-                'screenshot_url' => $screenshotUrl,
-                'status' => 'pending',
-            ]);
-
-            // Append to physical error.log file in the backend root directory
+            // 1. Append to physical error.log file FIRST to ensure logs are captured even if DB table is missing
             try {
                 $logPath = base_path('error.log');
                 $timestamp = date('Y-m-d H:i:s');
                 $userName = $user ? ($user->name ?? $user->username ?? 'User') : 'Guest';
+                $reportType = $validated['type'] ?? 'error';
+                $reportMsg = $validated['message'] ?? 'No message';
+                $reportSeverity = $validated['severity'] ?? 'medium';
+                $reportBrowser = $validated['browser'] ?? 'Unknown';
+                $reportOs = $validated['os'] ?? 'Unknown';
+                $reportUrl = $validated['url'] ?? 'No URL';
+                $reportNotes = $validated['user_notes'] ?? null;
+                $reportTrace = $validated['stack_trace'] ?? null;
 
-                $logMessage = "[$timestamp] " . strtoupper($report->type) . ": " . $report->message . PHP_EOL;
-                $logMessage .= "Severity: " . strtoupper($report->severity) . " | Browser: " . ($report->browser ?? 'Unknown') . " | OS: " . ($report->os ?? 'Unknown') . PHP_EOL;
-                $logMessage .= "URL: " . ($report->url ?? 'No URL') . PHP_EOL;
-                $logMessage .= "User: " . ($report->user_id ?? 'Guest') . " ($userName)";
+                $logMessage = "[$timestamp] " . strtoupper($reportType) . ": " . $reportMsg . PHP_EOL;
+                $logMessage .= "Severity: " . strtoupper($reportSeverity) . " | Browser: " . $reportBrowser . " | OS: " . $reportOs . PHP_EOL;
+                $logMessage .= "URL: " . $reportUrl . PHP_EOL;
+                $logMessage .= "User: " . ($userId ?? 'Guest') . " ($userName)";
 
-                if ($report->user_notes) {
-                    $logMessage .= " | Notes: " . $report->user_notes;
+                if ($reportNotes) {
+                    $logMessage .= " | Notes: " . $reportNotes;
                 }
                 $logMessage .= PHP_EOL;
 
-                if (!empty($report->payload)) {
-                    $payloadStr = json_encode($report->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                if (!empty($payload)) {
+                    $payloadStr = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
                     $logMessage .= "Payload: " . $payloadStr . PHP_EOL;
                 }
 
-                if ($report->stack_trace) {
-                    $logMessage .= "Stack Trace Snippet: " . substr($report->stack_trace, 0, 500) . (strlen($report->stack_trace) > 500 ? '...' : '') . PHP_EOL;
+                if ($reportTrace) {
+                    $logMessage .= "Stack Trace Snippet: " . substr($reportTrace, 0, 500) . (strlen($reportTrace) > 500 ? '...' : '') . PHP_EOL;
                 }
 
                 $logMessage .= str_repeat('-', 50) . PHP_EOL;
@@ -125,9 +119,32 @@ class ErrorReportController extends Controller
                 Log::warning('Failed to append to browser error.log: ' . $e->getMessage());
             }
 
+            // 2. Attempt DB creation (gracefully handle if table or migration is missing on production)
+            $reportId = null;
+            try {
+                $report = ErrorReport::create([
+                    'user_id' => $userId,
+                    'company_id' => $companyId,
+                    'type' => $validated['type'] ?? 'error',
+                    'message' => $validated['message'],
+                    'stack_trace' => $validated['stack_trace'] ?? null,
+                    'url' => $validated['url'] ?? null,
+                    'browser' => $validated['browser'] ?? null,
+                    'os' => $validated['os'] ?? null,
+                    'user_notes' => $validated['user_notes'] ?? null,
+                    'payload' => $payload,
+                    'severity' => $validated['severity'] ?? 'medium',
+                    'screenshot_url' => $screenshotUrl,
+                    'status' => 'pending',
+                ]);
+                $reportId = $report->id;
+            } catch (\Exception $e) {
+                Log::warning('Could not save ErrorReport to database (migration pending?): ' . $e->getMessage());
+            }
+
             return response()->json([
                 'message' => 'تم استلام تقرير الخطأ بنجاح، شكراً لمساعدتنا في تحسين النظام.',
-                'report_id' => $report->id,
+                'report_id' => $reportId,
             ], 201);
         } catch (\Exception $e) {
             \Log::error('Error Report Store Failure: ' . $e->getMessage(), [
