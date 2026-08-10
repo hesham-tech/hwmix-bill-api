@@ -21,7 +21,10 @@ use Throwable;
  */
 class ProductController extends Controller
 {
-    protected array $indexRelations = ['category', 'brand', 'images', 'variants'];
+    protected array $indexRelations = [
+        'category', 'brand', 'images', 'variants',
+        'variants.attributes.attribute', 'variants.attributes.attributeValue'
+    ];
     protected array $showRelations = [
         'company', 'creator', 'category', 'brand', 'images', 
         'variants.images', 'variants.stocks.warehouse', 
