@@ -26,8 +26,44 @@ class TenantProvisioningController extends Controller
     public function register(ProvisionNewCompanyRequest $request, ProvisionNewCompanyAction $action): JsonResponse
     {
         try {
-            $result = $action->execute($request->validated());
+            $validated = $request->validated();
 
+            // فحص هل المستخدم موجود مسبقاً في النظام
+            $user = \App\Models\User::withoutGlobalScopes()
+                ->where(function ($query) use ($validated) {
+                    $query->where('phone', $validated['phone']);
+                    if (!empty($validated['email'])) {
+                        $query->orWhere('email', $validated['email']);
+                    }
+                })->first();
+
+            if ($user) {
+                // إذا كان موجوداً، نفحص تطابق كلمة المرور التي أدخلها
+                if (!\Illuminate\Support\Facades\Hash::check($validated['password'], $user->password)) {
+                    $maskedEmail = null;
+                    if (!empty($user->email)) {
+                        $parts = explode('@', $user->email);
+                        if (count($parts) === 2) {
+                            $name = $parts[0];
+                            $domain = $parts[1];
+                            $maskedName = substr($name, 0, 1) . str_repeat('*', max(1, strlen($name) - 1));
+                            $maskedEmail = $maskedName . '@' . $domain;
+                        }
+                    }
+
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'لديك حساب عميل علي إحدي الشركات علي السيستم.',
+                        'data' => [
+                            'user_exists' => true,
+                            'has_email' => !empty($user->email),
+                            'masked_email' => $maskedEmail
+                        ]
+                    ], 409);
+                }
+            }
+
+            $result = $action->execute($validated);
             $user = $result['user'];
             $token = $user->createToken('saas_token')->plainTextToken;
 

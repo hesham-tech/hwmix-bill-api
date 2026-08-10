@@ -61,12 +61,6 @@ class ProvisionNewCompanyRequest extends FormRequest
                 }
 
                 $user = $userByPhone ?? $userByEmail;
-
-                if ($user) {
-                    if (!\Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
-                        $validator->errors()->add('password', 'هذا الحساب مسجل مسبقاً. يرجى إدخال كلمة المرور الصحيحة لإنشاء شركة جديدة تحته.');
-                    }
-                }
             }
         });
     }
