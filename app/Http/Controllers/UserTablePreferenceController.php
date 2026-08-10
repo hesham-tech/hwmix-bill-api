@@ -130,6 +130,48 @@ class UserTablePreferenceController extends Controller
         'installment_payments.index' => [
             'customer', 'products', 'amount', 'date', 'method', 'notes'
         ],
+        'hwnix-cash-devices.index' => [
+            'device_name', 'specs', 'last_seen_at', 'is_active', 'status', 'android_id', 'brand', 'model', 'android_version', 'app_version', 'created_at', 'actions'
+        ],
+        'hwnix-cash-lines.index' => [
+            'phone_number', 'carrier_name', 'sim_slot', 'signal_strength', 'is_active', 'status', 'last_seen_at', 'created_at', 'actions'
+        ],
+        'hwnix-cash-financial-accounts.index' => [
+            'account_name', 'account_number', 'provider', 'balance', 'is_active', 'status', 'created_at', 'actions'
+        ],
+        'hwnix-cash-messages.index' => [
+            'sender_phone', 'message_body', 'direction', 'status', 'received_at', 'created_at', 'actions'
+        ],
+        'hwnix-cash-message-sources.index' => [
+            'name', 'source_type', 'pattern', 'is_active', 'created_at', 'actions'
+        ],
+        'hwnix-cash-wallet-transactions.index' => [
+            'transaction_ref', 'account_name', 'amount', 'type', 'status', 'created_at', 'actions'
+        ],
+        'ai_accounts.index' => [
+            'provider', 'name', 'api_key', 'status', 'balance', 'created_at', 'actions'
+        ],
+        'ai_agents.index' => [
+            'name', 'role', 'model', 'status', 'created_at', 'actions'
+        ],
+        'ai_models.index' => [
+            'model_id', 'provider', 'name', 'is_active', 'created_at', 'actions'
+        ],
+        'ai_prompts.index' => [
+            'title', 'category', 'is_active', 'created_at', 'actions'
+        ],
+        'cash_reconciliations.index' => [
+            'reconciliation_date', 'cash_box', 'expected_amount', 'actual_amount', 'difference', 'status', 'notes', 'created_at', 'actions'
+        ],
+        'owner_fund_transactions.index' => [
+            'type', 'owner_name', 'amount', 'notes', 'created_at', 'actions'
+        ],
+        'stakeholder_statement.index' => [
+            'date', 'type', 'description', 'debit', 'credit', 'balance', 'created_at', 'actions'
+        ],
+        'companies.trash' => [
+            'name', 'owner_name', 'phone', 'deleted_at', 'actions'
+        ],
     ];
 
     /**
@@ -184,14 +226,15 @@ class UserTablePreferenceController extends Controller
             $tableKey = $validated['table_key'];
             $prefs = $validated['preferences'];
             $isDashboardKey = str_starts_with($tableKey, 'dashboard.');
+            $isDynamicModuleKey = str_starts_with($tableKey, 'hwnix-cash-') || str_starts_with($tableKey, 'ai_') || str_starts_with($tableKey, 'cash_') || str_starts_with($tableKey, 'owner_fund_');
 
-            // 1. التحقق الأمني: هل الجدول معرف مسبقاً أو ينتمي للوحات التحكم؟
-            if (!isset(self::$allowedTables[$tableKey]) && !$isDashboardKey) {
+            // 1. التحقق الأمني: هل الجدول معرف مسبقاً أو ينتمي للوحات التحكم أو الموديولات التفاعلية؟
+            if (!isset(self::$allowedTables[$tableKey]) && !$isDashboardKey && !$isDynamicModuleKey) {
                 return api_error("مفتاح الجدول الممرر غير مصرح به: {$tableKey}", [], 422);
             }
 
             // 2. التحقق الأمني: هل الأعمدة الممرضة صالحة؟ (في حال الجداول العادية)
-            if (!$isDashboardKey && isset($prefs['columns']) && is_array($prefs['columns'])) {
+            if (!$isDashboardKey && !$isDynamicModuleKey && isset($prefs['columns']) && is_array($prefs['columns'])) {
                 $allowedColumns = self::$allowedTables[$tableKey] ?? [];
                 foreach ($prefs['columns'] as $col) {
                     if (!isset($col['key']) || !in_array($col['key'], $allowedColumns)) {

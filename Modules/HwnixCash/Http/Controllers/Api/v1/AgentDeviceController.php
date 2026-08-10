@@ -109,13 +109,8 @@ class AgentDeviceController extends Controller
 
     protected function buildLinesSummary(int $deviceId): array
     {
-        $lines = HwnixCashLine::where('device_id', $deviceId)->get();
-        if ($lines->isEmpty()) {
-            $device = HwnixCashDevice::find($deviceId);
-            if ($device) {
-                $lines = HwnixCashLine::where('device_android_id', $device->android_id)->get();
-            }
-        }
+        $device = HwnixCashDevice::find($deviceId);
+        $lines = $device ? HwnixCashLine::where('device_android_id', $device->android_id)->get() : collect();
 
         $linesSummary = [];
         foreach ($lines as $line) {

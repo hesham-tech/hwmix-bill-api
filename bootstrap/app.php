@@ -78,5 +78,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            return api_error('غير مصرح - يرجى تسجيل الدخول.', [], 401);
+        });
     })->create();

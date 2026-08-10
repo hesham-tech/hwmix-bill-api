@@ -24,7 +24,7 @@ class PolicyEngine implements PolicyEngineInterface
         foreach ($policies as $policy) {
             $decision = $this->checkRules($policy, $request, $userId, $userRoles);
             
-            if (!$decision->isAllowed) {
+            if (!$decision->isAllowed()) {
                 $this->logEvaluation($policy, $request, $userId, $decision);
                 return $decision;
             }

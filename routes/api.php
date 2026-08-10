@@ -50,7 +50,10 @@ use App\Http\Controllers\UserTablePreferenceController;
 Route::middleware('throttle:auth')->group(function () {
     Route::post('register/customer', [\App\Http\Controllers\Api\Auth\MarketplaceRegisterController::class, 'register']);
     Route::post('register/company', [\App\Http\Controllers\Api\Auth\TenantProvisioningController::class, 'register']);
-    Route::post('login', [AuthController::class, 'login']);
+    Route::post('login', [AuthController::class, 'login'])->name('login');
+    Route::get('login', function () {
+        return api_error('غير مصرح - يرجى تسجيل الدخول.', [], 401);
+    });
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
     Route::post('verify-otp', [AuthController::class, 'verifyOtp']);

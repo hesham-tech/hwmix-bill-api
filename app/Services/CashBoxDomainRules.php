@@ -19,7 +19,7 @@ class CashBoxDomainRules
     {
         $userId = $data['user_id'] ?? null;
         $companyId = $data['company_id'] ?? null;
-        $accessType = $data['access_type'] ?? 'personal';
+        $accessType = $data['access_type'] ?? (is_null($userId) ? 'company_shared' : 'personal');
 
         // 1. الخزنة الشخصية يجب أن يكون لها مالك شخصي واحد فقط
         if ($accessType === 'personal' && is_null($userId)) {

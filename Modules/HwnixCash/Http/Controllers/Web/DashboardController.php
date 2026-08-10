@@ -19,7 +19,7 @@ class DashboardController extends Controller
     public function stats(): JsonResponse
     {
         $user = Auth::user();
-        $companyId = $user->company_id ?? request()->header('X-HWNIX-COMPANY');
+        $companyId = $user?->active_company_id ?? $user?->company_id ?? request()->header('X-HWNIX-COMPANY');
 
         // إجمالي المحافظ والحسابات المالية الفعالة
         $totalAccounts = HwnixCashFinancialAccount::query()

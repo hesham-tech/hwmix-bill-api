@@ -67,16 +67,19 @@ class GeminiDriver implements ProviderDriverInterface
             $errorMsg = $result->errorMessage ?? '';
             Log::warning("[Gemini Driver] [Failed] Model: {$attempt}, Error: {$errorMsg}");
 
-            // إذا كان الخطأ Quota أو مفتاح خاطئ — لا فائدة من المحاولة بنماذج أخرى
+            // إذا كان الخطأ Quota أو نفاد رصيد أو مفتاح خاطئ — لا فائدة من المحاولة بنماذج أخرى بنفس المفتاح
             if (
                 str_contains($errorMsg, 'API key not valid') ||
-                str_contains($errorMsg, 'PERMISSION_DENIED')
+                str_contains($errorMsg, 'PERMISSION_DENIED') ||
+                str_contains($errorMsg, 'prepayment credits are depleted') ||
+                str_contains($errorMsg, 'exceeded your current quota') ||
+                str_contains($errorMsg, 'RESOURCE_EXHAUSTED')
             ) {
-                Log::error("[Gemini Driver] [Auth Error] Stopping failover. Error: {$errorMsg}");
+                Log::error("[Gemini Driver] [Auth/Quota Error] Stopping failover. Error: {$errorMsg}");
                 return $result;
             }
 
-            // إذا كان Quota مستنفد على هذا النموذج — نجرب التالي
+            // إذا كان خطأ عابر — نجرب التالي
             $lastResult = $result;
         }
 
@@ -98,11 +101,6 @@ class GeminiDriver implements ProviderDriverInterface
         ?string $baseUrl,
         float   $startTime
     ): ExecutionResultDTO {
-        $baseEndpoint = $baseUrl ?: "https://generativelanguage.googleapis.com";
-        $endpoint = "{$baseEndpoint}/v1beta/models/{$model}:generateContent?key={$apiKey}";
-
-        Log::info("[Gemini Driver] [HTTP] POST {$baseEndpoint}/v1beta/models/{$model}:generateContent?key=***");
-
         try {
             $payload = [
                 'contents' => [['parts' => [['text' => $prompt]]]]
