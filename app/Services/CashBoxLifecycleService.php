@@ -51,6 +51,13 @@ class CashBoxLifecycleService
             $modelClass = isset($data['cash_box_type_id']) ? \Modules\Accounting\Models\CashBox::class : \App\Models\CashBox::class;
             $cashBox = $modelClass::create($data);
 
+            // عند إنشاء خزنة مشتركة، يتم منح صلاحية الوصول تلقائياً لمنشئ الخزنة
+            if ((empty($data['user_id']) || ($data['access_type'] ?? null) === 'company_shared') && $actor) {
+                if (method_exists($cashBox, 'users')) {
+                    $cashBox->users()->syncWithoutDetaching([$actor->id]);
+                }
+            }
+
             event(new CashBoxCreated($cashBox, $actor));
 
             return $cashBox;

@@ -82,6 +82,9 @@ class StoreProductRequest extends FormRequest
             'variants.*.image_ids' => 'sometimes|array',
             'variants.*.image_ids.*' => 'integer|exists:images,id',
             'variants.*.primary_image_id' => 'nullable|integer|exists:images,id',
+            'variants.*.attributes' => 'sometimes|nullable|array',
+            'variants.*.attributes.*.attribute_id' => 'sometimes|nullable|exists:attributes,id',
+            'variants.*.attributes.*.attribute_value_id' => 'sometimes|nullable|exists:attribute_values,id',
         ];
 
         foreach ($this->input('variants', []) as $index => $variant) {

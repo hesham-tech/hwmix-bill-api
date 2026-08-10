@@ -52,13 +52,20 @@ class CashBoxController extends Controller
 
             if (!$showAllBoxes) {
                 $branchId = config('app.active_branch_id') ?? $authUser->branch_id;
-                $cashBoxQuery->where(function($q) use ($authUser, $branchId) {
+                $hasAdminAccess = $authUser->hasPermissionTo(perm_key('admin.super')) || 
+                                  $authUser->hasPermissionTo(perm_key('admin.company')) || 
+                                  $authUser->hasPermissionTo(perm_key('cash_boxes.view_all'));
+
+                $cashBoxQuery->where(function($q) use ($authUser, $branchId, $hasAdminAccess) {
                     $q->where('user_id', $authUser->id)
-                      ->orWhere(function($subQ) use ($authUser, $branchId) {
-                          $subQ->whereNull('user_id')
-                               ->whereHas('users', function($userQ) use ($authUser) {
-                                   $userQ->where('users.id', $authUser->id);
-                               });
+                      ->orWhere('created_by', $authUser->id)
+                      ->orWhere(function($subQ) use ($authUser, $branchId, $hasAdminAccess) {
+                          $subQ->whereNull('user_id');
+                          if (!$hasAdminAccess) {
+                              $subQ->whereHas('users', function($userQ) use ($authUser) {
+                                  $userQ->where('users.id', $authUser->id);
+                              });
+                          }
                           if ($branchId) {
                               $subQ->where('branch_id', $branchId);
                           }
