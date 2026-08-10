@@ -29,9 +29,13 @@ class ProvisionNewCompanyAction
     {
         return DB::transaction(function () use ($data) {
             // 1. إنشاء المستخدم المالك (أو البحث عنه إذا كان موجوداً)
-            // ننشئ المستخدم أولاً لنحصل على الـ ID الخاص به ونمرره للشركة
-            $user = User::withoutGlobalScopes()->where('phone', $data['phone'])->first();
-            
+            $user = User::withoutGlobalScopes()
+                ->where(function ($query) use ($data) {
+                    $query->where('phone', $data['phone']);
+                    if (!empty($data['email'])) {
+                        $query->orWhere('email', $data['email']);
+                    }
+                })->first();
             if (!$user) {
                 $user = User::create([
                     'phone' => $data['phone'],

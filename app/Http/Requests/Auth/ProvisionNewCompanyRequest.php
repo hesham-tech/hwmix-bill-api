@@ -25,8 +25,8 @@ class ProvisionNewCompanyRequest extends FormRequest
 
             // بيانات المالك
             'full_name' => 'required|string|max:255',
-            'phone' => 'required|string|unique:users,phone',
-            'email' => 'nullable|email|unique:users,email',
+            'phone' => 'required|string',
+            'email' => 'nullable|email',
             'password' => 'required|string|min:8',
             'plan_id' => 'nullable|exists:plans,id',
             'months' => 'nullable|integer|min:1',
@@ -43,5 +43,31 @@ class ProvisionNewCompanyRequest extends FormRequest
             'phone.unique' => 'رقم الهاتف مستخدم بالفعل.',
             'password.required' => 'كلمة المرور مطلوبة.',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($validator->errors()->isEmpty()) {
+                $phone = $this->input('phone');
+                $email = $this->input('email');
+
+                $userByPhone = \App\Models\User::withoutGlobalScopes()->where('phone', $phone)->first();
+                $userByEmail = $email ? \App\Models\User::withoutGlobalScopes()->where('email', $email)->first() : null;
+
+                if ($userByPhone && $userByEmail && $userByPhone->id !== $userByEmail->id) {
+                    $validator->errors()->add('email', 'البريد الإلكتروني مرتبط بحساب آخر غير مرتبط برقم الهاتف.');
+                    return;
+                }
+
+                $user = $userByPhone ?? $userByEmail;
+
+                if ($user) {
+                    if (!\Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
+                        $validator->errors()->add('password', 'هذا الحساب مسجل مسبقاً. يرجى إدخال كلمة المرور الصحيحة لإنشاء شركة جديدة تحته.');
+                    }
+                }
+            }
+        });
     }
 }
