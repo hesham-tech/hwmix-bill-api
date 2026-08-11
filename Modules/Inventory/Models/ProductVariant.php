@@ -133,6 +133,29 @@ class ProductVariant extends Model
         return "متغير منتج ({$this->product?->name} - {$this->sku})";
     }
 
+    /**
+     * نص مواصفات المتغير (المواصفات والسمات)
+     */
+    public function getAttributesTextAttribute(): string
+    {
+        $attributes = $this->relationLoaded('attributes')
+            ? $this->attributes
+            : $this->attributes()->with(['attribute', 'attributeValue'])->get();
+
+        $parts = [];
+        foreach ($attributes as $attr) {
+            $attrName = $attr->attribute?->name ?? null;
+            $valName = $attr->attributeValue?->name ?? null;
+            if ($attrName && $valName) {
+                $parts[] = "{$attrName}: {$valName}";
+            } elseif ($valName) {
+                $parts[] = $valName;
+            }
+        }
+
+        return implode(' | ', $parts);
+    }
+
     public function generateSearchableText(): string
     {
         $parts = [];

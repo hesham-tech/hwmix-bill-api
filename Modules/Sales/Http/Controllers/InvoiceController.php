@@ -27,7 +27,7 @@ class InvoiceController extends Controller
     {
         $this->indexRelations = ['customer', 'invoiceType', 'company', 'creator'];
         $this->showRelations = [
-            'customer', 'company', 'invoiceType', 'items.variant', 
+            'customer', 'company', 'invoiceType', 'items.variant.attributes.attribute', 'items.variant.attributes.attributeValue', 
             'items.digitalDeliveries', 'installmentPlan', 'creator', 
             'payments.paymentMethod', 'payments.cashBox'
         ];

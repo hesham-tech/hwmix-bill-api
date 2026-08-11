@@ -44,11 +44,34 @@ class CashBoxProvisioningService
                 $targetBranchId = $defaultBranch ? $defaultBranch->id : null;
             }
 
-            // 1. البحث عن خزنة مُعطلة سابقة لنفس المستخدم والشركة لتفادي تكرار الإنشاء
+            // 1. البحث عن خزنة نشطة أو معطلة سابقة لنفس المستخدم والشركة والفرع لتفادي تكرار الإنشاء
+            $existingActive = CashBox::withoutGlobalScopes()
+                ->where('user_id', $userId)
+                ->where('company_id', $companyId)
+                ->where('status', CashBoxStatus::ACTIVE)
+                ->when($targetBranchId, function ($q) use ($targetBranchId) {
+                    $q->where(function ($subQ) use ($targetBranchId) {
+                        $subQ->where('branch_id', $targetBranchId)
+                             ->orWhereNull('branch_id');
+                    });
+                })
+                ->first();
+
+            if ($existingActive) {
+                $this->lifecycle->changeDefault($user, $existingActive->id, null, $targetBranchId);
+                return $existingActive;
+            }
+
             $cashBox = CashBox::withoutGlobalScopes()
                 ->where('user_id', $userId)
                 ->where('company_id', $companyId)
                 ->where('status', CashBoxStatus::INACTIVE)
+                ->when($targetBranchId, function ($q) use ($targetBranchId) {
+                    $q->where(function ($subQ) use ($targetBranchId) {
+                        $subQ->where('branch_id', $targetBranchId)
+                             ->orWhereNull('branch_id');
+                    });
+                })
                 ->first();
 
             if ($cashBox) {
@@ -60,13 +83,14 @@ class CashBoxProvisioningService
                     $cashBox->save();
                 }
                 
-                $this->lifecycle->changeDefault($user, $cashBox->id);
+                $this->lifecycle->changeDefault($user, $cashBox->id, null, $targetBranchId);
                 return $cashBox;
             }
 
             // 3. إنشاء خزنة جديدة
             $company = Company::find($companyId);
-            $cashType = CashBoxType::where('name', 'نقدي')
+            $cashType = CashBoxType::withoutGlobalScopes()
+                ->where('name', 'نقدي')
                 ->where(function ($q) use ($companyId) {
                     $q->where('company_id', $companyId)
                         ->orWhereNull('company_id');
@@ -74,8 +98,18 @@ class CashBoxProvisioningService
                 ->orderBy('company_id', 'desc')
                 ->first();
 
-            if (!$cashType || !$company) {
-                Log::error("CashBoxProvisioningService: فشل العثور على نوع الخزنة 'نقدي' أو الشركة.");
+            if (!$cashType) {
+                $cashType = CashBoxType::withoutGlobalScopes()->create([
+                    'name' => 'نقدي',
+                    'description' => 'صندوق نقدي - للاحتفاظ بالنقود السائلة',
+                    'is_system' => true,
+                    'is_active' => true,
+                    'company_id' => null,
+                ]);
+            }
+
+            if (!$company) {
+                Log::error("CashBoxProvisioningService: فشل العثور على الشركة برقم: {$companyId}");
                 return null;
             }
 

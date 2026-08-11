@@ -24,6 +24,7 @@ class ProductVariantResource extends JsonResource
             'id' => $this->id,
             'barcode' => $this->barcode,
             'sku' => $this->sku,
+            'attributes_text' => $this->attributes_text,
             'retail_price' => $this->retail_price,
             'wholesale_price' => $this->when(auth()->user()?->hasAnyPermission([perm_key('products.view_wholesale_price'), 'admin.super', 'admin.company']), $this->wholesale_price),
             'purchase_price' => $this->when(auth()->user()?->hasAnyPermission([perm_key('products.view_purchase_price'), 'admin.super', 'admin.company']), $this->purchase_price),
