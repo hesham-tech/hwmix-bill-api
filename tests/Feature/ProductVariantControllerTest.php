@@ -199,4 +199,19 @@ class ProductVariantControllerTest extends TestCase
         $response = $this->getJson("/api/v1/product-variants/{$variantB->id}");
         $response->assertStatus(403);
     }
+
+    public function test_can_sort_product_variants_by_cost_and_product_name()
+    {
+        $this->actingAs($this->admin);
+        ProductVariant::factory()->count(3)->create([
+            'product_id' => $this->product->id,
+            'company_id' => $this->company->id
+        ]);
+
+        $resCost = $this->getJson('/api/v1/product-variants?sort_by=cost&sort_order=asc');
+        $resCost->assertStatus(200);
+
+        $resName = $this->getJson('/api/v1/product-variants?sort_by=product_name&sort_order=desc');
+        $resName->assertStatus(200);
+    }
 }

@@ -91,9 +91,44 @@ class ProductVariantController extends Controller
             }
 
             $perPage = max(1, (int) $request->get('per_page', 20));
-            $sortField = $request->input('sort_by', 'created_at');
-            $sortOrder = $request->input('sort_order', 'desc');
-            $productVariants = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
+            $sortField = (string) $request->input('sort_by', 'created_at');
+            $sortOrder = strtolower((string) $request->input('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+            $sortableColumnsMap = [
+                'id' => 'product_variants.id',
+                'sku' => 'product_variants.sku',
+                'barcode' => 'product_variants.barcode',
+                'cost' => 'product_variants.purchase_price',
+                'purchase_price' => 'product_variants.purchase_price',
+                'retail_price' => 'product_variants.retail_price',
+                'wholesale_price' => 'product_variants.wholesale_price',
+                'profit_margin' => 'product_variants.profit_margin',
+                'weight' => 'product_variants.weight',
+                'tax' => 'product_variants.tax',
+                'discount' => 'product_variants.discount',
+                'status' => 'product_variants.status',
+                'created_at' => 'product_variants.created_at',
+                'updated_at' => 'product_variants.updated_at',
+                'sales_count' => 'product_variants.sales_count',
+            ];
+
+            if (isset($sortableColumnsMap[$sortField])) {
+                $query->orderBy($sortableColumnsMap[$sortField], $sortOrder);
+            } elseif (in_array($sortField, ['product_name', 'product_slug', 'product_type', 'requires_stock'])) {
+                $productFieldMap = [
+                    'product_name' => 'products.name',
+                    'product_slug' => 'products.slug',
+                    'product_type' => 'products.product_type',
+                    'requires_stock' => 'products.require_stock',
+                ];
+                $query->join('products', 'product_variants.product_id', '=', 'products.id')
+                    ->orderBy($productFieldMap[$sortField], $sortOrder)
+                    ->select('product_variants.*');
+            } else {
+                $query->orderBy('product_variants.created_at', $sortOrder);
+            }
+
+            $productVariants = $query->paginate($perPage);
 
             if ($productVariants->isEmpty()) {
                 return api_success([], 'لم يتم العثور على متغيرات منتجات.');
