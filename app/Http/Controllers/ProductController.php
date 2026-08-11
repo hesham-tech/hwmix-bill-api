@@ -243,12 +243,48 @@ class ProductController extends Controller
      */
     private function applySorting($query, $request): void
     {
-        $sortField = $request->input('sort_by', 'sales_count');
-        $sortOrder = $request->input('sort_order', 'desc');
+        $sortField = (string) $request->input('sort_by', 'sales_count');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-        $query->orderBy($sortField, $sortOrder);
+        $columnMap = [
+            'name' => 'products.name',
+            'slug' => 'products.slug',
+            'product_type' => 'products.product_type',
+            'active' => 'products.active',
+            'featured' => 'products.featured',
+            'require_stock' => 'products.require_stock',
+            'sales_count' => 'products.sales_count',
+            'created_at' => 'products.created_at',
+            'updated_at' => 'products.updated_at',
+            'id' => 'products.id',
+        ];
+
+        if (isset($columnMap[$sortField])) {
+            $query->orderBy($columnMap[$sortField], $sortOrder);
+        } elseif ($sortField === 'total_available_quantity') {
+            $query->withSum('variants as total_available_quantity', 'quantity')
+                  ->orderBy('total_available_quantity', $sortOrder);
+        } elseif ($sortField === 'min_price') {
+            $query->withMin('variants as min_price', 'retail_price')
+                  ->orderBy('min_price', $sortOrder);
+        } elseif ($sortField === 'max_price') {
+            $query->withMax('variants as max_price', 'retail_price')
+                  ->orderBy('max_price', $sortOrder);
+        } elseif ($sortField === 'avg_retail_price') {
+            $query->withAvg('variants as avg_retail_price', 'retail_price')
+                  ->orderBy('avg_retail_price', $sortOrder);
+        } elseif ($sortField === 'avg_purchase_price') {
+            $query->withAvg('variants as avg_purchase_price', 'purchase_price')
+                  ->orderBy('avg_purchase_price', $sortOrder);
+        } elseif ($sortField === 'avg_wholesale_price') {
+            $query->withAvg('variants as avg_wholesale_price', 'wholesale_price')
+                  ->orderBy('avg_wholesale_price', $sortOrder);
+        } else {
+            $query->orderBy('products.created_at', $sortOrder);
+        }
+
         if ($sortField !== 'created_at') {
-            $query->orderBy('created_at', 'desc');
+            $query->orderBy('products.created_at', 'desc');
         }
     }
 

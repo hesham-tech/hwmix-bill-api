@@ -104,12 +104,15 @@ class ProductVariantController extends Controller
                 'wholesale_price' => 'product_variants.wholesale_price',
                 'profit_margin' => 'product_variants.profit_margin',
                 'weight' => 'product_variants.weight',
+                'dimensions' => 'product_variants.dimensions',
                 'tax' => 'product_variants.tax',
                 'discount' => 'product_variants.discount',
                 'status' => 'product_variants.status',
                 'created_at' => 'product_variants.created_at',
                 'updated_at' => 'product_variants.updated_at',
                 'sales_count' => 'product_variants.sales_count',
+                'quantity' => 'product_variants.quantity',
+                'min_quantity' => 'product_variants.min_quantity',
             ];
 
             if (isset($sortableColumnsMap[$sortField])) {
