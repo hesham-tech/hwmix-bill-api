@@ -235,4 +235,17 @@ class Product extends Model
 
         return $model;
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($product) {
+            if ($product->wasChanged(['name', 'desc'])) {
+                foreach ($product->variants()->withoutGlobalScopes()->get() as $variant) {
+                    $variant->updateSearchableText(true);
+                }
+            }
+        });
+    }
 }

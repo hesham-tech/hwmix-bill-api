@@ -543,7 +543,7 @@ class ProductVariantController extends Controller
 
             $query = ProductVariant::with([
                 'product.baseUnit', 'product.purchaseUnit', 'product.displayUnit',
-                'images', 'attributes.attributeValue', 'stocks',
+                'images', 'attributes.attribute', 'attributes.attributeValue', 'stocks',
                 'baseUnit', 'purchaseUnit', 'displayUnit', 'units.unit', 'unitPrices'
             ]);
 
@@ -563,11 +563,9 @@ class ProductVariantController extends Controller
 
             if (!empty($search)) {
                 $query->where(function($q) use ($search) {
-                    $q->where('sku', 'like', "%{$search}%")
-                      ->orWhere('barcode', 'like', "%{$search}%")
-                      ->orWhereHas('product', function($pq) use ($search) {
-                          $pq->where('name', 'like', "%{$search}%");
-                      });
+                    $q->where('searchable_text', 'like', "%{$search}%")
+                      ->orWhere('sku', 'like', "%{$search}%")
+                      ->orWhere('barcode', 'like', "%{$search}%");
                 });
             }
 
@@ -611,11 +609,19 @@ class ProductVariantController extends Controller
                     'primary_image_url' => $variant->primary_image_url,
                     'attributes' => $variant->attributes->map(function($attr) {
                         return [
+                            'attribute' => [
+                                'name' => $attr->attribute->name ?? null,
+                            ],
                             'attribute_value' => [
                                 'name' => $attr->attributeValue->name ?? null
                             ]
                         ];
                     }),
+                    'attributes_text' => $variant->attributes->map(function($attr) {
+                        $attrName = $attr->attribute?->name;
+                        $valName = $attr->attributeValue?->name;
+                        return ($attrName && $valName) ? "{$attrName}: {$valName}" : ($valName ?? '');
+                    })->filter()->implode(' | '),
                     // تفاصيل وحدات القياس — مع fallback لوحدات المنتج الأب للمنتجات القديمة
                     'base_unit_id'     => $variant->base_unit_id     ?? $product->base_unit_id,
                     'purchase_unit_id' => $variant->purchase_unit_id ?? $product->purchase_unit_id,

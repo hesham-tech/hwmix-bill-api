@@ -42,4 +42,17 @@ class ProductVariantAttribute extends Model
     {
         return $this->belongsTo(AttributeValue::class, 'attribute_value_id');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($attr) {
+            $attr->variant?->updateSearchableText(true);
+        });
+
+        static::deleted(function ($attr) {
+            $attr->variant?->updateSearchableText(true);
+        });
+    }
 }

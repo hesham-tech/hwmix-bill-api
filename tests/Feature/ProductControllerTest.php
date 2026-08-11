@@ -281,4 +281,39 @@ class ProductControllerTest extends TestCase
         $response->assertStatus(201);
         $this->assertDatabaseHas('products', ['name' => 'Test Product No Category', 'category_id' => null]);
     }
+
+    public function test_can_create_product_with_same_name_and_auto_barcodes_across_different_companies()
+    {
+        $otherCompany = Company::factory()->create();
+        $otherAdmin = User::factory()->create(['company_id' => $otherCompany->id]);
+        $otherAdmin->givePermissionTo('admin.super');
+        $otherAdmin->givePermissionTo('products.create');
+
+        // Create product in Company 1
+        $this->actingAs($this->admin);
+        $payload1 = [
+            'name' => 'سماعة سلك AKG',
+            'product_type' => 'physical',
+            'variants' => [
+                ['retail_price' => 100]
+            ]
+        ];
+        $res1 = $this->postJson('/api/v1/products', $payload1);
+        $res1->assertStatus(201);
+
+        // Create product with exact same name in Company 2
+        $this->actingAs($otherAdmin);
+        $payload2 = [
+            'name' => 'سماعة سلك AKG',
+            'product_type' => 'physical',
+            'variants' => [
+                ['retail_price' => 120]
+            ]
+        ];
+        $res2 = $this->postJson('/api/v1/products', $payload2);
+        $res2->assertStatus(201);
+
+        $this->assertDatabaseHas('products', ['id' => $res1->json('data.id'), 'slug' => 'سماعة-سلك-akg']);
+        $this->assertDatabaseHas('products', ['id' => $res2->json('data.id'), 'slug' => 'سماعة-سلك-akg-1']);
+    }
 }

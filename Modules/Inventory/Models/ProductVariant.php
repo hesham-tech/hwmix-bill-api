@@ -39,6 +39,7 @@ class ProductVariant extends Model
         'discount',
         'min_quantity',
         'status',
+        'searchable_text',
         'product_id',
         'company_id',
         'created_by',
@@ -132,6 +133,58 @@ class ProductVariant extends Model
         return "متغير منتج ({$this->product?->name} - {$this->sku})";
     }
 
+    public function generateSearchableText(): string
+    {
+        $parts = [];
+
+        // 1. اسم المنتح والوصف
+        $product = $this->relationLoaded('product') ? $this->product : Product::withoutGlobalScopes()->find($this->product_id);
+        if ($product) {
+            if (!empty($product->name)) {
+                $parts[] = $product->name;
+            }
+            if (!empty($product->desc)) {
+                $parts[] = $product->desc;
+            }
+        }
+
+        // 2. SKU و الباركود
+        if (!empty($this->sku)) {
+            $parts[] = $this->sku;
+        }
+        if (!empty($this->barcode)) {
+            $parts[] = $this->barcode;
+        }
+
+        // 3. الصفات وقيمها
+        $attributes = $this->relationLoaded('attributes')
+            ? $this->attributes
+            : $this->attributes()->with(['attribute', 'attributeValue'])->get();
+
+        foreach ($attributes as $attr) {
+            $attrName = $attr->attribute?->name ?? null;
+            $valName = $attr->attributeValue?->name ?? null;
+            if ($attrName && $valName) {
+                $parts[] = "{$attrName}: {$valName}";
+                $parts[] = $valName;
+            } elseif ($valName) {
+                $parts[] = $valName;
+            }
+        }
+
+        return implode(' | ', array_filter(array_unique($parts)));
+    }
+
+    public function updateSearchableText(bool $save = false): string
+    {
+        $text = $this->generateSearchableText();
+        $this->searchable_text = $text;
+        if ($save && $this->exists) {
+            $this->saveQuietly();
+        }
+        return $text;
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -143,6 +196,7 @@ class ProductVariant extends Model
             if (empty($variant->barcode)) {
                 $variant->barcode = self::generateUniqueBarcode();
             }
+            $variant->searchable_text = $variant->generateSearchableText();
         });
     }
 
