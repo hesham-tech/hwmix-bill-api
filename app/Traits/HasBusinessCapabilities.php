@@ -21,6 +21,29 @@ trait HasBusinessCapabilities
             return false;
         }
 
+        // مدير الشركة أو مالك الشركة لديه كامل القدرات التشغيلية والمالية تلقائياً
+        if (in_array($capabilityCode, ['has_cash_custody', 'is_internal', 'track_receivable', 'track_payable'])) {
+            try {
+                if ($this->hasAnyPermission([perm_key('admin.super'), perm_key('admin.company')])) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // التسامح عند عدم تفعيل حزمة الصلاحيات
+            }
+
+            try {
+                $isOwner = \Illuminate\Support\Facades\DB::table('companies')
+                    ->where('id', $companyId)
+                    ->where('created_by', $this->id)
+                    ->exists();
+                if ($isOwner) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // التسامح عند عدم إمكانية الاستعلام
+            }
+        }
+
         $cacheKey = "{$companyId}_{$capabilityCode}";
 
         if (array_key_exists($cacheKey, $this->resolvedCapabilities)) {
@@ -50,13 +73,17 @@ trait HasBusinessCapabilities
                 });
         } else {
             // استعلام قاعدة البيانات مباشرة وبسرعة
-            $hasCap = $this->businessRelations()
-                ->where('company_id', $companyId)
-                ->where('is_active', true)
-                ->whereHas('relationType.capabilities', function ($query) use ($capabilityCode) {
-                    $query->where('code', $capabilityCode);
-                })
-                ->exists();
+            try {
+                $hasCap = $this->businessRelations()
+                    ->where('company_id', $companyId)
+                    ->where('is_active', true)
+                    ->whereHas('relationType.capabilities', function ($query) use ($capabilityCode) {
+                        $query->where('code', $capabilityCode);
+                    })
+                    ->exists();
+            } catch (\Throwable $e) {
+                $hasCap = false;
+            }
         }
 
         return $this->resolvedCapabilities[$cacheKey] = $hasCap;

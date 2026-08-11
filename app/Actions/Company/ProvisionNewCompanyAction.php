@@ -138,6 +138,18 @@ class ProvisionNewCompanyAction
                 $user->branches()->sync([$branch->id]);
             }
 
+            // 7. إنشاء وتزويد الخزنة الافتراضية للمالك بعد اكتمال كافة الارتباطات وصلاحيات المدير
+            try {
+                app(\App\Services\CashBoxService::class)->createDefaultCashBoxForUserCompany(
+                    $user->id,
+                    $company->id,
+                    $user->id,
+                    $branch?->id
+                );
+            } catch (Throwable $e) {
+                \Log::error("ProvisionNewCompanyAction: فشل إنشاء الخزنة الافتراضية للمالك: " . $e->getMessage());
+            }
+
             return [
                 'company' => $company,
                 'user' => $user,
