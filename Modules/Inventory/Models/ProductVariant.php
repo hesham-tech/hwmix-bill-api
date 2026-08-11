@@ -136,7 +136,7 @@ class ProductVariant extends Model
     {
         parent::boot();
 
-        static::creating(function ($variant) {
+        static::saving(function ($variant) {
             if (empty($variant->sku)) {
                 $variant->sku = self::generateUniqueSKU();
             }
@@ -150,7 +150,7 @@ class ProductVariant extends Model
     {
         do {
             $sku = 'SKU-' . strtoupper(Str::random(8));
-        } while (self::where('sku', $sku)->exists());
+        } while (self::withoutGlobalScopes()->where('sku', $sku)->exists());
 
         return $sku;
     }
@@ -158,11 +158,13 @@ class ProductVariant extends Model
     private static function generateUniqueBarcode()
     {
         if (\Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite') {
-            $lastBarcode = self::where('barcode', 'glob', '[0-9]*')
+            $lastBarcode = self::withoutGlobalScopes()
+                ->where('barcode', 'glob', '[0-9]*')
                 ->orderByRaw('CAST(barcode AS INTEGER) DESC')
                 ->first();
         } else {
-            $lastBarcode = self::whereRaw("barcode REGEXP '^[0-9]+$'")
+            $lastBarcode = self::withoutGlobalScopes()
+                ->whereRaw("barcode REGEXP '^[0-9]+$'")
                 ->orderByRaw('CAST(barcode AS UNSIGNED) DESC')
                 ->first();
         }
@@ -170,7 +172,7 @@ class ProductVariant extends Model
         $nextBarcode = $lastBarcode ? (int) $lastBarcode->barcode + 1 : 1000000000;
         $barcode = str_pad($nextBarcode, 10, '0', STR_PAD_LEFT);
 
-        while (self::where('barcode', $barcode)->exists()) {
+        while (self::withoutGlobalScopes()->where('barcode', $barcode)->exists()) {
             $nextBarcode++;
             $barcode = str_pad($nextBarcode, 10, '0', STR_PAD_LEFT);
         }

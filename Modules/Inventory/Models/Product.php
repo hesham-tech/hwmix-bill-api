@@ -209,7 +209,7 @@ class Product extends Model
 
         $originalSlug = $slug;
         $i = 1;
-        while (self::where('slug', $slug)->exists()) {
+        while (self::withoutGlobalScopes()->where('slug', $slug)->exists()) {
             $slug = $originalSlug . '-' . $i;
             $i++;
         }
