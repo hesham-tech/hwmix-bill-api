@@ -144,7 +144,10 @@ class ProductVariant extends Model
                 $parts[] = $product->name;
             }
             if (!empty($product->desc)) {
-                $parts[] = $product->desc;
+                $cleanDesc = trim(strip_tags($product->desc));
+                if (!empty($cleanDesc)) {
+                    $parts[] = Str::limit($cleanDesc, 200, '');
+                }
             }
         }
 
