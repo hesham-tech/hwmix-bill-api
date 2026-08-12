@@ -47,8 +47,10 @@ class StoreInvoiceRequest extends FormRequest
 
             // العناصر
             'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|integer|exists:products,id',
-            'items.*.variant_id' => 'required|integer|exists:product_variants,id',
+            'items.*.product_id' => 'nullable|required_without:items.*.service_id|integer|exists:products,id',
+            'items.*.variant_id' => 'nullable|integer|exists:product_variants,id',
+            'items.*.service_id' => 'nullable|integer|exists:services,id',
+            'items.*.product_type' => 'nullable|string',
             'items.*.name' => 'required|string',
             'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.unit_price' => 'required|numeric|min:0',

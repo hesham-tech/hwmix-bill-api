@@ -52,8 +52,10 @@ class UpdateInvoiceRequest extends FormRequest
             'notes' => 'nullable|string',
 
             'items' => 'sometimes|array|min:1',
-            'items.*.product_id' => 'required_with:items|integer|exists:products,id',
-            'items.*.variant_id' => 'sometimes|nullable|integer|exists:product_variants,id',
+            'items.*.product_id' => 'nullable|integer|exists:products,id',
+            'items.*.variant_id' => 'nullable|integer|exists:product_variants,id',
+            'items.*.service_id' => 'nullable|integer|exists:services,id',
+            'items.*.product_type' => 'nullable|string',
             'items.*.name' => 'required_with:items|string',
             'items.*.quantity' => 'required_with:items|numeric|min:0.01',
             'items.*.unit_price' => 'required_with:items|numeric|min:0',

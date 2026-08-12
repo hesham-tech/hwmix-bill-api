@@ -4,6 +4,9 @@ namespace Modules\Sales\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * كلاس التحقق من بيانات إنشاء الفاتورة الجديدة.
+ */
 class StoreInvoiceRequest extends FormRequest
 {
     public function authorize()
@@ -46,8 +49,10 @@ class StoreInvoiceRequest extends FormRequest
             'user_id' => 'required|integer|exists:users,id',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|integer|exists:products,id',
-            'items.*.variant_id' => 'required|integer|exists:product_variants,id',
+            'items.*.product_id' => 'nullable|required_without:items.*.service_id|integer|exists:products,id',
+            'items.*.variant_id' => 'nullable|integer|exists:product_variants,id',
+            'items.*.service_id' => 'nullable|integer|exists:services,id',
+            'items.*.product_type' => 'nullable|string',
             'items.*.name' => 'required|string',
             'items.*.unit_id' => 'nullable|integer|exists:units,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
