@@ -7,6 +7,7 @@ use Modules\HwnixCash\Http\Controllers\Api\v1\AgentDeviceController;
 use Modules\HwnixCash\Http\Controllers\Api\v1\AgentCommandController;
 use Modules\HwnixCash\Http\Controllers\Api\v1\AgentSmsController;
 use Modules\HwnixCash\Http\Controllers\Api\v1\AgentOnboardingController;
+use Modules\HwnixCash\Http\Controllers\Api\v1\AgentLineController;
 
 Route::prefix('v1/agent')->group(function () {
     // مسارات عامة للمصادقة والتحديثات
@@ -41,6 +42,12 @@ Route::prefix('v1/agent')->group(function () {
         Route::get('device/lines', [AgentDeviceController::class, 'getLines']);
         Route::post('device/decouple', [AgentDeviceController::class, 'decouple']);
         Route::post('device/log', [AgentDeviceController::class, 'log']);
+        
+        // مسارات الخطوط (Lines) للأندرويد
+        Route::middleware([\Modules\HwnixCash\Http\Middleware\IdempotencyMiddleware::class])->group(function () {
+            Route::post('lines/reconcile', [AgentLineController::class, 'reconcile']);
+            Route::delete('lines/delete', [AgentLineController::class, 'delete']);
+        });
         
         // الأوامر التشغيلية والـ SMS
         Route::get('commands/pending', [AgentCommandController::class, 'getPendingCommands']);

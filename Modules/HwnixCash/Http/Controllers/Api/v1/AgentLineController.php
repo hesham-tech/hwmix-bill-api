@@ -1,0 +1,157 @@
+<?php
+// متحكم لإدارة خطوط الاتصال والمحافظ الخاصة بالـ Agent في الأندرويد.
+
+namespace Modules\HwnixCash\Http\Controllers\Api\v1;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Modules\HwnixCash\Models\HwnixCashLine;
+use Modules\HwnixCash\Models\HwnixCashDevice;
+use Modules\HwnixCash\Transformers\LineResource;
+
+class AgentLineController extends Controller
+{
+    /**
+     * تنفيذ تسوية مالية من تطبيق الأندرويد.
+     */
+    public function reconcile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $companyId = $user->company_id;
+
+        $request->validate([
+            'device_id' => 'required|numeric',
+            'slot_index' => 'required|numeric',
+            'target_balance' => 'required|numeric|min:0',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        $deviceId = $request->device_id;
+
+        $device = HwnixCashDevice::where('id', $deviceId)->where('company_id', $companyId)->first();
+        if (!$device) {
+            return api_error('الجهاز غير مسجل أو لا ينتمي لشركتك.', [], 403);
+        }
+
+        $line = HwnixCashLine::where('slot_index', $request->slot_index)
+            ->where('company_id', $companyId)
+            ->where('device_android_id', $device->android_id)
+            ->first();
+
+        if (!$line) {
+            return api_error('الخط المالي غير متوفر أو غير مرتبط بهذا الجهاز.', [], 404);
+        }
+
+        $targetBalance = (float) $request->target_balance;
+        $oldBalance = (float) $line->balance;
+        $difference = round($targetBalance - $oldBalance, 2);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($line, $user, $companyId, $targetBalance, $oldBalance, $difference, $request) {
+            // 1. تحديث الرصيد الحسابي للخط
+            $line->update([
+                'balance' => $targetBalance,
+            ]);
+
+            // 2. تسجيل قيد/معاملة تسوية مالية رسمية بجدول المعاملات للتدقيق المحاسبي (FAC-001)
+            \Modules\HwnixCash\Models\HwnixCashWalletTransaction::create([
+                'company_id' => $companyId,
+                'created_by' => $user->id,
+                'line_id' => $line->id,
+                'operation_type' => \Modules\HwnixCash\Domain\Enums\WalletOperationType::RECONCILIATION->value,
+                'provider' => $line->carrier ?? 'vodafone_cash',
+                'status' => \Modules\HwnixCash\Domain\Enums\WalletTransactionStatus::SUCCESS->value,
+                'source' => \Modules\HwnixCash\Domain\Enums\WalletTransactionSource::MANUAL->value,
+                'amount' => abs($difference),
+                'fee' => 0.00,
+                'balance_after' => $targetBalance,
+                'currency' => 'EGP',
+                'operation_number' => 'REC-APP-' . date('YmdHis') . '-' . $line->id,
+                'operation_at' => now(),
+                'raw_sms' => 'تسوية مالية يدوية من تطبيق الأندرويد',
+                'metadata' => [
+                    'type' => 'balance_reconciliation',
+                    'old_balance' => $oldBalance,
+                    'new_balance' => $targetBalance,
+                    'difference' => $difference,
+                    'actual_balance' => (float) $line->actual_balance,
+                    'note' => $request->note ?? 'تسوية تمت من خلال تطبيق الهاتف',
+                    'agent_device_id' => $request->device_id,
+                ],
+            ]);
+        });
+
+        return api_success(new LineResource($line->fresh('device')), 'تمت تسوية الرصيد الحسابي بنجاح.');
+    }
+
+    /**
+     * حذف الخط وكل ما يتعلق به نهائياً (Force Delete)
+     */
+    public function delete(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $companyId = $user->company_id;
+
+        $request->validate([
+            'device_id' => 'required|numeric',
+            'slot_index' => 'required|numeric',
+        ]);
+
+        $device = HwnixCashDevice::where('id', $request->device_id)
+            ->where('company_id', $companyId)
+            ->first();
+
+        if (!$device) {
+            return api_error('الجهاز غير مسجل أو لا ينتمي لشركتك.', [], 403);
+        }
+
+        $line = HwnixCashLine::where('slot_index', $request->slot_index)
+            ->where('company_id', $companyId)
+            ->where('device_android_id', $device->android_id)
+            ->first();
+
+        if (!$line) {
+            return api_error('الخط غير موجود.', [], 404);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($line, $device, $companyId) {
+            // حذف الحركات المالية (Transactions) المرتبطة بمحافظ هذا الخط
+            $financialAccountIds = $line->financialAccounts()->pluck('id');
+            if ($financialAccountIds->isNotEmpty()) {
+                \Modules\HwnixCash\Models\HwnixCashWalletTransaction::whereIn('financial_account_id', $financialAccountIds)
+                    ->forceDelete();
+                
+                // حذف المحافظ المالية
+                $line->financialAccounts()->forceDelete();
+            }
+
+            // حذف الرسائل ونتائج تحليلها
+            $messageIds = $line->messages()->pluck('id');
+            if ($messageIds->isNotEmpty()) {
+                \Modules\HwnixCash\Models\HwnixCashSmsAnalysisResult::whereIn('message_id', $messageIds)
+                    ->forceDelete();
+                
+                $line->messages()->forceDelete();
+            }
+
+            // حذف الخط
+            $line->forceDelete();
+
+            // التحقق من وجود خطوط أخرى للجهاز
+            $otherLinesCount = HwnixCashLine::where('device_android_id', $device->android_id)
+                ->where('company_id', $companyId)
+                ->count();
+
+            // إذا كان الجهاز لم يعد مرتبطاً بأي خطوط، نقوم بحذفه أيضاً
+            if ($otherLinesCount === 0) {
+                $device->settings()->forceDelete();
+                $device->commands()->forceDelete();
+                $device->heartbeats()->forceDelete();
+                $device->messages()->forceDelete(); // لأي رسائل أخرى مرتبطة بالجهاز وليست مرتبطة بخط
+                $device->forceDelete();
+            }
+        });
+
+        return api_success(null, 'تم حذف الخط وكافة بياناته نهائياً بنجاح.');
+    }
+}
