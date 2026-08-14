@@ -102,6 +102,8 @@ class GeminiDriver implements ProviderDriverInterface
         float   $startTime
     ): ExecutionResultDTO {
         try {
+            $endpoint = ($baseUrl ?: "https://generativelanguage.googleapis.com") . "/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
             $payload = [
                 'contents' => [['parts' => [['text' => $prompt]]]]
             ];

@@ -11,5 +11,6 @@ enum WalletProvider: string
     case WE_PAY = 'we_pay';
     case INSTAPAY = 'instapay';
     case BANK = 'bank';
+    case FAWRY = 'fawry';
     case OTHER = 'other';
 }

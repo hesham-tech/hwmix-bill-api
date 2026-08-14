@@ -75,7 +75,7 @@ class EloquentHwnixCashMessageSourceRepository implements HwnixCashMessageSource
             return WalletProvider::ETISALAT_CASH;
         }
         if (str_contains($lower, 'we')) {
-            return WalletProvider::WE_CASH;
+            return WalletProvider::WE_PAY;
         }
         if (str_contains($lower, 'fawry')) {
             return WalletProvider::FAWRY;
