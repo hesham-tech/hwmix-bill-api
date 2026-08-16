@@ -147,7 +147,7 @@ class CashBoxController extends Controller
                     $validatedData['user_id'] = $authUser->id;
                 }
 
-                if (!array_key_exists('branch_id', $validatedData)) {
+                if (empty($validatedData['branch_id'])) {
                     $validatedData['branch_id'] = config('app.active_branch_id') ?? $authUser->branch_id;
                 }
 
