@@ -121,4 +121,67 @@ class LineController extends Controller
 
         return api_success(new LineResource($line->fresh('device')), 'تمت تسوية الرصيد الحسابي وتسجيل حركة التسوية المالية بنجاح.');
     }
+
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        if (!is_numeric($id)) {
+            return api_error('المعرف غير صالح.', [], 400);
+        }
+
+        $user = $request->user();
+        $companyId = $user->active_company_id ?? $user->company_id;
+
+        $line = HwnixCashLine::with('device')
+            ->where('id', $id)
+            ->where('company_id', $companyId)
+            ->first();
+
+        if (!$line) {
+            return api_error('الخط غير متوفر أو لا ينتمي لشركتك.', [], 404);
+        }
+
+        $device = $line->device;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($line, $device, $companyId) {
+            // حذف الحركات المالية (Transactions) المرتبطة بمحافظ هذا الخط
+            $financialAccountIds = $line->financialAccounts()->pluck('id');
+            if ($financialAccountIds->isNotEmpty()) {
+                \Modules\HwnixCash\Models\HwnixCashWalletTransaction::whereIn('financial_account_id', $financialAccountIds)
+                    ->forceDelete();
+                
+                // حذف المحافظ المالية
+                $line->financialAccounts()->forceDelete();
+            }
+
+            // حذف الرسائل ونتائج تحليلها
+            $messageIds = $line->messages()->pluck('id');
+            if ($messageIds->isNotEmpty()) {
+                \Modules\HwnixCash\Models\HwnixCashSmsAnalysisResult::whereIn('message_id', $messageIds)
+                    ->forceDelete();
+                
+                $line->messages()->forceDelete();
+            }
+
+            // حذف الخط
+            $line->forceDelete();
+
+            // التحقق من وجود خطوط أخرى للجهاز
+            if ($device) {
+                $otherLinesCount = HwnixCashLine::where('device_android_id', $device->android_id)
+                    ->where('company_id', $companyId)
+                    ->count();
+
+                // إذا كان الجهاز لم يعد مرتبطاً بأي خطوط، نقوم بحذفه أيضاً
+                if ($otherLinesCount === 0) {
+                    $device->settings()->forceDelete();
+                    $device->commands()->forceDelete();
+                    $device->heartbeats()->forceDelete();
+                    $device->messages()->forceDelete(); // لأي رسائل أخرى مرتبطة بالجهاز وليست مرتبطة بخط
+                    $device->forceDelete();
+                }
+            }
+        });
+
+        return api_success(null, 'تم حذف الخط وكافة بياناته نهائياً بنجاح.');
+    }
 }
