@@ -132,11 +132,10 @@ class TransactionControllerTest extends TestCase
         ]);
 
         $payload = [
-            'target_user_id' => $targetUser->id,
             'amount' => 400,
             'from_cash_box_id' => $this->cashBox->id,
             'to_cash_box_id' => $targetBox->id,
-            'description' => 'Transfer to other user',
+            'description' => 'Transfer to other box',
         ];
 
         $response = $this->postJson('/api/v1/transactions/transfer', $payload);
@@ -144,6 +143,67 @@ class TransactionControllerTest extends TestCase
         $response->assertStatus(200);
         $this->assertEquals(600, $this->cashBox->fresh()->balance);
         $this->assertEquals(400, $targetBox->fresh()->balance);
+    }
+
+    public function test_cannot_transfer_to_same_cash_box()
+    {
+        $this->actingAs($this->admin);
+
+        $payload = [
+            'amount' => 100,
+            'from_cash_box_id' => $this->cashBox->id,
+            'to_cash_box_id' => $this->cashBox->id,
+        ];
+
+        $response = $this->postJson('/api/v1/transactions/transfer', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('to_cash_box_id');
+    }
+
+    public function test_transfer_fails_with_insufficient_balance()
+    {
+        $this->actingAs($this->admin);
+
+        $targetBox = CashBox::factory()->create([
+            'company_id' => $this->company->id,
+            'cash_box_type_id' => CashBoxType::factory()->create(['company_id' => $this->company->id])->id,
+            'balance' => 0,
+        ]);
+
+        $payload = [
+            'amount' => 2000,
+            'from_cash_box_id' => $this->cashBox->id,
+            'to_cash_box_id' => $targetBox->id,
+        ];
+
+        $response = $this->postJson('/api/v1/transactions/transfer', $payload);
+
+        // Expect 422 according to TransactionController transfer catch block
+        $response->assertStatus(422);
+    }
+
+    public function test_cannot_transfer_between_different_companies()
+    {
+        $this->actingAs($this->admin);
+
+        $otherCompany = Company::factory()->create();
+        $targetBox = CashBox::factory()->create([
+            'company_id' => $otherCompany->id,
+            'cash_box_type_id' => CashBoxType::factory()->create(['company_id' => $otherCompany->id])->id,
+            'balance' => 0,
+        ]);
+
+        $payload = [
+            'amount' => 100,
+            'from_cash_box_id' => $this->cashBox->id,
+            'to_cash_box_id' => $targetBox->id,
+        ];
+
+        $response = $this->postJson('/api/v1/transactions/transfer', $payload);
+
+        // Forbidden
+        $response->assertStatus(403);
     }
 
     public function test_can_reverse_transaction()

@@ -171,9 +171,8 @@ class FinancialEngine implements FinancialEngineInterface
 
     public function transferCash(int $fromBoxId, int $toBoxId, float $amount, string $operationId, ?string $desc = null): void
     {
-        $exists = Transaction::withoutGlobalScopes()
-            ->where('financial_operation_id', $operationId)
-            ->where('type', 'transfer_out')
+        $exists = FinancialOperation::withoutGlobalScopes()
+            ->where('id', $operationId)
             ->exists();
 
         if ($exists) {
@@ -186,8 +185,43 @@ class FinancialEngine implements FinancialEngineInterface
         $this->rules->validateOperation($fromBox, $amount, 'withdraw', $fromBox->company_id);
         $this->rules->validateOperation($toBox, $amount, 'deposit', $toBox->company_id);
 
-        DB::transaction(function () use ($fromBoxId, $toBoxId, $amount, $operationId, $desc) {
+        DB::transaction(function () use ($fromBoxId, $toBoxId, $amount, $operationId, $desc, $fromBox, $toBox) {
+            $this->operationService->createOperation([
+                'id' => $operationId,
+                'company_id' => $fromBox->company_id,
+                'type' => 'transfer_cash',
+                'amount' => $amount,
+                'source_type' => \Modules\Accounting\Models\CashBox::class,
+                'source_id' => $fromBoxId, // يمكننا استخدام مصدر التحويل
+                'metadata' => [
+                    'from_cashbox_id' => $fromBoxId,
+                    'to_cashbox_id' => $toBoxId,
+                    'description' => $desc,
+                ],
+            ]);
+
             $this->cashService->transfer($fromBoxId, $toBoxId, $amount, $operationId, $desc);
+
+            // ترحيل قيد التحويل الداخلي في دفتر الأستاذ دون التأثير على المصروفات أو الإيرادات
+            $this->ledgerService->recordEntry(
+                $fromBox,
+                'asset',
+                $amount,
+                'debit',
+                "تحويل مالي وارد إلى الخزينة: {$toBox->name}",
+                now(),
+                $operationId
+            );
+
+            $this->ledgerService->recordEntry(
+                $fromBox,
+                'asset',
+                $amount,
+                'credit',
+                "تحويل مالي صادر من الخزينة: {$fromBox->name}",
+                now(),
+                $operationId
+            );
         });
     }
 

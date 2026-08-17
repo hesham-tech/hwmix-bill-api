@@ -42,30 +42,26 @@ class TransactionController extends Controller
                 return api_forbidden('ليس لديك إذن لتحويل الأموال.');
             }
 
+            // التحقق من المدخلات بناءً على الخزائن ككيانات مالية وليس المستخدمين
             $validated = $request->validate([
-                'from_user_id' => 'nullable|exists:users,id',
-                'target_user_id' => 'required|exists:users,id',
                 'amount' => 'required|numeric|min:0.01',
-                'from_cash_box_id' => 'nullable|exists:cash_boxes,id',
-                'to_cash_box_id' => 'nullable|exists:cash_boxes,id|different:from_cash_box_id',
+                'from_cash_box_id' => 'required|exists:cash_boxes,id',
+                'to_cash_box_id' => 'required|exists:cash_boxes,id|different:from_cash_box_id',
                 'description' => 'nullable|string',
+                'operation_id' => 'nullable|uuid', // لدعم Idempotency من الواجهة إن وجد
             ]);
 
-            $sourceUserId = $validated['from_user_id'] ?? $authUser->id;
-            $sourceUser = User::findOrFail($sourceUserId);
-            $targetUser = User::findOrFail($validated['target_user_id']);
+            $fromCashBoxId = $validated['from_cash_box_id'];
+            $toCashBoxId = $validated['to_cash_box_id'];
 
-            if ($sourceUserId != $authUser->id && !$authUser->hasPermissionTo(perm_key('balance.transfer_any')) && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                return api_forbidden('ليس لديك إذن للتحويل من حساب مستخدم آخر.');
+            // لا نستدعي Global Scopes أثناء البحث لنتحقق من تبعية الخزنة للشركة يدوياً
+            $fromCashBox = CashBox::withoutGlobalScopes()->findOrFail($fromCashBoxId);
+            $toCashBox = CashBox::withoutGlobalScopes()->findOrFail($toCashBoxId);
+
+            // التحقق من الشركة
+            if ($fromCashBox->company_id !== $companyId || $toCashBox->company_id !== $companyId) {
+                return api_forbidden('لا يمكن إجراء تحويل لخزينة خارج إطار شركتك النشطة.');
             }
-
-            $fromCashBoxId = $validated['from_cash_box_id'] ?? $sourceUser->getDefaultCashBoxForCompany($companyId)?->id;
-            $toCashBoxId = $validated['to_cash_box_id'] ?? $targetUser->getDefaultCashBoxForCompany($companyId)?->id;
-
-            if (!$fromCashBoxId || !$toCashBoxId) return api_error('لا توجد صناديق افتراضية.', [], 422);
-
-            $fromCashBox = CashBox::findOrFail($fromCashBoxId);
-            $toCashBox = CashBox::findOrFail($toCashBoxId);
 
             if (!$authUser->canAccessCashBox($fromCashBox)) {
                 return api_forbidden('ليس لديك صلاحية الوصول إلى الخزينة المصدر.');
@@ -76,8 +72,8 @@ class TransactionController extends Controller
             }
 
             $engine = app(\App\Contracts\FinancialEngineInterface::class);
-            $operationId = (string) \Illuminate\Support\Str::uuid();
-            $description = $validated['description'] ?? "تحويل من {$sourceUser->name} إلى {$targetUser->name}";
+            $operationId = $validated['operation_id'] ?? (string) \Illuminate\Support\Str::uuid();
+            $description = $validated['description'] ?? "تحويل داخلي من {$fromCashBox->name} إلى {$toCashBox->name}";
 
             DB::beginTransaction();
             try {
@@ -93,7 +89,8 @@ class TransactionController extends Controller
                 return api_success([], 'تم التحويل بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error($e->getMessage() ?: 'فشل التحويل. يرجى المحاولة مرة أخرى.', [], 500);
+                $code = (str_contains($e->getMessage(), 'الرصيد غير كاف') || str_contains($e->getMessage(), 'insufficient')) ? 422 : 500;
+                return api_error($e->getMessage() ?: 'فشل التحويل. يرجى المحاولة مرة أخرى.', [], $code);
             }
         } catch (Throwable $e) {
             return api_exception($e, 500);
