@@ -171,14 +171,7 @@ class FinancialEngineTest extends TestCase
 
         $operationId = (string) Str::uuid();
 
-        FinancialOperation::create([
-            'id' => $operationId,
-            'company_id' => $this->company->id,
-            'type' => 'cash_transfer',
-            'status' => 'active',
-            'amount' => 400.00,
-            'created_by' => $this->admin->id,
-        ]);
+        // Remove pre-creation of operation because transferCash will create it and use it.
 
         $this->engine->transferCash($this->cashBox->id, $targetBox->id, 400.00, $operationId);
 

@@ -2,848 +2,868 @@
 
 /**
  * -----------------------------------------------------------------------------
- * Permission Keys Registry — Arabic Labels
+ * Permission Keys Registry â€” Arabic Labels
  * -----------------------------------------------------------------------------
- * هذا الملف هو المصدر الوحيد الرسمي لتعريف مفاتيح الصلاحيات (permission keys)
- * المستخدمة في الباك إند والفرونت إند، ويُرجى الرجوع إليه فقط للحصول على أسماء
- * الصلاحيات سواء في الكود أو عند إنشاء بيانات seeder أو التعامل معها من الواجهة.
+ * Ù‡Ø°Ø§ Ø§Ù„Ù…Ù„Ù Ù‡Ùˆ Ø§Ù„Ù…ØµØ¯Ø± Ø§Ù„ÙˆØ­ÙŠØ¯ Ø§Ù„Ø±Ø³Ù…ÙŠ Ù„ØªØ¹Ø±ÙŠÙ Ù…ÙØ§ØªÙŠØ­ Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª (permission keys)
+ * Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…Ø© ÙÙŠ Ø§Ù„Ø¨Ø§Ùƒ Ø¥Ù†Ø¯ ÙˆØ§Ù„ÙØ±ÙˆÙ†Øª Ø¥Ù†Ø¯ØŒ ÙˆÙŠÙØ±Ø¬Ù‰ Ø§Ù„Ø±Ø¬ÙˆØ¹ Ø¥Ù„ÙŠÙ‡ ÙÙ‚Ø· Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø£Ø³Ù…Ø§Ø¡
+ * Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª Ø³ÙˆØ§Ø¡ ÙÙŠ Ø§Ù„ÙƒÙˆØ¯ Ø£Ùˆ Ø¹Ù†Ø¯ Ø¥Ù†Ø´Ø§Ø¡ Ø¨ÙŠØ§Ù†Ø§Øª seeder Ø£Ùˆ Ø§Ù„ØªØ¹Ø§Ù…Ù„ Ù…Ø¹Ù‡Ø§ Ù…Ù† Ø§Ù„ÙˆØ§Ø¬Ù‡Ø©.
  *
- * ✅ يُستخدم هذا الملف في:
- * - توليد seeders الخاصة بالصلاحيات.
- * - إنشاء واجهات المستخدم للوحة التحكم.
- * - التحقق من الصلاحيات في Controllers, Policies, Gates إلخ.
- * - الترجمة والتمثيل البصري لأسماء الصلاحيات.
+ * âœ… ÙŠÙØ³ØªØ®Ø¯Ù… Ù‡Ø°Ø§ Ø§Ù„Ù…Ù„Ù ÙÙŠ:
+ * - ØªÙˆÙ„ÙŠØ¯ seeders Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª.
+ * - Ø¥Ù†Ø´Ø§Ø¡ ÙˆØ§Ø¬Ù‡Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù„Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ….
+ * - Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª ÙÙŠ Controllers, Policies, Gates Ø¥Ù„Ø®.
+ * - Ø§Ù„ØªØ±Ø¬Ù…Ø© ÙˆØ§Ù„ØªÙ…Ø«ÙŠÙ„ Ø§Ù„Ø¨ØµØ±ÙŠ Ù„Ø£Ø³Ù…Ø§Ø¡ Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª.
  *
- * ✅ دالة المساعد `perm_key('entity.action')` تُستخدم للوصول إلى المفتاح الرسمي.
- * ➤ مثال: perm_key('users.update_all') → "users.update_all"
+ * âœ… Ø¯Ø§Ù„Ø© Ø§Ù„Ù…Ø³Ø§Ø¹Ø¯ `perm_key('entity.action')` ØªÙØ³ØªØ®Ø¯Ù… Ù„Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ Ø§Ù„Ù…ÙØªØ§Ø­ Ø§Ù„Ø±Ø³Ù…ÙŠ.
+ * âž¤ Ù…Ø«Ø§Ù„: perm_key('users.update_all') â†’ "users.update_all"
  *
- * ✅ يجب أن تحتوي كل صلاحية على:
- * - key   → الاسم الموحد المحفوظ في قاعدة البيانات (بالإنجليزية)
- * - label → التسمية الظاهرة في الواجهة (بالعربية)
+ * âœ… ÙŠØ¬Ø¨ Ø£Ù† ØªØ­ØªÙˆÙŠ ÙƒÙ„ ØµÙ„Ø§Ø­ÙŠØ© Ø¹Ù„Ù‰:
+ * - key   â†’ Ø§Ù„Ø§Ø³Ù… Ø§Ù„Ù…ÙˆØ­Ø¯ Ø§Ù„Ù…Ø­ÙÙˆØ¸ ÙÙŠ Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª (Ø¨Ø§Ù„Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©)
+ * - label â†’ Ø§Ù„ØªØ³Ù…ÙŠØ© Ø§Ù„Ø¸Ø§Ù‡Ø±Ø© ÙÙŠ Ø§Ù„ÙˆØ§Ø¬Ù‡Ø© (Ø¨Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©)
  *
  * -----------------------------------------------------------------------------
- * شرح مفصل لأنواع الصلاحيات (actions) ونطاقها:
+ * Ø´Ø±Ø­ Ù…ÙØµÙ„ Ù„Ø£Ù†ÙˆØ§Ø¹ Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª (actions) ÙˆÙ†Ø·Ø§Ù‚Ù‡Ø§:
  * -----------------------------------------------------------------------------
- * - name: يشير إلى اسم المجموعة الكلية للصلاحيات ويعبر عن وظيفتها أو يصفها.
+ * - name: ÙŠØ´ÙŠØ± Ø¥Ù„Ù‰ Ø§Ø³Ù… Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø© Ø§Ù„ÙƒÙ„ÙŠØ© Ù„Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª ÙˆÙŠØ¹Ø¨Ø± Ø¹Ù† ÙˆØ¸ÙŠÙØªÙ‡Ø§ Ø£Ùˆ ÙŠØµÙÙ‡Ø§.
  * - page:
- * السماح بالوصول إلى الصفحة الرئيسية أو قائمة إدارة كيان معين (مثل 'صفحة المستخدمين'
- * أو 'صفحة الشركات'). لا تمنح صلاحيات عرض السجلات، بل فقط الوصول لواجهة الإدارة.
+ * Ø§Ù„Ø³Ù…Ø§Ø­ Ø¨Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ Ø§Ù„ØµÙØ­Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ© Ø£Ùˆ Ù‚Ø§Ø¦Ù…Ø© Ø¥Ø¯Ø§Ø±Ø© ÙƒÙŠØ§Ù† Ù…Ø¹ÙŠÙ† (Ù…Ø«Ù„ 'ØµÙØ­Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ†'
+ * Ø£Ùˆ 'ØµÙØ­Ø© Ø§Ù„Ø´Ø±ÙƒØ§Øª'). Ù„Ø§ ØªÙ…Ù†Ø­ ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¹Ø±Ø¶ Ø§Ù„Ø³Ø¬Ù„Ø§ØªØŒ Ø¨Ù„ ÙÙ‚Ø· Ø§Ù„ÙˆØµÙˆÙ„ Ù„ÙˆØ§Ø¬Ù‡Ø© Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©.
  *
  * - view_all:
- * عرض جميع السجلات من الكيان المعني **ضمن نطاق الشركة النشطة** للمستخدم.
- * لا يمنح صلاحيات تعديل أو حذف، ويرى السجلات بغض النظر عن مُنشئها.
+ * Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø³Ø¬Ù„Ø§Øª Ù…Ù† Ø§Ù„ÙƒÙŠØ§Ù† Ø§Ù„Ù…Ø¹Ù†ÙŠ **Ø¶Ù…Ù† Ù†Ø·Ø§Ù‚ Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©** Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù….
+ * Ù„Ø§ ÙŠÙ…Ù†Ø­ ØµÙ„Ø§Ø­ÙŠØ§Øª ØªØ¹Ø¯ÙŠÙ„ Ø£Ùˆ Ø­Ø°ÙØŒ ÙˆÙŠØ±Ù‰ Ø§Ù„Ø³Ø¬Ù„Ø§Øª Ø¨ØºØ¶ Ø§Ù„Ù†Ø¸Ø± Ø¹Ù† Ù…ÙÙ†Ø´Ø¦Ù‡Ø§.
  *
  * - view_children:
- * عرض السجلات التي قام المستخدم الحالي بإنشائها، أو التي أنشأها المستخدمون
- * الذين يتبعون له في الهيكل التنظيمي (التابعين له أو "الأبناء"). يُستخدم هذا
- * في الأنظمة الهرمية لتقييد الرؤية ضمن فروع معينة.
+ * Ø¹Ø±Ø¶ Ø§Ù„Ø³Ø¬Ù„Ø§Øª Ø§Ù„ØªÙŠ Ù‚Ø§Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø­Ø§Ù„ÙŠ Ø¨Ø¥Ù†Ø´Ø§Ø¦Ù‡Ø§ØŒ Ø£Ùˆ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ†
+ * Ø§Ù„Ø°ÙŠÙ† ÙŠØªØ¨Ø¹ÙˆÙ† Ù„Ù‡ ÙÙŠ Ø§Ù„Ù‡ÙŠÙƒÙ„ Ø§Ù„ØªÙ†Ø¸ÙŠÙ…ÙŠ (Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ† Ù„Ù‡ Ø£Ùˆ "Ø§Ù„Ø£Ø¨Ù†Ø§Ø¡"). ÙŠÙØ³ØªØ®Ø¯Ù… Ù‡Ø°Ø§
+ * ÙÙŠ Ø§Ù„Ø£Ù†Ø¸Ù…Ø© Ø§Ù„Ù‡Ø±Ù…ÙŠØ© Ù„ØªÙ‚ÙŠÙŠØ¯ Ø§Ù„Ø±Ø¤ÙŠØ© Ø¶Ù…Ù† ÙØ±ÙˆØ¹ Ù…Ø¹ÙŠÙ†Ø©.
  *
  * - view_self:
- * عرض السجل الذي يخص المستخدم نفسه فقط، مثل حسابه الشخصي أو تفاصيل شركته
- * الخاصة به. يُستخدم هذا لتعديل البيانات الشخصية دون رؤية بيانات الآخرين.
+ * Ø¹Ø±Ø¶ Ø§Ù„Ø³Ø¬Ù„ Ø§Ù„Ø°ÙŠ ÙŠØ®Øµ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù†ÙØ³Ù‡ ÙÙ‚Ø·ØŒ Ù…Ø«Ù„ Ø­Ø³Ø§Ø¨Ù‡ Ø§Ù„Ø´Ø®ØµÙŠ Ø£Ùˆ ØªÙØ§ØµÙŠÙ„ Ø´Ø±ÙƒØªÙ‡
+ * Ø§Ù„Ø®Ø§ØµØ© Ø¨Ù‡. ÙŠÙØ³ØªØ®Ø¯Ù… Ù‡Ø°Ø§ Ù„ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø´Ø®ØµÙŠØ© Ø¯ÙˆÙ† Ø±Ø¤ÙŠØ© Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø¢Ø®Ø±ÙŠÙ†.
  *
  * - create:
- * إنشاء سجل جديد في هذا الكيان **ضمن نطاق الشركة النشطة**، مثل إضافة مستخدم
- * جديد أو إنشاء شركة جديدة.
+ * Ø¥Ù†Ø´Ø§Ø¡ Ø³Ø¬Ù„ Ø¬Ø¯ÙŠØ¯ ÙÙŠ Ù‡Ø°Ø§ Ø§Ù„ÙƒÙŠØ§Ù† **Ø¶Ù…Ù† Ù†Ø·Ø§Ù‚ Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©**ØŒ Ù…Ø«Ù„ Ø¥Ø¶Ø§ÙØ© Ù…Ø³ØªØ®Ø¯Ù…
+ * Ø¬Ø¯ÙŠØ¯ Ø£Ùˆ Ø¥Ù†Ø´Ø§Ø¡ Ø´Ø±ÙƒØ© Ø¬Ø¯ÙŠØ¯Ø©.
  *
  * - update_all:
- * تعديل أي سجل داخل الكيان **ضمن نطاق الشركة النشطة** للمستخدم، دون قيود على
- * من أنشأ السجل أو ملكيته.
+ * ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø³Ø¬Ù„ Ø¯Ø§Ø®Ù„ Ø§Ù„ÙƒÙŠØ§Ù† **Ø¶Ù…Ù† Ù†Ø·Ø§Ù‚ Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©** Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù…ØŒ Ø¯ÙˆÙ† Ù‚ÙŠÙˆØ¯ Ø¹Ù„Ù‰
+ * Ù…Ù† Ø£Ù†Ø´Ø£ Ø§Ù„Ø³Ø¬Ù„ Ø£Ùˆ Ù…Ù„ÙƒÙŠØªÙ‡.
  *
  * - update_children:
- * تعديل السجلات التي قام المستخدم الحالي بإنشائها، أو التي أنشأها المستخدمون
- * التابعون له في الهيكل التنظيمي (الأبناء).
+ * ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¬Ù„Ø§Øª Ø§Ù„ØªÙŠ Ù‚Ø§Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø­Ø§Ù„ÙŠ Ø¨Ø¥Ù†Ø´Ø§Ø¦Ù‡Ø§ØŒ Ø£Ùˆ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ†
+ * Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ† Ù„Ù‡ ÙÙŠ Ø§Ù„Ù‡ÙŠÙƒÙ„ Ø§Ù„ØªÙ†Ø¸ÙŠÙ…ÙŠ (Ø§Ù„Ø£Ø¨Ù†Ø§Ø¡).
  *
  * - update_self:
- * تعديل السجل المرتبط بالمستخدم مباشرة فقط (مثل تعديل ملفه الشخصي أو بيانات شركته
- * الخاصة به).
+ * ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¬Ù„ Ø§Ù„Ù…Ø±ØªØ¨Ø· Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù…Ø¨Ø§Ø´Ø±Ø© ÙÙ‚Ø· (Ù…Ø«Ù„ ØªØ¹Ø¯ÙŠÙ„ Ù…Ù„ÙÙ‡ Ø§Ù„Ø´Ø®ØµÙŠ Ø£Ùˆ Ø¨ÙŠØ§Ù†Ø§Øª Ø´Ø±ÙƒØªÙ‡
+ * Ø§Ù„Ø®Ø§ØµØ© Ø¨Ù‡).
  *
  * - delete_all:
- * حذف أي سجل من الكيان **ضمن نطاق الشركة النشطة** للمستخدم، بغض النظر عن الملكية.
+ * Ø­Ø°Ù Ø£ÙŠ Ø³Ø¬Ù„ Ù…Ù† Ø§Ù„ÙƒÙŠØ§Ù† **Ø¶Ù…Ù† Ù†Ø·Ø§Ù‚ Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©** Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù…ØŒ Ø¨ØºØ¶ Ø§Ù„Ù†Ø¸Ø± Ø¹Ù† Ø§Ù„Ù…Ù„ÙƒÙŠØ©.
  *
  * - delete_children:
- * حذف السجلات التي قام المستخدم الحالي بإنشائها، أو التي أنشأها المستخدمون
- * التابعون له في الهيكل التنظيمي (الأبناء).
+ * Ø­Ø°Ù Ø§Ù„Ø³Ø¬Ù„Ø§Øª Ø§Ù„ØªÙŠ Ù‚Ø§Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø­Ø§Ù„ÙŠ Ø¨Ø¥Ù†Ø´Ø§Ø¦Ù‡Ø§ØŒ Ø£Ùˆ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ†
+ * Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ† Ù„Ù‡ ÙÙŠ Ø§Ù„Ù‡ÙŠÙƒÙ„ Ø§Ù„ØªÙ†Ø¸ÙŠÙ…ÙŠ (Ø§Ù„Ø£Ø¨Ù†Ø§Ø¡).
  *
  * - delete_self:
- * حذف السجل الخاص بالمستخدم نفسه فقط (على سبيل المثال، تعطيل حسابه الشخصي).
+ * Ø­Ø°Ù Ø§Ù„Ø³Ø¬Ù„ Ø§Ù„Ø®Ø§Øµ Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù†ÙØ³Ù‡ ÙÙ‚Ø· (Ø¹Ù„Ù‰ Ø³Ø¨ÙŠÙ„ Ø§Ù„Ù…Ø«Ø§Ù„ØŒ ØªØ¹Ø·ÙŠÙ„ Ø­Ø³Ø§Ø¨Ù‡ Ø§Ù„Ø´Ø®ØµÙŠ).
  *
- * ◾ الكيانات (entities): مثل users, companies, warehouses … إلخ.
- * ◾ كل كيان يحتوي على مجموعة من الصلاحيات حسب نوع التعامل معه.
+ * â—¾ Ø§Ù„ÙƒÙŠØ§Ù†Ø§Øª (entities): Ù…Ø«Ù„ users, companies, warehouses â€¦ Ø¥Ù„Ø®.
+ * â—¾ ÙƒÙ„ ÙƒÙŠØ§Ù† ÙŠØ­ØªÙˆÙŠ Ø¹Ù„Ù‰ Ù…Ø¬Ù…ÙˆØ¹Ø© Ù…Ù† Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª Ø­Ø³Ø¨ Ù†ÙˆØ¹ Ø§Ù„ØªØ¹Ø§Ù…Ù„ Ù…Ø¹Ù‡.
  * -----------------------------------------------------------------------------
  */
 return [
     // => ADMIN
     'admin' => [
-        'name' => ['key' => 'admin', 'label' => 'صلاحيات المديرين'],
-        'page' => ['key' => 'admin.page', 'label' => 'الصفحة الرئيسية'],
-        'super' => ['key' => 'admin.super', 'label' => ' صلاحية المدير العام'],
-        'company' => ['key' => 'admin.company', 'label' => 'صلاحية ادارة الشركة'],
+        'name' => ['key' => 'admin', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ†'],
+        'page' => ['key' => 'admin.page', 'label' => 'Ø§Ù„ØµÙØ­Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©'],
+        'super' => ['key' => 'admin.super', 'label' => ' ØµÙ„Ø§Ø­ÙŠØ© Ø§Ù„Ù…Ø¯ÙŠØ± Ø§Ù„Ø¹Ø§Ù…'],
+        'company' => ['key' => 'admin.company', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ© Ø§Ø¯Ø§Ø±Ø© Ø§Ù„Ø´Ø±ÙƒØ©'],
     ],
     // => COMPANIES
     'companies' => [
-        'name' => ['key' => 'companies', 'label' => 'صلاحيات إدارة الشركات'],
-        'change_active_company' => ['key' => 'companies.change_active_company', 'label' => 'تغيير الشركة النشطة'],
-        'page' => ['key' => 'companies.page', 'label' => 'صفحة الشركات'],
+        'name' => ['key' => 'companies', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø´Ø±ÙƒØ§Øª'],
+        'change_active_company' => ['key' => 'companies.change_active_company', 'label' => 'ØªØºÙŠÙŠØ± Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©'],
+        'page' => ['key' => 'companies.page', 'label' => 'ØµÙØ­Ø© Ø§Ù„Ø´Ø±ÙƒØ§Øª'],
 
-        'view_all' => ['key' => 'companies.view_all', 'label' => 'عرض كل الشركات'],
-        'view_children' => ['key' => 'companies.view_children', 'label' => 'عرض الشركات التابعة'],
-        'view_self' => ['key' => 'companies.view_self', 'label' => 'عرض الشركة الحالية'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'companies.create', 'label' => 'إنشاء شركة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'companies.update_all', 'label' => 'تعديل أى شركة'],
-        'update_children' => ['key' => 'companies.update_children', 'label' => 'تعديل الشركات التابعة'],
-        'update_self' => ['key' => 'companies.update_self', 'label' => 'تعديل الشركة الحالية'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'companies.delete_all', 'label' => 'حذف أى شركة'],
-        'delete_children' => ['key' => 'companies.delete_children', 'label' => 'حذف الشركات التابعة'],
-        'delete_self' => ['key' => 'companies.delete_self', 'label' => 'حذف الشركة الحالية'],
+        'view_all' => ['key' => 'companies.view_all', 'label' => 'Ø¹Ø±Ø¶ ÙƒÙ„ Ø§Ù„Ø´Ø±ÙƒØ§Øª'],
+        'view_children' => ['key' => 'companies.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø´Ø±ÙƒØ§Øª Ø§Ù„ØªØ§Ø¨Ø¹Ø©'],
+        'view_self' => ['key' => 'companies.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ø­Ø§Ù„ÙŠØ©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'companies.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø´Ø±ÙƒØ©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'companies.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£Ù‰ Ø´Ø±ÙƒØ©'],
+        'update_children' => ['key' => 'companies.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø´Ø±ÙƒØ§Øª Ø§Ù„ØªØ§Ø¨Ø¹Ø©'],
+        'update_self' => ['key' => 'companies.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ø­Ø§Ù„ÙŠØ©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'companies.delete_all', 'label' => 'Ø­Ø°Ù Ø£Ù‰ Ø´Ø±ÙƒØ©'],
+        'delete_children' => ['key' => 'companies.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø´Ø±ÙƒØ§Øª Ø§Ù„ØªØ§Ø¨Ø¹Ø©'],
+        'delete_self' => ['key' => 'companies.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ø­Ø§Ù„ÙŠØ©'],
     ],
 
     // => BRANCHES
     'branches' => [
-        'name' => ['key' => 'branches', 'label' => 'صلاحيات إدارة الفروع'],
-        'page' => ['key' => 'branches.page', 'label' => 'صفحة الفروع'],
+        'name' => ['key' => 'branches', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„ÙØ±ÙˆØ¹'],
+        'page' => ['key' => 'branches.page', 'label' => 'ØµÙØ­Ø© Ø§Ù„ÙØ±ÙˆØ¹'],
 
-        'view_all' => ['key' => 'branches.view_all', 'label' => 'عرض كل الفروع'],
-        'view_children' => ['key' => 'branches.view_children', 'label' => 'عرض الفروع التابعة'],
-        'view_self' => ['key' => 'branches.view_self', 'label' => 'عرض الفرع النشط'],
+        'view_all' => ['key' => 'branches.view_all', 'label' => 'Ø¹Ø±Ø¶ ÙƒÙ„ Ø§Ù„ÙØ±ÙˆØ¹'],
+        'view_children' => ['key' => 'branches.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„ÙØ±ÙˆØ¹ Ø§Ù„ØªØ§Ø¨Ø¹Ø©'],
+        'view_self' => ['key' => 'branches.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„ÙØ±Ø¹ Ø§Ù„Ù†Ø´Ø·'],
         
-        'create' => ['key' => 'branches.create', 'label' => 'إنشاء فرع'],
+        'create' => ['key' => 'branches.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ ÙØ±Ø¹'],
         
-        'update_all' => ['key' => 'branches.update_all', 'label' => 'تعديل أي فرع'],
-        'update_children' => ['key' => 'branches.update_children', 'label' => 'تعديل الفروع التابعة'],
-        'update_self' => ['key' => 'branches.update_self', 'label' => 'تعديل الفرع النشط'],
+        'update_all' => ['key' => 'branches.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ ÙØ±Ø¹'],
+        'update_children' => ['key' => 'branches.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ÙØ±ÙˆØ¹ Ø§Ù„ØªØ§Ø¨Ø¹Ø©'],
+        'update_self' => ['key' => 'branches.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ÙØ±Ø¹ Ø§Ù„Ù†Ø´Ø·'],
         
-        'delete_all' => ['key' => 'branches.delete_all', 'label' => 'حذف أي فرع'],
-        'delete_children' => ['key' => 'branches.delete_children', 'label' => 'حذف الفروع التابعة'],
-        'delete_self' => ['key' => 'branches.delete_self', 'label' => 'حذف الفرع النشط'],
+        'delete_all' => ['key' => 'branches.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ ÙØ±Ø¹'],
+        'delete_children' => ['key' => 'branches.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„ÙØ±ÙˆØ¹ Ø§Ù„ØªØ§Ø¨Ø¹Ø©'],
+        'delete_self' => ['key' => 'branches.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„ÙØ±Ø¹ Ø§Ù„Ù†Ø´Ø·'],
     ],
     // => USERS
     'users' => [
-        'name' => ['key' => 'users', 'label' => 'صلاحيات إدارة المستخدمين'],
-        'page' => ['key' => 'users.page', 'label' => 'صفحة المستخدمين'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'users.view_all', 'label' => 'عرض كل المستخدمين'],
-        'view_children' => ['key' => 'users.view_children', 'label' => 'عرض المستخدمين التابعين'],
-        'view_self' => ['key' => 'users.view_self', 'label' => 'عرض الحساب الشخصى'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'users.create', 'label' => 'إنشاء مستخدم'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'users.update_all', 'label' => 'تعديل أى مستخدم'],
-        'update_children' => ['key' => 'users.update_children', 'label' => 'تعديل التابعين'],
-        'update_self' => ['key' => 'users.update_self', 'label' => 'تعديل حسابه'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'users.delete_all', 'label' => 'حذف أى مستخدم'],
-        'delete_children' => ['key' => 'users.delete_children', 'label' => 'حذف التابعين'],
-        'delete_self' => ['key' => 'users.delete_self', 'label' => 'حذف حسابه'],
+        'name' => ['key' => 'users', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ†'],
+        'page' => ['key' => 'users.page', 'label' => 'ØµÙØ­Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ†'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'users.view_all', 'label' => 'Ø¹Ø±Ø¶ ÙƒÙ„ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ†'],
+        'view_children' => ['key' => 'users.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'view_self' => ['key' => 'users.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ø´Ø®ØµÙ‰'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'users.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'users.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£Ù‰ Ù…Ø³ØªØ®Ø¯Ù…'],
+        'update_children' => ['key' => 'users.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'update_self' => ['key' => 'users.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø­Ø³Ø§Ø¨Ù‡'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'users.delete_all', 'label' => 'Ø­Ø°Ù Ø£Ù‰ Ù…Ø³ØªØ®Ø¯Ù…'],
+        'delete_children' => ['key' => 'users.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'delete_self' => ['key' => 'users.delete_self', 'label' => 'Ø­Ø°Ù Ø­Ø³Ø§Ø¨Ù‡'],
     ],
     // => PERSONAL ACCESS TOKENS
     'personal_access_tokens' => [
-        'name' => ['key' => 'personal_access_tokens', 'label' => 'صلاحيات إدارة رموز الوصول الشخصية'],
-        'page' => ['key' => 'personal_access_tokens.page', 'label' => 'صفحة رموز الوصول الشخصية'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'personal_access_tokens.view_all', 'label' => 'عرض كل رموز الوصول'],
-        'view_children' => ['key' => 'personal_access_tokens.view_children', 'label' => 'عرض رموز الوصول التي أنشأها المستخدمون التابعون'],
-        'view_self' => ['key' => 'personal_access_tokens.view_self', 'label' => 'عرض رموز الوصول الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'personal_access_tokens.create', 'label' => 'إنشاء رمز وصول'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'personal_access_tokens.update_all', 'label' => 'تعديل أي رمز وصول'],
-        'update_children' => ['key' => 'personal_access_tokens.update_children', 'label' => 'تعديل رموز الوصول التي أنشأها المستخدمون التابعون'],
-        'update_self' => ['key' => 'personal_access_tokens.update_self', 'label' => 'تعديل رموز الوصول الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'personal_access_tokens.delete_all', 'label' => 'حذف أي رمز وصول'],
-        'delete_children' => ['key' => 'personal_access_tokens.delete_children', 'label' => 'حذف رموز الوصول التي أنشأها المستخدمون التابعون'],
-        'delete_self' => ['key' => 'personal_access_tokens.delete_self', 'label' => 'حذف رموز الوصول الخاصة بالمستخدم'],
+        'name' => ['key' => 'personal_access_tokens', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø±Ù…ÙˆØ² Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„Ø´Ø®ØµÙŠØ©'],
+        'page' => ['key' => 'personal_access_tokens.page', 'label' => 'ØµÙØ­Ø© Ø±Ù…ÙˆØ² Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„Ø´Ø®ØµÙŠØ©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'personal_access_tokens.view_all', 'label' => 'Ø¹Ø±Ø¶ ÙƒÙ„ Ø±Ù…ÙˆØ² Ø§Ù„ÙˆØµÙˆÙ„'],
+        'view_children' => ['key' => 'personal_access_tokens.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø±Ù…ÙˆØ² Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ† Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'personal_access_tokens.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø±Ù…ÙˆØ² Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'personal_access_tokens.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø±Ù…Ø² ÙˆØµÙˆÙ„'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'personal_access_tokens.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø±Ù…Ø² ÙˆØµÙˆÙ„'],
+        'update_children' => ['key' => 'personal_access_tokens.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø±Ù…ÙˆØ² Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ† Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'personal_access_tokens.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø±Ù…ÙˆØ² Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'personal_access_tokens.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø±Ù…Ø² ÙˆØµÙˆÙ„'],
+        'delete_children' => ['key' => 'personal_access_tokens.delete_children', 'label' => 'Ø­Ø°Ù Ø±Ù…ÙˆØ² Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ† Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'personal_access_tokens.delete_self', 'label' => 'Ø­Ø°Ù Ø±Ù…ÙˆØ² Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => TRANSLATIONS
     'translations' => [
-        'name' => ['key' => 'translations', 'label' => 'صلاحيات إدارة الترجمات'],
-        'page' => ['key' => 'translations.page', 'label' => 'الوصول إلى صفحة الترجمات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'translations.view_all', 'label' => 'عرض جميع الترجمات'],
-        'view_children' => ['key' => 'translations.view_children', 'label' => 'عرض الترجمات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'translations.view_self', 'label' => 'عرض الترجمات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'translations.create', 'label' => 'إنشاء ترجمة جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'translations.update_all', 'label' => 'تعديل أي ترجمة'],
-        'update_children' => ['key' => 'translations.update_children', 'label' => 'تعديل الترجمات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'translations.update_self', 'label' => 'تعديل الترجمات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'translations.delete_all', 'label' => 'حذف أي ترجمة'],
-        'delete_children' => ['key' => 'translations.delete_children', 'label' => 'حذف الترجمات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'translations.delete_self', 'label' => 'حذف الترجمات الخاصة بالمستخدم'],
+        'name' => ['key' => 'translations', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„ØªØ±Ø¬Ù…Ø§Øª'],
+        'page' => ['key' => 'translations.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„ØªØ±Ø¬Ù…Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'translations.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„ØªØ±Ø¬Ù…Ø§Øª'],
+        'view_children' => ['key' => 'translations.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„ØªØ±Ø¬Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'translations.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„ØªØ±Ø¬Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'translations.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ ØªØ±Ø¬Ù…Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'translations.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ ØªØ±Ø¬Ù…Ø©'],
+        'update_children' => ['key' => 'translations.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ØªØ±Ø¬Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'translations.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ØªØ±Ø¬Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'translations.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ ØªØ±Ø¬Ù…Ø©'],
+        'delete_children' => ['key' => 'translations.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„ØªØ±Ø¬Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'translations.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„ØªØ±Ø¬Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => TRANSACTIONS
     'transactions' => [
-        'name' => ['key' => 'transactions', 'label' => 'صلاحيات إدارة المعاملات'],
-        'page' => ['key' => 'transactions.page', 'label' => 'الوصول إلى صفحة المعاملات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'transactions.view_all', 'label' => 'عرض جميع المعاملات'],
-        'view_children' => ['key' => 'transactions.view_children', 'label' => 'عرض المعاملات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'transactions.view_self', 'label' => 'عرض المعاملات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'transactions.create', 'label' => 'إنشاء معاملة جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'transactions.update_all', 'label' => 'تعديل أي معاملة'],
-        'update_children' => ['key' => 'transactions.update_children', 'label' => 'تعديل المعاملات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'transactions.update_self', 'label' => 'تعديل المعاملات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'transactions.delete_all', 'label' => 'حذف أي معاملة'],
-        'delete_children' => ['key' => 'transactions.delete_children', 'label' => 'حذف المعاملات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'transactions.delete_self', 'label' => 'حذف المعاملات الخاصة بالمستخدم'],
+        'name' => ['key' => 'transactions', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª'],
+        'page' => ['key' => 'transactions.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'transactions.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª'],
+        'view_children' => ['key' => 'transactions.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'transactions.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'transactions.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ù…Ø¹Ø§Ù…Ù„Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'transactions.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ù…Ø¹Ø§Ù…Ù„Ø©'],
+        'update_children' => ['key' => 'transactions.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'transactions.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'transactions.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ù…Ø¹Ø§Ù…Ù„Ø©'],
+        'delete_children' => ['key' => 'transactions.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'transactions.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => ACTIVITY LOGS
     'activity_logs' => [
-        'name' => ['key' => 'activity_logs', 'label' => 'صلاحيات إدارة سجلات الأنشطة'],
-        'page' => ['key' => 'activity_logs.page', 'label' => 'الوصول إلى صفحة سجلات الأنشطة'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'activity_logs.view_all', 'label' => 'عرض جميع سجلات الأنشطة'],
-        'view_children' => ['key' => 'activity_logs.view_children', 'label' => 'عرض سجلات الأنشطة التي أنشأها التابعون'],
-        'view_self' => ['key' => 'activity_logs.view_self', 'label' => 'عرض سجلات الأنشطة الخاصة بالمستخدم'],
+        'name' => ['key' => 'activity_logs', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ø£Ù†Ø´Ø·Ø©'],
+        'page' => ['key' => 'activity_logs.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ø£Ù†Ø´Ø·Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'activity_logs.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ø£Ù†Ø´Ø·Ø©'],
+        'view_children' => ['key' => 'activity_logs.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ø£Ù†Ø´Ø·Ø© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'activity_logs.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ø£Ù†Ø´Ø·Ø© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
 
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'activity_logs.delete_all', 'label' => 'حذف أي سجل نشاط'],
-        'delete_children' => ['key' => 'activity_logs.delete_children', 'label' => 'حذف سجلات الأنشطة التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'activity_logs.delete_self', 'label' => 'حذف سجلات الأنشطة الخاصة بالمستخدم'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'activity_logs.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø³Ø¬Ù„ Ù†Ø´Ø§Ø·'],
+        'delete_children' => ['key' => 'activity_logs.delete_children', 'label' => 'Ø­Ø°Ù Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ø£Ù†Ø´Ø·Ø© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'activity_logs.delete_self', 'label' => 'Ø­Ø°Ù Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ø£Ù†Ø´Ø·Ø© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => CASH BOX TYPES
     'cash_box_types' => [
-        'name' => ['key' => 'cash_box_types', 'label' => 'صلاحيات إدارة أنواع صناديق النقدية'],
-        'page' => ['key' => 'cash_box_types.page', 'label' => 'الوصول إلى صفحة أنواع صناديق النقدية'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'cash_box_types.view_all', 'label' => 'عرض جميع أنواع صناديق النقدية'],
-        'view_children' => ['key' => 'cash_box_types.view_children', 'label' => 'عرض أنواع صناديق النقدية التي أنشأها التابعون'],
-        'view_self' => ['key' => 'cash_box_types.view_self', 'label' => 'عرض أنواع صناديق النقدية الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'cash_box_types.create', 'label' => 'إنشاء نوع صندوق نقدية جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'cash_box_types.update_all', 'label' => 'تعديل أي نوع صندوق نقدية'],
-        'update_children' => ['key' => 'cash_box_types.update_children', 'label' => 'تعديل أنواع صناديق النقدية التي أنشأها التابعون'],
-        'update_self' => ['key' => 'cash_box_types.update_self', 'label' => 'تعديل أنواع صناديق النقدية الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'cash_box_types.delete_all', 'label' => 'حذف أي نوع صندوق نقدية'],
-        'delete_children' => ['key' => 'cash_box_types.delete_children', 'label' => 'حذف أنواع صناديق النقدية التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'cash_box_types.delete_self', 'label' => 'حذف أنواع صناديق النقدية الخاصة بالمستخدم'],
+        'name' => ['key' => 'cash_box_types', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø£Ù†ÙˆØ§Ø¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ©'],
+        'page' => ['key' => 'cash_box_types.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø£Ù†ÙˆØ§Ø¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'cash_box_types.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø£Ù†ÙˆØ§Ø¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ©'],
+        'view_children' => ['key' => 'cash_box_types.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø£Ù†ÙˆØ§Ø¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'cash_box_types.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø£Ù†ÙˆØ§Ø¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'cash_box_types.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ù†ÙˆØ¹ ØµÙ†Ø¯ÙˆÙ‚ Ù†Ù‚Ø¯ÙŠØ© Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'cash_box_types.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ù†ÙˆØ¹ ØµÙ†Ø¯ÙˆÙ‚ Ù†Ù‚Ø¯ÙŠØ©'],
+        'update_children' => ['key' => 'cash_box_types.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£Ù†ÙˆØ§Ø¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'cash_box_types.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£Ù†ÙˆØ§Ø¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'cash_box_types.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ù†ÙˆØ¹ ØµÙ†Ø¯ÙˆÙ‚ Ù†Ù‚Ø¯ÙŠØ©'],
+        'delete_children' => ['key' => 'cash_box_types.delete_children', 'label' => 'Ø­Ø°Ù Ø£Ù†ÙˆØ§Ø¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'cash_box_types.delete_self', 'label' => 'Ø­Ø°Ù Ø£Ù†ÙˆØ§Ø¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => CASH BOXES
     'cash_boxes' => [
-        'name' => ['key' => 'cash_boxes', 'label' => 'صلاحيات إدارة صناديق النقدية'],
-        'page' => ['key' => 'cash_boxes.page', 'label' => 'الوصول إلى صفحة صناديق النقدية'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'cash_boxes.view_all', 'label' => 'عرض جميع صناديق النقدية'],
-        'view_children' => ['key' => 'cash_boxes.view_children', 'label' => 'عرض صناديق النقدية التي أنشأها التابعون'],
-        'view_self' => ['key' => 'cash_boxes.view_self', 'label' => 'عرض صناديق النقدية الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'cash_boxes.create', 'label' => 'إنشاء صندوق نقدية جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'cash_boxes.update_all', 'label' => 'تعديل أي صندوق نقدية'],
-        'update_children' => ['key' => 'cash_boxes.update_children', 'label' => 'تعديل صناديق النقدية التي أنشأها التابعون'],
-        'update_self' => ['key' => 'cash_boxes.update_self', 'label' => 'تعديل صناديق النقدية الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'cash_boxes.delete_all', 'label' => 'حذف أي صندوق نقدية'],
-        'delete_children' => ['key' => 'cash_boxes.delete_children', 'label' => 'حذف صناديق النقدية التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'cash_boxes.delete_self', 'label' => 'حذف صناديق النقدية الخاصة بالمستخدم'],
+        'name' => ['key' => 'cash_boxes', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ©'],
+        'page' => ['key' => 'cash_boxes.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'cash_boxes.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ©'],
+        'view_children' => ['key' => 'cash_boxes.view_children', 'label' => 'Ø¹Ø±Ø¶ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'cash_boxes.view_self', 'label' => 'Ø¹Ø±Ø¶ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'cash_boxes.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ ØµÙ†Ø¯ÙˆÙ‚ Ù†Ù‚Ø¯ÙŠØ© Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'cash_boxes.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ ØµÙ†Ø¯ÙˆÙ‚ Ù†Ù‚Ø¯ÙŠØ©'],
+        'update_children' => ['key' => 'cash_boxes.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'cash_boxes.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'cash_boxes.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ ØµÙ†Ø¯ÙˆÙ‚ Ù†Ù‚Ø¯ÙŠØ©'],
+        'delete_children' => ['key' => 'cash_boxes.delete_children', 'label' => 'Ø­Ø°Ù ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'cash_boxes.delete_self', 'label' => 'Ø­Ø°Ù ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => IMAGES
     'images' => [
-        'name' => ['key' => 'images', 'label' => 'صلاحيات إدارة الصور'],
-        'page' => ['key' => 'images.page', 'label' => 'الوصول إلى صفحة الصور'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'images.view_all', 'label' => 'عرض جميع الصور'],
-        'view_children' => ['key' => 'images.view_children', 'label' => 'عرض الصور التي أنشأها التابعون'],
-        'view_self' => ['key' => 'images.view_self', 'label' => 'عرض الصور الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'images.create', 'label' => 'إضافة صورة جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'images.update_all', 'label' => 'تعديل أي صورة'],
-        'update_children' => ['key' => 'images.update_children', 'label' => 'تعديل الصور التي أنشأها التابعون'],
-        'update_self' => ['key' => 'images.update_self', 'label' => 'تعديل الصور الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'images.delete_all', 'label' => 'حذف أي صورة'],
-        'delete_children' => ['key' => 'images.delete_children', 'label' => 'حذف الصور التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'images.delete_self', 'label' => 'حذف الصور الخاصة بالمستخدم'],
+        'name' => ['key' => 'images', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„ØµÙˆØ±'],
+        'page' => ['key' => 'images.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„ØµÙˆØ±'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'images.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„ØµÙˆØ±'],
+        'view_children' => ['key' => 'images.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„ØµÙˆØ± Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'images.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„ØµÙˆØ± Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'images.create', 'label' => 'Ø¥Ø¶Ø§ÙØ© ØµÙˆØ±Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'images.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ ØµÙˆØ±Ø©'],
+        'update_children' => ['key' => 'images.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ØµÙˆØ± Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'images.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ØµÙˆØ± Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'images.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ ØµÙˆØ±Ø©'],
+        'delete_children' => ['key' => 'images.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„ØµÙˆØ± Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'images.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„ØµÙˆØ± Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => WAREHOUSES
     'warehouses' => [
-        'name' => ['key' => 'warehouses', 'label' => 'صلاحيات إدارة المستودعات'],
-        'page' => ['key' => 'warehouses.page', 'label' => 'الوصول إلى صفحة المستودعات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'warehouses.view_all', 'label' => 'عرض جميع المستودعات'],
-        'view_children' => ['key' => 'warehouses.view_children', 'label' => 'عرض المستودعات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'warehouses.view_self', 'label' => 'عرض المستودعات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'warehouses.create', 'label' => 'إنشاء مستودع جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'warehouses.update_all', 'label' => 'تعديل أي مستودع'],
-        'update_children' => ['key' => 'warehouses.update_children', 'label' => 'تعديل المستودعات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'warehouses.update_self', 'label' => 'تعديل المستودعات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'warehouses.delete_all', 'label' => 'حذف أي مستودع'],
-        'delete_children' => ['key' => 'warehouses.delete_children', 'label' => 'حذف المستودعات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'warehouses.delete_self', 'label' => 'حذف المستودعات الخاصة بالمستخدم'],
+        'name' => ['key' => 'warehouses', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø³ØªÙˆØ¯Ø¹Ø§Øª'],
+        'page' => ['key' => 'warehouses.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ù…Ø³ØªÙˆØ¯Ø¹Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'warehouses.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø³ØªÙˆØ¯Ø¹Ø§Øª'],
+        'view_children' => ['key' => 'warehouses.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø³ØªÙˆØ¯Ø¹Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'warehouses.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø³ØªÙˆØ¯Ø¹Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'warehouses.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ù…Ø³ØªÙˆØ¯Ø¹ Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'warehouses.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ù…Ø³ØªÙˆØ¯Ø¹'],
+        'update_children' => ['key' => 'warehouses.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø³ØªÙˆØ¯Ø¹Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'warehouses.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø³ØªÙˆØ¯Ø¹Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'warehouses.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ù…Ø³ØªÙˆØ¯Ø¹'],
+        'delete_children' => ['key' => 'warehouses.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ù…Ø³ØªÙˆØ¯Ø¹Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'warehouses.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ù…Ø³ØªÙˆØ¯Ø¹Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => CATEGORIES
     'categories' => [
-        'name' => ['key' => 'categories', 'label' => 'صلاحيات إدارة الفئات'],
-        'page' => ['key' => 'categories.page', 'label' => 'الوصول إلى صفحة الفئات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'categories.view_all', 'label' => 'عرض جميع الفئات'],
-        'view_children' => ['key' => 'categories.view_children', 'label' => 'عرض الفئات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'categories.view_self', 'label' => 'عرض الفئات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'categories.create', 'label' => 'إنشاء فئة جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'categories.update_all', 'label' => 'تعديل أي فئة'],
-        'update_children' => ['key' => 'categories.update_children', 'label' => 'تعديل الفئات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'categories.update_self', 'label' => 'تعديل الفئات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'categories.delete_all', 'label' => 'حذف أي فئة'],
-        'delete_children' => ['key' => 'categories.delete_children', 'label' => 'حذف الفئات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'categories.delete_self', 'label' => 'حذف الفئات الخاصة بالمستخدم'],
-        'merge' => ['key' => 'categories.merge', 'label' => 'دمج الفئات'],
-        'globalize' => ['key' => 'categories.globalize', 'label' => 'تحويل الفئة لنظام عالمي'],
+        'name' => ['key' => 'categories', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„ÙØ¦Ø§Øª'],
+        'page' => ['key' => 'categories.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„ÙØ¦Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'categories.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„ÙØ¦Ø§Øª'],
+        'view_children' => ['key' => 'categories.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„ÙØ¦Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'categories.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„ÙØ¦Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'categories.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ ÙØ¦Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'categories.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ ÙØ¦Ø©'],
+        'update_children' => ['key' => 'categories.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ÙØ¦Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'categories.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ÙØ¦Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'categories.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ ÙØ¦Ø©'],
+        'delete_children' => ['key' => 'categories.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„ÙØ¦Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'categories.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„ÙØ¦Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        'merge' => ['key' => 'categories.merge', 'label' => 'Ø¯Ù…Ø¬ Ø§Ù„ÙØ¦Ø§Øª'],
+        'globalize' => ['key' => 'categories.globalize', 'label' => 'ØªØ­ÙˆÙŠÙ„ Ø§Ù„ÙØ¦Ø© Ù„Ù†Ø¸Ø§Ù… Ø¹Ø§Ù„Ù…ÙŠ'],
     ],
     // => BRANDS
     'brands' => [
-        'name' => ['key' => 'brands', 'label' => 'صلاحيات إدارة العلامات التجارية'],
-        'page' => ['key' => 'brands.page', 'label' => 'الوصول إلى صفحة العلامات التجارية'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'brands.view_all', 'label' => 'عرض جميع العلامات التجارية'],
-        'view_children' => ['key' => 'brands.view_children', 'label' => 'عرض العلامات التجارية التي أنشأها التابعون'],
-        'view_self' => ['key' => 'brands.view_self', 'label' => 'عرض العلامات التجارية الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'brands.create', 'label' => 'إنشاء علامة تجارية جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'brands.update_all', 'label' => 'تعديل أي علامة تجارية'],
-        'update_children' => ['key' => 'brands.update_children', 'label' => 'تعديل العلامات التجارية التي أنشأها التابعون'],
-        'update_self' => ['key' => 'brands.update_self', 'label' => 'تعديل العلامات التجارية الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'brands.delete_all', 'label' => 'حذف أي علامة تجارية'],
-        'delete_children' => ['key' => 'brands.delete_children', 'label' => 'حذف العلامات التجارية التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'brands.delete_self', 'label' => 'حذف العلامات التجارية الخاصة بالمستخدم'],
-        'merge' => ['key' => 'brands.merge', 'label' => 'دمج العلامات التجارية'],
-        'globalize' => ['key' => 'brands.globalize', 'label' => 'تحويل العلامة التجارية لنظام عالمي'],
+        'name' => ['key' => 'brands', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ©'],
+        'page' => ['key' => 'brands.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'brands.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ©'],
+        'view_children' => ['key' => 'brands.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'brands.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'brands.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø¹Ù„Ø§Ù…Ø© ØªØ¬Ø§Ø±ÙŠØ© Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'brands.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø¹Ù„Ø§Ù…Ø© ØªØ¬Ø§Ø±ÙŠØ©'],
+        'update_children' => ['key' => 'brands.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'brands.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'brands.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø¹Ù„Ø§Ù…Ø© ØªØ¬Ø§Ø±ÙŠØ©'],
+        'delete_children' => ['key' => 'brands.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'brands.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        'merge' => ['key' => 'brands.merge', 'label' => 'Ø¯Ù…Ø¬ Ø§Ù„Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ©'],
+        'globalize' => ['key' => 'brands.globalize', 'label' => 'ØªØ­ÙˆÙŠÙ„ Ø§Ù„Ø¹Ù„Ø§Ù…Ø© Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ© Ù„Ù†Ø¸Ø§Ù… Ø¹Ø§Ù„Ù…ÙŠ'],
     ],
     // => ATTRIBUTES
     'attributes' => [
-        'name' => ['key' => 'attributes', 'label' => 'صلاحيات إدارة السمات'],
-        'page' => ['key' => 'attributes.page', 'label' => 'الوصول إلى صفحة السمات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'attributes.view_all', 'label' => 'عرض جميع السمات'],
-        'view_children' => ['key' => 'attributes.view_children', 'label' => 'عرض السمات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'attributes.view_self', 'label' => 'عرض السمات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'attributes.create', 'label' => 'إنشاء سمة جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'attributes.update_all', 'label' => 'تعديل أي سمة'],
-        'update_children' => ['key' => 'attributes.update_children', 'label' => 'تعديل السمات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'attributes.update_self', 'label' => 'تعديل السمات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'attributes.delete_all', 'label' => 'حذف أي سمة'],
-        'delete_children' => ['key' => 'attributes.delete_children', 'label' => 'حذف السمات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'attributes.delete_self', 'label' => 'حذف السمات الخاصة بالمستخدم'],
+        'name' => ['key' => 'attributes', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø³Ù…Ø§Øª'],
+        'page' => ['key' => 'attributes.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ø³Ù…Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'attributes.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø³Ù…Ø§Øª'],
+        'view_children' => ['key' => 'attributes.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'attributes.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'attributes.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø³Ù…Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'attributes.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø³Ù…Ø©'],
+        'update_children' => ['key' => 'attributes.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'attributes.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'attributes.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø³Ù…Ø©'],
+        'delete_children' => ['key' => 'attributes.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'attributes.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => ATTRIBUTE VALUES
     'attribute_values' => [
-        'name' => ['key' => 'attribute_values', 'label' => 'صلاحيات إدارة قيم السمات'],
-        'page' => ['key' => 'attribute_values.page', 'label' => 'الوصول إلى صفحة قيم السمات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'attribute_values.view_all', 'label' => 'عرض جميع قيم السمات'],
-        'view_children' => ['key' => 'attribute_values.view_children', 'label' => 'عرض قيم السمات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'attribute_values.view_self', 'label' => 'عرض قيم السمات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'attribute_values.create', 'label' => 'إنشاء قيمة سمة جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'attribute_values.update_all', 'label' => 'تعديل أي قيمة سمة'],
-        'update_children' => ['key' => 'attribute_values.update_children', 'label' => 'تعديل قيم السمات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'attribute_values.update_self', 'label' => 'تعديل قيم السمات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'attribute_values.delete_all', 'label' => 'حذف أي قيمة سمة'],
-        'delete_children' => ['key' => 'attribute_values.delete_children', 'label' => 'حذف قيم السمات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'attribute_values.delete_self', 'label' => 'حذف قيم السمات الخاصة بالمستخدم'],
+        'name' => ['key' => 'attribute_values', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ù‚ÙŠÙ… Ø§Ù„Ø³Ù…Ø§Øª'],
+        'page' => ['key' => 'attribute_values.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ù‚ÙŠÙ… Ø§Ù„Ø³Ù…Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'attribute_values.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ù‚ÙŠÙ… Ø§Ù„Ø³Ù…Ø§Øª'],
+        'view_children' => ['key' => 'attribute_values.view_children', 'label' => 'Ø¹Ø±Ø¶ Ù‚ÙŠÙ… Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'attribute_values.view_self', 'label' => 'Ø¹Ø±Ø¶ Ù‚ÙŠÙ… Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'attribute_values.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ù‚ÙŠÙ…Ø© Ø³Ù…Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'attribute_values.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ù‚ÙŠÙ…Ø© Ø³Ù…Ø©'],
+        'update_children' => ['key' => 'attribute_values.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ù‚ÙŠÙ… Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'attribute_values.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ù‚ÙŠÙ… Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'attribute_values.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ù‚ÙŠÙ…Ø© Ø³Ù…Ø©'],
+        'delete_children' => ['key' => 'attribute_values.delete_children', 'label' => 'Ø­Ø°Ù Ù‚ÙŠÙ… Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'attribute_values.delete_self', 'label' => 'Ø­Ø°Ù Ù‚ÙŠÙ… Ø§Ù„Ø³Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => PRODUCTS
     'products' => [
-        'name' => ['key' => 'products', 'label' => 'صلاحيات إدارة المنتجات'],
-        'page' => ['key' => 'products.page', 'label' => 'الوصول إلى صفحة المنتجات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'products.view_all', 'label' => 'عرض جميع المنتجات'],
-        'view_children' => ['key' => 'products.view_children', 'label' => 'عرض المنتجات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'products.view_self', 'label' => 'عرض المنتجات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'products.create', 'label' => 'إنشاء منتج جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'products.update_all', 'label' => 'تعديل أي منتج'],
-        'update_children' => ['key' => 'products.update_children', 'label' => 'تعديل المنتجات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'products.update_self', 'label' => 'تعديل المنتجات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'products.delete_all', 'label' => 'حذف أي منتج'],
-        'delete_children' => ['key' => 'products.delete_children', 'label' => 'حذف المنتجات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'products.delete_self', 'label' => 'حذف المنتجات الخاصة بالمستخدم'],
-        'view_wholesale_price' => ['key' => 'products.view_wholesale_price', 'label' => 'عرض سعر الجملة'],
-        'view_purchase_price' => ['key' => 'products.view_purchase_price', 'label' => 'عرض سعر الشراء'],
-        'print_labels' => ['key' => 'products.print_labels', 'label' => 'طباعة الملصقات والباركود'],
-        'import' => ['key' => 'products.import', 'label' => 'استيراد المنتجات'],
-        'export' => ['key' => 'products.export', 'label' => 'تصدير المنتجات'],
+        'name' => ['key' => 'products', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
+        'page' => ['key' => 'products.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'products.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
+        'view_children' => ['key' => 'products.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'products.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'products.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ù…Ù†ØªØ¬ Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'products.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ù…Ù†ØªØ¬'],
+        'update_children' => ['key' => 'products.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'products.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'products.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ù…Ù†ØªØ¬'],
+        'delete_children' => ['key' => 'products.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'products.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        'view_wholesale_price' => ['key' => 'products.view_wholesale_price', 'label' => 'Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ø§Ù„Ø¬Ù…Ù„Ø©'],
+        'view_purchase_price' => ['key' => 'products.view_purchase_price', 'label' => 'Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ø§Ù„Ø´Ø±Ø§Ø¡'],
+        'print_labels' => ['key' => 'products.print_labels', 'label' => 'Ø·Ø¨Ø§Ø¹Ø© Ø§Ù„Ù…Ù„ØµÙ‚Ø§Øª ÙˆØ§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯'],
+        'import' => ['key' => 'products.import', 'label' => 'Ø§Ø³ØªÙŠØ±Ø§Ø¯ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
+        'export' => ['key' => 'products.export', 'label' => 'ØªØµØ¯ÙŠØ± Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
     ],
     // => PRODUCT VARIANTS
     'product_variants' => [
-        'name' => ['key' => 'product_variants', 'label' => 'صلاحيات إدارة متغيرات المنتجات'],
-        'page' => ['key' => 'product_variants.page', 'label' => 'الوصول إلى صفحة متغيرات المنتجات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'product_variants.view_all', 'label' => 'عرض جميع متغيرات المنتجات'],
-        'view_children' => ['key' => 'product_variants.view_children', 'label' => 'عرض متغيرات المنتجات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'product_variants.view_self', 'label' => 'عرض متغيرات المنتجات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'product_variants.create', 'label' => 'إنشاء متغير منتج جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'product_variants.update_all', 'label' => 'تعديل أي متغير منتج'],
-        'update_children' => ['key' => 'product_variants.update_children', 'label' => 'تعديل متغيرات المنتجات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'product_variants.update_self', 'label' => 'تعديل متغيرات المنتجات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'product_variants.delete_all', 'label' => 'حذف أي متغير منتج'],
-        'delete_children' => ['key' => 'product_variants.delete_children', 'label' => 'حذف متغيرات المنتجات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'product_variants.delete_self', 'label' => 'حذف متغيرات المنتجات الخاصة بالمستخدم'],
+        'name' => ['key' => 'product_variants', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
+        'page' => ['key' => 'product_variants.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'product_variants.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
+        'view_children' => ['key' => 'product_variants.view_children', 'label' => 'Ø¹Ø±Ø¶ Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'product_variants.view_self', 'label' => 'Ø¹Ø±Ø¶ Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'product_variants.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ù…ØªØºÙŠØ± Ù…Ù†ØªØ¬ Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'product_variants.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ù…ØªØºÙŠØ± Ù…Ù†ØªØ¬'],
+        'update_children' => ['key' => 'product_variants.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'product_variants.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'product_variants.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ù…ØªØºÙŠØ± Ù…Ù†ØªØ¬'],
+        'delete_children' => ['key' => 'product_variants.delete_children', 'label' => 'Ø­Ø°Ù Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'product_variants.delete_self', 'label' => 'Ø­Ø°Ù Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => PRODUCT VARIANT ATTRIBUTES
     'product_variant_attributes' => [
-        'name' => ['key' => 'product_variant_attributes', 'label' => 'صلاحيات إدارة سمات متغيرات المنتجات'],
-        'page' => ['key' => 'product_variant_attributes.page', 'label' => 'الوصول إلى صفحة سمات متغيرات المنتجات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'product_variant_attributes.view_all', 'label' => 'عرض جميع سمات متغيرات المنتجات'],
-        'view_children' => ['key' => 'product_variant_attributes.view_children', 'label' => 'عرض سمات متغيرات المنتجات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'product_variant_attributes.view_self', 'label' => 'عرض سمات متغيرات المنتجات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'product_variant_attributes.create', 'label' => 'إنشاء سمة متغير منتج جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'product_variant_attributes.update_all', 'label' => 'تعديل أي سمة متغير منتج'],
-        'update_children' => ['key' => 'product_variant_attributes.update_children', 'label' => 'تعديل سمات متغيرات المنتجات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'product_variant_attributes.update_self', 'label' => 'تعديل سمات متغيرات المنتجات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'product_variant_attributes.delete_all', 'label' => 'حذف أي سمة متغير منتج'],
-        'delete_children' => ['key' => 'product_variant_attributes.delete_children', 'label' => 'حذف سمات متغيرات المنتجات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'product_variant_attributes.delete_self', 'label' => 'حذف سمات متغيرات المنتجات الخاصة بالمستخدم'],
+        'name' => ['key' => 'product_variant_attributes', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø³Ù…Ø§Øª Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
+        'page' => ['key' => 'product_variant_attributes.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø³Ù…Ø§Øª Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'product_variant_attributes.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø³Ù…Ø§Øª Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'],
+        'view_children' => ['key' => 'product_variant_attributes.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø³Ù…Ø§Øª Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'product_variant_attributes.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø³Ù…Ø§Øª Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'product_variant_attributes.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø³Ù…Ø© Ù…ØªØºÙŠØ± Ù…Ù†ØªØ¬ Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'product_variant_attributes.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø³Ù…Ø© Ù…ØªØºÙŠØ± Ù…Ù†ØªØ¬'],
+        'update_children' => ['key' => 'product_variant_attributes.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø³Ù…Ø§Øª Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'product_variant_attributes.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø³Ù…Ø§Øª Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'product_variant_attributes.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø³Ù…Ø© Ù…ØªØºÙŠØ± Ù…Ù†ØªØ¬'],
+        'delete_children' => ['key' => 'product_variant_attributes.delete_children', 'label' => 'Ø­Ø°Ù Ø³Ù…Ø§Øª Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'product_variant_attributes.delete_self', 'label' => 'Ø­Ø°Ù Ø³Ù…Ø§Øª Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => STOCKS
     'stocks' => [
-        'name' => ['key' => 'stocks', 'label' => 'صلاحيات إدارة المخزون'],
-        'page' => ['key' => 'stocks.page', 'label' => 'الوصول إلى صفحة المخزون'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'stocks.view_all', 'label' => 'عرض جميع سجلات المخزون'],
-        'view_children' => ['key' => 'stocks.view_children', 'label' => 'عرض سجلات المخزون التي أنشأها التابعون'],
-        'view_self' => ['key' => 'stocks.view_self', 'label' => 'عرض سجلات المخزون الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'stocks.create', 'label' => 'إنشاء سجل مخزون جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'stocks.update_all', 'label' => 'تعديل أي سجل مخزون'],
-        'update_children' => ['key' => 'stocks.update_children', 'label' => 'تعديل سجلات المخزون التي أنشأها التابعون'],
-        'update_self' => ['key' => 'stocks.update_self', 'label' => 'تعديل سجلات المخزون الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'stocks.delete_all', 'label' => 'حذف أي سجل مخزون'],
-        'delete_children' => ['key' => 'stocks.delete_children', 'label' => 'حذف سجلات المخزون التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'stocks.delete_self', 'label' => 'حذف سجلات المخزون الخاصة بالمستخدم'],
-        'manual_adjustment' => ['key' => 'stocks.manual_adjustment', 'label' => 'التعديل اليدوي للمخزون'],
+        'name' => ['key' => 'stocks', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ†'],
+        'page' => ['key' => 'stocks.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ†'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'stocks.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ†'],
+        'view_children' => ['key' => 'stocks.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ† Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'stocks.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ† Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'stocks.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø³Ø¬Ù„ Ù…Ø®Ø²ÙˆÙ† Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'stocks.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø³Ø¬Ù„ Ù…Ø®Ø²ÙˆÙ†'],
+        'update_children' => ['key' => 'stocks.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ† Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'stocks.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ† Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'stocks.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø³Ø¬Ù„ Ù…Ø®Ø²ÙˆÙ†'],
+        'delete_children' => ['key' => 'stocks.delete_children', 'label' => 'Ø­Ø°Ù Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ† Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'stocks.delete_self', 'label' => 'Ø­Ø°Ù Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ† Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        'manual_adjustment' => ['key' => 'stocks.manual_adjustment', 'label' => 'Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ÙŠØ¯ÙˆÙŠ Ù„Ù„Ù…Ø®Ø²ÙˆÙ†'],
     ],
     // => INVOICES
     'invoices' => [
-        'name' => ['key' => 'invoices', 'label' => 'صلاحيات إدارة الفواتير'],
-        'page' => ['key' => 'invoices.page', 'label' => 'الوصول إلى صفحة الفواتير'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'invoices.view_all', 'label' => 'عرض جميع الفواتير'],
-        'view_children' => ['key' => 'invoices.view_children', 'label' => 'عرض الفواتير التي أنشأها التابعون'],
-        'view_self' => ['key' => 'invoices.view_self', 'label' => 'عرض الفواتير الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'invoices.create', 'label' => 'إنشاء فاتورة جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'invoices.update_all', 'label' => 'تعديل أي فاتورة'],
-        'update_children' => ['key' => 'invoices.update_children', 'label' => 'تعديل الفواتير التي أنشأها التابعون'],
-        'update_self' => ['key' => 'invoices.update_self', 'label' => 'تعديل الفواتير الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'invoices.delete_all', 'label' => 'حذف أي فاتورة'],
-        'delete_children' => ['key' => 'invoices.delete_children', 'label' => 'حذف الفواتير التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'invoices.delete_self', 'label' => 'حذف الفواتير الخاصة بالمستخدم'],
-        'print' => ['key' => 'invoices.print', 'label' => 'طباعة الفواتير'],
+        'name' => ['key' => 'invoices', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„ÙÙˆØ§ØªÙŠØ±'],
+        'page' => ['key' => 'invoices.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„ÙÙˆØ§ØªÙŠØ±'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'invoices.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„ÙÙˆØ§ØªÙŠØ±'],
+        'view_children' => ['key' => 'invoices.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„ÙÙˆØ§ØªÙŠØ± Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'invoices.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„ÙÙˆØ§ØªÙŠØ± Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'invoices.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ ÙØ§ØªÙˆØ±Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'invoices.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ ÙØ§ØªÙˆØ±Ø©'],
+        'update_children' => ['key' => 'invoices.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ÙÙˆØ§ØªÙŠØ± Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'invoices.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ÙÙˆØ§ØªÙŠØ± Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'invoices.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ ÙØ§ØªÙˆØ±Ø©'],
+        'delete_children' => ['key' => 'invoices.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„ÙÙˆØ§ØªÙŠØ± Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'invoices.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„ÙÙˆØ§ØªÙŠØ± Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        'print' => ['key' => 'invoices.print', 'label' => 'Ø·Ø¨Ø§Ø¹Ø© Ø§Ù„ÙÙˆØ§ØªÙŠØ±'],
     ],
     // => INSTALLMENT PLANS
     'installment_plans' => [
-        'name' => ['key' => 'installment_plans', 'label' => 'صلاحيات إدارة خطط الأقساط'],
-        'page' => ['key' => 'installment_plans.page', 'label' => 'الوصول إلى صفحة خطط الأقساط'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'installment_plans.view_all', 'label' => 'عرض جميع خطط الأقساط'],
-        'view_children' => ['key' => 'installment_plans.view_children', 'label' => 'عرض خطط الأقساط التي أنشأها التابعون'],
-        'view_self' => ['key' => 'installment_plans.view_self', 'label' => 'عرض خطط الأقساط الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'installment_plans.create', 'label' => 'إنشاء خطة أقساط جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'installment_plans.update_all', 'label' => 'تعديل أي خطة أقساط'],
-        'update_children' => ['key' => 'installment_plans.update_children', 'label' => 'تعديل خطط الأقساط التي أنشأها التابعون'],
-        'update_self' => ['key' => 'installment_plans.update_self', 'label' => 'تعديل خطط الأقساط الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'installment_plans.delete_all', 'label' => 'حذف أي خطة أقساط'],
-        'delete_children' => ['key' => 'installment_plans.delete_children', 'label' => 'حذف خطط الأقساط التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'installment_plans.delete_self', 'label' => 'حذف خطط الأقساط الخاصة بالمستخدم'],
+        'name' => ['key' => 'installment_plans', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø®Ø·Ø· Ø§Ù„Ø£Ù‚Ø³Ø§Ø·'],
+        'page' => ['key' => 'installment_plans.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø®Ø·Ø· Ø§Ù„Ø£Ù‚Ø³Ø§Ø·'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'installment_plans.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø®Ø·Ø· Ø§Ù„Ø£Ù‚Ø³Ø§Ø·'],
+        'view_children' => ['key' => 'installment_plans.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø®Ø·Ø· Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'installment_plans.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø®Ø·Ø· Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'installment_plans.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø®Ø·Ø© Ø£Ù‚Ø³Ø§Ø· Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'installment_plans.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø®Ø·Ø© Ø£Ù‚Ø³Ø§Ø·'],
+        'update_children' => ['key' => 'installment_plans.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø®Ø·Ø· Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'installment_plans.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø®Ø·Ø· Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'installment_plans.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø®Ø·Ø© Ø£Ù‚Ø³Ø§Ø·'],
+        'delete_children' => ['key' => 'installment_plans.delete_children', 'label' => 'Ø­Ø°Ù Ø®Ø·Ø· Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'installment_plans.delete_self', 'label' => 'Ø­Ø°Ù Ø®Ø·Ø· Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => INSTALLMENTS
     'installments' => [
-        'name' => ['key' => 'installments', 'label' => 'صلاحيات إدارة الأقساط'],
-        'page' => ['key' => 'installments.page', 'label' => 'الوصول إلى صفحة الأقساط'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'installments.view_all', 'label' => 'عرض جميع الأقساط'],
-        'view_children' => ['key' => 'installments.view_children', 'label' => 'عرض الأقساط التي أنشأها التابعون'],
-        'view_self' => ['key' => 'installments.view_self', 'label' => 'عرض الأقساط الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'installments.create', 'label' => 'إنشاء قسط جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'installments.update_all', 'label' => 'تعديل أي قسط'],
-        'update_children' => ['key' => 'installments.update_children', 'label' => 'تعديل الأقساط التي أنشأها التابعون'],
-        'update_self' => ['key' => 'installments.update_self', 'label' => 'تعديل الأقساط الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'installments.delete_all', 'label' => 'حذف أي قسط'],
-        'delete_children' => ['key' => 'installments.delete_children', 'label' => 'حذف الأقساط التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'installments.delete_self', 'label' => 'حذف الأقساط الخاصة بالمستخدم'],
+        'name' => ['key' => 'installments', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø£Ù‚Ø³Ø§Ø·'],
+        'page' => ['key' => 'installments.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ø£Ù‚Ø³Ø§Ø·'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'installments.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ù‚Ø³Ø§Ø·'],
+        'view_children' => ['key' => 'installments.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'installments.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'installments.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ù‚Ø³Ø· Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'installments.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ù‚Ø³Ø·'],
+        'update_children' => ['key' => 'installments.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'installments.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'installments.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ù‚Ø³Ø·'],
+        'delete_children' => ['key' => 'installments.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'installments.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => INSTALLMENT PAYMENTS
     'installment_payments' => [
-        'name' => ['key' => 'installment_payments', 'label' => 'صلاحيات إدارة مدفوعات الأقساط'],
-        'page' => ['key' => 'installment_payments.page', 'label' => 'الوصول إلى صفحة مدفوعات الأقساط'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'installment_payments.view_all', 'label' => 'عرض جميع مدفوعات الأقساط'],
-        'view_children' => ['key' => 'installment_payments.view_children', 'label' => 'عرض مدفوعات الأقساط التي أنشأها التابعون'],
-        'view_self' => ['key' => 'installment_payments.view_self', 'label' => 'عرض مدفوعات الأقساط الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'installment_payments.create', 'label' => 'إنشاء دفعة قسط جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'installment_payments.update_all', 'label' => 'تعديل أي دفعة قسط'],
-        'update_children' => ['key' => 'installment_payments.update_children', 'label' => 'تعديل مدفوعات الأقساط التي أنشأها التابعون'],
-        'update_self' => ['key' => 'installment_payments.update_self', 'label' => 'تعديل مدفوعات الأقساط الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'installment_payments.delete_all', 'label' => 'حذف أي دفعة قسط'],
-        'delete_children' => ['key' => 'installment_payments.delete_children', 'label' => 'حذف مدفوعات الأقساط التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'installment_payments.delete_self', 'label' => 'حذف مدفوعات الأقساط الخاصة بالمستخدم'],
+        'name' => ['key' => 'installment_payments', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø£Ù‚Ø³Ø§Ø·'],
+        'page' => ['key' => 'installment_payments.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø£Ù‚Ø³Ø§Ø·'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'installment_payments.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø£Ù‚Ø³Ø§Ø·'],
+        'view_children' => ['key' => 'installment_payments.view_children', 'label' => 'Ø¹Ø±Ø¶ Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'installment_payments.view_self', 'label' => 'Ø¹Ø±Ø¶ Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'installment_payments.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø¯ÙØ¹Ø© Ù‚Ø³Ø· Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'installment_payments.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø¯ÙØ¹Ø© Ù‚Ø³Ø·'],
+        'update_children' => ['key' => 'installment_payments.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'installment_payments.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'installment_payments.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø¯ÙØ¹Ø© Ù‚Ø³Ø·'],
+        'delete_children' => ['key' => 'installment_payments.delete_children', 'label' => 'Ø­Ø°Ù Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'installment_payments.delete_self', 'label' => 'Ø­Ø°Ù Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => INVOICE ITEMS
     'invoice_items' => [
-        'name' => ['key' => 'invoice_items', 'label' => 'صلاحيات إدارة عناصر الفاتورة'],
-        'page' => ['key' => 'invoice_items.page', 'label' => 'الوصول إلى صفحة عناصر الفاتورة'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'invoice_items.view_all', 'label' => 'عرض جميع عناصر الفاتورة'],
-        'view_children' => ['key' => 'invoice_items.view_children', 'label' => 'عرض عناصر الفاتورة التي أنشأها التابعون'],
-        'view_self' => ['key' => 'invoice_items.view_self', 'label' => 'عرض عناصر الفاتورة الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'invoice_items.create', 'label' => 'إنشاء عنصر فاتورة جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'invoice_items.update_all', 'label' => 'تعديل أي عنصر فاتورة'],
-        'update_children' => ['key' => 'invoice_items.update_children', 'label' => 'تعديل عناصر الفاتورة التي أنشأها التابعون'],
-        'update_self' => ['key' => 'invoice_items.update_self', 'label' => 'تعديل عناصر الفاتورة الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'invoice_items.delete_all', 'label' => 'حذف أي عنصر فاتورة'],
-        'delete_children' => ['key' => 'invoice_items.delete_children', 'label' => 'حذف عناصر الفاتورة التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'invoice_items.delete_self', 'label' => 'حذف عناصر الفاتورة الخاصة بالمستخدم'],
+        'name' => ['key' => 'invoice_items', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø¹Ù†Ø§ØµØ± Ø§Ù„ÙØ§ØªÙˆØ±Ø©'],
+        'page' => ['key' => 'invoice_items.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø¹Ù†Ø§ØµØ± Ø§Ù„ÙØ§ØªÙˆØ±Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'invoice_items.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø¹Ù†Ø§ØµØ± Ø§Ù„ÙØ§ØªÙˆØ±Ø©'],
+        'view_children' => ['key' => 'invoice_items.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø¹Ù†Ø§ØµØ± Ø§Ù„ÙØ§ØªÙˆØ±Ø© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'invoice_items.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø¹Ù†Ø§ØµØ± Ø§Ù„ÙØ§ØªÙˆØ±Ø© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'invoice_items.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø¹Ù†ØµØ± ÙØ§ØªÙˆØ±Ø© Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'invoice_items.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø¹Ù†ØµØ± ÙØ§ØªÙˆØ±Ø©'],
+        'update_children' => ['key' => 'invoice_items.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø¹Ù†Ø§ØµØ± Ø§Ù„ÙØ§ØªÙˆØ±Ø© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'invoice_items.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø¹Ù†Ø§ØµØ± Ø§Ù„ÙØ§ØªÙˆØ±Ø© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'invoice_items.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø¹Ù†ØµØ± ÙØ§ØªÙˆØ±Ø©'],
+        'delete_children' => ['key' => 'invoice_items.delete_children', 'label' => 'Ø­Ø°Ù Ø¹Ù†Ø§ØµØ± Ø§Ù„ÙØ§ØªÙˆØ±Ø© Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'invoice_items.delete_self', 'label' => 'Ø­Ø°Ù Ø¹Ù†Ø§ØµØ± Ø§Ù„ÙØ§ØªÙˆØ±Ø© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => PAYMENTS
     'payments' => [
-        'name' => ['key' => 'payments', 'label' => 'صلاحيات إدارة المدفوعات'],
-        'page' => ['key' => 'payments.page', 'label' => 'الوصول إلى صفحة المدفوعات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'payments.view_all', 'label' => 'عرض جميع المدفوعات'],
-        'view_children' => ['key' => 'payments.view_children', 'label' => 'عرض المدفوعات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'payments.view_self', 'label' => 'عرض المدفوعات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'payments.create', 'label' => 'إنشاء دفعة جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'payments.update_all', 'label' => 'تعديل أي دفعة'],
-        'update_children' => ['key' => 'payments.update_children', 'label' => 'تعديل المدفوعات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'payments.update_self', 'label' => 'تعديل المدفوعات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'payments.delete_all', 'label' => 'حذف أي دفعة'],
-        'delete_children' => ['key' => 'payments.delete_children', 'label' => 'حذف المدفوعات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'payments.delete_self', 'label' => 'حذف المدفوعات الخاصة بالمستخدم'],
+        'name' => ['key' => 'payments', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª'],
+        'page' => ['key' => 'payments.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'payments.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª'],
+        'view_children' => ['key' => 'payments.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'payments.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'payments.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø¯ÙØ¹Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'payments.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø¯ÙØ¹Ø©'],
+        'update_children' => ['key' => 'payments.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'payments.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'payments.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø¯ÙØ¹Ø©'],
+        'delete_children' => ['key' => 'payments.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'payments.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => PAYMENT METHODS
     'payment_methods' => [
-        'name' => ['key' => 'payment_methods', 'label' => 'صلاحيات إدارة طرق الدفع'],
-        'page' => ['key' => 'payment_methods.page', 'label' => 'الوصول إلى صفحة طرق الدفع'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'payment_methods.view_all', 'label' => 'عرض جميع طرق الدفع'],
-        'view_children' => ['key' => 'payment_methods.view_children', 'label' => 'عرض طرق الدفع التي أنشأها التابعون'],
-        'view_self' => ['key' => 'payment_methods.view_self', 'label' => 'عرض طرق الدفع الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'payment_methods.create', 'label' => 'إنشاء طريقة دفع جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'payment_methods.update_all', 'label' => 'تعديل أي طريقة دفع'],
-        'update_children' => ['key' => 'payment_methods.update_children', 'label' => 'تعديل طرق الدفع التي أنشأها التابعون'],
-        'update_self' => ['key' => 'payment_methods.update_self', 'label' => 'تعديل طرق الدفع الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'payment_methods.delete_all', 'label' => 'حذف أي طريقة دفع'],
-        'delete_children' => ['key' => 'payment_methods.delete_children', 'label' => 'حذف طرق الدفع التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'payment_methods.delete_self', 'label' => 'حذف طرق الدفع الخاصة بالمستخدم'],
+        'name' => ['key' => 'payment_methods', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹'],
+        'page' => ['key' => 'payment_methods.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'payment_methods.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹'],
+        'view_children' => ['key' => 'payment_methods.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'payment_methods.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'payment_methods.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø·Ø±ÙŠÙ‚Ø© Ø¯ÙØ¹ Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'payment_methods.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø·Ø±ÙŠÙ‚Ø© Ø¯ÙØ¹'],
+        'update_children' => ['key' => 'payment_methods.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'payment_methods.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'payment_methods.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø·Ø±ÙŠÙ‚Ø© Ø¯ÙØ¹'],
+        'delete_children' => ['key' => 'payment_methods.delete_children', 'label' => 'Ø­Ø°Ù Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'payment_methods.delete_self', 'label' => 'Ø­Ø°Ù Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => REVENUES
     'revenues' => [
-        'name' => ['key' => 'revenues', 'label' => 'صلاحيات إدارة الإيرادات'],
-        'page' => ['key' => 'revenues.page', 'label' => 'الوصول إلى صفحة الإيرادات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'revenues.view_all', 'label' => 'عرض جميع الإيرادات'],
-        'view_children' => ['key' => 'revenues.view_children', 'label' => 'عرض الإيرادات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'revenues.view_self', 'label' => 'عرض الإيرادات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'revenues.create', 'label' => 'إنشاء سجل إيراد جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'revenues.update_all', 'label' => 'تعديل أي إيراد'],
-        'update_children' => ['key' => 'revenues.update_children', 'label' => 'تعديل الإيرادات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'revenues.update_self', 'label' => 'تعديل الإيرادات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'revenues.delete_all', 'label' => 'حذف أي إيراد'],
-        'delete_children' => ['key' => 'revenues.delete_children', 'label' => 'حذف الإيرادات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'revenues.delete_self', 'label' => 'حذف الإيرادات الخاصة بالمستخدم'],
+        'name' => ['key' => 'revenues', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª'],
+        'page' => ['key' => 'revenues.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'revenues.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª'],
+        'view_children' => ['key' => 'revenues.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'revenues.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'revenues.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø³Ø¬Ù„ Ø¥ÙŠØ±Ø§Ø¯ Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'revenues.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø¥ÙŠØ±Ø§Ø¯'],
+        'update_children' => ['key' => 'revenues.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'revenues.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'revenues.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø¥ÙŠØ±Ø§Ø¯'],
+        'delete_children' => ['key' => 'revenues.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'revenues.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => PROFITS
     'profits' => [
-        'name' => ['key' => 'profits', 'label' => 'صلاحيات إدارة الأرباح'],
-        'page' => ['key' => 'profits.page', 'label' => 'الوصول إلى صفحة الأرباح'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'profits.view_all', 'label' => 'عرض جميع الأرباح'],
-        'view_children' => ['key' => 'profits.view_children', 'label' => 'عرض الأرباح التي أنشأها التابعون'],
-        'view_self' => ['key' => 'profits.view_self', 'label' => 'عرض الأرباح الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'profits.create', 'label' => 'إنشاء سجل ربح جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'profits.update_all', 'label' => 'تعديل أي ربح'],
-        'update_children' => ['key' => 'profits.update_children', 'label' => 'تعديل الأرباح التي أنشأها التابعون'],
-        'update_self' => ['key' => 'profits.update_self', 'label' => 'تعديل الأرباح الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'profits.delete_all', 'label' => 'حذف أي ربح'],
-        'delete_children' => ['key' => 'profits.delete_children', 'label' => 'حذف الأرباح التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'profits.delete_self', 'label' => 'حذف الأرباح الخاصة بالمستخدم'],
+        'name' => ['key' => 'profits', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø£Ø±Ø¨Ø§Ø­'],
+        'page' => ['key' => 'profits.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ø£Ø±Ø¨Ø§Ø­'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'profits.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­'],
+        'view_children' => ['key' => 'profits.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'profits.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'profits.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø³Ø¬Ù„ Ø±Ø¨Ø­ Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'profits.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø±Ø¨Ø­'],
+        'update_children' => ['key' => 'profits.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'profits.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'profits.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø±Ø¨Ø­'],
+        'delete_children' => ['key' => 'profits.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'profits.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => SERVICES
     'services' => [
-        'name' => ['key' => 'services', 'label' => 'صلاحيات إدارة الخدمات'],
-        'page' => ['key' => 'services.page', 'label' => 'الوصول إلى صفحة الخدمات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'services.view_all', 'label' => 'عرض جميع الخدمات'],
-        'view_children' => ['key' => 'services.view_children', 'label' => 'عرض الخدمات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'services.view_self', 'label' => 'عرض الخدمات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'services.create', 'label' => 'إنشاء خدمة جديدة'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'services.update_all', 'label' => 'تعديل أي خدمة'],
-        'update_children' => ['key' => 'services.update_children', 'label' => 'تعديل الخدمات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'services.update_self', 'label' => 'تعديل الخدمات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'services.delete_all', 'label' => 'حذف أي خدمة'],
-        'delete_children' => ['key' => 'services.delete_children', 'label' => 'حذف الخدمات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'services.delete_self', 'label' => 'حذف الخدمات الخاصة بالمستخدم'],
+        'name' => ['key' => 'services', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø®Ø¯Ù…Ø§Øª'],
+        'page' => ['key' => 'services.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ø®Ø¯Ù…Ø§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'services.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø®Ø¯Ù…Ø§Øª'],
+        'view_children' => ['key' => 'services.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø®Ø¯Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'services.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø®Ø¯Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'services.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø®Ø¯Ù…Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'services.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø®Ø¯Ù…Ø©'],
+        'update_children' => ['key' => 'services.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø®Ø¯Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'services.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø®Ø¯Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'services.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø®Ø¯Ù…Ø©'],
+        'delete_children' => ['key' => 'services.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø®Ø¯Ù…Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'services.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø®Ø¯Ù…Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => SUBSCRIPTIONS
     'subscriptions' => [
-        'name' => ['key' => 'subscriptions', 'label' => 'صلاحيات إدارة الاشتراكات'],
-        'page' => ['key' => 'subscriptions.page', 'label' => 'الوصول إلى صفحة الاشتراكات'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'subscriptions.view_all', 'label' => 'عرض جميع الاشتراكات'],
-        'view_children' => ['key' => 'subscriptions.view_children', 'label' => 'عرض الاشتراكات التي أنشأها التابعون'],
-        'view_self' => ['key' => 'subscriptions.view_self', 'label' => 'عرض الاشتراكات الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'subscriptions.create', 'label' => 'إنشاء اشتراك جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'subscriptions.update_all', 'label' => 'تعديل أي اشتراك'],
-        'update_children' => ['key' => 'subscriptions.update_children', 'label' => 'تعديل الاشتراكات التي أنشأها التابعون'],
-        'update_self' => ['key' => 'subscriptions.update_self', 'label' => 'تعديل الاشتراكات الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'subscriptions.delete_all', 'label' => 'حذف أي اشتراك'],
-        'delete_children' => ['key' => 'subscriptions.delete_children', 'label' => 'حذف الاشتراكات التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'subscriptions.delete_self', 'label' => 'حذف الاشتراكات الخاصة بالمستخدم'],
+        'name' => ['key' => 'subscriptions', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø§Ø´ØªØ±Ø§ÙƒØ§Øª'],
+        'page' => ['key' => 'subscriptions.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ø§Ø´ØªØ±Ø§ÙƒØ§Øª'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'subscriptions.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø§Ø´ØªØ±Ø§ÙƒØ§Øª'],
+        'view_children' => ['key' => 'subscriptions.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø§Ø´ØªØ±Ø§ÙƒØ§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'subscriptions.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø§Ø´ØªØ±Ø§ÙƒØ§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'subscriptions.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø§Ø´ØªØ±Ø§Ùƒ Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'subscriptions.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø§Ø´ØªØ±Ø§Ùƒ'],
+        'update_children' => ['key' => 'subscriptions.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø§Ø´ØªØ±Ø§ÙƒØ§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'subscriptions.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø§Ø´ØªØ±Ø§ÙƒØ§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'subscriptions.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø§Ø´ØªØ±Ø§Ùƒ'],
+        'delete_children' => ['key' => 'subscriptions.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø§Ø´ØªØ±Ø§ÙƒØ§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'subscriptions.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø§Ø´ØªØ±Ø§ÙƒØ§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => ROLES
     'roles' => [
-        'name' => ['key' => 'roles', 'label' => 'صلاحيات إدارة الأدوار'],
-        'page' => ['key' => 'roles.page', 'label' => 'الوصول إلى صفحة الأدوار'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'roles.view_all', 'label' => 'عرض جميع الأدوار'],
-        'view_children' => ['key' => 'roles.view_children', 'label' => 'عرض الأدوار التي أنشأها التابعون'],
-        'view_self' => ['key' => 'roles.view_self', 'label' => 'عرض الأدوار الخاصة بالمستخدم'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'roles.create', 'label' => 'إنشاء دور جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'roles.update_all', 'label' => 'تعديل أي دور'],
-        'update_children' => ['key' => 'roles.update_children', 'label' => 'تعديل الأدوار التي أنشأها التابعون'],
-        'update_self' => ['key' => 'roles.update_self', 'label' => 'تعديل الأدوار الخاصة بالمستخدم'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'roles.delete_all', 'label' => 'حذف أي دور'],
-        'delete_children' => ['key' => 'roles.delete_children', 'label' => 'حذف الأدوار التي أنشأها التابعون'],
-        'delete_self' => ['key' => 'roles.delete_self', 'label' => 'حذف الأدوار الخاصة بالمستخدم'],
+        'name' => ['key' => 'roles', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø£Ø¯ÙˆØ§Ø±'],
+        'page' => ['key' => 'roles.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ø£Ø¯ÙˆØ§Ø±'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'roles.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ø¯ÙˆØ§Ø±'],
+        'view_children' => ['key' => 'roles.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø£Ø¯ÙˆØ§Ø± Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'view_self' => ['key' => 'roles.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø£Ø¯ÙˆØ§Ø± Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'roles.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø¯ÙˆØ± Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'roles.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø¯ÙˆØ±'],
+        'update_children' => ['key' => 'roles.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø£Ø¯ÙˆØ§Ø± Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'update_self' => ['key' => 'roles.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø£Ø¯ÙˆØ§Ø± Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'roles.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø¯ÙˆØ±'],
+        'delete_children' => ['key' => 'roles.delete_children', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø£Ø¯ÙˆØ§Ø± Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†'],
+        'delete_self' => ['key' => 'roles.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ø£Ø¯ÙˆØ§Ø± Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
     ],
     // => EXPENSES
     'expenses' => [
-        'name' => ['key' => 'expenses', 'label' => 'صلاحيات إدارة المصاريف'],
-        'page' => ['key' => 'expenses.page', 'label' => 'الوصول إلى صفحة المصاريف'],
-        // صلاحيات العرض (View)
-        'view_all' => ['key' => 'expenses.view_all', 'label' => 'عرض جميع المصاريف'],
-        'view_children' => ['key' => 'expenses.view_children', 'label' => 'عرض مصاريف التابعين'],
-        'view_self' => ['key' => 'expenses.view_self', 'label' => 'عرض المصاريف الشخصية'],
-        // صلاحيات الإنشاء (Create)
-        'create' => ['key' => 'expenses.create', 'label' => 'تسجيل مصروف جديد'],
-        // صلاحيات التعديل (Update)
-        'update_all' => ['key' => 'expenses.update_all', 'label' => 'تعديل أي مصروف'],
-        'update_children' => ['key' => 'expenses.update_children', 'label' => 'تعديل مصاريف التابعين'],
-        'update_self' => ['key' => 'expenses.update_self', 'label' => 'تعديل المصروف الشخصي'],
-        // صلاحيات الحذف (Delete)
-        'delete_all' => ['key' => 'expenses.delete_all', 'label' => 'حذف أي مصروف'],
-        'delete_children' => ['key' => 'expenses.delete_children', 'label' => 'حذف مصاريف التابعين'],
-        'delete_self' => ['key' => 'expenses.delete_self', 'label' => 'حذف المصروف الشخصي'],
+        'name' => ['key' => 'expenses', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…ØµØ§Ø±ÙŠÙ'],
+        'page' => ['key' => 'expenses.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØµÙØ­Ø© Ø§Ù„Ù…ØµØ§Ø±ÙŠÙ'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶ (View)
+        'view_all' => ['key' => 'expenses.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…ØµØ§Ø±ÙŠÙ'],
+        'view_children' => ['key' => 'expenses.view_children', 'label' => 'Ø¹Ø±Ø¶ Ù…ØµØ§Ø±ÙŠÙ Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'view_self' => ['key' => 'expenses.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…ØµØ§Ø±ÙŠÙ Ø§Ù„Ø´Ø®ØµÙŠØ©'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡ (Create)
+        'create' => ['key' => 'expenses.create', 'label' => 'ØªØ³Ø¬ÙŠÙ„ Ù…ØµØ±ÙˆÙ Ø¬Ø¯ÙŠØ¯'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Update)
+        'update_all' => ['key' => 'expenses.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ù…ØµØ±ÙˆÙ'],
+        'update_children' => ['key' => 'expenses.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ù…ØµØ§Ø±ÙŠÙ Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'update_self' => ['key' => 'expenses.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…ØµØ±ÙˆÙ Ø§Ù„Ø´Ø®ØµÙŠ'],
+        // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø­Ø°Ù (Delete)
+        'delete_all' => ['key' => 'expenses.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ù…ØµØ±ÙˆÙ'],
+        'delete_children' => ['key' => 'expenses.delete_children', 'label' => 'Ø­Ø°Ù Ù…ØµØ§Ø±ÙŠÙ Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'delete_self' => ['key' => 'expenses.delete_self', 'label' => 'Ø­Ø°Ù Ø§Ù„Ù…ØµØ±ÙˆÙ Ø§Ù„Ø´Ø®ØµÙŠ'],
     ],
     // => EXPENSE CATEGORIES
     'expense_categories' => [
-        'name' => ['key' => 'expense_categories', 'label' => 'صلاحيات إدارة تصنيفات المصاريف'],
-        'page' => ['key' => 'expense_categories.page', 'label' => 'الوصول لصفحة تصنيفات المصاريف'],
-        'view_all' => ['key' => 'expense_categories.view_all', 'label' => 'عرض جميع التصنيفات'],
-        'create' => ['key' => 'expense_categories.create', 'label' => 'إضافة تصنيف جديد'],
-        'update_all' => ['key' => 'expense_categories.update_all', 'label' => 'تعديل أي تصنيف'],
-        'delete_all' => ['key' => 'expense_categories.delete_all', 'label' => 'حذف أي تصنيف'],
+        'name' => ['key' => 'expense_categories', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© ØªØµÙ†ÙŠÙØ§Øª Ø§Ù„Ù…ØµØ§Ø±ÙŠÙ'],
+        'page' => ['key' => 'expense_categories.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ù„ØµÙØ­Ø© ØªØµÙ†ÙŠÙØ§Øª Ø§Ù„Ù…ØµØ§Ø±ÙŠÙ'],
+        'view_all' => ['key' => 'expense_categories.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„ØªØµÙ†ÙŠÙØ§Øª'],
+        'create' => ['key' => 'expense_categories.create', 'label' => 'Ø¥Ø¶Ø§ÙØ© ØªØµÙ†ÙŠÙ Ø¬Ø¯ÙŠØ¯'],
+        'update_all' => ['key' => 'expense_categories.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ ØªØµÙ†ÙŠÙ'],
+        'delete_all' => ['key' => 'expense_categories.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ ØªØµÙ†ÙŠÙ'],
     ],
     // => FINANCIAL LEDGER
     'financial_ledger' => [
-        'name' => ['key' => 'financial_ledger', 'label' => 'صلاحيات دفتر الأستاذ العام'],
-        'page' => ['key' => 'financial_ledger.page', 'label' => 'الوصول لدفتر الأستاذ'],
-        'view_all' => ['key' => 'financial_ledger.view_all', 'label' => 'عرض جميع القيود المحاسبية'],
-        'view_self' => ['key' => 'financial_ledger.view_self', 'label' => 'عرض القيود الخاصة بالمستخدم'],
-        'export' => ['key' => 'financial_ledger.export', 'label' => 'تصدير سجلات الأستاذ'],
+        'name' => ['key' => 'financial_ledger', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¯ÙØªØ± Ø§Ù„Ø£Ø³ØªØ§Ø° Ø§Ù„Ø¹Ø§Ù…'],
+        'page' => ['key' => 'financial_ledger.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ù„Ø¯ÙØªØ± Ø§Ù„Ø£Ø³ØªØ§Ø°'],
+        'view_all' => ['key' => 'financial_ledger.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù‚ÙŠÙˆØ¯ Ø§Ù„Ù…Ø­Ø§Ø³Ø¨ÙŠØ©'],
+        'view_self' => ['key' => 'financial_ledger.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù‚ÙŠÙˆØ¯ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…'],
+        'export' => ['key' => 'financial_ledger.export', 'label' => 'ØªØµØ¯ÙŠØ± Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ø£Ø³ØªØ§Ø°'],
     ],
     // => REPORTS
     'reports' => [
-        'name' => ['key' => 'reports', 'label' => 'صلاحيات التقارير'],
-        'page' => ['key' => 'reports.page', 'label' => 'الوصول لصفحة التقارير'],
-        'view_all' => ['key' => 'reports.view_all', 'label' => 'عرض جميع التقارير'],
-        'sales' => ['key' => 'reports.sales', 'label' => 'عرض تقرير المبيعات'],
-        'stock' => ['key' => 'reports.stock', 'label' => 'عرض تقرير المخزون'],
-        'profit' => ['key' => 'reports.profit', 'label' => 'عرض تقرير الأرباح والخسائر'],
-        'expenses' => ['key' => 'reports.expenses', 'label' => 'عرض تقرير المصروفات التفصيلي'],
-        'cash_flow' => ['key' => 'reports.cash_flow', 'label' => 'عرض تقرير التدفق النقدي'],
-        'tax' => ['key' => 'reports.tax', 'label' => 'عرض تقرير الضرائب'],
-        'export' => ['key' => 'reports.export', 'label' => 'تصدير التقارير'],
+        'name' => ['key' => 'reports', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ±'],
+        'page' => ['key' => 'reports.page', 'label' => 'Ø§Ù„ÙˆØµÙˆÙ„ Ù„ØµÙØ­Ø© Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ±'],
+        'view_all' => ['key' => 'reports.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ±'],
+        'sales' => ['key' => 'reports.sales', 'label' => 'Ø¹Ø±Ø¶ ØªÙ‚Ø±ÙŠØ± Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª'],
+        'stock' => ['key' => 'reports.stock', 'label' => 'Ø¹Ø±Ø¶ ØªÙ‚Ø±ÙŠØ± Ø§Ù„Ù…Ø®Ø²ÙˆÙ†'],
+        'profit' => ['key' => 'reports.profit', 'label' => 'Ø¹Ø±Ø¶ ØªÙ‚Ø±ÙŠØ± Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ ÙˆØ§Ù„Ø®Ø³Ø§Ø¦Ø±'],
+        'expenses' => ['key' => 'reports.expenses', 'label' => 'Ø¹Ø±Ø¶ ØªÙ‚Ø±ÙŠØ± Ø§Ù„Ù…ØµØ±ÙˆÙØ§Øª Ø§Ù„ØªÙØµÙŠÙ„ÙŠ'],
+        'cash_flow' => ['key' => 'reports.cash_flow', 'label' => 'Ø¹Ø±Ø¶ ØªÙ‚Ø±ÙŠØ± Ø§Ù„ØªØ¯ÙÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠ'],
+        'tax' => ['key' => 'reports.tax', 'label' => 'Ø¹Ø±Ø¶ ØªÙ‚Ø±ÙŠØ± Ø§Ù„Ø¶Ø±Ø§Ø¦Ø¨'],
+        'export' => ['key' => 'reports.export', 'label' => 'ØªØµØ¯ÙŠØ± Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ±'],
     ],
     // => INVOICE TYPES
     'invoice_types' => [
-        'name' => ['key' => 'invoice_types', 'label' => 'صلاحيات أنواع المستندات'],
-        'page' => ['key' => 'invoice_types.page', 'label' => 'صفحة أنواع المستندات'],
-        'view_all' => ['key' => 'invoice_types.view_all', 'label' => 'عرض كل أنواع المستندات'],
-        'view_children' => ['key' => 'invoice_types.view_children', 'label' => 'عرض الأنواع للتابعين'],
-        'view_self' => ['key' => 'invoice_types.view_self', 'label' => 'عرض الأنواع الخاصة'],
-        'update_all' => ['key' => 'invoice_types.update_all', 'label' => 'تعديل أي نوع (تفعيل/تعطيل)'],
+        'name' => ['key' => 'invoice_types', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø£Ù†ÙˆØ§Ø¹ Ø§Ù„Ù…Ø³ØªÙ†Ø¯Ø§Øª'],
+        'page' => ['key' => 'invoice_types.page', 'label' => 'ØµÙØ­Ø© Ø£Ù†ÙˆØ§Ø¹ Ø§Ù„Ù…Ø³ØªÙ†Ø¯Ø§Øª'],
+        'view_all' => ['key' => 'invoice_types.view_all', 'label' => 'Ø¹Ø±Ø¶ ÙƒÙ„ Ø£Ù†ÙˆØ§Ø¹ Ø§Ù„Ù…Ø³ØªÙ†Ø¯Ø§Øª'],
+        'view_children' => ['key' => 'invoice_types.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø£Ù†ÙˆØ§Ø¹ Ù„Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'view_self' => ['key' => 'invoice_types.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ø£Ù†ÙˆØ§Ø¹ Ø§Ù„Ø®Ø§ØµØ©'],
+        'update_all' => ['key' => 'invoice_types.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ù†ÙˆØ¹ (ØªÙØ¹ÙŠÙ„/ØªØ¹Ø·ÙŠÙ„)'],
     ],
     // => PLANS
     'plans' => [
-        'name' => ['key' => 'plans', 'label' => 'صلاحيات خطط الأسعار'],
-        'page' => ['key' => 'plans.page', 'label' => 'صفحة خطط الأسعار'],
-        'view_all' => ['key' => 'plans.view_all', 'label' => 'عرض جميع الخطط'],
-        'view_children' => ['key' => 'plans.view_children', 'label' => 'عرض خطط التابعين'],
-        'view_self' => ['key' => 'plans.view_self', 'label' => 'عرض خططي الشخصية'],
-        'create' => ['key' => 'plans.create', 'label' => 'إنشاء خطة جديدة'],
-        'update_all' => ['key' => 'plans.update_all', 'label' => 'تعديل أي خطة'],
-        'update_children' => ['key' => 'plans.update_children', 'label' => 'تعديل خطط التابعين'],
-        'update_self' => ['key' => 'plans.update_self', 'label' => 'تعديل خطتي الشخصية'],
-        'delete_all' => ['key' => 'plans.delete_all', 'label' => 'حذف أي خطة'],
-        'delete_children' => ['key' => 'plans.delete_children', 'label' => 'حذف خطط التابعين'],
-        'delete_self' => ['key' => 'plans.delete_self', 'label' => 'حذف خطتي الشخصية'],
+        'name' => ['key' => 'plans', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø®Ø·Ø· Ø§Ù„Ø£Ø³Ø¹Ø§Ø±'],
+        'page' => ['key' => 'plans.page', 'label' => 'ØµÙØ­Ø© Ø®Ø·Ø· Ø§Ù„Ø£Ø³Ø¹Ø§Ø±'],
+        'view_all' => ['key' => 'plans.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø®Ø·Ø·'],
+        'view_children' => ['key' => 'plans.view_children', 'label' => 'Ø¹Ø±Ø¶ Ø®Ø·Ø· Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'view_self' => ['key' => 'plans.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø®Ø·Ø·ÙŠ Ø§Ù„Ø´Ø®ØµÙŠØ©'],
+        'create' => ['key' => 'plans.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø®Ø·Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        'update_all' => ['key' => 'plans.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ø®Ø·Ø©'],
+        'update_children' => ['key' => 'plans.update_children', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø®Ø·Ø· Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'update_self' => ['key' => 'plans.update_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø®Ø·ØªÙŠ Ø§Ù„Ø´Ø®ØµÙŠØ©'],
+        'delete_all' => ['key' => 'plans.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ø®Ø·Ø©'],
+        'delete_children' => ['key' => 'plans.delete_children', 'label' => 'Ø­Ø°Ù Ø®Ø·Ø· Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'delete_self' => ['key' => 'plans.delete_self', 'label' => 'Ø­Ø°Ù Ø®Ø·ØªÙŠ Ø§Ù„Ø´Ø®ØµÙŠØ©'],
     ],
     // => TASKS
     'tasks' => [
-        'name' => ['key' => 'tasks', 'label' => 'صلاحيات إدارة المهام'],
-        'page' => ['key' => 'tasks.page', 'label' => 'صفحة المهام'],
-        'view_all' => ['key' => 'tasks.view_all', 'label' => 'عرض جميع المهام'],
-        'view_children' => ['key' => 'tasks.view_children', 'label' => 'عرض مهام التابعين'],
-        'view_self' => ['key' => 'tasks.view_self', 'label' => 'عرض مهامي الشخصية'],
-        'create' => ['key' => 'tasks.create', 'label' => 'إنشاء مهمة جديدة'],
-        'update_all' => ['key' => 'tasks.update_all', 'label' => 'تعديل أي مهمة'],
-        'delete_all' => ['key' => 'tasks.delete_all', 'label' => 'حذف أي مهمة'],
+        'name' => ['key' => 'tasks', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ù‡Ø§Ù…'],
+        'page' => ['key' => 'tasks.page', 'label' => 'ØµÙØ­Ø© Ø§Ù„Ù…Ù‡Ø§Ù…'],
+        'view_all' => ['key' => 'tasks.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ù‡Ø§Ù…'],
+        'view_children' => ['key' => 'tasks.view_children', 'label' => 'Ø¹Ø±Ø¶ Ù…Ù‡Ø§Ù… Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ†'],
+        'view_self' => ['key' => 'tasks.view_self', 'label' => 'Ø¹Ø±Ø¶ Ù…Ù‡Ø§Ù…ÙŠ Ø§Ù„Ø´Ø®ØµÙŠØ©'],
+        'create' => ['key' => 'tasks.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ù…Ù‡Ù…Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        'update_all' => ['key' => 'tasks.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£ÙŠ Ù…Ù‡Ù…Ø©'],
+        'delete_all' => ['key' => 'tasks.delete_all', 'label' => 'Ø­Ø°Ù Ø£ÙŠ Ù…Ù‡Ù…Ø©'],
     ],
     // => ERROR REPORTS
     'error_reports' => [
-        'name' => ['key' => 'error_reports', 'label' => 'صلاحيات تقارير الأخطاء'],
-        'page' => ['key' => 'error_reports.page', 'label' => 'صفحة تقارير الأخطاء'],
-        'view_all' => ['key' => 'error_reports.view_all', 'label' => 'عرض جميع تقارير الأخطاء'],
-        'update_all' => ['key' => 'error_reports.update_all', 'label' => 'تحديث حالة التقرير'],
+        'name' => ['key' => 'error_reports', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª ØªÙ‚Ø§Ø±ÙŠØ± Ø§Ù„Ø£Ø®Ø·Ø§Ø¡'],
+        'page' => ['key' => 'error_reports.page', 'label' => 'ØµÙØ­Ø© ØªÙ‚Ø§Ø±ÙŠØ± Ø§Ù„Ø£Ø®Ø·Ø§Ø¡'],
+        'view_all' => ['key' => 'error_reports.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ ØªÙ‚Ø§Ø±ÙŠØ± Ø§Ù„Ø£Ø®Ø·Ø§Ø¡'],
+        'update_all' => ['key' => 'error_reports.update_all', 'label' => 'ØªØ­Ø¯ÙŠØ« Ø­Ø§Ù„Ø© Ø§Ù„ØªÙ‚Ø±ÙŠØ±'],
     ],
     // => BACKUPS
     'backups' => [
-        'name' => ['key' => 'backups', 'label' => 'صلاحيات النسخ الاحتياطي'],
-        'page' => ['key' => 'backups.page', 'label' => 'صفحة النسخ الاحتياطي'],
-        'create' => ['key' => 'backups.create', 'label' => 'تشغيل نسخة احتياطية'],
-        'view_all' => ['key' => 'backups.view_all', 'label' => 'عرض النسخ السابقة'],
+        'name' => ['key' => 'backups', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ù†Ø³Ø® Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠ'],
+        'page' => ['key' => 'backups.page', 'label' => 'ØµÙØ­Ø© Ø§Ù„Ù†Ø³Ø® Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠ'],
+        'create' => ['key' => 'backups.create', 'label' => 'ØªØ´ØºÙŠÙ„ Ù†Ø³Ø®Ø© Ø§Ø­ØªÙŠØ§Ø·ÙŠØ©'],
+        'view_all' => ['key' => 'backups.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù†Ø³Ø® Ø§Ù„Ø³Ø§Ø¨Ù‚Ø©'],
     ],
     // => QUOTATIONS
     'quotations' => [
-        'name' => ['key' => 'quotations', 'label' => 'صلاحيات عروض الأسعار'],
-        'page' => ['key' => 'quotations.page', 'label' => 'صفحة عروض الأسعار'],
-        'view_all' => ['key' => 'quotations.view_all', 'label' => 'عرض جميع عروض الأسعار'],
-        'create' => ['key' => 'quotations.create', 'label' => 'إنشاء عرض سعر'],
+        'name' => ['key' => 'quotations', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¹Ø±ÙˆØ¶ Ø§Ù„Ø£Ø³Ø¹Ø§Ø±'],
+        'page' => ['key' => 'quotations.page', 'label' => 'ØµÙØ­Ø© Ø¹Ø±ÙˆØ¶ Ø§Ù„Ø£Ø³Ø¹Ø§Ø±'],
+        'view_all' => ['key' => 'quotations.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø¹Ø±ÙˆØ¶ Ø§Ù„Ø£Ø³Ø¹Ø§Ø±'],
+        'create' => ['key' => 'quotations.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø¹Ø±Ø¶ Ø³Ø¹Ø±'],
     ],
     // => ORDERS
     'orders' => [
-        'name' => ['key' => 'orders', 'label' => 'صلاحيات طلبات الشراء/البيع'],
-        'page' => ['key' => 'orders.page', 'label' => 'صفحة الطلبات'],
-        'view_all' => ['key' => 'orders.view_all', 'label' => 'عرض جميع الطلبات'],
-        'create' => ['key' => 'orders.create', 'label' => 'إنشاء طلب جديد'],
+        'name' => ['key' => 'orders', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø·Ù„Ø¨Ø§Øª Ø§Ù„Ø´Ø±Ø§Ø¡/Ø§Ù„Ø¨ÙŠØ¹'],
+        'page' => ['key' => 'orders.page', 'label' => 'ØµÙØ­Ø© Ø§Ù„Ø·Ù„Ø¨Ø§Øª'],
+        'view_all' => ['key' => 'orders.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø·Ù„Ø¨Ø§Øª'],
+        'create' => ['key' => 'orders.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ø·Ù„Ø¨ Ø¬Ø¯ÙŠØ¯'],
     ],
     'balance' => [
-        'name' => ['key' => 'balance', 'label' => 'صلاحيات إدارة الأرصدة والماليات'],
-        'deposit_any' => ['key' => 'balance.deposit_any', 'label' => 'إيداع رصيد لأي مستخدم'],
-        'withdraw_any' => ['key' => 'balance.withdraw_any', 'label' => 'سحب رصيد من أي مستخدم'],
-        'transfer_any' => ['key' => 'balance.transfer_any', 'label' => 'تحويل رصيد من أي مستخدم'],
-        'deposit' => ['key' => 'balance.deposit', 'label' => 'إجراء إيداع رصيد (شخصي)'],
-        'withdraw' => ['key' => 'balance.withdraw', 'label' => 'إجراء سحب رصيد (شخصي)'],
-        'transfer' => ['key' => 'balance.transfer', 'label' => 'تحويل رصيد (شخصي)'],
+        'name' => ['key' => 'balance', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø£Ø±ØµØ¯Ø© ÙˆØ§Ù„Ù…Ø§Ù„ÙŠØ§Øª'],
+        'deposit_any' => ['key' => 'balance.deposit_any', 'label' => 'Ø¥ÙŠØ¯Ø§Ø¹ Ø±ØµÙŠØ¯ Ù„Ø£ÙŠ Ù…Ø³ØªØ®Ø¯Ù…'],
+        'withdraw_any' => ['key' => 'balance.withdraw_any', 'label' => 'Ø³Ø­Ø¨ Ø±ØµÙŠØ¯ Ù…Ù† Ø£ÙŠ Ù…Ø³ØªØ®Ø¯Ù…'],
+        'transfer_any' => ['key' => 'balance.transfer_any', 'label' => 'ØªØ­ÙˆÙŠÙ„ Ø±ØµÙŠØ¯ Ù…Ù† Ø£ÙŠ Ù…Ø³ØªØ®Ø¯Ù…'],
+        'deposit' => ['key' => 'balance.deposit', 'label' => 'Ø¥Ø¬Ø±Ø§Ø¡ Ø¥ÙŠØ¯Ø§Ø¹ Ø±ØµÙŠØ¯ (Ø´Ø®ØµÙŠ)'],
+        'withdraw' => ['key' => 'balance.withdraw', 'label' => 'Ø¥Ø¬Ø±Ø§Ø¡ Ø³Ø­Ø¨ Ø±ØµÙŠØ¯ (Ø´Ø®ØµÙŠ)'],
+        'transfer' => ['key' => 'balance.transfer', 'label' => 'ØªØ­ÙˆÙŠÙ„ Ø±ØµÙŠØ¯ (Ø´Ø®ØµÙŠ)'],
     ],
     // => LEGAL DOCUMENTS
     'legal_documents' => [
-        'name' => ['key' => 'legal_documents', 'label' => 'صلاحيات المستندات القانونية'],
-        'page' => ['key' => 'legal_documents.page', 'label' => 'صفحة المستندات القانونية'],
-        'view_all' => ['key' => 'legal_documents.view_all', 'label' => 'عرض المستندات القانونية'],
-        'create' => ['key' => 'legal_documents.create', 'label' => 'إنشاء مسودة مستند جديد'],
-        'update_all' => ['key' => 'legal_documents.update_all', 'label' => 'تعديل أو صياغة إصدار جديد'],
-        'delete_all' => ['key' => 'legal_documents.delete_all', 'label' => 'حذف مسودة مستند أو إصدار غير منشور'],
+        'name' => ['key' => 'legal_documents', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ù…Ø³ØªÙ†Ø¯Ø§Øª Ø§Ù„Ù‚Ø§Ù†ÙˆÙ†ÙŠØ©'],
+        'page' => ['key' => 'legal_documents.page', 'label' => 'ØµÙØ­Ø© Ø§Ù„Ù…Ø³ØªÙ†Ø¯Ø§Øª Ø§Ù„Ù‚Ø§Ù†ÙˆÙ†ÙŠØ©'],
+        'view_all' => ['key' => 'legal_documents.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø³ØªÙ†Ø¯Ø§Øª Ø§Ù„Ù‚Ø§Ù†ÙˆÙ†ÙŠØ©'],
+        'create' => ['key' => 'legal_documents.create', 'label' => 'Ø¥Ù†Ø´Ø§Ø¡ Ù…Ø³ÙˆØ¯Ø© Ù…Ø³ØªÙ†Ø¯ Ø¬Ø¯ÙŠØ¯'],
+        'update_all' => ['key' => 'legal_documents.update_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø£Ùˆ ØµÙŠØ§ØºØ© Ø¥ØµØ¯Ø§Ø± Ø¬Ø¯ÙŠØ¯'],
+        'delete_all' => ['key' => 'legal_documents.delete_all', 'label' => 'Ø­Ø°Ù Ù…Ø³ÙˆØ¯Ø© Ù…Ø³ØªÙ†Ø¯ Ø£Ùˆ Ø¥ØµØ¯Ø§Ø± ØºÙŠØ± Ù…Ù†Ø´ÙˆØ±'],
     ],
     // => HWNIX CASH MODULE
     'hwnix_cash' => [
-        'name' => ['key' => 'hwnix_cash', 'label' => 'صلاحيات كاش هونكس الكاملة'],
-        'page' => ['key' => 'hwnix_cash.page', 'label' => 'صفحة أجهزة وموديول كاش هونكس'],
-        'view_all' => ['key' => 'hwnix_cash.view_all', 'label' => 'عرض جميع أجهزة وشرائح كاش هونكس'],
-        'view_self' => ['key' => 'hwnix_cash.view_self', 'label' => 'عرض أجهزة وشرائح كاش هونكس الخاصة'],
-        'edit_all' => ['key' => 'hwnix_cash.edit_all', 'label' => 'تعديل جميع خطوط وشرائح كاش هونكس'],
-        'edit_self' => ['key' => 'hwnix_cash.edit_self', 'label' => 'تعديل خطوط وشرائح كاش هونكس الخاصة'],
-        'delete_all' => ['key' => 'hwnix_cash.delete_all', 'label' => 'حذف وإلغاء ربط أجهزة كاش هونكس'],
+        'name' => ['key' => 'hwnix_cash', 'label' => 'ØµÙ„Ø§Ø­ÙŠØ§Øª ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³ Ø§Ù„ÙƒØ§Ù…Ù„Ø©'],
+        'page' => ['key' => 'hwnix_cash.page', 'label' => 'ØµÙØ­Ø© Ø£Ø¬Ù‡Ø²Ø© ÙˆÙ…ÙˆØ¯ÙŠÙˆÙ„ ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³'],
+        'view_all' => ['key' => 'hwnix_cash.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø£Ø¬Ù‡Ø²Ø© ÙˆØ´Ø±Ø§Ø¦Ø­ ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³'],
+        'view_self' => ['key' => 'hwnix_cash.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø£Ø¬Ù‡Ø²Ø© ÙˆØ´Ø±Ø§Ø¦Ø­ ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³ Ø§Ù„Ø®Ø§ØµØ©'],
+        'edit_all' => ['key' => 'hwnix_cash.edit_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø¬Ù…ÙŠØ¹ Ø®Ø·ÙˆØ· ÙˆØ´Ø±Ø§Ø¦Ø­ ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³'],
+        'edit_self' => ['key' => 'hwnix_cash.edit_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø®Ø·ÙˆØ· ÙˆØ´Ø±Ø§Ø¦Ø­ ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³ Ø§Ù„Ø®Ø§ØµØ©'],
+        'delete_all' => ['key' => 'hwnix_cash.delete_all', 'label' => 'Ø­Ø°Ù ÙˆØ¥Ù„ØºØ§Ø¡ Ø±Ø¨Ø· Ø£Ø¬Ù‡Ø²Ø© ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³'],
 
-        // رسائل كاش هونكس
-        'messages_page' => ['key' => 'hwnix_cash_messages.page', 'label' => 'صفحة سجلات رسائل كاش هونكس'],
-        'messages_view_all' => ['key' => 'hwnix_cash_messages.view_all', 'label' => 'عرض جميع رسائل كاش هونكس'],
-        'messages_view_self' => ['key' => 'hwnix_cash_messages.view_self', 'label' => 'عرض رسائل كاش هونكس الخاصة'],
-        'messages_create' => ['key' => 'hwnix_cash_messages.create', 'label' => 'إرسال رسائل جديدة عبر كاش هونكس'],
+        // Ø±Ø³Ø§Ø¦Ù„ ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³
+        'messages_page' => ['key' => 'hwnix_cash_messages.page', 'label' => 'ØµÙØ­Ø© Ø³Ø¬Ù„Ø§Øª Ø±Ø³Ø§Ø¦Ù„ ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³'],
+        'messages_view_all' => ['key' => 'hwnix_cash_messages.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø±Ø³Ø§Ø¦Ù„ ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³'],
+        'messages_view_self' => ['key' => 'hwnix_cash_messages.view_self', 'label' => 'Ø¹Ø±Ø¶ Ø±Ø³Ø§Ø¦Ù„ ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³ Ø§Ù„Ø®Ø§ØµØ©'],
+        'messages_create' => ['key' => 'hwnix_cash_messages.create', 'label' => 'Ø¥Ø±Ø³Ø§Ù„ Ø±Ø³Ø§Ø¦Ù„ Ø¬Ø¯ÙŠØ¯Ø© Ø¹Ø¨Ø± ÙƒØ§Ø´ Ù‡ÙˆÙ†ÙƒØ³'],
 
-        // معاملات المحافظ الإلكترونية
-        'wallet_transactions_page' => ['key' => 'hwnix_cash_wallet_transactions.page', 'label' => 'صفحة معاملات المحافظ الإلكترونية'],
-        'wallet_transactions_view_all' => ['key' => 'hwnix_cash_wallet_transactions.view_all', 'label' => 'عرض جميع معاملات المحافظ'],
-        'wallet_transactions_view_self' => ['key' => 'hwnix_cash_wallet_transactions.view_self', 'label' => 'عرض معاملات المحافظ الخاصة'],
-        'wallet_transactions_create' => ['key' => 'hwnix_cash_wallet_transactions.create', 'label' => 'إضافة معاملة محفظة جديدة'],
-        'wallet_transactions_edit_all' => ['key' => 'hwnix_cash_wallet_transactions.edit_all', 'label' => 'تعديل جميع معاملات المحافظ'],
-        'wallet_transactions_edit_self' => ['key' => 'hwnix_cash_wallet_transactions.edit_self', 'label' => 'تعديل معاملات المحافظ الخاصة'],
-        'wallet_transactions_delete_all' => ['key' => 'hwnix_cash_wallet_transactions.delete_all', 'label' => 'حذف معاملة محفظة إلكترونية'],
-        'wallet_transactions_view_parsed_by' => ['key' => 'hwnix_cash_wallet_transactions.view_parsed_by', 'label' => 'عرض منفذ تحليل المعاملة'],
-        'wallet_transactions_view_parser_stage' => ['key' => 'hwnix_cash_wallet_transactions.view_parser_stage', 'label' => 'عرض مرحلة تحليل المعاملة'],
+        // Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ù…Ø­Ø§ÙØ¸ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠØ©
+        'wallet_transactions_page' => ['key' => 'hwnix_cash_wallet_transactions.page', 'label' => 'ØµÙØ­Ø© Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ù…Ø­Ø§ÙØ¸ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠØ©'],
+        'wallet_transactions_view_all' => ['key' => 'hwnix_cash_wallet_transactions.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ù…Ø­Ø§ÙØ¸'],
+        'wallet_transactions_view_self' => ['key' => 'hwnix_cash_wallet_transactions.view_self', 'label' => 'Ø¹Ø±Ø¶ Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ù…Ø­Ø§ÙØ¸ Ø§Ù„Ø®Ø§ØµØ©'],
+        'wallet_transactions_create' => ['key' => 'hwnix_cash_wallet_transactions.create', 'label' => 'Ø¥Ø¶Ø§ÙØ© Ù…Ø¹Ø§Ù…Ù„Ø© Ù…Ø­ÙØ¸Ø© Ø¬Ø¯ÙŠØ¯Ø©'],
+        'wallet_transactions_edit_all' => ['key' => 'hwnix_cash_wallet_transactions.edit_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø¬Ù…ÙŠØ¹ Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ù…Ø­Ø§ÙØ¸'],
+        'wallet_transactions_edit_self' => ['key' => 'hwnix_cash_wallet_transactions.edit_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ù…Ø­Ø§ÙØ¸ Ø§Ù„Ø®Ø§ØµØ©'],
+        'wallet_transactions_delete_all' => ['key' => 'hwnix_cash_wallet_transactions.delete_all', 'label' => 'Ø­Ø°Ù Ù…Ø¹Ø§Ù…Ù„Ø© Ù…Ø­ÙØ¸Ø© Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠØ©'],
+        'wallet_transactions_view_parsed_by' => ['key' => 'hwnix_cash_wallet_transactions.view_parsed_by', 'label' => 'Ø¹Ø±Ø¶ Ù…Ù†ÙØ° ØªØ­Ù„ÙŠÙ„ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø©'],
+        'wallet_transactions_view_parser_stage' => ['key' => 'hwnix_cash_wallet_transactions.view_parser_stage', 'label' => 'Ø¹Ø±Ø¶ Ù…Ø±Ø­Ù„Ø© ØªØ­Ù„ÙŠÙ„ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø©'],
 
-        // مصادر الرسائل المعتمدة
-        'message_sources_page' => ['key' => 'hwnix_cash_message_sources.page', 'label' => 'صفحة مصادر الرسائل المعتمدة'],
-        'message_sources_view_all' => ['key' => 'hwnix_cash_message_sources.view_all', 'label' => 'عرض جميع مصادر الرسائل المعتمدة'],
-        'message_sources_view_self' => ['key' => 'hwnix_cash_message_sources.view_self', 'label' => 'عرض مصادر الرسائل الخاصة'],
-        'message_sources_create' => ['key' => 'hwnix_cash_message_sources.create', 'label' => 'إضافة مصدر رسائل معتمد'],
-        'message_sources_edit_all' => ['key' => 'hwnix_cash_message_sources.edit_all', 'label' => 'تعديل جميع مصادر الرسائل'],
-        'message_sources_edit_self' => ['key' => 'hwnix_cash_message_sources.edit_self', 'label' => 'تعديل مصادر الرسائل الخاصة'],
-        'message_sources_delete_all' => ['key' => 'hwnix_cash_message_sources.delete_all', 'label' => 'حذف مصدر رسائل معتمد'],
+        // Ù…ØµØ§Ø¯Ø± Ø§Ù„Ø±Ø³Ø§Ø¦Ù„ Ø§Ù„Ù…Ø¹ØªÙ…Ø¯Ø©
+        'message_sources_page' => ['key' => 'hwnix_cash_message_sources.page', 'label' => 'ØµÙØ­Ø© Ù…ØµØ§Ø¯Ø± Ø§Ù„Ø±Ø³Ø§Ø¦Ù„ Ø§Ù„Ù…Ø¹ØªÙ…Ø¯Ø©'],
+        'message_sources_view_all' => ['key' => 'hwnix_cash_message_sources.view_all', 'label' => 'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ù…ØµØ§Ø¯Ø± Ø§Ù„Ø±Ø³Ø§Ø¦Ù„ Ø§Ù„Ù…Ø¹ØªÙ…Ø¯Ø©'],
+        'message_sources_view_self' => ['key' => 'hwnix_cash_message_sources.view_self', 'label' => 'Ø¹Ø±Ø¶ Ù…ØµØ§Ø¯Ø± Ø§Ù„Ø±Ø³Ø§Ø¦Ù„ Ø§Ù„Ø®Ø§ØµØ©'],
+        'message_sources_create' => ['key' => 'hwnix_cash_message_sources.create', 'label' => 'Ø¥Ø¶Ø§ÙØ© Ù…ØµØ¯Ø± Ø±Ø³Ø§Ø¦Ù„ Ù…Ø¹ØªÙ…Ø¯'],
+        'message_sources_edit_all' => ['key' => 'hwnix_cash_message_sources.edit_all', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ø¬Ù…ÙŠØ¹ Ù…ØµØ§Ø¯Ø± Ø§Ù„Ø±Ø³Ø§Ø¦Ù„'],
+        'message_sources_edit_self' => ['key' => 'hwnix_cash_message_sources.edit_self', 'label' => 'ØªØ¹Ø¯ÙŠÙ„ Ù…ØµØ§Ø¯Ø± Ø§Ù„Ø±Ø³Ø§Ø¦Ù„ Ø§Ù„Ø®Ø§ØµØ©'],
+        'message_sources_delete_all' => ['key' => 'hwnix_cash_message_sources.delete_all', 'label' => 'Ø­Ø°Ù Ù…ØµØ¯Ø± Ø±Ø³Ø§Ø¦Ù„ Ù…Ø¹ØªÙ…Ø¯'],
+    ],
+    // => CUSTODIES
+    'custodies' => [
+        'name' => ['key' => 'custodies', 'label' => 'صلاحيات العهد'],
+        'page' => ['key' => 'custodies.page', 'label' => 'الوصول لصفحة العهد'],
+        'view_all' => ['key' => 'custodies.view_all', 'label' => 'عرض كل العهد'],
+        'view_self' => ['key' => 'custodies.view_self', 'label' => 'عرض العهد الشخصية'],
+        'create' => ['key' => 'custodies.create', 'label' => 'إصدار عهدة'],
+        'refund' => ['key' => 'custodies.refund', 'label' => 'استرداد نقدي من عهدة'],
+        'reverse' => ['key' => 'custodies.reverse', 'label' => 'عكس العهدة'],
+    ],
+    // => OWNER FUNDS
+    'owner_fund_transactions' => [
+        'name' => ['key' => 'owner_fund_transactions', 'label' => 'صلاحيات معاملات الشركاء'],
+        'page' => ['key' => 'owner_fund_transactions.page', 'label' => 'الوصول لصفحة معاملات الشركاء'],
+        'view_all' => ['key' => 'owner_fund_transactions.view_all', 'label' => 'عرض معاملات الشركاء'],
+        'create' => ['key' => 'owner_fund_transactions.create', 'label' => 'إنشاء معاملة شريك'],
+        'reverse' => ['key' => 'owner_fund_transactions.reverse', 'label' => 'عكس معاملة شريك'],
     ],
 ];
+
+
 
 
 

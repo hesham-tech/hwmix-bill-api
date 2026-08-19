@@ -620,10 +620,16 @@ class User extends Authenticatable
     public static function bootFilterableByCompany()
     {
         static::addGlobalScope('company_filter', function (\Illuminate\Database\Eloquent\Builder $builder) {
-            $companyId = app(\App\Services\CurrentCompanyResolver::class)->resolve();
             $user = Auth::user();
+            
+            // Skip applying the global scope during Sanctum authentication or guest requests
+            if (!$user) {
+                return;
+            }
 
-            if ($companyId) {
+            $companyId = app(\App\Services\CurrentCompanyResolver::class)->resolve();
+
+            if ($companyId && !$user->hasPermissionTo(perm_key('admin.super'))) {
                 $builder->where(function ($query) use ($companyId) {
                     // 1. المستخدم ينتمي مباشرة لهذه الشركة
                     $query->where('users.active_company_id', $companyId)
@@ -635,7 +641,7 @@ class User extends Authenticatable
                                 ->where('company_user.company_id', $companyId);
                         });
                 });
-            } elseif ($user && !$user->hasPermissionTo(perm_key('admin.super'))) {
+            } elseif (!$user->hasPermissionTo(perm_key('admin.super'))) {
                 $builder->whereRaw('1 = 0');
             }
         });

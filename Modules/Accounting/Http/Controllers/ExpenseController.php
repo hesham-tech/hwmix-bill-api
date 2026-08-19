@@ -42,7 +42,8 @@ class ExpenseController extends Controller
             'expense_category_id' => 'required|exists:expense_categories,id',
             'amount' => 'required|numeric|min:0.01',
             'expense_date' => 'required|date',
-            'cash_box_id' => ['required', 'integer', new \App\Rules\AccessibleCashBox],
+            'cash_box_id' => ['required_without:custody_id', 'nullable', 'integer', new \App\Rules\AccessibleCashBox],
+            'custody_id' => 'nullable|exists:custodies,id',
             'notes' => 'nullable|string',
         ]);
 
@@ -61,7 +62,8 @@ class ExpenseController extends Controller
             'expense_category_id' => 'required|exists:expense_categories,id',
             'amount' => 'required|numeric|min:0.01',
             'expense_date' => 'required|date',
-            'cash_box_id' => ['required', 'integer', new \App\Rules\AccessibleCashBox],
+            'cash_box_id' => ['required_without:custody_id', 'nullable', 'integer', new \App\Rules\AccessibleCashBox],
+            'custody_id' => 'nullable|exists:custodies,id',
         ]);
 
         $expense->update($request->all());

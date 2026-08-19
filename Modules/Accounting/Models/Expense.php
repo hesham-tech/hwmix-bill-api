@@ -28,6 +28,7 @@ class Expense extends Model
         'expense_date',
         'payment_method',
         'cash_box_id',
+        'custody_id',
         'reference_number',
         'notes',
         'company_id',
@@ -62,6 +63,11 @@ class Expense extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function custody()
+    {
+        return $this->belongsTo(Custody::class, 'custody_id');
     }
 
     public function logLabel()

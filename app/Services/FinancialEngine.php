@@ -328,7 +328,90 @@ class FinancialEngine implements FinancialEngineInterface
                 }
             }
 
-            // 4. عكس وتحديث الفواتير ودفعاتها إذا وجدت
+            // 3.5 Reverse Partner Funds
+            if ($originalOp->type === 'partner_fund') {
+                $txSource = clone $originalOp->source; // OwnerFundTransaction
+                if ($txSource) {
+                    $bType = $txSource->type;
+                    $relationType = match($bType) {
+                        'capital_increase', 'partner_contribution' => 'capital',
+                        'drawings', 'profit_distribution' => 'partner_drawing',
+                        'loan_from_owner', 'loan_to_owner' => 'partner_loan',
+                        'advance_from_owner', 'advance_to_partner' => 'partner_advance',
+                        default => 'capital'
+                    };
+
+                    $balanceModel = \Modules\Companies\Models\StakeholderFinancialBalance::where([
+                        'company_id' => $originalOp->company_id,
+                        'user_id' => $txSource->user_id,
+                        'relation_type' => $relationType,
+                    ])->lockForUpdate()->first();
+
+                    if ($balanceModel) {
+                        $amount = (float)$originalOp->amount;
+                        if (in_array($bType, ['capital_increase', 'partner_contribution', 'loan_from_owner', 'advance_from_owner'])) {
+                            $balanceModel->balance -= $amount;
+                        } elseif (in_array($bType, ['drawings', 'profit_distribution'])) {
+                            $balanceModel->balance -= $amount;
+                        } elseif (in_array($bType, ['loan_to_owner', 'advance_to_partner'])) {
+                            $balanceModel->balance += $amount;
+                        }
+                        $balanceModel->save();
+                    }
+                }
+            }
+
+            // 3.6 Reverse Custody
+            if (in_array($originalOp->source_type, [\Modules\Accounting\Models\Custody::class, 'Modules\Accounting\Models\Custody'])) {
+                $custody = $originalOp->source;
+                if ($custody) {
+                    $amount = (float)$originalOp->amount;
+                    // Find Stakeholder Balance
+                    $balanceModel = \Modules\Companies\Models\StakeholderFinancialBalance::where([
+                        'company_id' => $originalOp->company_id,
+                        'user_id' => $custody->user_id,
+                        'relation_type' => 'custody',
+                    ])->lockForUpdate()->first();
+
+                    if ($originalOp->type === 'custody_issue') {
+                         if ($balanceModel) { $balanceModel->balance -= $amount; $balanceModel->save(); }
+                         $custody->amount -= $amount;
+                         $custody->status = 'canceled';
+                         $custody->save();
+                    } elseif ($originalOp->type === 'custody_refund') {
+                         if ($balanceModel) { $balanceModel->balance += $amount; $balanceModel->save(); }
+                         $custody->settled_cash_amount -= $amount;
+                         $custody->status = 'open';
+                         $custody->save();
+                    }
+                }
+            }
+
+            // 3.7 Reverse Expense Custody
+            if (in_array($originalOp->source_type, [\Modules\Accounting\Models\Expense::class, 'Modules\Accounting\Models\Expense'])) {
+                $expense = $originalOp->source;
+                if ($expense && $expense->custody_id) {
+                    $custody = clone $expense->custody;
+                    $amount = (float)$originalOp->amount;
+                    
+                    $balanceModel = \Modules\Companies\Models\StakeholderFinancialBalance::where([
+                        'company_id' => $originalOp->company_id,
+                        'user_id' => $custody->user_id,
+                        'relation_type' => 'custody',
+                    ])->lockForUpdate()->first();
+
+                    if ($balanceModel) {
+                        $balanceModel->balance += $amount;
+                        $balanceModel->save();
+                    }
+
+                    $custody->settled_expenses_amount -= $amount;
+                    $custody->status = 'open';
+                    $custody->save();
+                }
+            }
+
+            // 4. Reverse Invoice Paymentsوجدت
             $payments = InvoicePayment::withoutGlobalScopes()->where('financial_operation_id', $originalOperationId)->get();
             foreach ($payments as $payment) {
                 $invoice = \App\Models\Invoice::withoutGlobalScopes()->findOrFail($payment->invoice_id);
@@ -573,10 +656,13 @@ class FinancialEngine implements FinancialEngineInterface
                 'metadata' => $payload,
             ]);
 
-            // خصم النقدية من الخزينة المحددة للمصروف
-            $this->payMoney($amount, $cashBoxId, $operationId, [
-                'description' => "تسجيل وصرف مصروف: {$expense->category?->name}"
-            ]);
+            if ($expense->custody_id) {
+                app(\Modules\Accounting\Services\CustodyService::class)->processExpense($expense->custody, $amount);
+            } else {
+                $this->payMoney($amount, $cashBoxId, $operationId, [
+                    'description' => "تسجيل دفع مصروف: {$expense->category?->name}"
+                ]);
+            }
 
             // ترحيل القيود الدفترية بالأستاذ العام
             $this->ledgerService->recordEntry(

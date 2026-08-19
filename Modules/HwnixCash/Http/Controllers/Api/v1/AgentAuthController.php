@@ -67,7 +67,7 @@ class AgentAuthController extends Controller
         $validated = $request->validated();
         $loginField = filter_var($validated['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
-        $user = User::where($loginField, $validated['login'])->first();
+        $user = User::withoutGlobalScope('company_filter')->where($loginField, $validated['login'])->first();
         if (!$user) {
             return api_error('البريد الإلكتروني أو الهاتف غير مسجل لدينا.', [], 421);
         }
