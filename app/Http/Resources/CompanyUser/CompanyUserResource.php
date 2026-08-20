@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class CompanyUserResource extends JsonResource
 {
     /**
-     * تحويل المورد إلى مصفوفة.
+     * ØªØ­ÙˆÙŠÙ„ Ø§Ù„Ù…ÙˆØ±Ø¯ Ø¥Ù„Ù‰ Ù…ØµÙÙˆÙØ©.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return array<string, mixed>
@@ -18,14 +18,14 @@ class CompanyUserResource extends JsonResource
     public function toArray(Request $request): array
     {
         /**
-         * شعار الشركة
+         * Ø´Ø¹Ø§Ø± Ø§Ù„Ø´Ø±ÙƒØ©
          */
         $companyLogoUrl = $this->whenLoaded('company', function () {
             return $this->company->logo?->url;
         });
 
         /**
-         * صورة الأفاتار
+         * ØµÙˆØ±Ø© Ø§Ù„Ø£ÙØ§ØªØ§Ø±
          */
         $avatarUrl = $this->whenLoaded('user', function () {
             return collect($this->user->images ?? [])
@@ -33,13 +33,13 @@ class CompanyUserResource extends JsonResource
                 ->first()?->url;
         });
 
-        // الخزنة الافتراضية
+        // Ø§Ù„Ø®Ø²Ù†Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ©
         $defaultCashBox = $this->whenLoaded('user', function () {
             return $this->user->getDefaultCashBoxForCompany($this->company_id, $this->branch_id ?? $this->user->branch_id);
         });
 
         /**
-         * كل الخزن المرتبطة بالشركة الحالية
+         * ÙƒÙ„ Ø§Ù„Ø®Ø²Ù† Ø§Ù„Ù…Ø±ØªØ¨Ø·Ø© Ø¨Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ø­Ø§Ù„ÙŠØ©
          */
         $companyCashBoxes = $this->whenLoaded('user', function () {
             if (!$this->user || !$this->user->relationLoaded('cashBoxes')) {
@@ -51,7 +51,7 @@ class CompanyUserResource extends JsonResource
         });
 
         return [
-            // بيانات ملف العضو (سياق الشركة)
+            // Ø¨ÙŠØ§Ù†Ø§Øª Ù…Ù„Ù Ø§Ù„Ø¹Ø¶Ùˆ (Ø³ÙŠØ§Ù‚ Ø§Ù„Ø´Ø±ÙƒØ©)
             'id' => $this->user_id,
             'name' => $this->name,
             'nickname' => $this->nickname,
@@ -60,13 +60,14 @@ class CompanyUserResource extends JsonResource
             'email' => $this->email,
             'balance' => $this->active_branch_balance,
             'active_branch_balance' => $this->active_branch_balance,
+            'custody_balance' => $this->custody_balance,
             'total_branches_balance' => $this->total_branches_balance,
             'position' => $this->position,
             'status' => $this->status,
             'customer_type' => $this->customer_type,
             'avatar_url' => $avatarUrl,
 
-            // معلومات إضافية
+            // Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø¥Ø¶Ø§ÙÙŠØ©
             'cash_box_id' => $this->getDefaultCashBoxAttribute()?->id,
             'company_id' => $this->company_id,
             'company_logo' => $companyLogoUrl,

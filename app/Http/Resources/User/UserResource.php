@@ -22,8 +22,8 @@ class UserResource extends JsonResource
         $receivable = $this->getFinancialBalance($companyId, 'receivable');
         $payable    = $this->getFinancialBalance($companyId, 'payable');
 
-        // تحديد حقل balance الصحيح حسب نوع المستخدم
-        // الموظف → خزنة العهدة | العميل → ذمته المدينة | المورد → مستحقاته
+        // ØªØ­Ø¯ÙŠØ¯ Ø­Ù‚Ù„ balance Ø§Ù„ØµØ­ÙŠØ­ Ø­Ø³Ø¨ Ù†ÙˆØ¹ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…
+        // Ø§Ù„Ù…ÙˆØ¸Ù â†’ Ø®Ø²Ù†Ø© Ø§Ù„Ø¹Ù‡Ø¯Ø© | Ø§Ù„Ø¹Ù…ÙŠÙ„ â†’ Ø°Ù…ØªÙ‡ Ø§Ù„Ù…Ø¯ÙŠÙ†Ø© | Ø§Ù„Ù…ÙˆØ±Ø¯ â†’ Ù…Ø³ØªØ­Ù‚Ø§ØªÙ‡
         $relationTypes = $this->getRelationTypesForCompany($companyId);
         $isEmployee = $this->hasCapability('is_internal', $companyId);
         $legacyBalance = $isEmployee ? $this->active_branch_balance : ($receivable > 0 ? $receivable : -$payable);
@@ -38,9 +38,10 @@ class UserResource extends JsonResource
             'username'              => $this->username,
             'email'                 => $this->email,
             'phone'                 => $this->phone,
-            // @deprecated — استخدم receivable_balance / payable_balance / cashbox_balance
+            // @deprecated â€” Ø§Ø³ØªØ®Ø¯Ù… receivable_balance / payable_balance / cashbox_balance
             'balance'               => $legacyBalance,
             'active_branch_balance' => $this->active_branch_balance,
+            'custody_balance' => $this->custody_balance,
             'total_branches_balance'=> $this->total_branches_balance,
             'cashbox_balance'       => $this->active_branch_balance,
             'receivable_balance'    => $receivable,

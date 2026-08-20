@@ -25,6 +25,7 @@ class UserBasicResource extends JsonResource
             'phone' => $this->phone,
             'balance' => $this->active_branch_balance,
             'active_branch_balance' => $this->active_branch_balance,
+            'custody_balance' => $this->custody_balance,
             'total_branches_balance' => $this->total_branches_balance,
             'customer_type' => $this->customer_type,
             'position' => $this->position,

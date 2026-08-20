@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use App\Observers\UserObserver;
-// يجب استيراد النماذج (Models) المستخدمة داخل الكود:
+// ÙŠØ¬Ø¨ Ø§Ø³ØªÙŠØ±Ø§Ø¯ Ø§Ù„Ù†Ù…Ø§Ø°Ø¬ (Models) Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…Ø© Ø¯Ø§Ø®Ù„ Ø§Ù„ÙƒÙˆØ¯:
 use Modules\Accounting\Models\CashBox;
 use App\Models\Company;
 use App\Models\CompanyUser;
@@ -34,12 +34,12 @@ use App\Models\Installment;
 use App\Models\InstallmentPlan;
 use Modules\Accounting\Models\Transaction;
 use App\Models\Payment;
-use App\Models\Translation; // تم استخدامه في دالة trans
-use App\Models\RoleCompany; // تم استخدامه في دالة createdRoles
+use App\Models\Translation; // ØªÙ… Ø§Ø³ØªØ®Ø¯Ø§Ù…Ù‡ ÙÙŠ Ø¯Ø§Ù„Ø© trans
+use App\Models\RoleCompany; // ØªÙ… Ø§Ø³ØªØ®Ø¯Ø§Ù…Ù‡ ÙÙŠ Ø¯Ø§Ù„Ø© createdRoles
 
 
 /**
- *   كلاس المستخدم للنظام ويمثل الحساب الموحد للهوية الصالحة للعملاء، الموردين، والموظفين.
+ *   ÙƒÙ„Ø§Ø³ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù„Ù„Ù†Ø¸Ø§Ù… ÙˆÙŠÙ…Ø«Ù„ Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…ÙˆØ­Ø¯ Ù„Ù„Ù‡ÙˆÙŠØ© Ø§Ù„ØµØ§Ù„Ø­Ø© Ù„Ù„Ø¹Ù…Ù„Ø§Ø¡ØŒ Ø§Ù„Ù…ÙˆØ±Ø¯ÙŠÙ†ØŒ ÙˆØ§Ù„Ù…ÙˆØ¸ÙÙŠÙ†.
  */
 /**
  * @method void deposit(float|int $amount)
@@ -57,14 +57,14 @@ class User extends Authenticatable
 
 
     /**
-     * الحقول التي لا تخضع لـ Mass Assignment Protection.
+     * Ø§Ù„Ø­Ù‚ÙˆÙ„ Ø§Ù„ØªÙŠ Ù„Ø§ ØªØ®Ø¶Ø¹ Ù„Ù€ Mass Assignment Protection.
      *
      * @var array<int, string>
      */
     protected $guarded = [];
 
     /**
-     * الحقول التي يجب إخفاؤها عند التحويل إلى مصفوفة/JSON.
+     * Ø§Ù„Ø­Ù‚ÙˆÙ„ Ø§Ù„ØªÙŠ ÙŠØ¬Ø¨ Ø¥Ø®ÙØ§Ø¤Ù‡Ø§ Ø¹Ù†Ø¯ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ø¥Ù„Ù‰ Ù…ØµÙÙˆÙØ©/JSON.
      *
      * @var array<int, string>
      */
@@ -81,7 +81,7 @@ class User extends Authenticatable
     protected $appends = ['avatar_url', 'name', 'is_default_cash_customer'];
 
     /**
-     * تعريف أنواع البيانات للمحولات (Casts).
+     * ØªØ¹Ø±ÙŠÙ Ø£Ù†ÙˆØ§Ø¹ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ù„Ù„Ù…Ø­ÙˆÙ„Ø§Øª (Casts).
      *
      * @return array<string, string>
      */
@@ -95,22 +95,22 @@ class User extends Authenticatable
     }
 
     /**
-     * الإجراءات التي يتم تنفيذها بعد تمهيد النموذج (مثل إنشاء صندوق نقد افتراضي عند إنشاء مستخدم جديد).
+     * Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡Ø§Øª Ø§Ù„ØªÙŠ ÙŠØªÙ… ØªÙ†ÙÙŠØ°Ù‡Ø§ Ø¨Ø¹Ø¯ ØªÙ…Ù‡ÙŠØ¯ Ø§Ù„Ù†Ù…ÙˆØ°Ø¬ (Ù…Ø«Ù„ Ø¥Ù†Ø´Ø§Ø¡ ØµÙ†Ø¯ÙˆÙ‚ Ù†Ù‚Ø¯ Ø§ÙØªØ±Ø§Ø¶ÙŠ Ø¹Ù†Ø¯ Ø¥Ù†Ø´Ø§Ø¡ Ù…Ø³ØªØ®Ø¯Ù… Ø¬Ø¯ÙŠØ¯).
      */
     protected static function booted(): void
     {
         /**
          * @see \App\Observers\UserObserver
-         * يتم معالجة مزامنة البيانات (Sync) وتسجيل النشاطات (ActivityLog) عبر المراقب (Observer)
+         * ÙŠØªÙ… Ù…Ø¹Ø§Ù„Ø¬Ø© Ù…Ø²Ø§Ù…Ù†Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª (Sync) ÙˆØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ù†Ø´Ø§Ø·Ø§Øª (ActivityLog) Ø¹Ø¨Ø± Ø§Ù„Ù…Ø±Ø§Ù‚Ø¨ (Observer)
          */
 
         static::created(function ($user) {
-            // [تمت الإزالة]: يعتمد النظام الآن على CompanyUserObserver لإنشاء الخزنة عند الربط
+            // [ØªÙ…Øª Ø§Ù„Ø¥Ø²Ø§Ù„Ø©]: ÙŠØ¹ØªÙ…Ø¯ Ø§Ù„Ù†Ø¸Ø§Ù… Ø§Ù„Ø¢Ù† Ø¹Ù„Ù‰ CompanyUserObserver Ù„Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ø®Ø²Ù†Ø© Ø¹Ù†Ø¯ Ø§Ù„Ø±Ø¨Ø·
         });
     }
 
     /**
-     * علاقة MorphMany للوصول إلى ترجمات النموذج.
+     * Ø¹Ù„Ø§Ù‚Ø© MorphMany Ù„Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ ØªØ±Ø¬Ù…Ø§Øª Ø§Ù„Ù†Ù…ÙˆØ°Ø¬.
      */
     public function trans()
     {
@@ -119,12 +119,12 @@ class User extends Authenticatable
 
 
     /**
-     * الحصول على الخزنة الافتراضية لشركة محددة أو للشركة النشطة للمستخدم الموثق.
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø®Ø²Ù†Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ© Ù„Ø´Ø±ÙƒØ© Ù…Ø­Ø¯Ø¯Ø© Ø£Ùˆ Ù„Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø© Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ù…ÙˆØ«Ù‚.
      *
      * @param int|null $companyId
      * @return CashBox|null
      */
-    // كاش داخلي لتجنب تكرار الاستعلامات عن الخزنة الافتراضية
+    // ÙƒØ§Ø´ Ø¯Ø§Ø®Ù„ÙŠ Ù„ØªØ¬Ù†Ø¨ ØªÙƒØ±Ø§Ø± Ø§Ù„Ø§Ø³ØªØ¹Ù„Ø§Ù…Ø§Øª Ø¹Ù† Ø§Ù„Ø®Ø²Ù†Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ©
     protected array $defaultCashBoxCache = [];
 
     public function getDefaultCashBoxForCompany($companyId = null, ?int $branchId = null)
@@ -138,8 +138,8 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة الحصول على الخزنة الافتراضية.
-     * @deprecated تم نقل الخزنة الافتراضية إلى علاقة المستخدم بالفرع branch_user
+     * Ø¹Ù„Ø§Ù‚Ø© Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø®Ø²Ù†Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ©.
+     * @deprecated ØªÙ… Ù†Ù‚Ù„ Ø§Ù„Ø®Ø²Ù†Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ© Ø¥Ù„Ù‰ Ø¹Ù„Ø§Ù‚Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø§Ù„ÙØ±Ø¹ branch_user
      */
     public function defaultCashBox()
     {
@@ -147,7 +147,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على سجل العضوية والإعدادات الخاصة بالمستخدم في فرع معين
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø³Ø¬Ù„ Ø§Ù„Ø¹Ø¶ÙˆÙŠØ© ÙˆØ§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙÙŠ ÙØ±Ø¹ Ù…Ø¹ÙŠÙ†
      */
     public function branchMembership(?int $branchId = null): ?\App\Models\BranchUser
     {
@@ -161,7 +161,7 @@ class User extends Authenticatable
     }
 
     /**
-     * نطاق استعلام (Scope) لتحميل المستخدمين مع خزنتهم الافتراضية لشركة معينة.
+     * Ù†Ø·Ø§Ù‚ Ø§Ø³ØªØ¹Ù„Ø§Ù… (Scope) Ù„ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† Ù…Ø¹ Ø®Ø²Ù†ØªÙ‡Ù… Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ© Ù„Ø´Ø±ÙƒØ© Ù…Ø¹ÙŠÙ†Ø©.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @param int|null $companyId
@@ -182,7 +182,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الشركة النشطة حالياً للمستخدم.
+     * Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø© Ø­Ø§Ù„ÙŠØ§Ù‹ Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù….
      */
     public function company()
     {
@@ -190,7 +190,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة BelongsToMany بين المستخدم والشركات التي يعمل بها.
+     * Ø¹Ù„Ø§Ù‚Ø© BelongsToMany Ø¨ÙŠÙ† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙˆØ§Ù„Ø´Ø±ÙƒØ§Øª Ø§Ù„ØªÙŠ ÙŠØ¹Ù…Ù„ Ø¨Ù‡Ø§.
      */
     public function companies(): BelongsToMany
     {
@@ -209,7 +209,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة HasMany للحصول على جميع سجلات المستخدم في جدول company_user.
+     * Ø¹Ù„Ø§Ù‚Ø© HasMany Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¬Ù…ÙŠØ¹ Ø³Ø¬Ù„Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙÙŠ Ø¬Ø¯ÙˆÙ„ company_user.
      */
     public function companyUsers(): HasMany
     {
@@ -217,7 +217,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة العلاقات التجارية للمستخدم في سياق الشركات
+     * Ø¹Ù„Ø§Ù‚Ø© Ø§Ù„Ø¹Ù„Ø§Ù‚Ø§Øª Ø§Ù„ØªØ¬Ø§Ø±ÙŠØ© Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙÙŠ Ø³ÙŠØ§Ù‚ Ø§Ù„Ø´Ø±ÙƒØ§Øª
      */
     public function businessRelations(): HasMany
     {
@@ -225,7 +225,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة HasOne للحصول على سجل المستخدم الحالي في جدول company_user للشركة النشطة.
+     * Ø¹Ù„Ø§Ù‚Ø© HasOne Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø³Ø¬Ù„ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø­Ø§Ù„ÙŠ ÙÙŠ Ø¬Ø¯ÙˆÙ„ company_user Ù„Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©.
      */
     public function activeCompanyUser(): HasOne
     {
@@ -238,7 +238,7 @@ class User extends Authenticatable
 
 
     /**
-     * علاقة HasMany للحصول على جميع صناديق النقد (Cash Boxes) الخاصة بالمستخدم.
+     * Ø¹Ù„Ø§Ù‚Ø© HasMany Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¬Ù…ÙŠØ¹ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ (Cash Boxes) Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù….
      */
     public function cashBoxes(): HasMany
     {
@@ -254,7 +254,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على صناديق النقد الخاصة بالمستخدم ضمن شركة معينة.
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø¶Ù…Ù† Ø´Ø±ÙƒØ© Ù…Ø¹ÙŠÙ†Ø©.
      *
      * @param int|null $companyId
      * @return \Illuminate\Database\Eloquent\Collection
@@ -272,9 +272,9 @@ class User extends Authenticatable
 
 
     /**
-     * الحصول على رصيد صندوق نقدية محدد أو صندوق النقدية الافتراضي للشركة النشطة.
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø±ØµÙŠØ¯ ØµÙ†Ø¯ÙˆÙ‚ Ù†Ù‚Ø¯ÙŠØ© Ù…Ø­Ø¯Ø¯ Ø£Ùˆ ØµÙ†Ø¯ÙˆÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠ Ù„Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©.
      *
-     * @param int|null $id معرف صندوق النقدية.
+     * @param int|null $id Ù…Ø¹Ø±Ù ØµÙ†Ø¯ÙˆÙ‚ Ø§Ù„Ù†Ù‚Ø¯ÙŠØ©.
      * @return float
      */
     public function balanceBox($id = null): float
@@ -283,18 +283,18 @@ class User extends Authenticatable
         if ($id) {
             $cashBox = $this->cashBoxes()->where('id', $id)->first();
         } else {
-            // جلب الخزنة الافتراضية للشركة الحالية (بناءً على جلسة العمل أو إعدادات المستخدم)
+            // Ø¬Ù„Ø¨ Ø§Ù„Ø®Ø²Ù†Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ© Ù„Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ø­Ø§Ù„ÙŠØ© (Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„Ù‰ Ø¬Ù„Ø³Ø© Ø§Ù„Ø¹Ù…Ù„ Ø£Ùˆ Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…)
             $cashBox = $this->getDefaultCashBoxForCompany();
         }
         return $cashBox ? (float) $cashBox->balance : 0.0;
     }
 
     /**
-     * الحصول على صناديق النقد للمستخدم في الشركة النشطة (استدعاء لـ getCashBoxesForCompany).
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ ØµÙ†Ø§Ø¯ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø¯ Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙÙŠ Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø© (Ø§Ø³ØªØ¯Ø¹Ø§Ø¡ Ù„Ù€ getCashBoxesForCompany).
      */
 
     /**
-     * علاقة للحصول على الأدوار التي أنشأها المستخدم (علاقة HasManyThrough مع جدول RoleCompany).
+     * Ø¹Ù„Ø§Ù‚Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø£Ø¯ÙˆØ§Ø± Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… (Ø¹Ù„Ø§Ù‚Ø© HasManyThrough Ù…Ø¹ Ø¬Ø¯ÙˆÙ„ RoleCompany).
      */
     public function createdRoles()
     {
@@ -309,7 +309,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة HasMany للحصول على الأقساط الخاصة بهذا المستخدم (العميل).
+     * Ø¹Ù„Ø§Ù‚Ø© HasMany Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ù‡Ø°Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… (Ø§Ù„Ø¹Ù…ÙŠÙ„).
      */
     public function installments(): HasMany
     {
@@ -317,7 +317,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة HasMany للحصول على الأقساط التي أنشأها هذا المستخدم.
+     * Ø¹Ù„Ø§Ù‚Ø© HasMany Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ø³Ø§Ø· Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ù‡Ø°Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù….
      */
     public function createdInstallments(): HasMany
     {
@@ -325,7 +325,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على أدوار المستخدم مع قائمة أذونات كل دور.
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø£Ø¯ÙˆØ§Ø± Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù…Ø¹ Ù‚Ø§Ø¦Ù…Ø© Ø£Ø°ÙˆÙ†Ø§Øª ÙƒÙ„ Ø¯ÙˆØ±.
      */
     public function getRolesWithPermissions()
     {
@@ -344,7 +344,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة HasMany للحصول على جميع المعاملات المالية الخاصة بالمستخدم.
+     * Ø¹Ù„Ø§Ù‚Ø© HasMany Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù….
      */
     public function transactions(): HasMany
     {
@@ -352,7 +352,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة BelongsTo للحصول على المستخدم الذي أنشأ هذا المستخدم.
+     * Ø¹Ù„Ø§Ù‚Ø© BelongsTo Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø°ÙŠ Ø£Ù†Ø´Ø£ Ù‡Ø°Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù….
      */
     public function creator(): BelongsTo
     {
@@ -360,7 +360,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة HasMany للحصول على جميع المدفوعات التي قام بها هذا المستخدم.
+     * Ø¹Ù„Ø§Ù‚Ø© HasMany Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø§Ù„ØªÙŠ Ù‚Ø§Ù… Ø¨Ù‡Ø§ Ù‡Ø°Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù….
      */
     public function payments(): HasMany
     {
@@ -369,7 +369,7 @@ class User extends Authenticatable
 
 
     /**
-     * علاقة HasMany للحصول على الفواتير الخاصة بالمستخدم.
+     * Ø¹Ù„Ø§Ù‚Ø© HasMany Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„ÙÙˆØ§ØªÙŠØ± Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù….
      */
     public function invoices(): HasMany
     {
@@ -377,7 +377,7 @@ class User extends Authenticatable
     }
 
     /**
-     * علاقة الحصول على جميع فروع الشركة المرتبط بها المستخدم
+     * Ø¹Ù„Ø§Ù‚Ø© Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¬Ù…ÙŠØ¹ ÙØ±ÙˆØ¹ Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù…Ø±ØªØ¨Ø· Ø¨Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…
      */
     public function companyBranches(): HasMany
     {
@@ -393,19 +393,19 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على جميع معرفات الفروع المسموح للموظف رؤيتها
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¬Ù…ÙŠØ¹ Ù…Ø¹Ø±ÙØ§Øª Ø§Ù„ÙØ±ÙˆØ¹ Ø§Ù„Ù…Ø³Ù…ÙˆØ­ Ù„Ù„Ù…ÙˆØ¸Ù Ø±Ø¤ÙŠØªÙ‡Ø§
      */
     public function getAllowedBranchIds(): array
     {
         $branchIds = $this->branches()->pluck('branches.id')->toArray();
         if ($this->branch_id && !in_array($this->branch_id, $branchIds)) {
-            $branchIds[] = $this->branch_id; // إضافة الفرع الافتراضي إن لم يكن في الجدول الوسيط
+            $branchIds[] = $this->branch_id; // Ø¥Ø¶Ø§ÙØ© Ø§Ù„ÙØ±Ø¹ Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠ Ø¥Ù† Ù„Ù… ÙŠÙƒÙ† ÙÙŠ Ø§Ù„Ø¬Ø¯ÙˆÙ„ Ø§Ù„ÙˆØ³ÙŠØ·
         }
         return $branchIds;
     }
 
     /**
-     * علاقة HasMany للحصول على خطط التقسيط الخاصة بالمستخدم.
+     * Ø¹Ù„Ø§Ù‚Ø© HasMany Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø®Ø·Ø· Ø§Ù„ØªÙ‚Ø³ÙŠØ· Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù….
      */
     public function installmentPlans(): HasMany
     {
@@ -413,13 +413,13 @@ class User extends Authenticatable
     }
 
     /**
-     * إرجاع جميع معرفات المستخدمين التابعين للمستخدم الحالي بشكل تسلسلي داخل الشركة النشطة.
+     * Ø¥Ø±Ø¬Ø§Ø¹ Ø¬Ù…ÙŠØ¹ Ù…Ø¹Ø±ÙØ§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† Ø§Ù„ØªØ§Ø¨Ø¹ÙŠÙ† Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø­Ø§Ù„ÙŠ Ø¨Ø´ÙƒÙ„ ØªØ³Ù„Ø³Ù„ÙŠ Ø¯Ø§Ø®Ù„ Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©.
      *
      * @return array
      */
     public function getDescendantUserIds(): array
     {
-        // يتطلب استيراد CompanyUser
+        // ÙŠØªØ·Ù„Ø¨ Ø§Ø³ØªÙŠØ±Ø§Ø¯ CompanyUser
         $companyId = app(\App\Services\CurrentCompanyResolver::class)->resolve() ?? null;
 
         if (is_null($companyId)) {
@@ -454,62 +454,62 @@ class User extends Authenticatable
 
 
     /**
-     * إرجاع الشركات المرئية للمستخدم بناءً على صلاحياته (جميع الشركات للسوبر أدمن أو الشركات المرتبط بها).
+     * Ø¥Ø±Ø¬Ø§Ø¹ Ø§Ù„Ø´Ø±ÙƒØ§Øª Ø§Ù„Ù…Ø±Ø¦ÙŠØ© Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„Ù‰ ØµÙ„Ø§Ø­ÙŠØ§ØªÙ‡ (Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø´Ø±ÙƒØ§Øª Ù„Ù„Ø³ÙˆØ¨Ø± Ø£Ø¯Ù…Ù† Ø£Ùˆ Ø§Ù„Ø´Ø±ÙƒØ§Øª Ø§Ù„Ù…Ø±ØªØ¨Ø· Ø¨Ù‡Ø§).
      */
     public function getVisibleCompaniesForUser()
     {
-        // يتطلب استيراد Company
+        // ÙŠØªØ·Ù„Ø¨ Ø§Ø³ØªÙŠØ±Ø§Ø¯ Company
         if ($this->hasPermissionTo(perm_key('admin.super'))) {
             return Company::all();
         }
-        // استخدام withoutGlobalScopes لرؤية جميع الشركات المرتبط بها المستخدم
+        // Ø§Ø³ØªØ®Ø¯Ø§Ù… withoutGlobalScopes Ù„Ø±Ø¤ÙŠØ© Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø´Ø±ÙƒØ§Øª Ø§Ù„Ù…Ø±ØªØ¨Ø· Ø¨Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…
         return $this->companies()->withoutGlobalScopes()->get();
     }
 
     /**
-     * يتحقق مما إذا كان المستخدم (كعميل/موظف) لديه أي سجلات حركية/مالية مرتبطة بالشركة المحددة.
-     * @param int $companyId معرف الشركة النشطة
+     * ÙŠØªØ­Ù‚Ù‚ Ù…Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… (ÙƒØ¹Ù…ÙŠÙ„/Ù…ÙˆØ¸Ù) Ù„Ø¯ÙŠÙ‡ Ø£ÙŠ Ø³Ø¬Ù„Ø§Øª Ø­Ø±ÙƒÙŠØ©/Ù…Ø§Ù„ÙŠØ© Ù…Ø±ØªØ¨Ø·Ø© Ø¨Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©.
+     * @param int $companyId Ù…Ø¹Ø±Ù Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©
      * @return bool
      */
     /**
-     * يتحقق مما إذا كان المستخدم (كعميل/موظف) لديه أي سجلات حركية/مالية مرتبطة بالشركة المحددة.
+     * ÙŠØªØ­Ù‚Ù‚ Ù…Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… (ÙƒØ¹Ù…ÙŠÙ„/Ù…ÙˆØ¸Ù) Ù„Ø¯ÙŠÙ‡ Ø£ÙŠ Ø³Ø¬Ù„Ø§Øª Ø­Ø±ÙƒÙŠØ©/Ù…Ø§Ù„ÙŠØ© Ù…Ø±ØªØ¨Ø·Ø© Ø¨Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©.
      *
-     * @param int $companyId معرف الشركة النشطة
-     * @return array|null مصفوفة تحتوي على سبب المنع (الرسالة)، أو null إذا كان الحذف آمنًا.
+     * @param int $companyId Ù…Ø¹Ø±Ù Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©
+     * @return array|null Ù…ØµÙÙˆÙØ© ØªØ­ØªÙˆÙŠ Ø¹Ù„Ù‰ Ø³Ø¨Ø¨ Ø§Ù„Ù…Ù†Ø¹ (Ø§Ù„Ø±Ø³Ø§Ù„Ø©)ØŒ Ø£Ùˆ null Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ø­Ø°Ù Ø¢Ù…Ù†Ù‹Ø§.
      */
     public function hasActiveTransactionsInCompany(int $companyId): ?array
     {
-        // 1. فحص الفواتير (Invoices)
+        // 1. ÙØ­Øµ Ø§Ù„ÙÙˆØ§ØªÙŠØ± (Invoices)
         if ($this->invoices()->where('company_id', $companyId)->exists()) {
-            return ['message' => 'لا يمكن فصل العميل لوجود فواتير  مسجلة باسمه في هذه الشركة.'];
+            return ['message' => 'Ù„Ø§ ÙŠÙ…ÙƒÙ† ÙØµÙ„ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ù„ÙˆØ¬ÙˆØ¯ ÙÙˆØ§ØªÙŠØ±  Ù…Ø³Ø¬Ù„Ø© Ø¨Ø§Ø³Ù…Ù‡ ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©.'];
         }
 
-        // 2. فحص المعاملات المالية (Transactions)
+        // 2. ÙØ­Øµ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© (Transactions)
         if ($this->transactions()->where('company_id', $companyId)->exists()) {
-            return ['message' => 'لا يمكن فصل العميل لوجود سجلات معاملات مالية مرتبطة به في هذه الشركة.'];
+            return ['message' => 'Ù„Ø§ ÙŠÙ…ÙƒÙ† ÙØµÙ„ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ù„ÙˆØ¬ÙˆØ¯ Ø³Ø¬Ù„Ø§Øª Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ù…Ø§Ù„ÙŠØ© Ù…Ø±ØªØ¨Ø·Ø© Ø¨Ù‡ ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©.'];
         }
 
-        // 3. فحص المدفوعات (Payments)
+        // 3. ÙØ­Øµ Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª (Payments)
         if ($this->payments()->where('company_id', $companyId)->exists()) {
-            return ['message' => 'لا يمكن فصل العميل لوجود سجلات مدفوعات  قام بها في هذه الشركة.'];
+            return ['message' => 'Ù„Ø§ ÙŠÙ…ÙƒÙ† ÙØµÙ„ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ù„ÙˆØ¬ÙˆØ¯ Ø³Ø¬Ù„Ø§Øª Ù…Ø¯ÙÙˆØ¹Ø§Øª  Ù‚Ø§Ù… Ø¨Ù‡Ø§ ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©.'];
         }
 
-        // 4. فحص الأقساط (Installments)
+        // 4. ÙØ­Øµ Ø§Ù„Ø£Ù‚Ø³Ø§Ø· (Installments)
         if ($this->installments()->where('company_id', $companyId)->exists()) {
-            return ['message' => 'لا يمكن فصل العميل لوجود أقساط  مستحقة أو مدفوعة مرتبطة به في هذه الشركة.'];
+            return ['message' => 'Ù„Ø§ ÙŠÙ…ÙƒÙ† ÙØµÙ„ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ù„ÙˆØ¬ÙˆØ¯ Ø£Ù‚Ø³Ø§Ø·  Ù…Ø³ØªØ­Ù‚Ø© Ø£Ùˆ Ù…Ø¯ÙÙˆØ¹Ø© Ù…Ø±ØªØ¨Ø·Ø© Ø¨Ù‡ ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©.'];
         }
 
-        // 5. فحص خطط التقسيط (Installment Plans)
+        // 5. ÙØ­Øµ Ø®Ø·Ø· Ø§Ù„ØªÙ‚Ø³ÙŠØ· (Installment Plans)
         if ($this->installmentPlans()->where('company_id', $companyId)->exists()) {
-            return ['message' => 'لا يمكن فصل العميل لوجود خطط تقسيط مسجلة باسمه في هذه الشركة.'];
+            return ['message' => 'Ù„Ø§ ÙŠÙ…ÙƒÙ† ÙØµÙ„ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ù„ÙˆØ¬ÙˆØ¯ Ø®Ø·Ø· ØªÙ‚Ø³ÙŠØ· Ù…Ø³Ø¬Ù„Ø© Ø¨Ø§Ø³Ù…Ù‡ ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©.'];
         }
 
-        // 6. فحص رصيد الخزنة: إذا كان المستخدم يمتلك خزنة في هذه الشركة ورصيدها ليس صفرًا
+        // 6. ÙØ­Øµ Ø±ØµÙŠØ¯ Ø§Ù„Ø®Ø²Ù†Ø©: Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙŠÙ…ØªÙ„Ùƒ Ø®Ø²Ù†Ø© ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ© ÙˆØ±ØµÙŠØ¯Ù‡Ø§ Ù„ÙŠØ³ ØµÙØ±Ù‹Ø§
         if ($this->cashBoxes()->where('company_id', $companyId)->where('balance', '!=', 0)->exists()) {
-            return ['message' => 'لا يمكن فصل المستخدم لوجود رصيد متبقي غير صفري في خزنته الافتراضية لهذه الشركة.'];
+            return ['message' => 'Ù„Ø§ ÙŠÙ…ÙƒÙ† ÙØµÙ„ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù„ÙˆØ¬ÙˆØ¯ Ø±ØµÙŠØ¯ Ù…ØªØ¨Ù‚ÙŠ ØºÙŠØ± ØµÙØ±ÙŠ ÙÙŠ Ø®Ø²Ù†ØªÙ‡ Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ© Ù„Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©.'];
         }
 
-        // إذا لم يتم العثور على أي سجلات حركية/مالية، يكون الحذف آمنًا
+        // Ø¥Ø°Ø§ Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø£ÙŠ Ø³Ø¬Ù„Ø§Øª Ø­Ø±ÙƒÙŠØ©/Ù…Ø§Ù„ÙŠØ©ØŒ ÙŠÙƒÙˆÙ† Ø§Ù„Ø­Ø°Ù Ø¢Ù…Ù†Ù‹Ø§
         return null;
     }
 
@@ -520,7 +520,7 @@ class User extends Authenticatable
      */
     public function logLabel()
     {
-        return "المستخدم ({$this->nickname})";
+        return "Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ({$this->nickname})";
     }
 
     /**
@@ -578,7 +578,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على الاسم المفضل للهوية العالمية (العالمي فقط)
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø§Ø³Ù… Ø§Ù„Ù…ÙØ¶Ù„ Ù„Ù„Ù‡ÙˆÙŠØ© Ø§Ù„Ø¹Ø§Ù„Ù…ÙŠØ© (Ø§Ù„Ø¹Ø§Ù„Ù…ÙŠ ÙÙ‚Ø·)
      */
     public function getNameAttribute()
     {
@@ -594,11 +594,11 @@ class User extends Authenticatable
             return $this->username;
         }
 
-        return 'عميل غير معروف';
+        return 'Ø¹Ù…ÙŠÙ„ ØºÙŠØ± Ù…Ø¹Ø±ÙˆÙ';
     }
 
     /**
-     * الحصول على اللقب للهوية العالمية (العالمي فقط)
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ù„Ù‚Ø¨ Ù„Ù„Ù‡ÙˆÙŠØ© Ø§Ù„Ø¹Ø§Ù„Ù…ÙŠØ© (Ø§Ù„Ø¹Ø§Ù„Ù…ÙŠ ÙÙ‚Ø·)
      */
     public function getNicknameAttribute($value)
     {
@@ -606,7 +606,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على الاسم الكامل للهوية العالمية (العالمي فقط)
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø§Ø³Ù… Ø§Ù„ÙƒØ§Ù…Ù„ Ù„Ù„Ù‡ÙˆÙŠØ© Ø§Ù„Ø¹Ø§Ù„Ù…ÙŠØ© (Ø§Ù„Ø¹Ø§Ù„Ù…ÙŠ ÙÙ‚Ø·)
      */
     public function getFullNameAttribute($value)
     {
@@ -615,7 +615,7 @@ class User extends Authenticatable
 
     /**
      * Boot the trait to apply global scope.
-     * تم تعديل المنطق ليشمل المستخدمين المرتبطين بالشركة عبر جدول company_user
+     * ØªÙ… ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ù†Ø·Ù‚ Ù„ÙŠØ´Ù…Ù„ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† Ø§Ù„Ù…Ø±ØªØ¨Ø·ÙŠÙ† Ø¨Ø§Ù„Ø´Ø±ÙƒØ© Ø¹Ø¨Ø± Ø¬Ø¯ÙˆÙ„ company_user
      */
     public static function bootFilterableByCompany()
     {
@@ -631,9 +631,9 @@ class User extends Authenticatable
 
             if ($companyId && !$user->hasPermissionTo(perm_key('admin.super'))) {
                 $builder->where(function ($query) use ($companyId) {
-                    // 1. المستخدم ينتمي مباشرة لهذه الشركة
+                    // 1. Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙŠÙ†ØªÙ…ÙŠ Ù…Ø¨Ø§Ø´Ø±Ø© Ù„Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©
                     $query->where('users.active_company_id', $companyId)
-                        // 2. أو المستخدم مرتبط بهذه الشركة عبر الجدول الوسيط
+                        // 2. Ø£Ùˆ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù…Ø±ØªØ¨Ø· Ø¨Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ© Ø¹Ø¨Ø± Ø§Ù„Ø¬Ø¯ÙˆÙ„ Ø§Ù„ÙˆØ³ÙŠØ·
                         ->orWhereExists(function ($subQuery) use ($companyId) {
                             $subQuery->select(\DB::raw(1))
                                 ->from('company_user')
@@ -649,7 +649,7 @@ class User extends Authenticatable
 
     /**
      * Resolve the route binding for the model.
-     *   تجاوز الفلترة بالشركة عند جلب المستخدم عبر الروابط لتمكين التحكم بالصلاحيات داخل الكنترولر.
+     *   ØªØ¬Ø§ÙˆØ² Ø§Ù„ÙÙ„ØªØ±Ø© Ø¨Ø§Ù„Ø´Ø±ÙƒØ© Ø¹Ù†Ø¯ Ø¬Ù„Ø¨ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø¹Ø¨Ø± Ø§Ù„Ø±ÙˆØ§Ø¨Ø· Ù„ØªÙ…ÙƒÙŠÙ† Ø§Ù„ØªØ­ÙƒÙ… Ø¨Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¯Ø§Ø®Ù„ Ø§Ù„ÙƒÙ†ØªØ±ÙˆÙ„Ø±.
      */
     public function resolveRouteBinding($value, $field = null)
     {
@@ -657,8 +657,8 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على رصيد خزنة الفرع النشط (Active Branch Safe Balance)
-     *   يرجع رصيد الخزنة المرتبطة بالفرع النشط الحالي للمستخدم.
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø±ØµÙŠØ¯ Ø®Ø²Ù†Ø© Ø§Ù„ÙØ±Ø¹ Ø§Ù„Ù†Ø´Ø· (Active Branch Safe Balance)
+     *   ÙŠØ±Ø¬Ø¹ Ø±ØµÙŠØ¯ Ø§Ù„Ø®Ø²Ù†Ø© Ø§Ù„Ù…Ø±ØªØ¨Ø·Ø© Ø¨Ø§Ù„ÙØ±Ø¹ Ø§Ù„Ù†Ø´Ø· Ø§Ù„Ø­Ø§Ù„ÙŠ Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù….
      */
     public function getActiveBranchBalanceAttribute(): float
     {
@@ -677,7 +677,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على الرصيد المتوافق مع المعمارية الجديدة (الموظف -> عهدة | العميل -> ذمة مدينة | المورد -> ذمة دائنة)
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ù…ØªÙˆØ§ÙÙ‚ Ù…Ø¹ Ø§Ù„Ù…Ø¹Ù…Ø§Ø±ÙŠØ© Ø§Ù„Ø¬Ø¯ÙŠØ¯Ø© (Ø§Ù„Ù…ÙˆØ¸Ù -> Ø¹Ù‡Ø¯Ø© | Ø§Ù„Ø¹Ù…ÙŠÙ„ -> Ø°Ù…Ø© Ù…Ø¯ÙŠÙ†Ø© | Ø§Ù„Ù…ÙˆØ±Ø¯ -> Ø°Ù…Ø© Ø¯Ø§Ø¦Ù†Ø©)
      */
     public function getBalanceAttribute()
     {
@@ -705,9 +705,17 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على إجمالي أرصدة الصناديق في الفروع المنتمي إليها بشرط أن يكون مرتبطاً بأكثر من فرع
-     *   يرجع مجموع أرصدة كل خزن فروع المستخدم بشرط ارتباطه بأكثر من فرع.
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø£Ø±ØµØ¯Ø© Ø§Ù„ØµÙ†Ø§Ø¯ÙŠÙ‚ ÙÙŠ Ø§Ù„ÙØ±ÙˆØ¹ Ø§Ù„Ù…Ù†ØªÙ…ÙŠ Ø¥Ù„ÙŠÙ‡Ø§ Ø¨Ø´Ø±Ø· Ø£Ù† ÙŠÙƒÙˆÙ† Ù…Ø±ØªØ¨Ø·Ø§Ù‹ Ø¨Ø£ÙƒØ«Ø± Ù…Ù† ÙØ±Ø¹
+     *   ÙŠØ±Ø¬Ø¹ Ù…Ø¬Ù…ÙˆØ¹ Ø£Ø±ØµØ¯Ø© ÙƒÙ„ Ø®Ø²Ù† ÙØ±ÙˆØ¹ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø´Ø±Ø· Ø§Ø±ØªØ¨Ø§Ø·Ù‡ Ø¨Ø£ÙƒØ«Ø± Ù…Ù† ÙØ±Ø¹.
      */
+    public function getCustodyBalanceAttribute(): ?float
+    {
+        $activeCompanyId = app(\App\Services\CurrentCompanyResolver::class)->resolve() ?? $this->active_company_id;
+        if (!$activeCompanyId) {
+            return 0.0;
+        }
+        return $this->getFinancialBalance($activeCompanyId, 'custody');
+    }
     public function getTotalBranchesBalanceAttribute(): ?float
     {
         $activeCompanyId = app(\App\Services\CurrentCompanyResolver::class)->resolve() ?? $this->active_company_id;
@@ -716,11 +724,11 @@ class User extends Authenticatable
             return 0.0;
         }
 
-        // حساب عدد الفروع المرتبط بها في الشركة الحالية
+        // Ø­Ø³Ø§Ø¨ Ø¹Ø¯Ø¯ Ø§Ù„ÙØ±ÙˆØ¹ Ø§Ù„Ù…Ø±ØªØ¨Ø· Ø¨Ù‡Ø§ ÙÙŠ Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ø­Ø§Ù„ÙŠØ©
         $branchesCount = $this->branches()->count();
 
         if ($branchesCount <= 1) {
-            return null; // الشرط: إرجاعها فقط إذا كان له أكثر من فرع مرتبط
+            return null; // Ø§Ù„Ø´Ø±Ø·: Ø¥Ø±Ø¬Ø§Ø¹Ù‡Ø§ ÙÙ‚Ø· Ø¥Ø°Ø§ ÙƒØ§Ù† Ù„Ù‡ Ø£ÙƒØ«Ø± Ù…Ù† ÙØ±Ø¹ Ù…Ø±ØªØ¨Ø·
         }
 
         if ($this->relationLoaded('cashBoxes') && $this->cashBoxes !== null) {
@@ -735,7 +743,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على معرف الشركة النشطة كبديل لـ company_id لضمان التوافقية مع الموديولات المختلفة
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ù…Ø¹Ø±Ù Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø© ÙƒØ¨Ø¯ÙŠÙ„ Ù„Ù€ company_id Ù„Ø¶Ù…Ø§Ù† Ø§Ù„ØªÙˆØ§ÙÙ‚ÙŠØ© Ù…Ø¹ Ø§Ù„Ù…ÙˆØ¯ÙŠÙˆÙ„Ø§Øª Ø§Ù„Ù…Ø®ØªÙ„ÙØ©
      */
     public function getCompanyIdAttribute()
     {
@@ -743,7 +751,7 @@ class User extends Authenticatable
     }
 
     /**
-     *   تعيين معرف الشركة النشطة تلقائياً عند تمرير company_id لضمان التوافقية مع الجداول والاختبارات.
+     *   ØªØ¹ÙŠÙŠÙ† Ù…Ø¹Ø±Ù Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø© ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ Ø¹Ù†Ø¯ ØªÙ…Ø±ÙŠØ± company_id Ù„Ø¶Ù…Ø§Ù† Ø§Ù„ØªÙˆØ§ÙÙ‚ÙŠØ© Ù…Ø¹ Ø§Ù„Ø¬Ø¯Ø§ÙˆÙ„ ÙˆØ§Ù„Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª.
      */
     public function setCompanyIdAttribute($value)
     {
@@ -783,7 +791,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على أنواع العلاقات للشركة مع دعم التحميل المسبق.
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø£Ù†ÙˆØ§Ø¹ Ø§Ù„Ø¹Ù„Ø§Ù‚Ø§Øª Ù„Ù„Ø´Ø±ÙƒØ© Ù…Ø¹ Ø¯Ø¹Ù… Ø§Ù„ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ø³Ø¨Ù‚.
      */
     public function getRelationTypesForCompany($companyId): array
     {
@@ -800,7 +808,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على القدرات والسلوكيات التشغيلية للشركة مع دعم التحميل المسبق.
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ù‚Ø¯Ø±Ø§Øª ÙˆØ§Ù„Ø³Ù„ÙˆÙƒÙŠØ§Øª Ø§Ù„ØªØ´ØºÙŠÙ„ÙŠØ© Ù„Ù„Ø´Ø±ÙƒØ© Ù…Ø¹ Ø¯Ø¹Ù… Ø§Ù„ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ø³Ø¨Ù‚.
      */
     public function getCapabilitiesForCompany($companyId): array
     {
@@ -834,7 +842,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على المسمى الوظيفي (Context-Aware)
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø³Ù…Ù‰ Ø§Ù„ÙˆØ¸ÙŠÙÙŠ (Context-Aware)
      */
     public function getPositionAttribute($value)
     {
@@ -842,7 +850,7 @@ class User extends Authenticatable
     }
 
     /**
-     * الحصول على نوع العميل (Context-Aware)
+     * Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ù†ÙˆØ¹ Ø§Ù„Ø¹Ù…ÙŠÙ„ (Context-Aware)
      */
     public function getCustomerTypeAttribute($value)
     {
@@ -850,21 +858,21 @@ class User extends Authenticatable
     }
 
     /**
-     * التحقق مما إذا كان المستخدم يملك أي صلاحيات (يعتبر موظف أو مدير).
+     * Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙŠÙ…Ù„Ùƒ Ø£ÙŠ ØµÙ„Ø§Ø­ÙŠØ§Øª (ÙŠØ¹ØªØ¨Ø± Ù…ÙˆØ¸Ù Ø£Ùˆ Ù…Ø¯ÙŠØ±).
      */
     public function isStaffOrAdmin(): bool
     {
-        // فحص ما إذا كان لديه صلاحية سوبر أدمن عالمية
+        // ÙØ­Øµ Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù† Ù„Ø¯ÙŠÙ‡ ØµÙ„Ø§Ø­ÙŠØ© Ø³ÙˆØ¨Ø± Ø£Ø¯Ù…Ù† Ø¹Ø§Ù„Ù…ÙŠØ©
         if ($this->hasPermissionTo(perm_key('admin.super'))) {
             return true;
         }
 
-        // فحص ما إذا كان لديه أي صلاحيات مباشرة أو أدوار
+        // ÙØ­Øµ Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù† Ù„Ø¯ÙŠÙ‡ Ø£ÙŠ ØµÙ„Ø§Ø­ÙŠØ§Øª Ù…Ø¨Ø§Ø´Ø±Ø© Ø£Ùˆ Ø£Ø¯ÙˆØ§Ø±
         return $this->permissions()->count() > 0 || $this->roles()->count() > 0;
     }
 
     /**
-     * التحقق مما إذا كان المستخدم هو العميل النقدي الافتراضي للشركة النشطة أو شركة معينة.
+     * Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù‡Ùˆ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ø§Ù„Ù†Ù‚Ø¯ÙŠ Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠ Ù„Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø© Ø£Ùˆ Ø´Ø±ÙƒØ© Ù…Ø¹ÙŠÙ†Ø©.
      *
      * @param int|null $companyId
      * @return bool
@@ -881,7 +889,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Accessor للتحقق السهل والآلي من العميل النقدي الافتراضي.
+     * Accessor Ù„Ù„ØªØ­Ù‚Ù‚ Ø§Ù„Ø³Ù‡Ù„ ÙˆØ§Ù„Ø¢Ù„ÙŠ Ù…Ù† Ø§Ù„Ø¹Ù…ÙŠÙ„ Ø§Ù„Ù†Ù‚Ø¯ÙŠ Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠ.
      *
      * @return bool
      */

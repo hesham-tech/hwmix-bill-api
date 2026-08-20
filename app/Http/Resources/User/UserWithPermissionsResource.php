@@ -18,7 +18,7 @@ class UserWithPermissionsResource extends JsonResource
      */
     public function toArray($request)
     {
-        // التأكد من تحديد شركة المستخدم قبل جلب الصلاحيات (مهم لمسارات تسجيل الدخول)
+        // Ø§Ù„ØªØ£ÙƒØ¯ Ù…Ù† ØªØ­Ø¯ÙŠØ¯ Ø´Ø±ÙƒØ© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù‚Ø¨Ù„ Ø¬Ù„Ø¨ Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª (Ù…Ù‡Ù… Ù„Ù…Ø³Ø§Ø±Ø§Øª ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„)
         if (config('permission.teams') && $this->active_company_id) {
             setPermissionsTeamId($this->active_company_id);
         }
@@ -28,6 +28,7 @@ class UserWithPermissionsResource extends JsonResource
             'nickname' => $this->nickname,
             'balance' => $this->active_branch_balance,
             'active_branch_balance' => $this->active_branch_balance,
+            'custody_balance' => $this->custody_balance,
             'total_branches_balance' => $this->total_branches_balance,
             'full_name' => $this->full_name,
             'username' => $this->username,
@@ -49,14 +50,14 @@ class UserWithPermissionsResource extends JsonResource
             'user_type' => $this->isStaffOrAdmin() ? 'staff' : 'customer',
             'has_installments' => $this->whenLoaded('installments', fn() => $this->installments()->exists(), false),
             'cashBoxDefault' => new CashBoxResource($this->getDefaultCashBoxForCompany()),
-            // الشركات التي يمكن للمستخدم الوصول إليها
+            // Ø§Ù„Ø´Ø±ÙƒØ§Øª Ø§Ù„ØªÙŠ ÙŠÙ…ÙƒÙ† Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„ÙŠÙ‡Ø§
             'companies' => $this->whenLoaded('companies', fn() => CompanyResource::collection($this->getVisibleCompaniesForUser() ?? collect())),
             'cashBoxes' => $this->whenLoaded('cashBoxes', fn() => CashBoxResource::collection($this->cashBoxes ?? collect())),
             'branches' => $this->whenLoaded('branches', function () {
                 if ($this->hasPermissionTo(perm_key('admin.company')) || $this->hasPermissionTo(perm_key('admin.super'))) {
                     $branches = \Modules\Companies\Models\Branch::where('company_id', $this->active_company_id)->get();
                 } else {
-                    // إضافة الفرع الافتراضي إذا لم يكن ضمن الفروع المحملة
+                    // Ø¥Ø¶Ø§ÙØ© Ø§Ù„ÙØ±Ø¹ Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠ Ø¥Ø°Ø§ Ù„Ù… ÙŠÙƒÙ† Ø¶Ù…Ù† Ø§Ù„ÙØ±ÙˆØ¹ Ø§Ù„Ù…Ø­Ù…Ù„Ø©
                     $branches = $this->branches;
                     if ($this->branch_id && !$branches->contains('id', $this->branch_id)) {
                         $defaultBranch = \Modules\Companies\Models\Branch::find($this->branch_id);
@@ -68,7 +69,7 @@ class UserWithPermissionsResource extends JsonResource
                 return \Modules\Companies\Transformers\BranchResource::collection($branches);
             }),
 
-            // الصلاحيات والادوار
+            // Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª ÙˆØ§Ù„Ø§Ø¯ÙˆØ§Ø±
             'roles' => $this->getRolesWithPermissions(),
             'permissions' => $this->resource->hasPermissionTo(perm_key('admin.super'))
                 ? \Spatie\Permission\Models\Permission::all()->pluck('name')
