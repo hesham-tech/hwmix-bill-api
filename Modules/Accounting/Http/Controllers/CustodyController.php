@@ -27,7 +27,7 @@ class CustodyController extends Controller
         if (!$user) return api_unauthorized('يتطلب المصادقة.');
 
         if (!$user->hasPermissionTo(perm_key('custodies.view_all')) && !$user->hasPermissionTo(perm_key('custodies.view_self'))) {
-            return api_forbidden('ليس لديك إذن لعرض العهد.');
+            return api_forbidden('عذراً، لا تمتلك الصلاحية الكافية');
         }
 
         $query = Custody::with(['user', 'cashbox'])
@@ -61,12 +61,12 @@ class CustodyController extends Controller
         if (!$user) return api_unauthorized('يتطلب المصادقة.');
 
         if ($custody->company_id !== $user->active_company_id) {
-            return api_forbidden('العهدة المحددة لا تنتمي لشركتك.');
+            return api_forbidden('عذراً، لا تمتلك الصلاحية الكافية');
         }
 
         if (!$user->hasPermissionTo(perm_key('custodies.view_all'))) {
             if (!$user->hasPermissionTo(perm_key('custodies.view_self')) || $custody->user_id !== $user->id) {
-                return api_forbidden('ليس لديك إذن لعرض هذه العهدة.');
+                return api_forbidden('عذراً، لا تمتلك الصلاحية الكافية');
             }
         }
 
@@ -90,7 +90,7 @@ class CustodyController extends Controller
         if (!$user) return api_unauthorized('يتطلب المصادقة.');
 
         if (!$user->hasPermissionTo(perm_key('custodies.create'))) {
-            return api_forbidden('ليس لديك إذن لإصدار عهدة.');
+            return api_forbidden('عذراً، لا تمتلك الصلاحية الكافية');
         }
 
         $validator = Validator::make($request->all(), [
@@ -120,11 +120,11 @@ class CustodyController extends Controller
         if (!$user) return api_unauthorized('يتطلب المصادقة.');
 
         if ($custody->company_id !== $user->active_company_id) {
-            return api_forbidden('العهدة المحددة لا تنتمي لشركتك.');
+            return api_forbidden('عذراً، لا تمتلك الصلاحية الكافية');
         }
 
         if (!$user->hasPermissionTo(perm_key('custodies.refund'))) {
-            return api_forbidden('ليس لديك إذن لإجراء استرداد نقدي من العهدة.');
+            return api_forbidden('عذراً، لا تمتلك الصلاحية الكافية');
         }
 
         $validator = Validator::make($request->all(), [
@@ -148,11 +148,11 @@ class CustodyController extends Controller
         if (!$user) return api_unauthorized('يتطلب المصادقة.');
 
         if ($custody->company_id !== $user->active_company_id) {
-            return api_forbidden('العهدة المحددة لا تنتمي لشركتك.');
+            return api_forbidden('عذراً، لا تمتلك الصلاحية الكافية');
         }
 
         if (!$user->hasPermissionTo(perm_key('custodies.reverse'))) {
-            return api_forbidden('ليس لديك إذن لعكس العهدة.');
+            return api_forbidden('عذراً، لا تمتلك الصلاحية الكافية');
         }
 
         $operation = FinancialOperation::where('source_type', Custody::class)
