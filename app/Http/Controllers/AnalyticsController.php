@@ -11,16 +11,16 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 /**
- * @group 09. الإحصائيات والتقارير
+ * @group 09. Ø§Ù„Ø¥Ø­ØµØ§Ø¦ÙŠØ§Øª ÙˆØ§Ù„ØªÙ‚Ø§Ø±ÙŠØ±
  * 
- * APIs لوحة التحكم والإحصائيات المتقدمة للمنتجات والعملاء.
+ * APIs Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ… ÙˆØ§Ù„Ø¥Ø­ØµØ§Ø¦ÙŠØ§Øª Ø§Ù„Ù…ØªÙ‚Ø¯Ù…Ø© Ù„Ù„Ù…Ù†ØªØ¬Ø§Øª ÙˆØ§Ù„Ø¹Ù…Ù„Ø§Ø¡.
  */
 class AnalyticsController extends Controller
 {
     /**
-     * نظرة عامة على لوحة التحكم
+     * Ù†Ø¸Ø±Ø© Ø¹Ø§Ù…Ø© Ø¹Ù„Ù‰ Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…
      * 
-     * جلب أرقام الأداء الرئيسية (إجمالي الإيرادات، الأرباح، عدد الطلبات) لليوم وللشهر الحالي.
+     * Ø¬Ù„Ø¨ Ø£Ø±Ù‚Ø§Ù… Ø§Ù„Ø£Ø¯Ø§Ø¡ Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ© (Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§ØªØŒ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ØŒ Ø¹Ø¯Ø¯ Ø§Ù„Ø·Ù„Ø¨Ø§Øª) Ù„Ù„ÙŠÙˆÙ… ÙˆÙ„Ù„Ø´Ù‡Ø± Ø§Ù„Ø­Ø§Ù„ÙŠ.
      * 
      * @authenticated
      */
@@ -55,12 +55,12 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * المنتجات الأكثر مبيعاً
+     * Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø£ÙƒØ«Ø± Ù…Ø¨ÙŠØ¹Ø§Ù‹
      * 
-     * جلب قائمة بالمنتجات الأعلى أداءً بناءً على الكمية المباعة أو الأرباح المحققة.
+     * Ø¬Ù„Ø¨ Ù‚Ø§Ø¦Ù…Ø© Ø¨Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø£Ø¹Ù„Ù‰ Ø£Ø¯Ø§Ø¡Ù‹ Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„Ù‰ Ø§Ù„ÙƒÙ…ÙŠØ© Ø§Ù„Ù…Ø¨Ø§Ø¹Ø© Ø£Ùˆ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„Ù…Ø­Ù‚Ù‚Ø©.
      * 
-     * @queryParam sort_by string الحقل المراد الترتيب بناءً عليه (total_sold_quantity, total_profit, total_revenue). Default: total_sold_quantity.
-     * @queryParam limit int عدد النتائج المطلوبة. Default: 10.
+     * @queryParam sort_by string Ø§Ù„Ø­Ù‚Ù„ Ø§Ù„Ù…Ø±Ø§Ø¯ Ø§Ù„ØªØ±ØªÙŠØ¨ Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„ÙŠÙ‡ (total_sold_quantity, total_profit, total_revenue). Default: total_sold_quantity.
+     * @queryParam limit int Ø¹Ø¯Ø¯ Ø§Ù„Ù†ØªØ§Ø¦Ø¬ Ø§Ù„Ù…Ø·Ù„ÙˆØ¨Ø©. Default: 10.
      * 
      * @authenticated
      */
@@ -71,7 +71,7 @@ class AnalyticsController extends Controller
         $limit = $request->input('limit', 10);
 
         $topStats = StatsProductSummary::where('company_id', $companyId)
-            ->with(['product:id,name,sku'])
+            ->with(['product:id,name'])
             ->orderBy($sortBy, 'desc')
             ->limit($limit)
             ->get();
@@ -80,11 +80,11 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * تاريخ مشتريات مستخدم محدد
+     * ØªØ§Ø±ÙŠØ® Ù…Ø´ØªØ±ÙŠØ§Øª Ù…Ø³ØªØ®Ø¯Ù… Ù…Ø­Ø¯Ø¯
      * 
-     * جلب تفاصيل كافة المنتجات التي اشتراها مستخدم معين وإجمالي إنفاقه على كل منها.
+     * Ø¬Ù„Ø¨ ØªÙØ§ØµÙŠÙ„ ÙƒØ§ÙØ© Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø§Ø´ØªØ±Ø§Ù‡Ø§ Ù…Ø³ØªØ®Ø¯Ù… Ù…Ø¹ÙŠÙ† ÙˆØ¥Ø¬Ù…Ø§Ù„ÙŠ Ø¥Ù†ÙØ§Ù‚Ù‡ Ø¹Ù„Ù‰ ÙƒÙ„ Ù…Ù†Ù‡Ø§.
      * 
-     * @urlParam user_id int required معرف المستخدم.
+     * @urlParam user_id int required Ù…Ø¹Ø±Ù Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù….
      * 
      * @authenticated
      */
