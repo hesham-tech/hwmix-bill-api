@@ -200,7 +200,7 @@ class CustomerSupplierReportController extends BaseReportController
      * @queryParam user_id integer required معرف العميل/المورد. Example: 1
      * @queryParam date_from date تاريخ البداية.
      */
-    public function statement(Request $request)
+        public function statement(Request $request)
     {
         $userId = $request->input('user_id');
         $filters = $this->validateFilters($request);
@@ -209,52 +209,85 @@ class CustomerSupplierReportController extends BaseReportController
             return response()->json(['error' => 'user_id is required'], 400);
         }
 
-        $dateFrom = $filters['date_from'] ?? now()->subYear()->toDateString();
-        $dateTo = $filters['date_to'] ?? now()->toDateString();
+        $dateFrom = $filters['date_from'] ?? null;
+        $dateTo = $filters['date_to'] ?? null;
 
-        $invoices = Invoice::query()
-            ->where('user_id', $userId)
-            ->whereBetween('created_at', [$dateFrom, $dateTo])
-            ->with(['invoiceType', 'company'])
-            ->orderBy('created_at')
-            ->get();
+        // Fetch from FinancialLedger
+        $query = \App\Models\FinancialLedger::withoutGlobalScopes()
+            ->where(function($q) use ($userId) {
+                // Cash operations (Receipts/Payments) for this user
+                $q->where('source_type', \App\Models\User::class)
+                  ->where('source_id', $userId);
+            })
+            ->orWhere(function($q) use ($userId) {
+                // Invoices (AR/AP) for this user
+                $q->where('source_type', \Modules\Sales\Models\Invoice::class)
+                  ->whereIn('source_id', function($sub) use ($userId) {
+                      $sub->select('id')->from('invoices')->where('user_id', $userId);
+                  })
+                  ->whereIn('account_type', ['asset', 'liability']);
+            })
+            ->orderBy('entry_date', 'asc');
+
+        if ($dateFrom) {
+            $query->whereDate('entry_date', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $query->whereDate('entry_date', '<=', $dateTo);
+        }
+
+        $ledgers = $query->get();
 
         $balance = 0;
-        $statement = $invoices->map(function ($invoice) use (&$balance) {
-            $amount = $invoice->net_amount;
-            $type = $invoice->invoiceType->code;
-
-            if ($type === 'sale') {
-                $balance += $amount;
-            } elseif ($type === 'purchase') {
-                $balance -= $amount;
+        $statement = $ledgers->map(function ($ledger) use (&$balance) {
+            $amount = (float) $ledger->amount;
+            
+            // For AR/AP logic:
+            // Asset (Receivable): Debit increases balance, Credit decreases
+            // Liability (Payable): Credit increases balance, Debit decreases
+            
+            // To standardize for frontend (debit > 0, credit < 0):
+            // We'll format it as a running numeric balance.
+            $isDebit = $ledger->type === 'debit';
+            
+            if ($ledger->account_type === 'asset') {
+                $balance += $isDebit ? $amount : -$amount;
+                $signedAmount = $isDebit ? $amount : -$amount;
+            } else { // liability
+                $balance += $isDebit ? -$amount : $amount;
+                // For liability, credit increases what we owe them, so it's a positive balance conceptually.
+                $signedAmount = $isDebit ? -$amount : $amount;
             }
 
             return [
-                'date' => $invoice->created_at->toDateString(),
-                'type' => $type,
-                'invoice_number' => $invoice->invoice_number,
-                'description' => $invoice->description,
-                'amount' => round($amount, 2),
-                'current_balance' => round($balance, 2),
+                'id' => $ledger->id,
+                'created_at' => $ledger->entry_date,
+                'type' => $ledger->source_type === \App\Models\User::class ? 'payment' : 'invoice',
+                'description' => $ledger->description,
+                'amount' => round($signedAmount, 2),
+                'client_balance_after' => round($balance, 2),
+                'source_invoice_id' => $ledger->source_type === \Modules\Sales\Models\Invoice::class ? $ledger->source_id : null,
+                'source_invoice' => $ledger->source_type === \Modules\Sales\Models\Invoice::class ? \Modules\Sales\Models\Invoice::find($ledger->source_id) : null,
             ];
-        });
+        })->reverse()->values(); // Reverse to match DESC order for the frontend if needed, but wait! We can paginate it manually!
 
-        return response()->json([
+        // Since StakeholderStatement.vue expects pagination:
+        $page = $request->input('page', 1);
+        $perPage = $request->input('per_page', 50);
+        $total = $statement->count();
+        $pagedData = $statement->slice(($page - 1) * $perPage, $perPage)->values();
+
+        return api_success([
+            'data' => $pagedData,
+            'current_page' => (int)$page,
+            'per_page' => (int)$perPage,
+            'total' => $total,
+            'last_page' => ceil($total / max(1, $perPage)),
             'user' => User::find($userId, ['id', 'full_name', 'email']),
-            'period' => ['from' => $dateFrom, 'to' => $dateTo],
-            'statement' => $statement,
             'final_balance' => round($balance, 2),
-        ]);
+        ], 'تم الجلب بنجاح');
     }
-
-    /**
-     * Customer performance analysis
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function performance(Request $request)
+public function performance(Request $request)
     {
         $userId = $request->input('user_id');
         $filters = $this->validateFilters($request);

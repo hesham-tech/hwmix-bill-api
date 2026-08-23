@@ -78,4 +78,14 @@ interface FinancialEngineInterface
      * ترحيل معالجة اعتماد تسوية جرد الخزنة بالكامل
      */
     public function processReconciliationApproval(Model $reconciliation): string;
+
+    /**
+     * تسجيل سند قبض مباشر (بدون فاتورة)
+     */
+    public function recordStandaloneReceipt(float $amount, int $cashBoxId, int $userId, int $companyId, array $metadata = []): string;
+
+    /**
+     * تسجيل سند صرف مباشر (بدون فاتورة)
+     */
+    public function recordStandalonePayment(float $amount, int $cashBoxId, int $userId, int $companyId, array $metadata = []): string;
 }

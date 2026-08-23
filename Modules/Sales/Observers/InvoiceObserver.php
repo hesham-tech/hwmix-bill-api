@@ -4,7 +4,6 @@ namespace Modules\Sales\Observers;
 
 use Modules\Sales\Models\Invoice;
 use App\Models\CompanyUser;
-use Modules\Accounting\Services\FinancialLedgerService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Jobs\UpdateDailySalesSummary;
@@ -25,7 +24,7 @@ class InvoiceObserver
         }
 
         if (in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])) {
-            $this->recordLedgerEntry($invoice);
+
             $this->dispatchSummaryUpdate($invoice);
             $this->updateUserBalanceAfter($invoice);
         }
@@ -52,7 +51,7 @@ class InvoiceObserver
             $invoice->wasChanged('status') &&
             in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])
         ) {
-            $this->recordLedgerEntry($invoice);
+
             $this->dispatchSummaryUpdate($invoice);
             $this->updateUserBalanceAfter($invoice);
         } elseif ($invoice->wasChanged('net_amount') && in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])) {
@@ -61,25 +60,6 @@ class InvoiceObserver
         }
 
         $this->clearDashboardCache($invoice);
-    }
-
-    protected function recordLedgerEntry(Invoice $invoice): void
-    {
-        $ledgerService = app(FinancialLedgerService::class);
-        $typeCode = $invoice->invoiceType?->code;
-
-        if ($typeCode === 'sale') {
-            $ledgerService->recordSaleInvoice($invoice);
-            $ledgerService->recordCogs($invoice);
-        } elseif ($typeCode === 'return_sale') {
-            $ledgerService->recordSaleReturnInvoice($invoice);
-        } elseif ($typeCode === 'purchase') {
-            $ledgerService->recordPurchaseInvoice($invoice);
-        } elseif ($typeCode === 'return_purchase') {
-            $ledgerService->recordPurchaseReturnInvoice($invoice);
-        } elseif ($typeCode === 'service') {
-            $ledgerService->recordSaleInvoice($invoice);
-        }
     }
 
     public function deleting(Invoice $invoice): void

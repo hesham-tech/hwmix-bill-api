@@ -24,7 +24,6 @@ class InvoiceObserver
 
         // تسجيل في دفتر الأستاذ إذا كانت الفاتورة مؤكدة منذ البداية
         if (in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])) {
-            $this->recordLedgerEntry($invoice);
             $this->dispatchSummaryUpdate($invoice);
 
             // حفظ رصيد العميل بعد الفاتورة (توثيق)
@@ -50,7 +49,6 @@ class InvoiceObserver
             $invoice->wasChanged('status') &&
             in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])
         ) {
-            $this->recordLedgerEntry($invoice);
             $this->dispatchSummaryUpdate($invoice);
             $this->updateUserBalanceAfter($invoice);
         } elseif ($invoice->wasChanged('net_amount') && in_array($invoice->status, ['confirmed', 'paid', 'partially_paid'])) {
@@ -64,24 +62,6 @@ class InvoiceObserver
     /**
      * تسجيل القيد المحاسبي بناءً على نوع الفاتورة
      */
-    protected function recordLedgerEntry(Invoice $invoice): void
-    {
-        $ledgerService = app(\App\Services\FinancialLedgerService::class);
-        $typeCode = $invoice->invoiceType?->code;
-
-        if ($typeCode === 'sale') {
-            $ledgerService->recordSaleInvoice($invoice);
-            $ledgerService->recordCogs($invoice);
-        } elseif ($typeCode === 'return_sale') {
-            $ledgerService->recordSaleReturnInvoice($invoice);
-        } elseif ($typeCode === 'purchase') {
-            $ledgerService->recordPurchaseInvoice($invoice);
-        } elseif ($typeCode === 'return_purchase') {
-            $ledgerService->recordPurchaseReturnInvoice($invoice);
-        } elseif ($typeCode === 'service') {
-            $ledgerService->recordSaleInvoice($invoice);
-        }
-    }
 
     /**
      * Handle the Invoice "deleted" event.

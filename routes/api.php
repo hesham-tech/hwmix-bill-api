@@ -118,6 +118,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
         Route::get('/customers/debts', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'customerDebts']);
         Route::get('/suppliers/debts', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'supplierDebts']);
         Route::get('/customers/performance', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'performance']);
+        Route::get('/reports/stakeholder-statement', [\App\Http\Controllers\Reports\CustomerSupplierReportController::class, 'statement']);
     });
 
     // ================== Activity Logs (Audit Trail) ==================

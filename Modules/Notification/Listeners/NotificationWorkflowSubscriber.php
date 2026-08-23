@@ -67,13 +67,12 @@ class NotificationWorkflowSubscriber
     /**
      * معالجة حدث إنشاء معاملة مالية جديدة.
      */
-    public function handleTransactionCreated($event)
+    public function handleFinancialOperationCreated($event)
     {
         $transaction = $event->transaction ?? $event;
-        if (!$transaction instanceof \App\Models\Transaction && !$transaction instanceof \Modules\Accounting\Models\Transaction)
-            return;
+        if (!$transaction instanceof \App\Models\FinancialOperation) return;
 
-        $this->triggerWorkflow($transaction->company_id, 'transaction.created', $transaction);
+        $this->triggerWorkflow($transaction->company_id, 'financial_operation.created', $transaction);
     }
 
     /**
@@ -213,8 +212,8 @@ class NotificationWorkflowSubscriber
 
         // الاستماع لحدث إنشاء معاملة مالية جديدة
         $events->listen(
-            \App\Events\TransactionCreated::class,
-            [self::class, 'handleTransactionCreated']
+            'eloquent.created: App\Models\FinancialOperation',
+            [self::class, 'handleFinancialOperationCreated']
         );
 
         // الاستماع لحدث تحديث المهمة

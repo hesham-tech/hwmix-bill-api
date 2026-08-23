@@ -10,7 +10,69 @@ use Illuminate\Support\Facades\Auth;
 class FinancialLedgerService
 {
     /**
-     * تسجيل قيد مالي في دفتر الأستاذ.
+     * Record a balanced double-entry journal.
+     */
+    public function recordJournalEntry(string $operationId, string $journalEntryId, array $lines, $date = null): void
+    {
+        // 1. Idempotency Check at Journal Entry level
+        $exists = FinancialLedger::withoutGlobalScopes()
+            ->where('financial_operation_id', $operationId)
+            ->where('journal_entry_id', $journalEntryId)
+            ->exists();
+
+        if ($exists) {
+            return; // Already recorded
+        }
+
+        // 2. Validate Balance
+        $debit = 0.0;
+        $credit = 0.0;
+        foreach ($lines as $line) {
+            $amt = (float) ($line['amount'] ?? 0);
+            if ($amt <= 0) {
+                continue; // Skip zero/negative entries
+            }
+            if ($line['type'] === 'debit') {
+                $debit += $amt;
+            } else {
+                $credit += $amt;
+            }
+        }
+
+        if (bccomp((string)$debit, (string)$credit, 2) !== 0) {
+            throw new \Exception("Unbalanced Journal Entry: Debits ($debit) != Credits ($credit)");
+        }
+
+        if ($debit == 0 && $credit == 0) {
+            return; // Nothing to record
+        }
+
+        // 3. Record Lines
+        foreach ($lines as $line) {
+            $amt = (float) ($line['amount'] ?? 0);
+            if ($amt <= 0) {
+                continue;
+            }
+
+            FinancialLedger::create([
+                'entry_date' => $date ?? now(),
+                'type' => $line['type'], // debit or credit
+                'amount' => $amt,
+                'description' => $line['description'] ?? '',
+                'source_type' => $line['source_type'] ?? null,
+                'source_id' => $line['source_id'] ?? null,
+                'account_type' => $line['account_type'],
+                'sub_account_type' => $line['sub_account_type'] ?? null,
+                'sub_account_id' => $line['sub_account_id'] ?? null,
+                'financial_operation_id' => $operationId,
+                'journal_entry_id' => $journalEntryId,
+                'company_id' => $line['company_id'] ?? null,
+            ]);
+        }
+    }
+
+    /**
+     * تسجيل قيد مالي مفرد (يتم الاستغناء عنه تدريجياً)
      * 
      * @param Model $source النموذج المصدر (Invoice, Expense, etc.)
      * @param string $accountType نوع الحساب (revenue, expense, asset, liability, equity)

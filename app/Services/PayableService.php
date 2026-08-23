@@ -36,23 +36,6 @@ class PayableService
 
         $balanceRecord->balance = $balanceAfter;
         $balanceRecord->save();
-
-        $tx = Transaction::create([
-            'company_id' => $companyId,
-            'branch_id' => $metadata['branch_id'] ?? null,
-            'user_id' => $supplier->id,
-            'cash_box_id' => null,
-            'created_by' => Auth::id() ?? $metadata['created_by'] ?? null,
-            'type' => 'deposit', // التزام جديد مستحق للمورد
-            'amount' => $amount,
-            'balance_before' => $balanceBefore,
-            'balance_after' => $balanceAfter,
-            'description' => $metadata['description'] ?? "إثبات التزام للمورد بقيمة {$amount}",
-            'financial_operation_id' => $operationId,
-        ]);
-
-        $balanceRecord->last_transaction_id = $tx->id;
-        $balanceRecord->save();
     }
 
     /**
@@ -81,23 +64,6 @@ class PayableService
         }
 
         $balanceRecord->balance = $balanceAfter;
-        $balanceRecord->save();
-
-        $tx = Transaction::create([
-            'company_id' => $companyId,
-            'branch_id' => $metadata['branch_id'] ?? null,
-            'user_id' => $supplier->id,
-            'cash_box_id' => null,
-            'created_by' => Auth::id() ?? $metadata['created_by'] ?? null,
-            'type' => 'withdraw', // سداد وتقليل الالتزام
-            'amount' => $amount,
-            'balance_before' => $balanceBefore,
-            'balance_after' => $balanceAfter,
-            'description' => $metadata['description'] ?? "سداد التزام للمورد بقيمة {$amount}",
-            'financial_operation_id' => $operationId,
-        ]);
-
-        $balanceRecord->last_transaction_id = $tx->id;
         $balanceRecord->save();
     }
 }

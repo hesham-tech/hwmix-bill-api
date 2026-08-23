@@ -30,7 +30,6 @@ class PaymentObserver
         app(NotificationService::class)->notifyPaymentReceived($payment);
 
         // 3. Record Ledger Entry
-        $this->recordLedgerEntry($payment);
 
         // 4. Clear Cache
         $this->clearDashboardCache($payment);

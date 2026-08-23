@@ -151,9 +151,14 @@ class InvoiceController extends Controller
                 $service = ServiceResolver::resolve($invoiceTypeCode);
                 $responseDTO = $service->create($validated);
 
-                $responseDTO->load($this->showRelations);
+                if ($responseDTO instanceof Invoice) {
+                    $responseDTO->load($this->showRelations);
+                    DB::commit();
+                    return api_success(new InvoiceResource($responseDTO), 'تم التنفيذ بنجاح', 201);
+                }
+
                 DB::commit();
-                return api_success(new InvoiceResource($responseDTO), 'تم إنشاء المستند بنجاح', 201);
+                return api_success($responseDTO, 'تم إنشاء السند بنجاح', 201);
             } catch (ValidationException $e) {
                 DB::rollBack();
                 return api_error('فشل التحقق من صحة البيانات.', $e->errors(), 422);

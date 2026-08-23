@@ -32,6 +32,10 @@ class FinancialLedger extends Model
         'created_by',
         'updated_by',
         'branch_id',
+        'financial_operation_id',
+        'journal_entry_id',
+        'sub_account_type',
+        'sub_account_id',
     ];
 
     protected static function booted()

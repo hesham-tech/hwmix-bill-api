@@ -49,11 +49,12 @@ class AuditStakeholderBalances extends Command
                 ->get();
 
             foreach ($cashBoxes as $box) {
-                $txSum = Transaction::withoutGlobalScopes()
-                    ->where('cashbox_id', $box->id)
+                $txSum = \App\Models\FinancialLedger::withoutGlobalScopes()
+                    ->where('source_type', get_class($box))
+                    ->where('source_id', $box->id)
                     ->get()
                     ->reduce(function ($carry, $t) {
-                        return in_array($t->type, ['deposit', 'transfer_in', 'reverse_withdraw']) 
+                        return $t->type === 'debit' 
                             ? $carry + (float)$t->amount 
                             : $carry - (float)$t->amount;
                     }, 0.00);
