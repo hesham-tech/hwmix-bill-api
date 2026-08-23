@@ -597,7 +597,7 @@ class FinancialEngine implements FinancialEngineInterface
             if ($party && !$isCashCustomer) {
                 $this->reduceReceivable($party, $amount, $operationId, [
                     'description' => "سداد دفعة من فاتورة رقم {$invoice->invoice_number}"
-                ]);
+                , 'company_id' => $companyId]);
             }
 
             // 3. توثيق دفعة التحصيل وتعديل حالة الفاتورة تلقائياً
@@ -827,4 +827,86 @@ class FinancialEngine implements FinancialEngineInterface
             return $operationId;
         });
     }
+    public function recordStandaloneReceipt(float $amount, int $cashBoxId, int $userId, int $companyId, array $metadata = []): string
+    {
+        $operationId = $metadata['operation_id'] ?? (string) Str::uuid();
+
+        if (FinancialOperation::withoutGlobalScopes()->where('id', $operationId)->exists()) {
+            return $operationId;
+        }
+
+        return DB::transaction(function () use ($amount, $cashBoxId, $userId, $companyId, $operationId, $metadata) {
+            $this->operationService->createOperation([
+                'id' => $operationId,
+                'company_id' => $companyId,
+                'type' => 'receipt',
+                'amount' => $amount,
+                'source_type' => 'standalone_receipt',
+                'source_id' => null,
+                'metadata' => $metadata,
+            ]);
+
+            $this->receiveMoney($amount, $cashBoxId, $operationId, [
+                'company_id' => $companyId,
+                'user_id' => $userId,
+                'description' => $metadata['description'] ?? "سند قبض مباشر"
+            ]);
+
+            $party = User::withoutGlobalScopes()->find($userId);
+            if (!$party) {
+                throw new \Exception("لم يتم العثور على العميل/المورد (User ID: {$userId})");
+            }
+            $this->reduceReceivable($party, $amount, $operationId, [
+                'description' => $metadata['description'] ?? "تخفيض ذمة سند قبض مباشر"
+            , 'company_id' => $companyId]);
+
+            $cashBoxModel = \Modules\Accounting\Models\CashBox::withoutGlobalScopes()->find($cashBoxId);
+            $this->ledgerService->recordEntry($cashBoxModel, 'asset', $amount, 'debit', $metadata['description'] ?? 'سند قبض مباشر', now(), $operationId);
+            $this->ledgerService->recordEntry($party, 'asset', $amount, 'credit', $metadata['description'] ?? 'تخفيض ذمة سند قبض مباشر', now(), $operationId);
+
+            return $operationId;
+        });
+    }
+
+    public function recordStandalonePayment(float $amount, int $cashBoxId, int $userId, int $companyId, array $metadata = []): string
+    {
+        $operationId = $metadata['operation_id'] ?? (string) Str::uuid();
+
+        if (FinancialOperation::withoutGlobalScopes()->where('id', $operationId)->exists()) {
+            return $operationId;
+        }
+
+        return DB::transaction(function () use ($amount, $cashBoxId, $userId, $companyId, $operationId, $metadata) {
+            $this->operationService->createOperation([
+                'id' => $operationId,
+                'company_id' => $companyId,
+                'type' => 'payment',
+                'amount' => $amount,
+                'source_type' => 'standalone_payment',
+                'source_id' => null,
+                'metadata' => $metadata,
+            ]);
+
+            $this->payMoney($amount, $cashBoxId, $operationId, [
+                'company_id' => $companyId,
+                'user_id' => $userId,
+                'description' => $metadata['description'] ?? "سند صرف مباشر"
+            ]);
+
+            $party = User::withoutGlobalScopes()->find($userId);
+            if (!$party) {
+                throw new \Exception("لم يتم العثور على العميل/المورد (User ID: {$userId})");
+            }
+            $this->reducePayable($party, $amount, $operationId, [
+                'description' => $metadata['description'] ?? "تخفيض ذمة سند صرف مباشر"
+            , 'company_id' => $companyId]);
+
+            $cashBoxModel = \Modules\Accounting\Models\CashBox::withoutGlobalScopes()->find($cashBoxId);
+            $this->ledgerService->recordEntry($cashBoxModel, 'asset', $amount, 'credit', $metadata['description'] ?? 'سند صرف مباشر', now(), $operationId);
+            $this->ledgerService->recordEntry($party, 'asset', $amount, 'debit', $metadata['description'] ?? 'تخفيض ذمة سند صرف مباشر', now(), $operationId);
+
+            return $operationId;
+        });
+    }
 }
+
