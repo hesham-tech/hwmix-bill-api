@@ -127,6 +127,8 @@ class FinancialEngine implements FinancialEngineInterface
         if ($exists) {
             return;
         }
+        
+        \Log::info("REDUCE RECEIVABLE CALLED for {$customer->id} with amount {$amount}");
 
         $this->receivableService->reduce($customer, $amount, $operationId, $metadata);
     }
@@ -411,7 +413,75 @@ class FinancialEngine implements FinancialEngineInterface
                 }
             }
 
-            // 4. Reverse Invoice Paymentsوجدت
+            // 3.8 Reverse Stakeholder Balances (Receivable/Payable)
+            $partyId = null;
+            $netReceivableAmount = 0;
+            $netPayableAmount = 0;
+
+            if ($originalOp->source_type === \App\Models\Invoice::class || $originalOp->source_type === \Modules\Sales\Models\Invoice::class) {
+                $invoice = clone $originalOp->source;
+                if ($invoice) {
+                    $partyId = $invoice->user_id;
+                    $party = User::withoutGlobalScopes()->find($partyId);
+                    if ($party && !$party->isDefaultCashCustomer($originalOp->company_id)) {
+                        $type = $invoice->invoice_type_code;
+                        $net = (float)$invoice->net_amount - (float)$invoice->paid_amount;
+                        if (in_array($type, ['sale', 'installment_sale', 'service_invoice'])) {
+                            $netReceivableAmount = $net;
+                        } elseif ($type === 'sale_return') {
+                            $netReceivableAmount = -$net;
+                        } elseif ($type === 'purchase') {
+                            $netPayableAmount = $net;
+                        } elseif ($type === 'purchase_return') {
+                            $netPayableAmount = -$net;
+                        }
+                    }
+                }
+            } elseif ($originalOp->type === 'payment_receipt') {
+                if ($originalOp->source_type === \App\Models\Invoice::class || $originalOp->source_type === \Modules\Sales\Models\Invoice::class) {
+                    $invoice = clone $originalOp->source;
+                    if ($invoice) {
+                        $partyId = $invoice->user_id;
+                        $party = User::withoutGlobalScopes()->find($partyId);
+                        if ($party && !$party->isDefaultCashCustomer($originalOp->company_id)) {
+                            // Payment receipt reduced receivable
+                            $netReceivableAmount = -(float)$originalOp->amount;
+                        }
+                    }
+                }
+            }
+
+            if ($partyId && $party) {
+                if ($netReceivableAmount > 0) {
+                    // Originally added receivable, so reduce it
+                    $this->receivableService->reduce($party, $netReceivableAmount, $reversalOpId, [
+                        'company_id' => $originalOp->company_id,
+                        'allow_negative' => true,
+                        'description' => "عكس مديونية لعملية ملغاة رقم {$originalOperationId}"
+                    ]);
+                } elseif ($netReceivableAmount < 0) {
+                    // Originally reduced receivable, so add it
+                    $this->receivableService->add($party, -$netReceivableAmount, $reversalOpId, [
+                        'company_id' => $originalOp->company_id,
+                        'description' => "إعادة مديونية لعملية ملغاة رقم {$originalOperationId}"
+                    ]);
+                }
+
+                if ($netPayableAmount > 0) {
+                    $this->payableService->reduce($party, $netPayableAmount, $reversalOpId, [
+                        'company_id' => $originalOp->company_id,
+                        'allow_negative' => true,
+                        'description' => "عكس التزام لعملية ملغاة رقم {$originalOperationId}"
+                    ]);
+                } elseif ($netPayableAmount < 0) {
+                    $this->payableService->add($party, -$netPayableAmount, $reversalOpId, [
+                        'company_id' => $originalOp->company_id,
+                        'description' => "إعادة التزام لعملية ملغاة رقم {$originalOperationId}"
+                    ]);
+                }
+            }
+
+            // 4. Reverse Invoice Payments وجُدت
             $payments = InvoicePayment::withoutGlobalScopes()->where('financial_operation_id', $originalOperationId)->get();
             foreach ($payments as $payment) {
                 $invoice = \App\Models\Invoice::withoutGlobalScopes()->findOrFail($payment->invoice_id);
@@ -500,7 +570,8 @@ class FinancialEngine implements FinancialEngineInterface
 
                     if ($party && !$isCashCustomer) {
                         $this->reduceReceivable($party, $paidAmount, $operationId, [
-                            'description' => "سداد جزء من مديونية فاتورة مبيعات رقم {$invoice->invoice_number}"
+                            'description' => "سداد جزء من مديونية فاتورة مبيعات رقم {$invoice->invoice_number}",
+                            'allow_negative' => true
                         ]);
                     }
 
@@ -536,7 +607,9 @@ class FinancialEngine implements FinancialEngineInterface
 
                     if ($party && !$isCashCustomer) {
                         $this->reducePayable($party, $paidAmount, $operationId, [
-                            'description' => "سداد جزء من التزام فاتورة مشتريات رقم {$invoice->invoice_number}"
+                            'company_id' => $companyId,
+                            'description' => "سداد جزء من التزام فاتورة مشتريات رقم {$invoice->invoice_number}",
+                            'allow_negative' => true
                         ]);
                     }
 

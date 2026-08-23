@@ -88,6 +88,26 @@ class AccountingService
                 now(),
                 $operationId
             );
+
+            // ترحيل الجانب المقابل لضمان القيد المزدوج
+            $counterAccount = 'revenue';
+            $counterParty = $staff;
+            if ($party && !($options['skip_party_balance'] ?? false)) {
+                $counterAccount = (isset($relationType) && $relationType === 'payable') ? 'payables' : 'receivables';
+                $counterParty = $party;
+            } elseif ($direction !== 'in') {
+                $counterAccount = 'expense';
+            }
+            
+            $ledgerService->recordEntry(
+                $counterParty,
+                $counterAccount,
+                $amount,
+                $direction === 'in' ? 'credit' : 'debit',
+                $options['description'] ?? ($direction === 'in' ? 'تسوية ذمة/إيراد' : 'تسوية ذمة/مصروف'),
+                now(),
+                $operationId
+            );
         });
     }
 

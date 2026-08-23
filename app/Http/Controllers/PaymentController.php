@@ -153,6 +153,14 @@ class PaymentController extends Controller
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('payments.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
                 return api_forbidden('ليس لديك إذن لإنشاء مدفوعات.');
             }
+            
+            // Idempotency lock
+            $idempotencyKey = $request->input('idempotency_key', md5(json_encode($request->all())));
+            $lock = \Illuminate\Support\Facades\Cache::lock('payment_store_' . $idempotencyKey, 10);
+            
+            if (!$lock->get()) {
+                return api_error('Duplicate request detected. Please wait.', [], 429);
+            }
 
             DB::beginTransaction();
             try {

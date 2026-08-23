@@ -4,7 +4,8 @@ namespace App\Services\Traits;
 
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Models\ProductVariant;
+use Modules\Inventory\Models\ProductVariant;
+use Modules\Inventory\Models\StockMovement;
 use Modules\Inventory\Models\Stock;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log; // تم إضافة استيراد لـ Log
