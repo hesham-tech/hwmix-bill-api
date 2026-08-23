@@ -116,13 +116,33 @@ class AccountingService
      */
     public function reverseInvoice(Invoice $invoice, array $options = []): void
     {
-        $operation = FinancialOperation::withoutGlobalScopes()
+        $engine = app(FinancialEngine::class);
+        $reason = $options['reason'] ?? 'إلغاء فاتورة';
+
+        // 1. Reverse all related payments first to prevent orphaned cash operations
+        $payments = \App\Models\InvoicePayment::withoutGlobalScopes()->where('invoice_id', $invoice->id)->get();
+        foreach ($payments as $payment) {
+            if ($payment->financial_operation_id) {
+                try {
+                    $engine->reverseOperation($payment->financial_operation_id, $reason);
+                } catch (\Exception $e) {
+                    // Safely ignore if already reversed
+                }
+            }
+        }
+
+        // 2. Reverse the main invoice operation(s)
+        $operations = \App\Models\FinancialOperation::withoutGlobalScopes()
             ->where('source_type', get_class($invoice))
             ->where('source_id', $invoice->id)
-            ->first();
-            
-        if ($operation) {
-            app(FinancialEngine::class)->reverseOperation($operation->id, $options['reason'] ?? null);
+            ->get();
+
+        foreach ($operations as $operation) {
+            try {
+                $engine->reverseOperation($operation->id, $reason);
+            } catch (\Exception $e) {
+                // Safely ignore if already reversed
+            }
         }
     }
 
