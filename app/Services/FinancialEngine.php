@@ -545,6 +545,79 @@ class FinancialEngine implements FinancialEngineInterface
                         'description' => "دفعة سداد لفاتورة مشتريات رقم {$invoice->invoice_number}"
                     ]);
                 }
+            } elseif ($type === 'sale_return') {
+                // مرتجع مبيعات
+                if ($party && !$isCashCustomer) {
+                    $this->reduceReceivable($party, $netAmount, $operationId, [
+                        'company_id' => $companyId,
+                        'branch_id' => $invoice->branch_id,
+                        'description' => "تخفيض مديونية بناءً على مرتجع مبيعات رقم {$invoice->invoice_number}",
+                        'allow_negative' => true
+                    ]);
+                }
+
+                $this->ledgerService->recordSaleReturnInvoice($invoice);
+
+                FinancialLedger::withoutGlobalScopes()->where([
+                    'source_type' => get_class($invoice),
+                    'source_id' => $invoice->id
+                ])->update(['financial_operation_id' => $operationId]);
+
+                if ($paidAmount > 0) {
+                    $this->payMoney($paidAmount, $cashBoxId, $operationId, [
+                        'company_id' => $companyId,
+                        'user_id' => $invoice->created_by,
+                        'description' => "رد نقدية لمرتجع مبيعات رقم {$invoice->invoice_number}"
+                    ]);
+
+                    // If refund is cash, it means the customer's balance shouldn't have been reduced by this cash amount, so add it back
+                    if ($party && !$isCashCustomer) {
+                        $this->createReceivable($party, $paidAmount, $operationId, [
+                            'description' => "تسوية ذمة إثر رد نقدية لمرتجع مبيعات رقم {$invoice->invoice_number}"
+                        ]);
+                    }
+
+                    $this->invoiceStateService->recordPayment($invoice, $paidAmount, $operationId, [
+                        'cash_box_id' => $cashBoxId,
+                        'description' => "رد نقدية لمرتجع مبيعات رقم {$invoice->invoice_number}"
+                    ]);
+                }
+            } elseif ($type === 'purchase_return') {
+                // مرتجع مشتريات
+                if ($party && !$isCashCustomer) {
+                    $this->reducePayable($party, $netAmount, $operationId, [
+                        'company_id' => $companyId,
+                        'branch_id' => $invoice->branch_id,
+                        'description' => "تخفيض التزام بناءً على مرتجع مشتريات رقم {$invoice->invoice_number}",
+                        'allow_negative' => true
+                    ]);
+                }
+
+                $this->ledgerService->recordPurchaseReturnInvoice($invoice);
+
+                FinancialLedger::withoutGlobalScopes()->where([
+                    'source_type' => get_class($invoice),
+                    'source_id' => $invoice->id
+                ])->update(['financial_operation_id' => $operationId]);
+
+                if ($paidAmount > 0) {
+                    $this->receiveMoney($paidAmount, $cashBoxId, $operationId, [
+                        'company_id' => $companyId,
+                        'user_id' => $invoice->created_by,
+                        'description' => "استرداد نقدية لمرتجع مشتريات رقم {$invoice->invoice_number}"
+                    ]);
+
+                    if ($party && !$isCashCustomer) {
+                        $this->createPayable($party, $paidAmount, $operationId, [
+                            'description' => "تسوية التزام إثر استرداد نقدية لمرتجع مشتريات رقم {$invoice->invoice_number}"
+                        ]);
+                    }
+
+                    $this->invoiceStateService->recordPayment($invoice, $paidAmount, $operationId, [
+                        'cash_box_id' => $cashBoxId,
+                        'description' => "استرداد نقدية لمرتجع مشتريات رقم {$invoice->invoice_number}"
+                    ]);
+                }
             }
 
             return $operationId;

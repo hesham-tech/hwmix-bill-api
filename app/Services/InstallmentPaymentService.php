@@ -140,18 +140,22 @@ class InstallmentPaymentService
                 'cash_box_id' => $cashBoxId,
             ]);
 
-            $accounting = app(\App\Services\AccountingService::class);
-            $accounting->recordPayment($installmentPlan->company_id, $authUser, $clientUser, $totalAmountSuccessfullyPaid, 'in', [
-                'cash_box_id' => $cashBoxId,
-                'party_cash_box_id' => $clientCashBoxId,
-                'description' => "سداد أقساط - دفعة #{$installmentPayment->id}"
-            ]);
-
-            // تحديث الفاتورة الأم (داخل الـ Transaction لضمان الكل أو لا شيء)
+            // تحديث الفاتورة الأم ومعالجة الأثر المالي من خلال المحرك المالي
             if ($parentInvoice) {
-                $parentInvoice->paid_amount += $totalAmountSuccessfullyPaid;
-                $parentInvoice->remaining_amount = max(0, $parentInvoice->net_amount - $parentInvoice->paid_amount);
-                $parentInvoice->updatePaymentStatus();
+                $engine = app(\App\Contracts\FinancialEngineInterface::class);
+                $engine->processPaymentReceipt($parentInvoice, $totalAmountSuccessfullyPaid, [
+                    'cash_box_id' => $cashBoxId,
+                    'user_cash_box_id' => $clientCashBoxId,
+                    'description' => "سداد أقساط - دفعة #{$installmentPayment->id}",
+                    'operation_id' => (string) \Illuminate\Support\Str::uuid(),
+                ]);
+            } else {
+                $accounting = app(\App\Services\AccountingService::class);
+                $accounting->recordPayment($installmentPlan->company_id, $authUser, $clientUser, $totalAmountSuccessfullyPaid, 'in', [
+                    'cash_box_id' => $cashBoxId,
+                    'party_cash_box_id' => $clientCashBoxId,
+                    'description' => "سداد أقساط - دفعة #{$installmentPayment->id}"
+                ]);
             }
 
             DB::commit();

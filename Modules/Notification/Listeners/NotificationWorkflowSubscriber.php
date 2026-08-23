@@ -203,6 +203,10 @@ class NotificationWorkflowSubscriber
             'eloquent.created: Modules\Sales\Models\InvoicePayment',
             [self::class, 'handlePaymentReceived']
         );
+        $events->listen(
+            'eloquent.created: App\Models\InvoicePayment',
+            [self::class, 'handlePaymentReceived']
+        );
 
         // الاستماع لحدث تسجيل مستخدم جديد
         $events->listen(
@@ -243,6 +247,10 @@ class NotificationWorkflowSubscriber
         // الاستماع لحدث مرتجع المبيعات عبر الفواتير المضافة حديثاً
         $events->listen(
             'eloquent.created: Modules\Sales\Models\Invoice',
+            [self::class, 'handleInvoiceCreatedForReturn']
+        );
+        $events->listen(
+            'eloquent.created: App\Models\Invoice',
             [self::class, 'handleInvoiceCreatedForReturn']
         );
 
