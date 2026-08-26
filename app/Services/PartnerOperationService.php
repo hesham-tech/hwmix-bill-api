@@ -3,38 +3,34 @@
 namespace App\Services;
 
 use App\Models\PartnerOperation;
-use App\Models\Transaction;
 use App\Models\User;
+use App\Contracts\FinancialEngineInterface;
+use App\Models\FinancialOperation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Str;
 
 /**
- * خدمة إدارة وإجراء العمليات المالية والتقارير الخاصة بالشركاء
+ * ???? ????? ?????? ??????? (????? ??? ???? ???? ????)
  */
 class PartnerOperationService
 {
-    protected CashService $cashService;
+    protected FinancialEngineInterface $engine;
     protected FinancialLedgerService $ledgerService;
 
-    public function __construct(CashService $cashService, FinancialLedgerService $ledgerService)
+    public function __construct(FinancialEngineInterface $engine, FinancialLedgerService $ledgerService)
     {
-        $this->cashService = $cashService;
+        $this->engine = $engine;
         $this->ledgerService = $ledgerService;
     }
 
-    /**
-     * أنواع العمليات التي تعتبر مدخلات ومساهمات نقدية (إيداع)
-     */
     public const DEPOSIT_TYPES = [
         'capital_increase',
         'partner_loan_given',
         'loss_coverage',
     ];
 
-    /**
-     * أنواع العمليات التي تعتبر مخرجات ومسحوبات نقدية (سحب)
-     */
     public const WITHDRAW_TYPES = [
         'capital_withdrawal',
         'partner_loan_repaid',
@@ -42,14 +38,14 @@ class PartnerOperationService
     ];
 
     /**
-     * تنفيذ عملية مالية جديدة للشريك مع توثيق الأثر المالي في السيولة ودفتر الأستاذ
+     * ????? ??????? ??????? ?????? ?????? ??????? ??????? ???????
      */
     public function executeOperation(array $data): PartnerOperation
     {
         return DB::transaction(function () use ($data) {
             $companyId = Auth::user()->active_company_id ?? null;
             if (!$companyId) {
-                throw new Exception('لم يتم تحديد الشركة النشطة للمستخدم.');
+                throw new Exception('?? ???? ????? ?????? ?????? ????????.');
             }
 
             $type = $data['type'];
@@ -58,7 +54,6 @@ class PartnerOperationService
             $partnerId = (int) $data['partner_id'];
             $operationDate = isset($data['operation_date']) ? $data['operation_date'] : now();
 
-            // 1. إنشاء السجل التجاري للعملية
             $partnerOperation = PartnerOperation::create([
                 'company_id' => $companyId,
                 'partner_id' => $partnerId,
@@ -68,65 +63,94 @@ class PartnerOperationService
                 'operation_date' => $operationDate,
                 'notes' => $data['notes'] ?? null,
                 'created_by' => Auth::id(),
+                'status' => 'completed'
             ]);
 
-            $operationId = "partner_op_" . $partnerOperation->id;
-            $partner = User::find($partnerId);
-            $partnerName = $partner ? ($partner->nickname ?? $partner->name) : "#{$partnerId}";
-            $typeLabel = $this->getTypeLabelText($type);
-            $desc = "عملية شركاء ({$typeLabel}) - الشريك: {$partnerName}";
+            $operationId = (string) Str::uuid();
 
-            // 2. تحديث الحركة النقدية في الخزنة المسجلة عبر CashService
-            if (in_array($type, self::DEPOSIT_TYPES)) {
-                $this->cashService->deposit($amount, $cashBoxId, $operationId, [
+            // 1. Create FinancialOperation manually (as FinancialEngine relies on it for reversal)
+            FinancialOperation::create([
+                'id' => $operationId,
+                'company_id' => $companyId,
+                'type' => 'partner_operation',
+                'amount' => $amount,
+                'source_type' => get_class($partnerOperation),
+                'source_id' => $partnerOperation->id,
+                'status' => 'completed',
+                'metadata' => json_encode(['partner_id' => $partnerId]),
+            ]);
+            
+            $partnerOperation->financial_operation_id = $operationId;
+            $partnerOperation->save();
+
+            $partnerName = $partnerOperation->partner?->nickname ?? $partnerOperation->partner?->name ?? "???? #".$partnerId;
+            $notes = $partnerOperation->notes ? " - ".$partnerOperation->notes : "";
+            $desc = "????? ????? ($type) - ??????: $partnerName$notes";
+
+            // 2. ?????? ??????? ??? ?????? ??????
+            $isDeposit = in_array($type, self::DEPOSIT_TYPES);
+            if ($isDeposit) {
+                $this->engine->receiveMoney($amount, $cashBoxId, $operationId, [
                     'description' => $desc,
-                    'user_id' => $partnerId,
-                    'created_by' => Auth::id(),
-                ]);
-            } elseif (in_array($type, self::WITHDRAW_TYPES)) {
-                $this->cashService->withdraw($amount, $cashBoxId, $operationId, [
-                    'description' => $desc,
-                    'user_id' => $partnerId,
-                    'created_by' => Auth::id(),
+                    'user_id' => $partnerId
                 ]);
             } else {
-                throw new Exception("نوع عملية الشريك غير مدعوم: {$type}");
+                $this->engine->payMoney($amount, $cashBoxId, $operationId, [
+                    'description' => $desc,
+                    'user_id' => $partnerId
+                ]);
             }
 
-            // 3. ربط معرّف الحركة النقدية السريعة بالسجل الرئيسي
-            $transaction = Transaction::withoutGlobalScopes()
-                ->where('financial_operation_id', $operationId)
-                ->first();
-
-            if ($transaction) {
-                $partnerOperation->transaction_id = $transaction->id;
-                $partnerOperation->save();
-            }
-
-            // 4. تسجبل القيد المزدوج في دفتر الأستاذ العام
+            // 3. ????? ?????? ???????? (Assets + Equity/Liability) ?? ???? ?????? ??????? ???? ???? ??????? ???????
             $this->ledgerService->recordPartnerOperation($partnerOperation);
+            
+            // update the financial_operation_id for those ledgers to map them to the unified engine
+            \App\Models\FinancialLedger::withoutGlobalScopes()
+                ->where('source_type', get_class($partnerOperation))
+                ->where('source_id', $partnerOperation->id)
+                ->whereNull('financial_operation_id')
+                ->update(['financial_operation_id' => $operationId]);
 
-            return $partnerOperation->load(['partner', 'cashBox', 'transaction']);
+            return $partnerOperation->load(['partner', 'cashBox']);
+        });
+    }
+    
+    /**
+     * ??? (Reversal) ?????? ??????
+     */
+    public function reverseOperation(PartnerOperation $operation, int $userId): void
+    {
+        if ($operation->status === 'reversed') {
+            throw new Exception("??? ??????? ?????? ??????.");
+        }
+
+        DB::transaction(function () use ($operation, $userId) {
+            if ($operation->financial_operation_id) {
+                $this->engine->reverseOperation($operation->financial_operation_id, "??? ????? ????");
+            }
+            
+            $operation->status = 'reversed';
+            $operation->updated_by = $userId;
+            $operation->save();
         });
     }
 
     /**
-     * استخراج كشف حساب الشريك والصافي المالي
+     * ??????? ??? ???? ??????
      */
     public function getPartnerStatement(int $partnerId, ?string $fromDate = null, ?string $toDate = null): array
     {
-        $query = PartnerOperation::where('partner_id', $partnerId);
+        $query = PartnerOperation::where('partner_id', $partnerId)->where('status', 'completed');
 
         if ($fromDate) {
             $query->whereDate('operation_date', '>=', $fromDate);
         }
-
         if ($toDate) {
             $query->whereDate('operation_date', '<=', $toDate);
         }
 
         $operations = (clone $query)
-            ->with(['cashBox', 'transaction'])
+            ->with(['cashBox'])
             ->orderBy('operation_date', 'desc')
             ->get();
 
@@ -158,18 +182,15 @@ class PartnerOperationService
         ];
     }
 
-    /**
-     * إرجاع النص العربي الوصفي لنوع العملية
-     */
     public function getTypeLabelText(string $type): string
     {
         return match ($type) {
-            'capital_increase' => 'زيادة رأس مال',
-            'capital_withdrawal' => 'سحب من رأس المال',
-            'partner_loan_given' => 'تقديم قرض للشركة',
-            'partner_loan_repaid' => 'سداد قرض الشريك',
-            'profit_distribution' => 'توزيع أرباح',
-            'loss_coverage' => 'تغطية خسائر',
+            'capital_increase' => '????? ??? ???',
+            'capital_withdrawal' => '??? ?? ??? ?????',
+            'partner_loan_given' => '????? ??? ??????',
+            'partner_loan_repaid' => '???? ??? ??????',
+            'profit_distribution' => '????? ?????',
+            'loss_coverage' => '????? ?????',
             default => $type,
         };
     }

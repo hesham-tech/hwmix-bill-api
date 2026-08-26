@@ -75,12 +75,31 @@ class PartnerOperationController extends Controller
      */
     public function show(PartnerOperation $partnerOperation): JsonResponse
     {
-        $partnerOperation->load(['partner', 'cashBox', 'transaction', 'financialLedgers']);
+        $partnerOperation->load(['partner', 'cashBox']);
 
         return response()->json([
             'success' => true,
             'data' => new PartnerOperationResource($partnerOperation),
         ]);
+    }
+
+    /**
+     * عكس العملية المالية
+     */
+    public function destroy(PartnerOperation $partnerOperation): JsonResponse
+    {
+        try {
+            $this->partnerOperationService->reverseOperation($partnerOperation, auth()->id());
+            return response()->json([
+                'success' => true,
+                'message' => 'تم عكس العملية المالية للشريك بنجاح.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 409);
+        }
     }
 
     /**

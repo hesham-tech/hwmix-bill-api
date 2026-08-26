@@ -5,19 +5,20 @@ namespace App\Models;
 use App\Traits\Blameable;
 use App\Traits\Scopes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  */
 class Revenue extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory, Scopes, Blameable, \App\Traits\LogsActivity, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
+    use \Illuminate\Database\Eloquent\Factories\HasFactory, SoftDeletes, Scopes, Blameable, \App\Traits\LogsActivity, \App\Traits\FilterableByCompany, \App\Traits\FilterableByBranch;
 
     /**
      * Label for activity logs.
      */
     public function logLabel()
     {
-        return "سجل إيراد ({$this->amount}) - {$this->source_type}";
+        return "Ø³Ø¬Ù„ Ø¥ÙŠØ±Ø§Ø¯ ({$this->amount}) - {$this->source_type}";
     }
     protected $fillable = [
         'source_type',
@@ -28,6 +29,8 @@ class Revenue extends Model
         'company_id',
         'amount',
         'paid_amount',
+        'status',
+        'financial_operation_id',
         'remaining_amount',
         'payment_method',
         'note',
@@ -63,3 +66,4 @@ class Revenue extends Model
         return $this->belongsTo(Company::class, 'company_id');
     }
 }
+

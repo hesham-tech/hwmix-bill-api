@@ -10,15 +10,16 @@ use App\Traits\FilterableByCompany;
 use App\Traits\FilterableByBranch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
 use App\Models\Company;
 
 /**
- * موديل المخزون (Stock) - موديول المخازن
+ * Ã™â€¦Ã™Ë†Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â®Ã˜Â²Ã™Ë†Ã™â€  (Stock) - Ã™â€¦Ã™Ë†Ã˜Â¯Ã™Å Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â®Ã˜Â§Ã˜Â²Ã™â€ 
  */
 class Stock extends Model
 {
-    use HasFactory, Scopes, LogsActivity, RolePermissions, Blameable, FilterableByCompany, FilterableByBranch;
+    use HasFactory, SoftDeletes, Scopes, LogsActivity, RolePermissions, Blameable, FilterableByCompany, FilterableByBranch;
 
     protected static function newFactory()
     {
@@ -39,12 +40,14 @@ class Stock extends Model
         'company_id',
         'created_by',
         'updated_by',
+        'financial_operation_id',
+        'status',
         'branch_id',
     ];
 
     public function logLabel()
     {
-        return "المخزون ({$this->variant?->sku}) - كمية: {$this->quantity}";
+        return "Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â®Ã˜Â²Ã™Ë†Ã™â€  ({$this->variant?->sku}) - Ã™Æ’Ã™â€¦Ã™Å Ã˜Â©: {$this->quantity}";
     }
 
     protected $casts = [

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Profit\StoreProfitRequest; // تم تحديث اسم مجلد الطلب
-use App\Http\Requests\Profit\UpdateProfitRequest; // تم إضافة طلب التحديث
-use App\Http\Resources\Profit\ProfitResource; // تم تحديث اسم مجلد المورد
+use App\Http\Requests\Profit\StoreProfitRequest; // ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ø³Ù… Ù…Ø¬Ù„Ø¯ Ø§Ù„Ø·Ù„Ø¨
+use App\Http\Requests\Profit\UpdateProfitRequest; // ØªÙ… Ø¥Ø¶Ø§ÙØ© Ø·Ù„Ø¨ Ø§Ù„ØªØ­Ø¯ÙŠØ«
+use App\Http\Resources\Profit\ProfitResource; // ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ø³Ù… Ù…Ø¬Ù„Ø¯ Ø§Ù„Ù…ÙˆØ±Ø¯
 use App\Models\Profit;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -21,21 +21,21 @@ class ProfitController extends Controller
     public function __construct()
     {
         $this->relations = [
-            'company',   // للتحقق من belongsToCurrentCompany
-            'creator',   // للتحقق من createdByCurrentUser/OrChildren
-            // أضف أي علاقات أخرى ذات صلة هنا، مثل 'invoiceItem' أو 'user' إذا كانت الأرباح مرتبطة بها مباشرةً
+            'company',   // Ù„Ù„ØªØ­Ù‚Ù‚ Ù…Ù† belongsToCurrentCompany
+            'creator',   // Ù„Ù„ØªØ­Ù‚Ù‚ Ù…Ù† createdByCurrentUser/OrChildren
+            // Ø£Ø¶Ù Ø£ÙŠ Ø¹Ù„Ø§Ù‚Ø§Øª Ø£Ø®Ø±Ù‰ Ø°Ø§Øª ØµÙ„Ø© Ù‡Ù†Ø§ØŒ Ù…Ø«Ù„ 'invoiceItem' Ø£Ùˆ 'user' Ø¥Ø°Ø§ ÙƒØ§Ù†Øª Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ù…Ø±ØªØ¨Ø·Ø© Ø¨Ù‡Ø§ Ù…Ø¨Ø§Ø´Ø±Ø©Ù‹
         ];
     }
 
     /**
-     * @group 06. العمليات المالية والخزينة
+     * @group 06. Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ø®Ø²ÙŠÙ†Ø©
      * 
-     * عرض قائمة الأرباح
+     * Ø¹Ø±Ø¶ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø£Ø±Ø¨Ø§Ø­
      * 
-     * @queryParam amount_from number المبلغ من. Example: 50
-     * @queryParam amount_to number المبلغ إلى. Example: 500
-     * @queryParam created_at_from date التاريخ من. Example: 2023-01-01
-     * @queryParam per_page integer عدد النتائج. Default: 15
+     * @queryParam amount_from number Ø§Ù„Ù…Ø¨Ù„Øº Ù…Ù†. Example: 50
+     * @queryParam amount_to number Ø§Ù„Ù…Ø¨Ù„Øº Ø¥Ù„Ù‰. Example: 500
+     * @queryParam created_at_from date Ø§Ù„ØªØ§Ø±ÙŠØ® Ù…Ù†. Example: 2023-01-01
+     * @queryParam per_page integer Ø¹Ø¯Ø¯ Ø§Ù„Ù†ØªØ§Ø¦Ø¬. Default: 15
      * 
      * @apiResourceCollection App\Http\Resources\Profit\ProfitResource
      * @apiResourceModel App\Models\Profit
@@ -47,33 +47,33 @@ class ProfitController extends Controller
             $authUser = Auth::user();
 
             if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
+                return api_unauthorized('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø©.');
             }
 
             $query = Profit::query()->with($this->relations);
             $companyId = $authUser->active_company_id ?? null;
 
-            // تطبيق فلترة الصلاحيات بناءً على صلاحيات العرض
+            // ØªØ·Ø¨ÙŠÙ‚ ÙÙ„ØªØ±Ø© Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„Ù‰ ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                // المسؤول العام يرى جميع الأرباح
+                // Ø§Ù„Ù…Ø³Ø¤ÙˆÙ„ Ø§Ù„Ø¹Ø§Ù… ÙŠØ±Ù‰ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­
             } elseif ($authUser->hasAnyPermission([perm_key('profits.view_all'), perm_key('admin.company')])) {
-                // يرى جميع الأرباح الخاصة بالشركة النشطة
+                // ÙŠØ±Ù‰ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©
                 $query->whereCompanyIsCurrent();
             } elseif ($authUser->hasPermissionTo(perm_key('profits.view_children'))) {
-                // يرى الأرباح التي أنشأها المستخدم أو المستخدمون التابعون له، ضمن الشركة النشطة
+                // ÙŠØ±Ù‰ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø£Ùˆ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ† Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ† Ù„Ù‡ØŒ Ø¶Ù…Ù† Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©
                 $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
             } elseif ($authUser->hasPermissionTo(perm_key('profits.view_self'))) {
-                // يرى الأرباح التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
+                // ÙŠØ±Ù‰ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙÙ‚Ø·ØŒ ÙˆÙ…Ø±ØªØ¨Ø·Ø© Ø¨Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض الأرباح.');
+                return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„Ø¹Ø±Ø¶ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­.');
             }
 
-            // فلاتر الطلب الإضافية
+            // ÙÙ„Ø§ØªØ± Ø§Ù„Ø·Ù„Ø¨ Ø§Ù„Ø¥Ø¶Ø§ÙÙŠØ©
             if ($request->filled('company_id')) {
-                // تأكد من أن المستخدم لديه صلاحية رؤية الأرباح لشركة أخرى إذا تم تحديدها
+                // ØªØ£ÙƒØ¯ Ù…Ù† Ø£Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù„Ø¯ÙŠÙ‡ ØµÙ„Ø§Ø­ÙŠØ© Ø±Ø¤ÙŠØ© Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ù„Ø´Ø±ÙƒØ© Ø£Ø®Ø±Ù‰ Ø¥Ø°Ø§ ØªÙ… ØªØ­Ø¯ÙŠØ¯Ù‡Ø§
                 if ($request->input('company_id') != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    return api_forbidden('ليس لديك إذن لعرض الأرباح لشركة أخرى.');
+                    return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„Ø¹Ø±Ø¶ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ù„Ø´Ø±ÙƒØ© Ø£Ø®Ø±Ù‰.');
                 }
                 $query->where('company_id', $request->input('company_id'));
             }
@@ -90,7 +90,7 @@ class ProfitController extends Controller
                 $query->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
             }
 
-            // تحديد عدد العناصر في الصفحة والفرز
+            // ØªØ­Ø¯ÙŠØ¯ Ø¹Ø¯Ø¯ Ø§Ù„Ø¹Ù†Ø§ØµØ± ÙÙŠ Ø§Ù„ØµÙØ­Ø© ÙˆØ§Ù„ÙØ±Ø²
             $perPage = max(1, (int) $request->get('per_page', 15));
             $sortField = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
@@ -98,9 +98,9 @@ class ProfitController extends Controller
             $profits = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
 
             if ($profits->isEmpty()) {
-                return api_success([], 'لم يتم العثور على أرباح.');
+                return api_success([], 'Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø£Ø±Ø¨Ø§Ø­.');
             } else {
-                return api_success(ProfitResource::collection($profits), 'تم جلب الأرباح بنجاح.');
+                return api_success(ProfitResource::collection($profits), 'ØªÙ… Ø¬Ù„Ø¨ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø¨Ù†Ø¬Ø§Ø­.');
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -108,13 +108,13 @@ class ProfitController extends Controller
     }
 
     /**
-     * @group 06. العمليات المالية والخزينة
+     * @group 06. Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ø®Ø²ÙŠÙ†Ø©
      * 
-     * تسجيل ربح جديد
+     * ØªØ³Ø¬ÙŠÙ„ Ø±Ø¨Ø­ Ø¬Ø¯ÙŠØ¯
      * 
-     * @bodyParam amount number required المبلغ. Example: 150
-     * @bodyParam description string required وصف الربح. Example: عمولة مبيعات
-     * @bodyParam company_id integer معرف الشركة (للمدراء). Example: 1
+     * @bodyParam amount number required Ø§Ù„Ù…Ø¨Ù„Øº. Example: 150
+     * @bodyParam description string required ÙˆØµÙ Ø§Ù„Ø±Ø¨Ø­. Example: Ø¹Ù…ÙˆÙ„Ø© Ù…Ø¨ÙŠØ¹Ø§Øª
+     * @bodyParam company_id integer Ù…Ø¹Ø±Ù Ø§Ù„Ø´Ø±ÙƒØ© (Ù„Ù„Ù…Ø¯Ø±Ø§Ø¡). Example: 1
      */
     public function store(StoreProfitRequest $request): JsonResponse
     {
@@ -124,14 +124,14 @@ class ProfitController extends Controller
             $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
+                return api_unauthorized('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø©.');
             }
             if (!$companyId) {
-                return api_forbidden('يتطلب الارتباط بالشركة.');
+                return api_forbidden('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§Ù„Ø´Ø±ÙƒØ©.');
             }
 
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('profits.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
-                return api_forbidden('ليس لديك إذن لإنشاء أرباح.');
+                return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„Ø¥Ù†Ø´Ø§Ø¡ Ø£Ø±Ø¨Ø§Ø­.');
             }
 
             DB::beginTransaction();
@@ -139,28 +139,28 @@ class ProfitController extends Controller
                 $validatedData = $request->validated();
                 $validatedData['created_by'] = $authUser->id;
 
-                // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمستخدم.
+                // Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… super_admin ÙˆÙŠØ­Ø¯Ø¯ company_idØŒ ÙŠØ³Ù…Ø­ Ø¨Ø°Ù„Ùƒ. ÙˆØ¥Ù„Ø§ØŒ Ø§Ø³ØªØ®Ø¯Ù… company_id Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù….
                 $profitCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
                     ? $validatedData['company_id']
                     : $companyId;
 
-                // التأكد من أن المستخدم مصرح له بإنشاء ربح لهذه الشركة
+                // Ø§Ù„ØªØ£ÙƒØ¯ Ù…Ù† Ø£Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù…ØµØ±Ø­ Ù„Ù‡ Ø¨Ø¥Ù†Ø´Ø§Ø¡ Ø±Ø¨Ø­ Ù„Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©
                 if ($profitCompanyId != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
                     DB::rollBack();
-                    return api_forbidden('يمكنك فقط إنشاء أرباح لشركتك الحالية ما لم تكن مسؤولاً عامًا.');
+                    return api_forbidden('ÙŠÙ…ÙƒÙ†Ùƒ ÙÙ‚Ø· Ø¥Ù†Ø´Ø§Ø¡ Ø£Ø±Ø¨Ø§Ø­ Ù„Ø´Ø±ÙƒØªÙƒ Ø§Ù„Ø­Ø§Ù„ÙŠØ© Ù…Ø§ Ù„Ù… ØªÙƒÙ† Ù…Ø³Ø¤ÙˆÙ„Ø§Ù‹ Ø¹Ø§Ù…Ù‹Ø§.');
                 }
                 $validatedData['company_id'] = $profitCompanyId;
 
                 $profit = Profit::create($validatedData);
                 $profit->load($this->relations);
                 DB::commit();
-                return api_success(new ProfitResource($profit), 'تم إنشاء الربح بنجاح.', 201);
+                return api_success(new ProfitResource($profit), 'ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ø±Ø¨Ø­ Ø¨Ù†Ø¬Ø§Ø­.', 201);
             } catch (ValidationException $e) {
                 DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تخزين الربح.', $e->errors(), 422);
+                return api_error('ÙØ´Ù„ Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† ØµØ­Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø£Ø«Ù†Ø§Ø¡ ØªØ®Ø²ÙŠÙ† Ø§Ù„Ø±Ø¨Ø­.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء حفظ الربح.', [], 500);
+                return api_error('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø­ÙØ¸ Ø§Ù„Ø±Ø¨Ø­.', [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -168,11 +168,11 @@ class ProfitController extends Controller
     }
 
     /**
-     * @group 06. العمليات المالية والخزينة
+     * @group 06. Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ø®Ø²ÙŠÙ†Ø©
      * 
-     * عرض تفاصيل ربح
+     * Ø¹Ø±Ø¶ ØªÙØ§ØµÙŠÙ„ Ø±Ø¨Ø­
      * 
-     * @urlParam profit required معرف الربح. Example: 1
+     * @urlParam profit required Ù…Ø¹Ø±Ù Ø§Ù„Ø±Ø¨Ø­. Example: 1
      * 
      * @apiResource App\Http\Resources\Profit\ProfitResource
      * @apiResourceModel App\Models\Profit
@@ -185,10 +185,10 @@ class ProfitController extends Controller
             $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
+                return api_unauthorized('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø©.');
             }
             if (!$companyId) {
-                return api_forbidden('يتطلب الارتباط بالشركة.');
+                return api_forbidden('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§Ù„Ø´Ø±ÙƒØ©.');
             }
 
             $profit->load($this->relations);
@@ -205,22 +205,22 @@ class ProfitController extends Controller
             }
 
             if ($canView) {
-                return api_success(new ProfitResource($profit), 'تم استرداد الربح بنجاح.');
+                return api_success(new ProfitResource($profit), 'ØªÙ… Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ø§Ù„Ø±Ø¨Ø­ Ø¨Ù†Ø¬Ø§Ø­.');
             }
 
-            return api_forbidden('ليس لديك إذن لعرض هذا الربح.');
+            return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„Ø¹Ø±Ø¶ Ù‡Ø°Ø§ Ø§Ù„Ø±Ø¨Ø­.');
         } catch (Throwable $e) {
             return api_exception($e);
         }
     }
 
     /**
-     * @group 06. العمليات المالية والخزينة
+     * @group 06. Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ø®Ø²ÙŠÙ†Ø©
      * 
-     * تحديث ربح
+     * ØªØ­Ø¯ÙŠØ« Ø±Ø¨Ø­
      * 
-     * @urlParam profit required معرف الربح. Example: 1
-     * @bodyParam amount number المبلغ المحدث. Example: 200
+     * @urlParam profit required Ù…Ø¹Ø±Ù Ø§Ù„Ø±Ø¨Ø­. Example: 1
+     * @bodyParam amount number Ø§Ù„Ù…Ø¨Ù„Øº Ø§Ù„Ù…Ø­Ø¯Ø«. Example: 200
      */
     public function update(UpdateProfitRequest $request, Profit $profit): JsonResponse
     {
@@ -230,13 +230,13 @@ class ProfitController extends Controller
             $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
+                return api_unauthorized('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø©.');
             }
             if (!$companyId) {
-                return api_forbidden('يتطلب الارتباط بالشركة.');
+                return api_forbidden('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§Ù„Ø´Ø±ÙƒØ©.');
             }
 
-            $profit->load(['company', 'creator']); // تحميل العلاقات للتحقق من الصلاحيات
+            $profit->load(['company', 'creator']); // ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ø¹Ù„Ø§Ù‚Ø§Øª Ù„Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
 
             $canUpdate = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -250,7 +250,7 @@ class ProfitController extends Controller
             }
 
             if (!$canUpdate) {
-                return api_forbidden('ليس لديك إذن لتحديث هذا الربح.');
+                return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„ØªØ­Ø¯ÙŠØ« Ù‡Ø°Ø§ Ø§Ù„Ø±Ø¨Ø­.');
             }
 
             DB::beginTransaction();
@@ -258,12 +258,12 @@ class ProfitController extends Controller
                 $validatedData = $request->validated();
                 $validatedData['updated_by'] = $authUser->id;
 
-                // التأكد من أن المستخدم مصرح له بتغيير company_id إذا كان سوبر أدمن
+                // Ø§Ù„ØªØ£ÙƒØ¯ Ù…Ù† Ø£Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù…ØµØ±Ø­ Ù„Ù‡ Ø¨ØªØºÙŠÙŠØ± company_id Ø¥Ø°Ø§ ÙƒØ§Ù† Ø³ÙˆØ¨Ø± Ø£Ø¯Ù…Ù†
                 if (isset($validatedData['company_id']) && $validatedData['company_id'] != $profit->company_id && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
                     DB::rollBack();
-                    return api_forbidden('لا يمكنك تغيير شركة الربح إلا إذا كنت مدير عام.');
+                    return api_forbidden('Ù„Ø§ ÙŠÙ…ÙƒÙ†Ùƒ ØªØºÙŠÙŠØ± Ø´Ø±ÙƒØ© Ø§Ù„Ø±Ø¨Ø­ Ø¥Ù„Ø§ Ø¥Ø°Ø§ ÙƒÙ†Øª Ù…Ø¯ÙŠØ± Ø¹Ø§Ù….');
                 }
-                // إذا لم يتم تحديد company_id في الطلب ولكن المستخدم سوبر أدمن، لا تغير company_id الخاصة بالربح الحالي
+                // Ø¥Ø°Ø§ Ù„Ù… ÙŠØªÙ… ØªØ­Ø¯ÙŠØ¯ company_id ÙÙŠ Ø§Ù„Ø·Ù„Ø¨ ÙˆÙ„ÙƒÙ† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø³ÙˆØ¨Ø± Ø£Ø¯Ù…Ù†ØŒ Ù„Ø§ ØªØºÙŠØ± company_id Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ø±Ø¨Ø­ Ø§Ù„Ø­Ø§Ù„ÙŠ
                 if (!$authUser->hasPermissionTo(perm_key('admin.super')) || !isset($validatedData['company_id'])) {
                     unset($validatedData['company_id']);
                 }
@@ -271,13 +271,13 @@ class ProfitController extends Controller
                 $profit->update($validatedData);
                 $profit->load($this->relations);
                 DB::commit();
-                return api_success(new ProfitResource($profit), 'تم تحديث الربح بنجاح.');
+                return api_success(new ProfitResource($profit), 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø±Ø¨Ø­ Ø¨Ù†Ø¬Ø§Ø­.');
             } catch (ValidationException $e) {
                 DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تحديث الربح.', $e->errors(), 422);
+                return api_error('ÙØ´Ù„ Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† ØµØ­Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø£Ø«Ù†Ø§Ø¡ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø±Ø¨Ø­.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء تحديث الربح.', [], 500);
+                return api_error('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø±Ø¨Ø­.', [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -285,11 +285,11 @@ class ProfitController extends Controller
     }
 
     /**
-     * @group 06. العمليات المالية والخزينة
+     * @group 06. Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ø®Ø²ÙŠÙ†Ø©
      * 
-     * حذف ربح
+     * Ø­Ø°Ù Ø±Ø¨Ø­
      * 
-     * @urlParam profit required معرف الربح. Example: 1
+     * @urlParam profit required Ù…Ø¹Ø±Ù Ø§Ù„Ø±Ø¨Ø­. Example: 1
      */
     public function destroy(Profit $profit): JsonResponse
     {
@@ -299,13 +299,13 @@ class ProfitController extends Controller
             $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
+                return api_unauthorized('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø©.');
             }
             if (!$companyId) {
-                return api_forbidden('يتطلب الارتباط بالشركة.');
+                return api_forbidden('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§Ù„Ø´Ø±ÙƒØ©.');
             }
 
-            $profit->load(['company', 'creator']); // تحميل العلاقات للتحقق من الصلاحيات
+            $profit->load(['company', 'creator']); // ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ø¹Ù„Ø§Ù‚Ø§Øª Ù„Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
 
             $canDelete = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -319,24 +319,26 @@ class ProfitController extends Controller
             }
 
             if (!$canDelete) {
-                return api_forbidden('ليس لديك إذن لحذف هذا الربح.');
+                return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„Ø­Ø°Ù Ù‡Ø°Ø§ Ø§Ù„Ø±Ø¨Ø­.');
             }
 
             DB::beginTransaction();
             try {
-                // حفظ نسخة من الربح قبل حذفه لإرجاعها في الاستجابة
+                // Ø­ÙØ¸ Ù†Ø³Ø®Ø© Ù…Ù† Ø§Ù„Ø±Ø¨Ø­ Ù‚Ø¨Ù„ Ø­Ø°ÙÙ‡ Ù„Ø¥Ø±Ø¬Ø§Ø¹Ù‡Ø§ ÙÙŠ Ø§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø©
                 $deletedProfit = $profit->replicate();
                 $deletedProfit->setRelations($profit->getRelations());
 
+                $profit->update(['status' => 'reversed']);
                 $profit->delete();
                 DB::commit();
-                return api_success(new ProfitResource($deletedProfit), 'تم حذف الربح بنجاح.');
+                return api_success(new ProfitResource($profit), 'ØªÙ… Ø­Ø°Ù Ø§Ù„Ø±Ø¨Ø­ Ø¨Ù†Ø¬Ø§Ø­.');
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء حذف الربح.', [], 500);
+                return api_error('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø­Ø°Ù Ø§Ù„Ø±Ø¨Ø­.', [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
         }
     }
 }
+

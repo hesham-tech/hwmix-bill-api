@@ -26,11 +26,11 @@ class AccountingService
     }
 
     /**
-     * تسجيل حركة مالية (قبض أو صرف).
+     * تسجيل حركة مالية (قبض أو صرف) — يُعيد operationId لربطه بالمستند المصدر.
      */
-    public function recordPayment(int $companyId, User $staff, ?User $party, float $amount, string $direction, array $options = []): void
+    public function recordPayment(int $companyId, User $staff, ?User $party, float $amount, string $direction, array $options = []): string
     {
-        DB::transaction(function () use ($companyId, $staff, $party, $amount, $direction, $options) {
+        return DB::transaction(function () use ($companyId, $staff, $party, $amount, $direction, $options) {
             $operationId = $options['operation_id'] ?? (string) Str::uuid();
             $cashBoxId = $options['cash_box_id'] ?? null;
             
@@ -90,10 +90,13 @@ class AccountingService
             );
 
             // ترحيل الجانب المقابل لضمان القيد المزدوج
+            // account_type ENUM: revenue, expense, asset, liability, equity
             $counterAccount = 'revenue';
             $counterParty = $staff;
             if ($party && !($options['skip_party_balance'] ?? false)) {
-                $counterAccount = (isset($relationType) && $relationType === 'payable') ? 'payables' : 'receivables';
+                // receivable → asset (ذمة العميل هي أصل للشركة)
+                // payable    → liability (التزام تجاه المورد)
+                $counterAccount = (isset($relationType) && $relationType === 'payable') ? 'liability' : 'asset';
                 $counterParty = $party;
             } elseif ($direction !== 'in') {
                 $counterAccount = 'expense';
@@ -108,6 +111,8 @@ class AccountingService
                 now(),
                 $operationId
             );
+
+            return $operationId;
         });
     }
 
@@ -147,11 +152,12 @@ class AccountingService
     }
 
     /**
-     * تحصيل دفعات يدوية من العميل (غير مربوطة بفاتورة مباشرة).
+     * تحصيل دفعات يدوية من العميل — يُعيد operationId لربطه بـ Payment.
      */
-    public function collectPayment(User $staff, User $party, float $amount, array $options = []): void
+    public function collectPayment(User $staff, User $party, float $amount, array $options = []): string
     {
         $companyId = $options['company_id'] ?? $staff->active_company_id ?? $party->active_company_id;
-        $this->recordPayment($companyId, $staff, $party, $amount, 'in', $options);
+        return $this->recordPayment($companyId, $staff, $party, $amount, 'in', $options);
     }
 }
+

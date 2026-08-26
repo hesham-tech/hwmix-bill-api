@@ -28,6 +28,8 @@ class Expense extends Model
         'created_by',
         'updated_by',
         'branch_id',
+        'financial_operation_id',
+        'status',
     ];
 
     protected static function booted()

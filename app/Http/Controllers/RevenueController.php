@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Revenue\StoreRevenueRequest; // تم تحديث اسم مجلد الطلب
-use App\Http\Requests\Revenue\UpdateRevenueRequest; // يجب إنشاء هذا الطلب أو استخدام StoreRevenueRequest مع قواعد "sometimes"
-use App\Http\Resources\Revenue\RevenueResource; // تم تحديث اسم مجلد المورد
+use App\Http\Requests\Revenue\StoreRevenueRequest; // ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ø³Ù… Ù…Ø¬Ù„Ø¯ Ø§Ù„Ø·Ù„Ø¨
+use App\Http\Requests\Revenue\UpdateRevenueRequest;
+use App\Services\RevenueService; // ÙŠØ¬Ø¨ Ø¥Ù†Ø´Ø§Ø¡ Ù‡Ø°Ø§ Ø§Ù„Ø·Ù„Ø¨ Ø£Ùˆ Ø§Ø³ØªØ®Ø¯Ø§Ù… StoreRevenueRequest Ù…Ø¹ Ù‚ÙˆØ§Ø¹Ø¯ "sometimes"
+use App\Http\Resources\Revenue\RevenueResource; // ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ø³Ù… Ù…Ø¬Ù„Ø¯ Ø§Ù„Ù…ÙˆØ±Ø¯
 use App\Models\Revenue;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -16,26 +17,32 @@ use Throwable;
 
 class RevenueController extends Controller
 {
+    protected RevenueService $revenueService;
+
+    public function __construct(RevenueService $revenueService)
+    {
+        $this->revenueService = $revenueService;
+    }
     protected array $relations;
 
     public function __construct()
     {
         $this->relations = [
-            'company',   // للتحقق من belongsToCurrentCompany
-            'customer',  // العميل المرتبط بالإيراد
-            'creator',   // للتحقق من createdByCurrentUser/OrChildren
+            'company',   // Ù„Ù„ØªØ­Ù‚Ù‚ Ù…Ù† belongsToCurrentCompany
+            'customer',  // Ø§Ù„Ø¹Ù…ÙŠÙ„ Ø§Ù„Ù…Ø±ØªØ¨Ø· Ø¨Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯
+            'creator',   // Ù„Ù„ØªØ­Ù‚Ù‚ Ù…Ù† createdByCurrentUser/OrChildren
         ];
     }
 
     /**
-     * @group 06. العمليات المالية والخزينة
+     * @group 06. Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ø®Ø²ÙŠÙ†Ø©
      * 
-     * عرض قائمة الإيرادات
+     * Ø¹Ø±Ø¶ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª
      * 
-     * @queryParam amount_from number المبلغ من. Example: 100
-     * @queryParam amount_to number المبلغ إلى. Example: 1000
-     * @queryParam created_at_from date التاريخ من. Example: 2023-01-01
-     * @queryParam per_page integer عدد النتائج. Default: 15
+     * @queryParam amount_from number Ø§Ù„Ù…Ø¨Ù„Øº Ù…Ù†. Example: 100
+     * @queryParam amount_to number Ø§Ù„Ù…Ø¨Ù„Øº Ø¥Ù„Ù‰. Example: 1000
+     * @queryParam created_at_from date Ø§Ù„ØªØ§Ø±ÙŠØ® Ù…Ù†. Example: 2023-01-01
+     * @queryParam per_page integer Ø¹Ø¯Ø¯ Ø§Ù„Ù†ØªØ§Ø¦Ø¬. Default: 15
      * 
      * @apiResourceCollection App\Http\Resources\Revenue\RevenueResource
      * @apiResourceModel App\Models\Revenue
@@ -47,33 +54,33 @@ class RevenueController extends Controller
             $authUser = Auth::user();
 
             if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
+                return api_unauthorized('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø©.');
             }
 
             $query = Revenue::query()->with($this->relations);
             $companyId = $authUser->active_company_id ?? null;
 
-            // تطبيق فلترة الصلاحيات بناءً على صلاحيات العرض
+            // ØªØ·Ø¨ÙŠÙ‚ ÙÙ„ØªØ±Ø© Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„Ù‰ ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø¹Ø±Ø¶
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
-                // المسؤول العام يرى جميع الإيرادات
+                // Ø§Ù„Ù…Ø³Ø¤ÙˆÙ„ Ø§Ù„Ø¹Ø§Ù… ÙŠØ±Ù‰ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª
             } elseif ($authUser->hasAnyPermission([perm_key('revenues.view_all'), perm_key('admin.company')])) {
-                // يرى جميع الإيرادات الخاصة بالشركة النشطة
+                // ÙŠØ±Ù‰ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©
                 $query->whereCompanyIsCurrent();
             } elseif ($authUser->hasPermissionTo(perm_key('revenues.view_children'))) {
-                // يرى الإيرادات التي أنشأها المستخدم أو المستخدمون التابعون له، ضمن الشركة النشطة
+                // ÙŠØ±Ù‰ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø£Ùˆ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ† Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ† Ù„Ù‡ØŒ Ø¶Ù…Ù† Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©
                 $query->whereCompanyIsCurrent()->whereCreatedByUserOrChildren();
             } elseif ($authUser->hasPermissionTo(perm_key('revenues.view_self'))) {
-                // يرى الإيرادات التي أنشأها المستخدم فقط، ومرتبطة بالشركة النشطة
+                // ÙŠØ±Ù‰ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù†Ø´Ø£Ù‡Ø§ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙÙ‚Ø·ØŒ ÙˆÙ…Ø±ØªØ¨Ø·Ø© Ø¨Ø§Ù„Ø´Ø±ÙƒØ© Ø§Ù„Ù†Ø´Ø·Ø©
                 $query->whereCompanyIsCurrent()->whereCreatedByUser();
             } else {
-                return api_forbidden('ليس لديك إذن لعرض الإيرادات.');
+                return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„Ø¹Ø±Ø¶ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª.');
             }
 
-            // فلاتر الطلب الإضافية
+            // ÙÙ„Ø§ØªØ± Ø§Ù„Ø·Ù„Ø¨ Ø§Ù„Ø¥Ø¶Ø§ÙÙŠØ©
             if ($request->filled('company_id')) {
-                // تأكد من أن المستخدم لديه صلاحية رؤية الإيرادات لشركة أخرى إذا تم تحديدها
+                // ØªØ£ÙƒØ¯ Ù…Ù† Ø£Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù„Ø¯ÙŠÙ‡ ØµÙ„Ø§Ø­ÙŠØ© Ø±Ø¤ÙŠØ© Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ù„Ø´Ø±ÙƒØ© Ø£Ø®Ø±Ù‰ Ø¥Ø°Ø§ ØªÙ… ØªØ­Ø¯ÙŠØ¯Ù‡Ø§
                 if ($request->input('company_id') != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
-                    return api_forbidden('ليس لديك إذن لعرض الإيرادات لشركة أخرى.');
+                    return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„Ø¹Ø±Ø¶ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ù„Ø´Ø±ÙƒØ© Ø£Ø®Ø±Ù‰.');
                 }
                 $query->where('company_id', $request->input('company_id'));
             }
@@ -90,7 +97,7 @@ class RevenueController extends Controller
                 $query->where('created_at', '<=', $request->get('created_at_to') . ' 23:59:59');
             }
 
-            // تحديد عدد العناصر في الصفحة والفرز
+            // ØªØ­Ø¯ÙŠØ¯ Ø¹Ø¯Ø¯ Ø§Ù„Ø¹Ù†Ø§ØµØ± ÙÙŠ Ø§Ù„ØµÙØ­Ø© ÙˆØ§Ù„ÙØ±Ø²
             $perPage = max(1, (int) $request->get('per_page', 15));
             $sortField = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
@@ -98,9 +105,9 @@ class RevenueController extends Controller
             $revenues = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
 
             if ($revenues->isEmpty()) {
-                return api_success([], 'لم يتم العثور على إيرادات.');
+                return api_success([], 'Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø¥ÙŠØ±Ø§Ø¯Ø§Øª.');
             } else {
-                return api_success(RevenueResource::collection($revenues), 'تم جلب الإيرادات بنجاح.');
+                return api_success(RevenueResource::collection($revenues), 'ØªÙ… Ø¬Ù„Ø¨ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø¨Ù†Ø¬Ø§Ø­.');
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -108,13 +115,13 @@ class RevenueController extends Controller
     }
 
     /**
-     * @group 06. العمليات المالية والخزينة
+     * @group 06. Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ø®Ø²ÙŠÙ†Ø©
      * 
-     * تسجيل إيراد جديد
+     * ØªØ³Ø¬ÙŠÙ„ Ø¥ÙŠØ±Ø§Ø¯ Ø¬Ø¯ÙŠØ¯
      * 
-     * @bodyParam amount number required المبلغ. Example: 500
-     * @bodyParam description string required وصف الإيراد. Example: مبيعات خدمات فرعية
-     * @bodyParam company_id integer معرف الشركة (للمدراء). Example: 1
+     * @bodyParam amount number required Ø§Ù„Ù…Ø¨Ù„Øº. Example: 500
+     * @bodyParam description string required ÙˆØµÙ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯. Example: Ù…Ø¨ÙŠØ¹Ø§Øª Ø®Ø¯Ù…Ø§Øª ÙØ±Ø¹ÙŠØ©
+     * @bodyParam company_id integer Ù…Ø¹Ø±Ù Ø§Ù„Ø´Ø±ÙƒØ© (Ù„Ù„Ù…Ø¯Ø±Ø§Ø¡). Example: 1
      */
     public function store(StoreRevenueRequest $request): JsonResponse
     {
@@ -124,14 +131,14 @@ class RevenueController extends Controller
             $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
+                return api_unauthorized('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø©.');
             }
             if (!$companyId) {
-                return api_forbidden('يتطلب الارتباط بالشركة.');
+                return api_forbidden('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§Ù„Ø´Ø±ÙƒØ©.');
             }
 
             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('revenues.create')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
-                return api_forbidden('ليس لديك إذن لإنشاء إيرادات.');
+                return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„Ø¥Ù†Ø´Ø§Ø¡ Ø¥ÙŠØ±Ø§Ø¯Ø§Øª.');
             }
 
             DB::beginTransaction();
@@ -139,28 +146,28 @@ class RevenueController extends Controller
                 $validatedData = $request->validated();
                 $validatedData['created_by'] = $authUser->id;
 
-                // إذا كان المستخدم super_admin ويحدد company_id، يسمح بذلك. وإلا، استخدم company_id للمستخدم.
+                // Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… super_admin ÙˆÙŠØ­Ø¯Ø¯ company_idØŒ ÙŠØ³Ù…Ø­ Ø¨Ø°Ù„Ùƒ. ÙˆØ¥Ù„Ø§ØŒ Ø§Ø³ØªØ®Ø¯Ù… company_id Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù….
                 $revenueCompanyId = ($authUser->hasPermissionTo(perm_key('admin.super')) && isset($validatedData['company_id']))
                     ? $validatedData['company_id']
                     : $companyId;
 
-                // التأكد من أن المستخدم مصرح له بإنشاء إيراد لهذه الشركة
+                // Ø§Ù„ØªØ£ÙƒØ¯ Ù…Ù† Ø£Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù…ØµØ±Ø­ Ù„Ù‡ Ø¨Ø¥Ù†Ø´Ø§Ø¡ Ø¥ÙŠØ±Ø§Ø¯ Ù„Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø±ÙƒØ©
                 if ($revenueCompanyId != $companyId && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
                     DB::rollBack();
-                    return api_forbidden('يمكنك فقط إنشاء إيرادات لشركتك الحالية ما لم تكن مسؤولاً عامًا.');
+                    return api_forbidden('ÙŠÙ…ÙƒÙ†Ùƒ ÙÙ‚Ø· Ø¥Ù†Ø´Ø§Ø¡ Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ù„Ø´Ø±ÙƒØªÙƒ Ø§Ù„Ø­Ø§Ù„ÙŠØ© Ù…Ø§ Ù„Ù… ØªÙƒÙ† Ù…Ø³Ø¤ÙˆÙ„Ø§Ù‹ Ø¹Ø§Ù…Ù‹Ø§.');
                 }
                 $validatedData['company_id'] = $revenueCompanyId;
 
                 $revenue = Revenue::create($validatedData);
                 $revenue->load($this->relations);
                 DB::commit();
-                return api_success(new RevenueResource($revenue), 'تم إنشاء الإيراد بنجاح.', 201);
+                return api_success(new RevenueResource($revenue), 'ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯ Ø¨Ù†Ø¬Ø§Ø­.', 201);
             } catch (ValidationException $e) {
                 DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تخزين الإيراد.', $e->errors(), 422);
+                return api_error('ÙØ´Ù„ Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† ØµØ­Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø£Ø«Ù†Ø§Ø¡ ØªØ®Ø²ÙŠÙ† Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء حفظ الإيراد.', [], 500);
+                return api_error('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø­ÙØ¸ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯.', [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -168,11 +175,11 @@ class RevenueController extends Controller
     }
 
     /**
-     * @group 06. العمليات المالية والخزينة
+     * @group 06. Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ø®Ø²ÙŠÙ†Ø©
      * 
-     * عرض تفاصيل إيراد
+     * Ø¹Ø±Ø¶ ØªÙØ§ØµÙŠÙ„ Ø¥ÙŠØ±Ø§Ø¯
      * 
-     * @urlParam revenue required معرف الإيراد. Example: 1
+     * @urlParam revenue required Ù…Ø¹Ø±Ù Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯. Example: 1
      * 
      * @apiResource App\Http\Resources\Revenue\RevenueResource
      * @apiResourceModel App\Models\Revenue
@@ -185,10 +192,10 @@ class RevenueController extends Controller
             $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
+                return api_unauthorized('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø©.');
             }
             if (!$companyId) {
-                return api_forbidden('يتطلب الارتباط بالشركة.');
+                return api_forbidden('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§Ù„Ø´Ø±ÙƒØ©.');
             }
 
             $revenue->load($this->relations);
@@ -205,22 +212,22 @@ class RevenueController extends Controller
             }
 
             if ($canView) {
-                return api_success(new RevenueResource($revenue), 'تم استرداد الإيراد بنجاح.');
+                return api_success(new RevenueResource($revenue), 'ØªÙ… Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯ Ø¨Ù†Ø¬Ø§Ø­.');
             }
 
-            return api_forbidden('ليس لديك إذن لعرض هذا الإيراد.');
+            return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„Ø¹Ø±Ø¶ Ù‡Ø°Ø§ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯.');
         } catch (Throwable $e) {
             return api_exception($e);
         }
     }
 
     /**
-     * @group 06. العمليات المالية والخزينة
+     * @group 06. Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ø®Ø²ÙŠÙ†Ø©
      * 
-     * تحديث إيراد
+     * ØªØ­Ø¯ÙŠØ« Ø¥ÙŠØ±Ø§Ø¯
      * 
-     * @urlParam revenue required معرف الإيراد. Example: 1
-     * @bodyParam amount number المبلغ المحدث. Example: 600
+     * @urlParam revenue required Ù…Ø¹Ø±Ù Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯. Example: 1
+     * @bodyParam amount number Ø§Ù„Ù…Ø¨Ù„Øº Ø§Ù„Ù…Ø­Ø¯Ø«. Example: 600
      */
     public function update(UpdateRevenueRequest $request, Revenue $revenue): JsonResponse
     {
@@ -230,13 +237,13 @@ class RevenueController extends Controller
             $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
+                return api_unauthorized('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø©.');
             }
             if (!$companyId) {
-                return api_forbidden('يتطلب الارتباط بالشركة.');
+                return api_forbidden('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§Ù„Ø´Ø±ÙƒØ©.');
             }
 
-            $revenue->load(['company', 'creator']); // تحميل العلاقات للتحقق من الصلاحيات
+            $revenue->load(['company', 'creator']); // ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ø¹Ù„Ø§Ù‚Ø§Øª Ù„Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
 
             $canUpdate = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -250,7 +257,7 @@ class RevenueController extends Controller
             }
 
             if (!$canUpdate) {
-                return api_forbidden('ليس لديك إذن لتحديث هذا الإيراد.');
+                return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„ØªØ­Ø¯ÙŠØ« Ù‡Ø°Ø§ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯.');
             }
 
             DB::beginTransaction();
@@ -258,12 +265,12 @@ class RevenueController extends Controller
                 $validatedData = $request->validated();
                 $validatedData['updated_by'] = $authUser->id;
 
-                // التأكد من أن المستخدم مصرح له بتغيير company_id إذا كان سوبر أدمن
+                // Ø§Ù„ØªØ£ÙƒØ¯ Ù…Ù† Ø£Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù…ØµØ±Ø­ Ù„Ù‡ Ø¨ØªØºÙŠÙŠØ± company_id Ø¥Ø°Ø§ ÙƒØ§Ù† Ø³ÙˆØ¨Ø± Ø£Ø¯Ù…Ù†
                 if (isset($validatedData['company_id']) && $validatedData['company_id'] != $revenue->company_id && !$authUser->hasPermissionTo(perm_key('admin.super'))) {
                     DB::rollBack();
-                    return api_forbidden('لا يمكنك تغيير شركة الإيراد إلا إذا كنت مدير عام.');
+                    return api_forbidden('Ù„Ø§ ÙŠÙ…ÙƒÙ†Ùƒ ØªØºÙŠÙŠØ± Ø´Ø±ÙƒØ© Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯ Ø¥Ù„Ø§ Ø¥Ø°Ø§ ÙƒÙ†Øª Ù…Ø¯ÙŠØ± Ø¹Ø§Ù….');
                 }
-                // إذا لم يتم تحديد company_id في الطلب ولكن المستخدم سوبر أدمن، لا تغير company_id الخاصة بالإيراد الحالي
+                // Ø¥Ø°Ø§ Ù„Ù… ÙŠØªÙ… ØªØ­Ø¯ÙŠØ¯ company_id ÙÙŠ Ø§Ù„Ø·Ù„Ø¨ ÙˆÙ„ÙƒÙ† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø³ÙˆØ¨Ø± Ø£Ø¯Ù…Ù†ØŒ Ù„Ø§ ØªØºÙŠØ± company_id Ø§Ù„Ø®Ø§ØµØ© Ø¨Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯ Ø§Ù„Ø­Ø§Ù„ÙŠ
                 if (!$authUser->hasPermissionTo(perm_key('admin.super')) || !isset($validatedData['company_id'])) {
                     unset($validatedData['company_id']);
                 }
@@ -271,13 +278,13 @@ class RevenueController extends Controller
                 $revenue->update($validatedData);
                 $revenue->load($this->relations);
                 DB::commit();
-                return api_success(new RevenueResource($revenue), 'تم تحديث الإيراد بنجاح.');
+                return api_success(new RevenueResource($revenue), 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯ Ø¨Ù†Ø¬Ø§Ø­.');
             } catch (ValidationException $e) {
                 DB::rollBack();
-                return api_error('فشل التحقق من صحة البيانات أثناء تحديث الإيراد.', $e->errors(), 422);
+                return api_error('ÙØ´Ù„ Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† ØµØ­Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø£Ø«Ù†Ø§Ø¡ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯.', $e->errors(), 422);
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء تحديث الإيراد.', [], 500);
+                return api_error('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯.', [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
@@ -285,11 +292,11 @@ class RevenueController extends Controller
     }
 
     /**
-     * @group 06. العمليات المالية والخزينة
+     * @group 06. Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ù…Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ø®Ø²ÙŠÙ†Ø©
      * 
-     * حذف إيراد
+     * Ø­Ø°Ù Ø¥ÙŠØ±Ø§Ø¯
      * 
-     * @urlParam revenue required معرف الإيراد. Example: 1
+     * @urlParam revenue required Ù…Ø¹Ø±Ù Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯. Example: 1
      */
     public function destroy(Revenue $revenue): JsonResponse
     {
@@ -299,13 +306,13 @@ class RevenueController extends Controller
             $companyId = $authUser->active_company_id ?? null;
 
             if (!$authUser) {
-                return api_unauthorized('يتطلب المصادقة.');
+                return api_unauthorized('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø©.');
             }
             if (!$companyId) {
-                return api_forbidden('يتطلب الارتباط بالشركة.');
+                return api_forbidden('ÙŠØªØ·Ù„Ø¨ Ø§Ù„Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§Ù„Ø´Ø±ÙƒØ©.');
             }
 
-            $revenue->load(['company', 'creator']); // تحميل العلاقات للتحقق من الصلاحيات
+            $revenue->load(['company', 'creator']); // ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ø¹Ù„Ø§Ù‚Ø§Øª Ù„Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
 
             $canDelete = false;
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -319,24 +326,28 @@ class RevenueController extends Controller
             }
 
             if (!$canDelete) {
-                return api_forbidden('ليس لديك إذن لحذف هذا الإيراد.');
+                return api_forbidden('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø¥Ø°Ù† Ù„Ø­Ø°Ù Ù‡Ø°Ø§ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯.');
             }
 
             DB::beginTransaction();
             try {
-                // حفظ نسخة من الإيراد قبل حذفه لإرجاعها في الاستجابة
+                // Ø­ÙØ¸ Ù†Ø³Ø®Ø© Ù…Ù† Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯ Ù‚Ø¨Ù„ Ø­Ø°ÙÙ‡ Ù„Ø¥Ø±Ø¬Ø§Ø¹Ù‡Ø§ ÙÙŠ Ø§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø©
                 $deletedRevenue = $revenue->replicate();
                 $deletedRevenue->setRelations($revenue->getRelations());
 
-                $revenue->delete();
+                $this->revenueService->reverseRevenue($revenue, $authUser->id);
                 DB::commit();
-                return api_success(new RevenueResource($deletedRevenue), 'تم حذف الإيراد بنجاح.');
+                return api_success(new RevenueResource($revenue), 'ØªÙ… Ø­Ø°Ù Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯ Ø¨Ù†Ø¬Ø§Ø­.');
             } catch (Throwable $e) {
                 DB::rollBack();
-                return api_error('حدث خطأ أثناء حذف الإيراد.', [], 500);
+                return api_error('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø­Ø°Ù Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯.', [], 500);
             }
         } catch (Throwable $e) {
             return api_exception($e);
         }
     }
 }
+
+
+
+

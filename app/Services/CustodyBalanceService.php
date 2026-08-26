@@ -8,17 +8,23 @@ use Modules\Companies\Models\StakeholderFinancialBalance;
 use Illuminate\Support\Facades\Auth;
 use Exception;
 
-class PayableService
+/**
+ * خدمة إدارة عهد الموظفين المالية (Custodies).
+ */
+class CustodyBalanceService
 {
-    public function add(User $supplier, float $amount, string $operationId, array $metadata = []): void
+    /**
+     * إثبات زيادة عهدة الموظف
+     */
+    public function add(User $employee, float $amount, string $operationId, array $metadata = []): void
     {
-        $companyId = $metadata['company_id'] ?? $supplier->company_id ?? Auth::user()->active_company_id;
+        $companyId = $metadata['company_id'] ?? $employee->company_id ?? Auth::user()->active_company_id;
 
         $balanceRecord = StakeholderFinancialBalance::lockForUpdate()->updateOrCreate(
             [
                 'company_id' => $companyId,
-                'user_id' => $supplier->id,
-                'relation_type' => 'payable',
+                'user_id' => $employee->id,
+                'relation_type' => 'custody',
             ],
             [
                 'created_by' => Auth::id() ?? $metadata['created_by'] ?? null,
@@ -33,26 +39,29 @@ class PayableService
 
         Transaction::create([
             'company_id' => $companyId,
-            'user_id' => $supplier->id,
-            'type' => 'payable_add',
+            'user_id' => $employee->id,
+            'type' => 'custody_add',
             'amount' => $amount,
             'balance_before' => $balanceBefore,
             'balance_after' => $balanceAfter,
             'financial_operation_id' => $operationId,
             'created_by' => Auth::id() ?? $metadata['created_by'] ?? null,
-            'description' => $metadata['description'] ?? 'Add to payable'
+            'description' => $metadata['description'] ?? 'إضافة عهدة'
         ]);
     }
 
-    public function reduce(User $supplier, float $amount, string $operationId, array $metadata = []): void
+    /**
+     * تخفيض عهدة الموظف
+     */
+    public function reduce(User $employee, float $amount, string $operationId, array $metadata = []): void
     {
-        $companyId = $metadata['company_id'] ?? $supplier->company_id ?? Auth::user()->active_company_id;
+        $companyId = $metadata['company_id'] ?? $employee->company_id ?? Auth::user()->active_company_id;
 
         $balanceRecord = StakeholderFinancialBalance::lockForUpdate()->updateOrCreate(
             [
                 'company_id' => $companyId,
-                'user_id' => $supplier->id,
-                'relation_type' => 'payable',
+                'user_id' => $employee->id,
+                'relation_type' => 'custody',
             ],
             [
                 'created_by' => Auth::id() ?? $metadata['created_by'] ?? null,
@@ -63,7 +72,7 @@ class PayableService
         $balanceAfter = $balanceBefore - $amount;
 
         if ($balanceAfter < 0 && !($metadata['allow_negative'] ?? false)) {
-            throw new Exception("???????? ?? ???? ??? ??? ?????? ????? (????? ??????) ??? ????? ?????? ?????? ?????? ??????.");
+            throw new Exception("لا يمكن أن تصبح عهدة الموظف سالبة (تسوية أكبر من العهدة المسجلة).");
         }
 
         $balanceRecord->balance = $balanceAfter;
@@ -71,14 +80,14 @@ class PayableService
 
         Transaction::create([
             'company_id' => $companyId,
-            'user_id' => $supplier->id,
-            'type' => 'payable_reduce',
+            'user_id' => $employee->id,
+            'type' => 'custody_reduce',
             'amount' => $amount,
             'balance_before' => $balanceBefore,
             'balance_after' => $balanceAfter,
             'financial_operation_id' => $operationId,
             'created_by' => Auth::id() ?? $metadata['created_by'] ?? null,
-            'description' => $metadata['description'] ?? 'Reduce payable'
+            'description' => $metadata['description'] ?? 'تخفيض عهدة'
         ]);
     }
 }

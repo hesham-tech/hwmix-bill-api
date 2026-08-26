@@ -11,7 +11,7 @@ class ExpenseObserver
      */
     public function created(\App\Models\Expense $expense): void
     {
-        app(\App\Services\FinancialLedgerService::class)->recordExpense($expense);
+        // app(\App\Services\FinancialLedgerService::class)->recordExpense($expense); // Removed in Phase 7 to use orchestrator
         $this->dispatchSummaryUpdate($expense);
     }
 

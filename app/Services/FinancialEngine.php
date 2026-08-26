@@ -290,46 +290,71 @@ class FinancialEngine implements FinancialEngineInterface
                         ]);
                     }
                 } else if ($tx->user_id) {
-                    // حركة ذمة (عميل أو مورد)
+                    // ???????? ?????? (???????? ???? ????????)
                     $user = User::withoutGlobalScopes()->find($tx->user_id);
                     if (!$user) {
                         continue;
                     }
-                    $balanceModel = \Modules\Companies\Models\StakeholderFinancialBalance::where([
-                        'company_id' => $tx->company_id,
-                        'user_id' => $tx->user_id,
-                    ])->first();
+                    
+                    if ($tx->type === 'receivable_add') {
+                        $this->receivableService->reduce($user, (float)$tx->amount, $reversalOpId, [
+                            'company_id' => $tx->company_id,
+                            'allow_negative' => true,
+                            'description' => "إلغاء زيادة مديونية لعملية ملغاة رقم {$originalOperationId}"
+                        ]);
+                    } elseif ($tx->type === 'receivable_reduce') {
+                        $this->receivableService->add($user, (float)$tx->amount, $reversalOpId, [
+                            'company_id' => $tx->company_id,
+                            'description' => "إلغاء تخفيض مديونية لعملية ملغاة رقم {$originalOperationId}"
+                        ]);
+                    } elseif ($tx->type === 'payable_add') {
+                        $this->payableService->reduce($user, (float)$tx->amount, $reversalOpId, [
+                            'company_id' => $tx->company_id,
+                            'allow_negative' => true,
+                            'description' => "إلغاء زيادة دائنية لعملية ملغاة رقم {$originalOperationId}"
+                        ]);
+                    } elseif ($tx->type === 'payable_reduce') {
+                        $this->payableService->add($user, (float)$tx->amount, $reversalOpId, [
+                            'company_id' => $tx->company_id,
+                            'description' => "إلغاء تخفيض دائنية لعملية ملغاة رقم {$originalOperationId}"
+                        ]);
+                    } elseif ($tx->type === 'custody_add') {
+                        $custodyBalanceService = app(\App\Services\CustodyBalanceService::class);
+                        $custodyBalanceService->reduce($user, (float)$tx->amount, $reversalOpId, [
+                            'company_id' => $tx->company_id,
+                            'allow_negative' => true,
+                            'description' => "إلغاء زيادة عهدة لعملية ملغاة رقم {$originalOperationId}"
+                        ]);
+                    } elseif ($tx->type === 'custody_reduce') {
+                        $custodyBalanceService = app(\App\Services\CustodyBalanceService::class);
+                        $custodyBalanceService->add($user, (float)$tx->amount, $reversalOpId, [
+                            'company_id' => $tx->company_id,
+                            'description' => "إلغاء تخفيض عهدة لعملية ملغاة رقم {$originalOperationId}"
+                        ]);
+                    } else {
+                        // Legacy fallback
+                        $balanceModel = \Modules\Companies\Models\StakeholderFinancialBalance::where([
+                            'company_id' => $tx->company_id,
+                            'user_id' => $tx->user_id,
+                        ])->first();
 
-                    if ($balanceModel && $balanceModel->relation_type === 'receivable') {
-                        if ($tx->type === 'deposit') {
-                            $this->receivableService->reduce($user, (float)$tx->amount, $reversalOpId, [
-                                'company_id' => $tx->company_id,
-                                'allow_negative' => true,
-                                'description' => "عكس مديونية لعملية ملغاة رقم {$originalOperationId}"
-                            ]);
-                        } else {
-                            $this->receivableService->add($user, (float)$tx->amount, $reversalOpId, [
-                                'company_id' => $tx->company_id,
-                                'description' => "إعادة مديونية لعملية ملغاة رقم {$originalOperationId}"
-                            ]);
-                        }
-                    } elseif ($balanceModel && $balanceModel->relation_type === 'payable') {
-                        if ($tx->type === 'deposit') {
-                            $this->payableService->reduce($user, (float)$tx->amount, $reversalOpId, [
-                                'company_id' => $tx->company_id,
-                                'allow_negative' => true,
-                                'description' => "عكس التزام لعملية ملغاة رقم {$originalOperationId}"
-                            ]);
-                        } else {
-                            $this->payableService->add($user, (float)$tx->amount, $reversalOpId, [
-                                'company_id' => $tx->company_id,
-                                'description' => "إعادة التزام لعملية ملغاة رقم {$originalOperationId}"
-                            ]);
+                        if ($balanceModel && $balanceModel->relation_type === 'receivable') {
+                            if ($tx->type === 'deposit') {
+                                $this->receivableService->add($user, (float)$tx->amount, $reversalOpId, ['company_id' => $tx->company_id, 'description' => "إلغاء تخفيض مديونية لعملية ملغاة رقم {$originalOperationId}"]);
+                            } else {
+                                $this->receivableService->reduce($user, (float)$tx->amount, $reversalOpId, ['company_id' => $tx->company_id, 'allow_negative' => true, 'description' => "إلغاء زيادة مديونية لعملية ملغاة رقم {$originalOperationId}"]);
+                            }
+                        } elseif ($balanceModel && $balanceModel->relation_type === 'payable') {
+                            if ($tx->type === 'deposit') {
+                                $this->payableService->reduce($user, (float)$tx->amount, $reversalOpId, ['company_id' => $tx->company_id, 'allow_negative' => true, 'description' => "إلغاء زيادة دائنية لعملية ملغاة رقم {$originalOperationId}"]);
+                            } else {
+                                $this->payableService->add($user, (float)$tx->amount, $reversalOpId, ['company_id' => $tx->company_id, 'description' => "إلغاء تخفيض دائنية لعملية ملغاة رقم {$originalOperationId}"]);
+                            }
                         }
                     }
                 }
             }
-
+            
             // 3.5 Reverse Partner Funds
             if ($originalOp->type === 'partner_fund') {
                 $txSource = clone $originalOp->source; // OwnerFundTransaction
@@ -364,24 +389,17 @@ class FinancialEngine implements FinancialEngineInterface
             }
 
             // 3.6 Reverse Custody
+            
+            // 3.6 Reverse Custody
             if (in_array($originalOp->source_type, [\Modules\Accounting\Models\Custody::class, 'Modules\Accounting\Models\Custody'])) {
                 $custody = $originalOp->source;
                 if ($custody) {
                     $amount = (float)$originalOp->amount;
-                    // Find Stakeholder Balance
-                    $balanceModel = \Modules\Companies\Models\StakeholderFinancialBalance::where([
-                        'company_id' => $originalOp->company_id,
-                        'user_id' => $custody->user_id,
-                        'relation_type' => 'custody',
-                    ])->lockForUpdate()->first();
-
                     if ($originalOp->type === 'custody_issue') {
-                         if ($balanceModel) { $balanceModel->balance -= $amount; $balanceModel->save(); }
                          $custody->amount -= $amount;
                          $custody->status = 'canceled';
                          $custody->save();
                     } elseif ($originalOp->type === 'custody_refund') {
-                         if ($balanceModel) { $balanceModel->balance += $amount; $balanceModel->save(); }
                          $custody->settled_cash_amount -= $amount;
                          $custody->status = 'open';
                          $custody->save();
@@ -389,29 +407,19 @@ class FinancialEngine implements FinancialEngineInterface
                 }
             }
 
+            
             // 3.7 Reverse Expense Custody
             if (in_array($originalOp->source_type, [\Modules\Accounting\Models\Expense::class, 'Modules\Accounting\Models\Expense'])) {
                 $expense = $originalOp->source;
                 if ($expense && $expense->custody_id) {
                     $custody = clone $expense->custody;
                     $amount = (float)$originalOp->amount;
-                    
-                    $balanceModel = \Modules\Companies\Models\StakeholderFinancialBalance::where([
-                        'company_id' => $originalOp->company_id,
-                        'user_id' => $custody->user_id,
-                        'relation_type' => 'custody',
-                    ])->lockForUpdate()->first();
-
-                    if ($balanceModel) {
-                        $balanceModel->balance += $amount;
-                        $balanceModel->save();
-                    }
-
                     $custody->settled_expenses_amount -= $amount;
                     $custody->status = 'open';
                     $custody->save();
                 }
             }
+
 
             // 3.8 Reverse Stakeholder Balances (Receivable/Payable)
             $partyId = null;
@@ -803,7 +811,7 @@ class FinancialEngine implements FinancialEngineInterface
             ]);
 
             if ($expense->custody_id) {
-                app(\Modules\Accounting\Services\CustodyService::class)->processExpense($expense->custody, $amount);
+                app(\Modules\Accounting\Services\CustodyService::class)->processExpense($expense->custody, $amount, $operationId);
             } else {
                 $this->payMoney($amount, $cashBoxId, $operationId, [
                     'description' => "تسجيل دفع مصروف: {$expense->category?->name}"

@@ -8,19 +8,12 @@ use Modules\Companies\Models\StakeholderFinancialBalance;
 use Illuminate\Support\Facades\Auth;
 use Exception;
 
-/**
- * خدمة إدارة ذمم العملاء التراكمية (Receivables).
- */
 class ReceivableService
 {
-    /**
-     * إثبات وزيادة مديونية العميل (مدين)
-     */
     public function add(User $customer, float $amount, string $operationId, array $metadata = []): void
     {
         $companyId = $metadata['company_id'] ?? $customer->company_id ?? Auth::user()->active_company_id;
 
-        // قفل مالي مخصص للذمة التراكمية
         $balanceRecord = StakeholderFinancialBalance::lockForUpdate()->updateOrCreate(
             [
                 'company_id' => $companyId,
@@ -34,14 +27,24 @@ class ReceivableService
 
         $balanceBefore = (float)$balanceRecord->balance;
         $balanceAfter = $balanceBefore + $amount;
+        \Log::info("Add: Before={$balanceBefore}, amount={$amount}, after={$balanceAfter}, companyId={$companyId}");
 
         $balanceRecord->balance = $balanceAfter;
         $balanceRecord->save();
+
+        Transaction::create([
+            'company_id' => $companyId,
+            'user_id' => $customer->id,
+            'type' => 'receivable_add',
+            'amount' => $amount,
+            'balance_before' => $balanceBefore,
+            'balance_after' => $balanceAfter,
+            'financial_operation_id' => $operationId,
+            'created_by' => Auth::id() ?? $metadata['created_by'] ?? null,
+            'description' => $metadata['description'] ?? 'Add to receivable'
+        ]);
     }
 
-    /**
-     * تخفيض مديونية العميل (دائن)
-     */
     public function reduce(User $customer, float $amount, string $operationId, array $metadata = []): void
     {
         $companyId = $metadata['company_id'] ?? $customer->company_id ?? Auth::user()->active_company_id;
@@ -59,13 +62,25 @@ class ReceivableService
 
         $balanceBefore = (float)$balanceRecord->balance;
         $balanceAfter = $balanceBefore - $amount;
+        \Log::info("Reduce: Before={$balanceBefore}, amount={$amount}, after={$balanceAfter}, companyId={$companyId}");
 
-        // Invariant: لا يمكن أن تصبح ذمة العميل سالبة إلا إذا ولدنا رصيد دائن
         if ($balanceAfter < 0 && !($metadata['allow_negative'] ?? false)) {
-            throw new Exception("لا يمكن أن تصبح ذمة العميل سالبة (تجاوز السداد) دون ترحيل الرصيد الزائد لحسابه الدائن.");
+            throw new Exception("???????? ?? ???? ??? ??? ?????? ????? (????? ??????) ??? ????? ?????? ?????? ?????? ??????.");
         }
 
         $balanceRecord->balance = $balanceAfter;
         $balanceRecord->save();
+
+        Transaction::create([
+            'company_id' => $companyId,
+            'user_id' => $customer->id,
+            'type' => 'receivable_reduce',
+            'amount' => $amount,
+            'balance_before' => $balanceBefore,
+            'balance_after' => $balanceAfter,
+            'financial_operation_id' => $operationId,
+            'created_by' => Auth::id() ?? $metadata['created_by'] ?? null,
+            'description' => $metadata['description'] ?? 'Reduce receivable'
+        ]);
     }
 }

@@ -55,7 +55,8 @@ class CustodyService
             );
 
             // Update Stakeholder Balance
-            $this->updateBalance($data['company_id'], $data['user_id'], $data['amount']);
+            $employee = \App\Models\User::withoutGlobalScopes()->find($data['user_id']);
+            app(\App\Services\CustodyBalanceService::class)->add($employee, (float)$data['amount'], $operationId, ['company_id' => $data['company_id'], 'description' => 'إصدار عهدة للموظف']);
 
             // Ledger logic
             $this->createLedgerEntry($operationId, $data['amount'], 'debit', 'custody_issue', $custody);
@@ -101,7 +102,8 @@ class CustodyService
             );
 
             // Decrease Balance
-            $this->updateBalance($custody->company_id, $custody->user_id, -$data['amount']);
+            $employee = \App\Models\User::withoutGlobalScopes()->find($custody->user_id);
+            app(\App\Services\CustodyBalanceService::class)->reduce($employee, (float)$data['amount'], $operationId, ['company_id' => $custody->company_id, 'description' => 'استرداد نقدي من عهدة الموظف']);
 
             // Ledger logic
             $this->createLedgerEntry($operationId, $data['amount'], 'credit', 'custody_refund', $custody);
@@ -110,10 +112,10 @@ class CustodyService
         });
     }
 
-    public function processExpense(Custody $custody, $amount)
+    public function processExpense(Custody $custody, $amount, string $operationId)
     {
         // This is called from ExpenseService when an expense is linked to a custody
-        return DB::transaction(function () use ($custody, $amount) {
+        return DB::transaction(function () use ($custody, $amount, $operationId) {
             $outstanding = $custody->amount - $custody->settled_cash_amount - $custody->settled_expenses_amount;
             if ($amount > $outstanding) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
@@ -127,7 +129,8 @@ class CustodyService
             }
             $custody->save();
 
-            $this->updateBalance($custody->company_id, $custody->user_id, -$amount);
+            $employee = \App\Models\User::withoutGlobalScopes()->find($custody->user_id);
+            app(\App\Services\CustodyBalanceService::class)->reduce($employee, (float)$amount, $operationId, ['company_id' => $custody->company_id, 'description' => 'تسوية مصروفات من العهدة']);
         });
     }
 

@@ -25,8 +25,6 @@ class PartnerOperationResource extends JsonResource
             'partner' => new UserResource($this->whenLoaded('partner')),
             'cashbox_id' => $this->cashbox_id,
             'cash_box' => new CashBoxResource($this->whenLoaded('cashBox')),
-            'transaction_id' => $this->transaction_id,
-            'transaction' => new TransactionResource($this->whenLoaded('transaction')),
             'type' => $this->type,
             'type_label' => $this->getTypeLabelText($this->type),
             'category' => $this->getCategoryText($this->type),

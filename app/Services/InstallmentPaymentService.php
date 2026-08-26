@@ -61,6 +61,8 @@ class InstallmentPaymentService
                 }
             }
 
+            $operationId = (string) \Illuminate\Support\Str::uuid();
+
             $installmentPayment = InstallmentPayment::create([
                 'installment_plan_id' => $installmentPlan->id,
                 'company_id' => $installmentPlan->company_id,
@@ -71,16 +73,18 @@ class InstallmentPaymentService
                 'notes' => $options['notes'] ?? '',
                 'cash_box_id' => $cashBoxId,
                 'reference_number' => $options['reference_number'] ?? null,
+                'financial_operation_id' => $operationId,
+                'status' => 'completed',
             ]);
 
-            // **التعديل هنا: جلب الأقساط بطريقة تسمح بالتدفق التلقائي**
-            // ابدأ بالأقساط المحددة ثم انتقل للمستحقة الأخرى
+            // **توزيع المبلغ: يتم توزيع المبلغ تنازلياً على الأقساط الأقدم فالأحدث**
+            // جلب الأقساط المستحقة التي لم تدفع بالكامل
             $query = $installmentPlan->installments()
                 ->where('status', '!=', 'canceled')
                 ->where('remaining', '>', 0);
 
             if (!empty($installmentIds)) {
-                // قم بترتيب الأقساط المحددة أولاً، ثم باقي الأقساط حسب تاريخ الاستحقاق
+                // لو تم تحديد أقساط معينة يتم إعطاؤها الأولوية
                 $selectedInstallments = (clone $query)->whereIn('id', $installmentIds)->orderBy('due_date')->get();
                 $otherDueInstallments = (clone $query)->whereNotIn('id', $installmentIds)->orderBy('due_date')->get();
                 $installmentsToProcess = $selectedInstallments->merge($otherDueInstallments);
@@ -127,7 +131,7 @@ class InstallmentPaymentService
 
             $parentInvoice = $installmentPlan->invoice;
 
-            // إنشاء سجل دفع عام (Payment) ليظهر في الداشبورد والتقارير الموحدة
+            // تسجيل سجل دفع عام (Payment) للعرض في كشوفات الحسابات العامة
             \App\Models\Payment::create([
                 'user_id' => $clientUser->id,
                 'company_id' => $installmentPlan->company_id,
@@ -138,16 +142,18 @@ class InstallmentPaymentService
                 'notes' => "سداد أقساط - فاتورة #{$parentInvoice?->invoice_number} - دفعة #{$installmentPayment->id}",
                 'payment_method_id' => $options['payment_method_id'] ?? null,
                 'cash_box_id' => $cashBoxId,
+                'financial_operation_id' => $operationId,
+                'status' => 'completed',
             ]);
 
-            // تحديث الفاتورة الأم ومعالجة الأثر المالي من خلال المحرك المالي
+            // استدعاء المحرك المالي لإنشاء العملية وتسجيل حركة الخزينة
             if ($parentInvoice) {
                 $engine = app(\App\Contracts\FinancialEngineInterface::class);
                 $engine->processPaymentReceipt($parentInvoice, $totalAmountSuccessfullyPaid, [
                     'cash_box_id' => $cashBoxId,
                     'user_cash_box_id' => $clientCashBoxId,
                     'description' => "سداد أقساط - دفعة #{$installmentPayment->id}",
-                    'operation_id' => (string) \Illuminate\Support\Str::uuid(),
+                    'operation_id' => $operationId,
                 ]);
             } else {
                 $accounting = app(\App\Services\AccountingService::class);
@@ -211,5 +217,54 @@ class InstallmentPaymentService
             // إذا لم يتم دفع أي شيء
             $installmentPlan->update(['status' => 'pending']);
         }
+    }
+
+    /**
+     * Reverse an installment payment completely.
+     */
+    public function reversePayment(\App\Models\InstallmentPayment $installmentPayment, int $userId): void
+    {
+        if ($installmentPayment->status === 'reversed') {
+            throw new \Exception('هذه الدفعة معكوسة مسبقاً.');
+        }
+
+        if (empty($installmentPayment->financial_operation_id)) {
+            throw new \Exception('لا يمكن عكس دفعة أقساط قديمة لا تحتوي على رقم عملية مالية.');
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($installmentPayment, $userId) {
+            // 1. Restore installments remaining and status
+            foreach ($installmentPayment->details as $detail) {
+                $installment = $detail->installment;
+                $installment->remaining = bcadd((string)$installment->remaining, (string)$detail->amount_paid, 2);
+                
+                if (bccomp((string)$installment->remaining, (string)$installment->amount, 2) >= 0) {
+                    $installment->status = 'pending';
+                    $installment->paid_at = null;
+                } else {
+                    $installment->status = 'partially_paid';
+                }
+                
+                $installment->save();
+            }
+
+            // 2. Refresh Installment Plan Status and Remaining Amount
+            $this->updateInstallmentPlanStatus($installmentPayment->plan);
+
+            // 3. Mark generic Payment as reversed
+            \App\Models\Payment::where('financial_operation_id', $installmentPayment->financial_operation_id)
+                ->update(['status' => 'reversed']);
+
+            // 4. Mark this InstallmentPayment as reversed
+            $installmentPayment->update(['status' => 'reversed']);
+
+            // 5. Reverse the financial operation (Cash, Ledger, AR/AP)
+            $engine = app(\App\Contracts\FinancialEngineInterface::class);
+            $engine->reverseOperation(
+                $installmentPayment->financial_operation_id,
+                $userId,
+                "عكس سداد أقساط - دفعة #{$installmentPayment->id}"
+            );
+        });
     }
 }

@@ -33,7 +33,9 @@ class Payment extends Model
         'notes',
         'is_split',
         'payment_method_id',
-        'cash_box_id'
+        'cash_box_id',
+        'financial_operation_id',
+        'status',
     ];
     public function customer()
     {

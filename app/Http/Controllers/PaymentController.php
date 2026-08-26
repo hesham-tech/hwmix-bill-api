@@ -126,15 +126,13 @@ class PaymentController extends Controller
 
     /**
      * @group 06. العمليات المالية والخزينة
-     * 
+     *
      * تسجيل دفعة جديدة
-     * 
+     *
      * @bodyParam user_id integer required معرف العميل/المورد. Example: 1
-     * @bodyParam amount number required المبلغ المالي. Example: 1500.75
-     * @bodyParam payment_method_id integer required معرف طريقة الدفع. Example: 1
-     * @bodyParam cash_box_id integer required معرف الخزنة المستلمة/الصادرة. Example: 1
-     * @bodyParam paid_at datetime تاريخ وتوقيت الدفع. Example: 2023-05-20 14:30:00
-     * @bodyParam notes string ملاحظات إضافية. Example: دفعة مقدمة من الحساب
+     * @bodyParam cash_amount number required المبلغ النقدي. Example: 500
+     * @bodyParam cash_box_id integer required معرف الخزنة. Example: 1
+     * @bodyParam payment_date date required تاريخ الدفع. Example: 2026-01-01
      */
     public function store(StorePaymentRequest $request): JsonResponse
     {
@@ -170,32 +168,46 @@ class PaymentController extends Controller
                 
                 $payment = Payment::create($validatedData);
 
-                // ✅ التحصيل المركزي عبر AccountingService
+                // ✅ التحصيل المركزي عبر AccountingService مع ربط العملية المالية
                 $accounting = app(\App\Services\AccountingService::class);
                 $customer = \App\Models\User::findOrFail($validatedData['user_id']);
-                
+                $lastOperationId = null;
+
+                // الخيارات المشتركة لربط العملية المالية بـ Payment
+                $commonOptions = [
+                    'cash_box_id'  => $validatedData['cash_box_id'],
+                    'invoice_id'   => $validatedData['invoice_id'] ?? null,
+                    'notes'        => $validatedData['notes'] ?? '',
+                    'payment_date' => $validatedData['payment_date'],
+                    'source_type'  => \App\Models\Payment::class,
+                    'source_id'    => $payment->id,
+                ];
+
                 // 1. معالجة الدفع من الرصيد (Credit/Balance)
                 if ((float)($validatedData['credit_amount'] ?? 0) > 0) {
-                    $accounting->collectPayment($authUser, $customer, (float)$validatedData['credit_amount'], [
-                        'cash_box_id' => $validatedData['cash_box_id'],
-                        'invoice_id' => $validatedData['invoice_id'] ?? null,
-                        'notes' => $validatedData['notes'] ?? '',
-                        'payment_date' => $validatedData['payment_date'],
-                        'mode' => 'balance'
-                    ]);
+                    $lastOperationId = $accounting->collectPayment(
+                        $authUser,
+                        $customer,
+                        (float)$validatedData['credit_amount'],
+                        array_merge($commonOptions, ['mode' => 'balance'])
+                    );
                 }
 
                 // 2. معالجة الدفع النقدي (Cash)
                 if ((float)($validatedData['cash_amount'] ?? 0) > 0) {
-                    $accounting->collectPayment($authUser, $customer, (float)$validatedData['cash_amount'], [
-                        'cash_box_id' => $validatedData['cash_box_id'],
-                        'invoice_id' => $validatedData['invoice_id'] ?? null,
-                        'notes' => $validatedData['notes'] ?? '',
-                        'payment_date' => $validatedData['payment_date'],
-                        'mode' => 'cash'
-                    ]);
+                    $lastOperationId = $accounting->collectPayment(
+                        $authUser,
+                        $customer,
+                        (float)$validatedData['cash_amount'],
+                        array_merge($commonOptions, ['mode' => 'cash'])
+                    );
                 }
 
+                // ربط آخر عملية مالية بـ Payment (أو العملية الوحيدة)
+                if ($lastOperationId) {
+                    $payment->financial_operation_id = $lastOperationId;
+                    $payment->save();
+                }
 
                 $payment->load($this->showRelations);
                 DB::commit();
@@ -335,7 +347,7 @@ class PaymentController extends Controller
     /**
      * @group 06. العمليات المالية والخزينة
      * 
-     * حذف دفعة
+     * عكس دفعة مالياً (لا حذف — يُثبَّت السجل التاريخي بحالة reversed)
      * 
      * @urlParam id required معرف الدفعة. Example: 1
      */
@@ -367,23 +379,46 @@ class PaymentController extends Controller
             }
 
             if (!$canDelete) {
-                return api_forbidden('ليس لديك إذن لحذف هذه الدفعة.');
+                return api_forbidden('ليس لديك إذن لعكس هذه الدفعة.');
+            }
+
+            // Guard 1: الدفعة معكوسة مسبقاً
+            if ($payment->status === 'reversed') {
+                return api_error('الدفعة معكوسة مسبقاً ولا يمكن تكرار العكس.', [], 409);
+            }
+
+            // Guard 2: الدفعة مرتبطة بأقساط
+            $isInstallmentPayment = \App\Models\InstallmentPayment::where('financial_operation_id', $payment->financial_operation_id)->exists();
+            if ($payment->installments()->exists() || $isInstallmentPayment) {
+                return api_error('هذه الدفعة مرتبطة بسداد أقساط. يجب عكسها من شاشة سداد الأقساط لحماية سلامة البيانات.', [], 409);
+            }
+
+            // Guard 3: الدفعة قديمة لا تملك رابطاً مالياً — رفض آمن بدون أي تعديل
+            if (empty($payment->financial_operation_id)) {
+                return api_error(
+                    'هذه الدفعة تاريخية ولا تملك رابطاً بعملية مالية قابلة للعكس. تواصل مع المسؤول لمراجعتها يدوياً.',
+                    ['financial_operation_id' => 'مفقود'],
+                    422
+                );
             }
 
             DB::beginTransaction();
             try {
-                // تحقق مما إذا كانت الدفعة مرتبطة بأي أقساط
-                if ($payment->installments()->exists()) {
-                    DB::rollBack();
-                    return api_error('لا يمكن حذف الدفعة. إنها مرتبطة بأقساط موجودة.', [], 409);
-                }
+                // تنفيذ العكس المالي الكامل: Ledger + CashBox + AR/AP
+                $engine = app(\App\Contracts\FinancialEngineInterface::class);
+                $engine->reverseOperation(
+                    $payment->financial_operation_id,
+                    'عكس دفعة رقم ' . $payment->id
+                );
 
-                $deletedPayment = $payment->replicate();
-                $deletedPayment->setRelations($payment->getRelations());
+                // تثبيت حالة الدفعة كمعكوسة دون حذف السجل
+                $payment->status = 'reversed';
+                $payment->save();
 
-                $payment->delete();
                 DB::commit();
-                return api_success(new PaymentResource($deletedPayment), 'تم حذف الدفعة بنجاح.');
+
+                $payment->load($this->showRelations);
+                return api_success(new PaymentResource($payment), 'تم عكس الدفعة مالياً بنجاح.');
             } catch (Throwable $e) {
                 DB::rollBack();
                 return api_exception($e);
@@ -393,3 +428,4 @@ class PaymentController extends Controller
         }
     }
 }
+

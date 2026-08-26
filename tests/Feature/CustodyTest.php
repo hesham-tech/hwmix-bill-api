@@ -215,7 +215,7 @@ class CustodyTest extends TestCase
         $op = FinancialOperation::where('source_type', \Modules\Accounting\Models\Expense::class)
             ->where('source_id', $expenseId)->first();
         
-        $this->assertDatabaseMissing('transactions', [
+        $this->assertDatabaseHas('transactions', [
             'financial_operation_id' => $op->id
         ]);
     }

@@ -49,24 +49,7 @@ class ProfitLossReportController extends BaseReportController
             $cogs = $s ? (float) $s->total_cogs : 0;
             $expenses = $s ? (float) $s->total_expenses : 0;
 
-            // Fallback for COGS if it's 0 (or very low) but there is revenue
-            if ($revenue > 0 && $cogs <= 0) {
-                // Try to sum costs from invoice_items, with fallback hierarchy: 
-                // 1. Snapshot cost 2. Catalog price 3. Latest stock cost
-                $cogs = \DB::table('invoice_items')
-                    ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
-                    ->leftJoin('product_variants', 'invoice_items.variant_id', '=', 'product_variants.id')
-                    ->where('invoices.company_id', $companyId)
-                    ->whereDate('invoices.created_at', $dateStr)
-                    ->whereIn('invoices.status', ['paid', 'partial', 'confirmed', 'completed'])
-                    ->whereNull('invoices.deleted_at')
-                    ->sum(\DB::raw('COALESCE(
-                        invoice_items.cost_price, 
-                        product_variants.purchase_price, 
-                        (SELECT cost FROM stocks WHERE variant_id = invoice_items.variant_id AND cost > 0 ORDER BY created_at DESC LIMIT 1),
-                        0
-                    ) * invoice_items.quantity')) ?: 0;
-            }
+            
 
             $details->push([
                 'date' => $dateStr,
@@ -127,21 +110,7 @@ class ProfitLossReportController extends BaseReportController
             $cogs = (float) $item->total_cogs;
             $expenses = (float) $item->total_expenses;
 
-            if ($revenue > 0 && $cogs <= 0) {
-                $cogs = \DB::table('invoice_items')
-                    ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
-                    ->leftJoin('product_variants', 'invoice_items.variant_id', '=', 'product_variants.id')
-                    ->where('invoices.company_id', $companyId)
-                    ->whereRaw("DATE_FORMAT(invoices.created_at, '%Y-%m') = ?", [$item->year_month])
-                    ->whereIn('invoices.status', ['paid', 'partial', 'confirmed', 'completed'])
-                    ->whereNull('invoices.deleted_at')
-                    ->sum(\DB::raw('COALESCE(
-                        invoice_items.cost_price, 
-                        product_variants.purchase_price, 
-                        (SELECT cost FROM stocks WHERE variant_id = invoice_items.variant_id AND cost > 0 ORDER BY created_at DESC LIMIT 1),
-                        0
-                    ) * invoice_items.quantity')) ?: 0;
-            }
+            
 
             return [
                 'month' => $item->year_month,

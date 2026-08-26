@@ -7,6 +7,9 @@ use App\Http\Requests\Stock\StoreStockRequest; // افتراض وجود طلب S
 use App\Http\Requests\Stock\UpdateStockRequest; // افتراض وجود طلب UpdateStockRequest
 use App\Http\Resources\Stock\StockResource;
 use Modules\Inventory\Models\Stock;
+use App\Services\FinancialLedgerService;
+use App\Models\FinancialOperation;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -19,10 +22,14 @@ use Throwable;
  */
 class StockController extends Controller
 {
+
     protected array $relations;
 
-    public function __construct()
+    protected FinancialLedgerService $ledgerService;
+
+    public function __construct(FinancialLedgerService $ledgerService)
     {
+        $this->ledgerService = $ledgerService;
         $this->relations = [
             'creator',
             'company',
@@ -161,6 +168,29 @@ class StockController extends Controller
                     ->firstOrFail();
 
                 $stock = Stock::create($validatedData);
+
+                // Financial impact (COGS / Inventory Value)
+                $cost = $stock->quantity * ($stock->cost ?? $productVariant->cost ?? 0);
+                if ($cost > 0) {
+                    $operationId = (string) Str::uuid();
+                    FinancialOperation::withoutGlobalScopes()->create([
+                        'id' => $operationId,
+                        'company_id' => $companyId,
+                        'type' => 'inventory_adjustment',
+                        'amount' => $cost,
+                        'source_type' => get_class($stock),
+                        'source_id' => $stock->id,
+                        'status' => 'completed',
+                        'metadata' => ['type' => $stock->type]
+                    ]);
+                    
+                    $stock->financial_operation_id = $operationId;
+                    $stock->saveQuietly();
+                    
+                    $this->ledgerService->recordEntry($stock, 'asset', $cost, 'debit', 'Stock value added manually', now(), $operationId);
+                    $this->ledgerService->recordEntry($stock, 'equity', $cost, 'credit', 'Stock equity/capital increase', now(), $operationId);
+                }
+
                 $stock->load($this->relations);
                 DB::commit();
                 return api_success(new StockResource($stock), 'تم إنشاء سجل المخزون بنجاح.', 201);
@@ -338,6 +368,11 @@ class StockController extends Controller
             try {
                 $deletedStock = $stock->replicate();
                 $deletedStock->setRelations($stock->getRelations());
+
+                if ($stock->financial_operation_id) {
+                    $engine = app(\App\Contracts\FinancialEngineInterface::class);
+                    $engine->reverseOperation($stock->financial_operation_id, 'Reverse stock adjustment');
+                }
 
                 $stock->delete();
                 DB::commit();

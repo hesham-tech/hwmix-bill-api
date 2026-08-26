@@ -34,43 +34,42 @@ class ProfitLossReportControllerTest extends TestCase
         $saleType = InvoiceType::factory()->create(['code' => 'sale']);
         $purchaseType = InvoiceType::factory()->create(['code' => 'purchase']);
 
-        // Sales
-        Invoice::factory()->count(2)->create([
-            'company_id' => $this->company->id,
-            'invoice_type_id' => $saleType->id,
-            'status' => 'confirmed',
-            'net_amount' => 1000
+                // Mock financial ledgers
+        \App\Models\FinancialLedger::insert([
+            [
+                'entry_date' => now()->toDateString(),
+                'company_id' => $this->company->id,
+                'account_type' => 'revenue',
+                'type' => 'credit',
+                'amount' => 1000,
+                'source_id' => 1, 'source_type' => 'Modules\Sales\Models\Invoice', 'description' => 'Sale 1',
+            ],
+            [
+                'entry_date' => now()->toDateString(),
+                'company_id' => $this->company->id,
+                'account_type' => 'revenue',
+                'type' => 'credit',
+                'amount' => 1000,
+                'source_id' => 2, 'source_type' => 'Modules\Sales\Models\Invoice', 'description' => 'Sale 2',
+            ],
+            [
+                'entry_date' => now()->toDateString(),
+                'company_id' => $this->company->id,
+                'account_type' => 'expense',
+                'type' => 'debit',
+                'amount' => 500,
+                'source_id' => 1, 'source_type' => 'App\Models\Expense',
+                'description' => 'General Expense',
+            ]
         ]);
-
-        // Purchases
-        Invoice::factory()->count(1)->create([
-            'company_id' => $this->company->id,
-            'invoice_type_id' => $purchaseType->id,
-            'status' => 'confirmed',
-            'net_amount' => 500
-        ]);
-
-        $category = \App\Models\ExpenseCategory::create([
-            'name' => 'General',
-            'company_id' => $this->company->id,
-            'created_by' => $this->admin->id,
-        ]);
-
-        \App\Models\Expense::create([
-            'expense_category_id' => $category->id,
-            'amount' => 500,
-            'expense_date' => now()->toDateString(),
-            'company_id' => $this->company->id,
-            'created_by' => $this->admin->id,
-        ]);
-
+        
         \App\Jobs\UpdateDailySalesSummary::dispatchSync(now()->toDateString(), $this->company->id);
 
         $response = $this->getJson('/api/reports/profit-loss');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['period', 'revenues', 'costs', 'result']);
-
+        \App\Jobs\UpdateDailySalesSummary::dispatchSync(now()->toDateString(), $this->company->id);
         $this->assertEquals(2000, $response->json('revenues.total'));
         $this->assertEquals(500, $response->json('costs.total'));
         $this->assertEquals(1500, $response->json('result.net_profit'));

@@ -146,9 +146,21 @@ class InstallmentPaymentController extends Controller
     /**
      * Remove the specified payment (Note: Payments are usually read-only for history).
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(string $id, \App\Services\InstallmentPaymentService $service): JsonResponse
     {
-        return api_forbidden('لا يمكن حذف سجلات الدفع لضمان نزاهة البيانات المالية.');
+        $user = auth()->user();
+        if (!$user->hasPermissionTo(perm_key('admin.super')) && !$user->hasPermissionTo(perm_key('admin.company'))) {
+            return api_forbidden('ليس لديك صلاحية لعكس هذه الدفعة.');
+        }
+
+        $payment = InstallmentPayment::with(['plan', 'details.installment'])->findOrFail($id);
+
+        try {
+            $service->reversePayment($payment, $user->id);
+            return api_success(null, 'تم عكس سداد الأقساط بنجاح.');
+        } catch (\Exception $e) {
+            return api_error($e->getMessage(), [], 422);
+        }
     }
 
     /**

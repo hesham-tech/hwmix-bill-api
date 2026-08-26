@@ -33,75 +33,71 @@ class UpdateDailySalesSummary implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+        public function handle(): void
     {
         $date = $this->date;
         $companyId = $this->companyId;
 
-        // 1. Calculate Revenue and Sales Count from Invoices
-        $invoiceStats = Invoice::query()
-            ->where('company_id', $companyId)
+        // Fetch ledgers for this day
+        $ledgers = \App\Models\FinancialLedger::where('company_id', $companyId)
+            ->whereDate('entry_date', $date)
+            ->get();
+
+        $revenue = 0;
+        $cogs = 0;
+        $expenses = 0;
+        
+        foreach ($ledgers as $ledger) {
+            $amount = (float) $ledger->amount;
+            if ($ledger->account_type === 'revenue') {
+                if ($ledger->type === 'credit') {
+                    $revenue += $amount;
+                } else {
+                    $revenue -= $amount;
+                }
+            } elseif ($ledger->account_type === 'expense') {
+                $isCogs = str_contains($ledger->source_type, 'Invoice');
+                if ($isCogs) {
+                    if ($ledger->type === 'debit') {
+                        $cogs += $amount;
+                    } else {
+                        $cogs -= $amount;
+                    }
+                } else {
+                    if ($ledger->type === 'debit') {
+                        $expenses += $amount;
+                    } else {
+                        $expenses -= $amount;
+                    }
+                }
+            }
+        }
+
+        // Count sales from invoices (only for stats, not financial values)
+        $salesCount = \App\Models\Invoice::where('company_id', $companyId)
             ->where(function ($q) use ($date) {
                 $q->whereDate('issue_date', $date)
                     ->orWhere(fn($q2) => $q2->whereNull('issue_date')->whereDate('created_at', $date));
             })
             ->whereIn('status', ['confirmed', 'paid', 'partially_paid'])
-            ->whereHas('invoiceType', fn($q) => $q->whereIn('code', ['sale', 'service', 'installment_sale', 'sale_return']))
-            ->selectRaw('
-                SUM(CASE 
-                    WHEN EXISTS (SELECT 1 FROM invoice_types WHERE id = invoices.invoice_type_id AND code = "sale_return") 
-                    THEN -net_amount 
-                    ELSE net_amount 
-                END) as revenue,
-                COUNT(*) as count
-            ')
-            ->first();
+            ->whereHas('invoiceType', fn($q) => $q->whereIn('code', ['sale', 'installment_sale']))
+            ->count();
 
-        // 2. Calculate COGS from InvoiceItems
-        $cogs = DB::table('invoice_items')
-            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
-            ->join('invoice_types', 'invoices.invoice_type_id', '=', 'invoice_types.id')
-            ->where('invoices.company_id', $companyId)
-            ->where(function ($q) use ($date) {
-                $q->whereDate('invoices.issue_date', $date)
-                    ->orWhere(fn($q2) => $q2->whereNull('invoices.issue_date')->whereDate('invoices.created_at', $date));
-            })
-            ->whereIn('invoices.status', ['confirmed', 'paid', 'partially_paid'])
-            ->whereIn('invoice_types.code', ['sale', 'installment_sale', 'sale_return'])
-            ->sum(DB::raw('
-                CASE 
-                    WHEN invoice_types.code = "sale_return" 
-                    THEN -invoice_items.total_cost 
-                    ELSE invoice_items.total_cost 
-                END
-            '));
+        $grossProfit = $revenue - $cogs;
+        $netProfit = $grossProfit - $expenses;
 
-        // 3. Calculate Expenses
-        $expenses = Expense::query()
-            ->where('company_id', $companyId)
-            ->whereDate('expense_date', $date)
-            ->sum('amount');
-
-        // 4. Update Daily Summary
-        $revenue = (float) ($invoiceStats->revenue ?? 0);
-        $totalCogs = (float) $cogs;
-        $totalExpenses = (float) $expenses;
-        $grossProfit = $revenue - $totalCogs;
-        $netProfit = $grossProfit - $totalExpenses;
-
-        DailySalesSummary::updateOrCreate(
-            ['date' => Carbon::parse($date)->startOfDay(), 'company_id' => $companyId],
+        \App\Models\DailySalesSummary::updateOrCreate(
+            ['date' => \Carbon\Carbon::parse($date)->startOfDay(), 'company_id' => $companyId],
             [
                 'total_revenue' => $revenue,
-                'sales_count' => $invoiceStats->count ?? 0,
-                'total_cogs' => $totalCogs,
-                'total_expenses' => $totalExpenses,
+                'sales_count' => $salesCount,
+                'total_cogs' => $cogs,
+                'total_expenses' => $expenses,
                 'gross_profit' => $grossProfit,
                 'net_profit' => $netProfit,
             ]
         );
 
-        // 5. Trigger Monthly Summary Update
         $this->updateMonthlySummary($date, $companyId);
     }
 

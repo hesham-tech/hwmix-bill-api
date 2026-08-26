@@ -46,7 +46,7 @@ class ExpenseController extends Controller
         return api_success(ExpenseResource::collection($expenses));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, \App\Services\ExpenseService $expenseService): JsonResponse
     {
         $request->validate([
             'expense_category_id' => 'required|exists:expense_categories,id',
@@ -54,9 +54,10 @@ class ExpenseController extends Controller
             'expense_date' => 'required|date',
             'notes' => 'nullable|string',
             'reference_number' => 'nullable|string|max:100',
+            'cash_box_id' => 'required|exists:cash_boxes,id',
         ]);
 
-        $expense = Expense::create($request->all());
+        $expense = $expenseService->createExpense($request->all(), auth()->id());
 
         return api_success(new ExpenseResource($expense->load(['category', 'creator'])), 'تم تسجيل المصروف بنجاح');
     }
@@ -77,20 +78,29 @@ class ExpenseController extends Controller
             return api_forbidden('ليس لديك صلاحية لتعديل هذا المصروف');
         }
 
+        if ($expense->status === 'reversed') {
+            return api_error('لا يمكن تعديل مصروف معكوس.', [], 409);
+        }
+
         $request->validate([
             'expense_category_id' => 'required|exists:expense_categories,id',
             'amount' => 'required|numeric|min:0.01',
             'expense_date' => 'required|date',
             'notes' => 'nullable|string',
             'reference_number' => 'nullable|string|max:100',
+            'cash_box_id' => 'required|exists:cash_boxes,id',
         ]);
+
+        if ($expense->amount != $request->amount || $expense->cash_box_id != $request->cash_box_id) {
+            return api_error('لا يمكن تعديل المبلغ أو الخزينة لمصروف تم تسجيله. قم بعكس المصروف وإنشاء واحد جديد.', [], 422);
+        }
 
         $expense->update($request->all());
 
         return api_success(new ExpenseResource($expense->load(['category', 'creator'])), 'تم تحديث المصروف بنجاح');
     }
 
-    public function destroy(Expense $expense): JsonResponse
+    public function destroy(Expense $expense, \App\Services\ExpenseService $expenseService): JsonResponse
     {
         // Permission Check
         $user = auth()->user();
@@ -106,9 +116,12 @@ class ExpenseController extends Controller
             return api_forbidden('ليس لديك صلاحية لحذف هذا المصروف');
         }
 
-        $expense->delete();
-
-        return api_success(null, 'تم حذف المصروف بنجاح');
+        try {
+            $expenseService->reverseExpense($expense, auth()->id());
+            return api_success(null, 'تم عكس المصروف بنجاح');
+        } catch (\Exception $e) {
+            return api_error($e->getMessage(), [], 422);
+        }
     }
 
     public function getSummary(Request $request): JsonResponse

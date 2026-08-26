@@ -35,6 +35,8 @@ class InstallmentPayment extends Model
         'cash_box_id',
         'reference_number',
         'branch_id',
+        'financial_operation_id',
+        'status',
     ];
 
     protected static function booted()
