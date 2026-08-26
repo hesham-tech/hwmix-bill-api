@@ -36,19 +36,23 @@ class DashboardController extends Controller
             perm_key('users.view_all')
         ]);
 
-        // استراتيجية النسخة (Cache Versioning) لتسهيل التنظيف
-        $version = \Illuminate\Support\Facades\Cache::get("dashboard_version_{$companyId}", '3.1');
-        $cacheKey = "dashboard_stats_comp_{$companyId}_user_{$user->id}_v{$version}_refactored";
+        $period = $request->get('period', 'month');
+        $dateFrom = $request->get('date_from', '');
+        $dateTo = $request->get('date_to', '');
 
-        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(15), function () use ($user, $companyId, $isCustomer) {
+        // استراتيجية النسخة (Cache Versioning) لتسهيل التنظيف
+        $version = \Illuminate\Support\Facades\Cache::get("dashboard_version_{$companyId}", '3.2');
+        $cacheKey = "dash_stats_{$companyId}_u_{$user->id}_v{$version}_p{$period}_{$dateFrom}_{$dateTo}";
+
+        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes((int)env('DASHBOARD_CACHE_TTL', 15)), function () use ($user, $companyId, $isCustomer, $request) {
             if ($isCustomer) {
                 return $this->getCustomerDashboardData($user);
             }
-            return $this->getAdminDashboardData($companyId);
+            return $this->getAdminDashboardData($companyId, $request);
         });
 
         \Log::info('Dashboard Response for Request', [
-            'company_id' => $request->user()->active_company_id,
+            'company_id' => $companyId,
             'data_kpis' => $data['kpis'] ?? null
         ]);
 
@@ -57,6 +61,7 @@ class DashboardController extends Controller
             'data' => $data
         ]);
     }
+
 
     /**
      * جلب بيانات داشبورد العميل
@@ -109,16 +114,46 @@ class DashboardController extends Controller
     /**
      * جلب بيانات داشبورد الإدارة
      */
-    private function getAdminDashboardData($companyId)
+    private function getAdminDashboardData($companyId, $request = null)
     {
         $now = Carbon::now();
-        $currentMonth = $now->format('Y-m');
+        $period = $request ? $request->get('period', 'month') : 'month';
+        
+        if ($request && $request->has('date_from') && $request->has('date_to')) {
+            $startDate = Carbon::parse($request->get('date_from'))->startOfDay();
+            $endDate = Carbon::parse($request->get('date_to'))->endOfDay();
+        } else {
+            if ($period === 'today') {
+                $startDate = $now->copy()->startOfDay();
+                $endDate = $now->copy()->endOfDay();
+            } elseif ($period === 'week') {
+                $startDate = $now->copy()->startOfWeek();
+                $endDate = $now->copy()->endOfWeek();
+            } else {
+                $startDate = $now->copy()->startOfMonth();
+                $endDate = $now->copy()->endOfMonth();
+            }
+        }
 
-        $monthlyStats = \App\Models\MonthlySalesSummary::where('company_id', $companyId)
-            ->where('year_month', $currentMonth)
-            ->first();
+        // حساب إجمالي المبيعات (مدى الحياة)
+        $totalSales = \App\Models\DailySalesSummary::where('company_id', $companyId)->sum('total_revenue');
 
-        $totalSales = \App\Models\MonthlySalesSummary::where('company_id', $companyId)->sum('total_revenue');
+        // حساب إيرادات الفترة المحددة بدقة
+        $periodSales = \App\Models\Invoice::where('company_id', $companyId)
+            ->whereIn('invoice_type_id', [2]) // فاتورة بيع
+            ->whereBetween('issue_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->sum('net_amount');
+
+        // حساب مصروفات الفترة المحددة
+        $periodExpenses = \App\Models\Expense::where('company_id', $companyId)
+            ->whereBetween('expense_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->whereNotIn('status', ['cancelled', 'ملغي'])
+            ->sum('amount');
+
+        // حساب أرباح الفترة المحددة من جدول الأرباح
+        $periodProfit = \App\Models\Profit::where('company_id', $companyId)
+            ->whereBetween('profit_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->sum('profit_amount');
 
         // حساب السيولة الصافية (Assets vs Liabilities) من الخزن النشطة الخاصة بالشركة والموظفين فقط
         $liquidityStats = DB::table('cash_boxes')
@@ -146,7 +181,7 @@ class DashboardController extends Controller
 
         $stats = [
             'total_sales' => (float) $totalSales,
-            'monthly_sales' => (float) ($monthlyStats?->total_revenue ?? 0),
+            'monthly_sales' => (float) $periodSales,
             'pending_payments' => (float) Invoice::where('company_id', $companyId)
                 ->where('remaining_amount', '>', 0)
                 ->whereIn('status', ['confirmed', 'partial'])
@@ -158,6 +193,9 @@ class DashboardController extends Controller
                 ->where('relation_type', 'customer')
                 ->count(),
             'total_products' => Product::where('company_id', $companyId)->count(),
+            'total_cash' => (float) ($liquidityStats->net_liquidity ?? 0),
+            'monthly_expenses' => (float) $periodExpenses,
+            'monthly_profit' => (float) $periodProfit,
             'liquidity' => [
                 'total_assets' => (float) ($liquidityStats->total_assets ?? 0),
                 'total_liabilities' => (float) abs($liquidityStats->total_liabilities ?? 0),
