@@ -23,8 +23,7 @@ class PartnerOperation extends Model
         'company_id',
         'partner_id',
         'cashbox_id',
-        'transaction_id',
-        'type',
+'type',
         'amount',
         'operation_date',
         'notes',
@@ -100,3 +99,4 @@ class PartnerOperation extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 }
+
