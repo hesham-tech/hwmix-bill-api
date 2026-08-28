@@ -49,7 +49,9 @@ class CashReconciliationController extends Controller
             $companyId = $authUser->active_company_id ?? null;
             if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة.');
 
-            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && 
+                !$authUser->hasPermissionTo(perm_key('admin.company')) && 
+                !$authUser->hasPermissionTo(perm_key('balance.adjust_balance'))) {
                 return api_forbidden('ليس لديك إذن لإجراء هذه العملية.');
             }
 
@@ -111,7 +113,9 @@ class CashReconciliationController extends Controller
             $companyId = $authUser->active_company_id ?? null;
             if (!$authUser || !$companyId) return api_unauthorized('يتطلب المصادقة.');
 
-            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$authUser->hasPermissionTo(perm_key('admin.company'))) {
+            if (!$authUser->hasPermissionTo(perm_key('admin.super')) && 
+                !$authUser->hasPermissionTo(perm_key('admin.company')) &&
+                !$authUser->hasPermissionTo(perm_key('balance.adjust_balance'))) {
                 return api_forbidden('ليس لديك إذن لاعتماد التسويات.');
             }
 

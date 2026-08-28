@@ -796,7 +796,8 @@ return [
         'transfer_any' => ['key' => 'balance.transfer_any', 'label' => 'ØªØ­ÙˆÙŠÙ„ Ø±ØµÙŠØ¯ Ù…Ù† Ø£ÙŠ Ù…Ø³ØªØ®Ø¯Ù…'],
         'deposit' => ['key' => 'balance.deposit', 'label' => 'Ø¥Ø¬Ø±Ø§Ø¡ Ø¥ÙŠØ¯Ø§Ø¹ Ø±ØµÙŠØ¯ (Ø´Ø®ØµÙŠ)'],
         'withdraw' => ['key' => 'balance.withdraw', 'label' => 'Ø¥Ø¬Ø±Ø§Ø¡ Ø³Ø­Ø¨ Ø±ØµÙŠØ¯ (Ø´Ø®ØµÙŠ)'],
-        'transfer' => ['key' => 'balance.transfer', 'label' => 'ØªØ­ÙˆÙŠÙ„ Ø±ØµÙŠØ¯ (Ø´Ø®ØµÙŠ)'],
+        'transfer' => ['key' => 'balance.transfer', 'label' => 'تحويل رصيد (شخصي)'],
+        'adjust_balance' => ['key' => 'cashbox.adjust_balance', 'label' => 'مطابقة وتسوية الأرصدة'],
     ],
     // => LEGAL DOCUMENTS
     'legal_documents' => [
