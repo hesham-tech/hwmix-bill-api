@@ -182,20 +182,12 @@ class DashboardController extends Controller
         $stats = [
             'total_sales' => (float) $totalSales,
             'monthly_sales' => (float) $periodSales,
-            'pending_payments' => (float) Invoice::where('company_id', $companyId)
-                ->where('remaining_amount', '>', 0)
-                ->whereIn('status', ['confirmed', 'partial'])
-                ->whereHas('invoiceType', function ($q) {
-                    $q->where('code', 'sale');
-                })
-                ->sum('remaining_amount'),
-            'supplier_debts' => (float) Invoice::where('company_id', $companyId)
-                ->where('remaining_amount', '>', 0)
-                ->whereIn('status', ['confirmed', 'partial'])
-                ->whereHas('invoiceType', function ($q) {
-                    $q->where('code', 'purchase');
-                })
-                ->sum('remaining_amount'),
+            'pending_payments' => (float) \Modules\Companies\Models\StakeholderFinancialBalance::where('company_id', $companyId)
+                ->where('relation_type', 'receivable')
+                ->sum('balance'),
+            'supplier_debts' => (float) \Modules\Companies\Models\StakeholderFinancialBalance::where('company_id', $companyId)
+                ->where('relation_type', 'payable')
+                ->sum('balance'),
             'unpaid_installments' => (float) Installment::where('company_id', $companyId)
                 ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي', 'ملغى'])
                 ->sum('remaining'),
