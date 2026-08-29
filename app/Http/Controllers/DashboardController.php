@@ -185,6 +185,16 @@ class DashboardController extends Controller
             'pending_payments' => (float) Invoice::where('company_id', $companyId)
                 ->where('remaining_amount', '>', 0)
                 ->whereIn('status', ['confirmed', 'partial'])
+                ->whereHas('invoiceType', function ($q) {
+                    $q->where('code', 'sale');
+                })
+                ->sum('remaining_amount'),
+            'supplier_debts' => (float) Invoice::where('company_id', $companyId)
+                ->where('remaining_amount', '>', 0)
+                ->whereIn('status', ['confirmed', 'partial'])
+                ->whereHas('invoiceType', function ($q) {
+                    $q->where('code', 'purchase');
+                })
                 ->sum('remaining_amount'),
             'unpaid_installments' => (float) Installment::where('company_id', $companyId)
                 ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي', 'ملغى'])
