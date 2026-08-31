@@ -479,10 +479,11 @@ class UserController extends Controller
             // 1. [تعديل الهوية]: جدول users
             $isUpdatingSelf = ($authUser->id === $user->id);
             $canUpdateAll = $authUser->can(perm_key('users.update_all'));
+            $isCompanyAdmin = $authUser->hasPermissionTo(perm_key('admin.company'));
             $canUpdateChildren = $authUser->can(perm_key('users.update_children'));
             $isDescendant = $canUpdateChildren ? in_array($user->id, $authUser->getDescendantUserIds()) : false;
 
-            if ($isSuperAdmin || $isUpdatingSelf || $canUpdateAll || $isDescendant) {
+            if ($isSuperAdmin || $isUpdatingSelf || $canUpdateAll || $isCompanyAdmin || $isDescendant) {
                 // إذا كان المستخدم يعدل هويته الشخصية، يسمح له بتعديل الاسم واللقب عالمياً
                 // أما لو كان المشرف يعدل مستخدماً آخر، فلا نلمس الاسم واللقب في جدول users ونحدث بقية البيانات العالمية فقط (الهاتف، الإيميل، كلمة المرور)
                 $allowedKeys = [
@@ -734,7 +735,7 @@ class UserController extends Controller
 
                 if ($request->has('roles')) {
                     $requestedRoles = $validated['roles'];
-                    if (!$isSuperAdmin) {
+                    if (!$isSuperAdmin && !$canUpdateAll && !$isCompanyAdmin) {
                         $myRoles = $authUser->getRoleNames()->toArray();
                         $unauthorizedRoles = array_diff($requestedRoles, $myRoles);
                         if (!empty($unauthorizedRoles)) {
@@ -747,7 +748,7 @@ class UserController extends Controller
 
                 if ($request->has('permissions')) {
                     $requestedPermissions = $validated['permissions'];
-                    if (!$isSuperAdmin) {
+                    if (!$isSuperAdmin && !$canUpdateAll && !$isCompanyAdmin) {
                         $myPermissions = $authUser->getAllPermissions()->pluck('name')->toArray();
                         $unauthorizedPermissions = array_diff($requestedPermissions, $myPermissions);
                         if (!empty($unauthorizedPermissions)) {

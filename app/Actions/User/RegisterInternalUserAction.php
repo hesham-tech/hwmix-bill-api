@@ -240,10 +240,12 @@ class RegisterInternalUserAction
         setPermissionsTeamId($companyId);
 
         $isSuperAdmin = $creatorUser->can(perm_key('admin.super'));
+        $canUpdateAll = $creatorUser->can(perm_key('users.update_all'));
+        $isCompanyAdmin = $creatorUser->hasPermissionTo(perm_key('admin.company'));
 
         if (isset($data['roles'])) {
             $roles = (array) $data['roles'];
-            if (!$isSuperAdmin) {
+            if (!$isSuperAdmin && !$canUpdateAll && !$isCompanyAdmin) {
                 $myRoles = $creatorUser->getRoleNames()->toArray();
                 $roles = array_intersect($roles, $myRoles);
             }
@@ -252,7 +254,7 @@ class RegisterInternalUserAction
 
         if (isset($data['permissions'])) {
             $permissions = (array) $data['permissions'];
-            if (!$isSuperAdmin) {
+            if (!$isSuperAdmin && !$canUpdateAll && !$isCompanyAdmin) {
                 $myPermissions = $creatorUser->getAllPermissions()->pluck('name')->toArray();
                 $permissions = array_intersect($permissions, $myPermissions);
             }
