@@ -183,4 +183,81 @@ class AgentAuthController extends Controller
             $companies->isEmpty() ? 'لم يتم العثور على شركات.' : 'تم جلب الشركات بنجاح.'
         );
     }
+
+    /**
+     * Generate a Magic Link token for the Android App.
+     */
+    public function generateMagicLink(): JsonResponse
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return api_error('غير مصرح.', [], 401);
+        }
+
+        $token = \Illuminate\Support\Str::random(60);
+        
+        \Illuminate\Support\Facades\Cache::put("magic_login_{$token}", [
+            'user_id' => $user->id,
+            'company_id' => $user->company_id,
+            'name' => $user->full_name ?? $user->name,
+        ], now()->addMinutes(2));
+
+        return api_success([
+            'token' => $token
+        ], 'تم إنشاء الرابط بنجاح.');
+    }
+
+    /**
+     * Check the validity of a Magic Link token from the Web SPA.
+     */
+    public function checkMagicLink(\Illuminate\Http\Request $request): JsonResponse
+    {
+        $token = $request->input('token');
+        $data = \Illuminate\Support\Facades\Cache::get("magic_login_{$token}");
+
+        if (!$data) {
+            return response()->json(['status' => 'invalid']);
+        }
+
+        return response()->json([
+            'status' => 'valid',
+            'target_user' => [
+                'id' => $data['user_id'],
+                'name' => $data['name'],
+            ]
+        ]);
+    }
+
+    /**
+     * Execute the Magic Link token to login on the Web SPA.
+     */
+    public function executeMagicLink(\Illuminate\Http\Request $request): JsonResponse
+    {
+        $token = $request->input('token');
+        $data = \Illuminate\Support\Facades\Cache::get("magic_login_{$token}");
+
+        if (!$data) {
+            return response()->json(['status' => 'invalid'], 400);
+        }
+
+        $user = \App\Models\User::find($data['user_id']);
+        if (!$user) {
+            return response()->json(['status' => 'invalid'], 400);
+        }
+
+        // إنشاء توكن للمتصفح
+        $deviceName = $request->header('User-Agent') ?: 'MagicLink Web';
+        $newToken = $user->createToken($deviceName, ['*'], now()->addHours(24))->plainTextToken;
+        
+        $user->load(['roles.permissions', 'permissions', 'branches', 'company.logo']);
+
+        // حذف التوكن (Burn)
+        \Illuminate\Support\Facades\Cache::forget("magic_login_{$token}");
+
+        return api_success([
+            'status' => 'success',
+            'token' => $newToken,
+            'user' => new \App\Http\Resources\Auth\UserWithPermissionsResource($user),
+        ]);
+    }
 }

@@ -14,10 +14,13 @@ Route::prefix('v1/agent')->group(function () {
     Route::post('auth/login', [AgentAuthController::class, 'login']);
     Route::post('auth/register', [AgentAuthController::class, 'register']);
     Route::get('public/app-update/check', [AgentDeviceController::class, 'checkAppUpdate']);
+    Route::get('auth/magic-link/check', [AgentAuthController::class, 'checkMagicLink']);
+    Route::post('auth/magic-link/execute', [AgentAuthController::class, 'executeMagicLink']);
     
     // مسارات تتطلب مصادقة الـ Token
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('auth/refresh', [AgentAuthController::class, 'refresh']);
+        Route::post('auth/magic-link', [AgentAuthController::class, 'generateMagicLink']);
         Route::get('companies', [AgentAuthController::class, 'getCompanies']);
         
         // مسارات التهيئة (Onboarding) تعتمد على سياق الشركة
