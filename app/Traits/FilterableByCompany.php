@@ -16,7 +16,7 @@ trait FilterableByCompany
             $user = Auth::user();
 
             if ($user) {
-                $activeCompanyId = $user->active_company_id;
+                $activeCompanyId = app(\App\Services\CurrentCompanyResolver::class)->resolve();
                 if ($activeCompanyId) {
                     $builder->where($builder->getQuery()->from . '.company_id', $activeCompanyId);
                 } elseif (!$user->hasPermissionTo(perm_key('admin.super'))) {

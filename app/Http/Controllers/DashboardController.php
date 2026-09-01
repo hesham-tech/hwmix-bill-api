@@ -7,11 +7,20 @@ namespace App\Http\Controllers;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Installment;
-use Modules\Inventory\Models\Product;
+use App\Models\InstallmentPlan;
+use App\Models\Payment;
+use App\Models\DailySalesSummary;
+use App\Models\Expense;
+use App\Models\Profit;
 use App\Models\User;
 use App\Models\CompanyUser;
+use Modules\Inventory\Models\Product;
+use Modules\Companies\Models\StakeholderFinancialBalance;
+use Modules\Companies\Models\BusinessRelation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -41,17 +50,17 @@ class DashboardController extends Controller
         $dateTo = $request->get('date_to', '');
 
         // استراتيجية النسخة (Cache Versioning) لتسهيل التنظيف
-        $version = \Illuminate\Support\Facades\Cache::get("dashboard_version_{$companyId}", '3.2');
+        $version = Cache::get("dashboard_version_{$companyId}", '3.2');
         $cacheKey = "dash_stats_{$companyId}_u_{$user->id}_v{$version}_p{$period}_{$dateFrom}_{$dateTo}";
 
-        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes((int)env('DASHBOARD_CACHE_TTL', 15)), function () use ($user, $companyId, $isCustomer, $request) {
+        $data = Cache::remember($cacheKey, now()->addMinutes((int)env('DASHBOARD_CACHE_TTL', 15)), function () use ($user, $companyId, $isCustomer, $request) {
             if ($isCustomer) {
                 return $this->getCustomerDashboardData($user);
             }
             return $this->getAdminDashboardData($companyId, $request);
         });
 
-        \Log::info('Dashboard Response for Request', [
+        Log::info('Dashboard Response for Request', [
             'company_id' => $companyId,
             'data_kpis' => $data['kpis'] ?? null
         ]);
@@ -73,9 +82,9 @@ class DashboardController extends Controller
 
         $stats = [
             'total_invoices' => Invoice::where('user_id', $user->id)->count(),
-            'total_paid' => (float) \App\Models\Payment::where('user_id', $user->id)->sum('amount'),
+            'total_paid' => (float) Payment::where('user_id', $user->id)->sum('amount'),
             'remaining_balance' => (float) $user->getFinancialBalance($user->active_company_id, 'receivable'),
-            'active_installment_plans' => \App\Models\InstallmentPlan::where('user_id', $user->id)->where('status', '!=', 'paid')->count(),
+            'active_installment_plans' => InstallmentPlan::where('user_id', $user->id)->where('status', '!=', 'paid')->count(),
             'upcoming_installments_count' => Installment::where('user_id', $user->id)
                 ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي'])
                 ->where('due_date', '<=', $tenDaysLater)
@@ -88,7 +97,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $recentPayments = \App\Models\Payment::with(['paymentMethod'])
+        $recentPayments = Payment::with(['paymentMethod'])
             ->where('user_id', $user->id)
             ->latest()
             ->limit(5)
@@ -136,22 +145,22 @@ class DashboardController extends Controller
         }
 
         // حساب إجمالي المبيعات (مدى الحياة)
-        $totalSales = \App\Models\DailySalesSummary::where('company_id', $companyId)->sum('total_revenue');
+        $totalSales = DailySalesSummary::where('company_id', $companyId)->sum('total_revenue');
 
         // حساب إيرادات الفترة المحددة بدقة
-        $periodSales = \App\Models\Invoice::where('company_id', $companyId)
+        $periodSales = Invoice::where('company_id', $companyId)
             ->whereIn('invoice_type_id', [2]) // فاتورة بيع
             ->whereBetween('issue_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->sum('net_amount');
 
         // حساب مصروفات الفترة المحددة
-        $periodExpenses = \App\Models\Expense::where('company_id', $companyId)
+        $periodExpenses = Expense::where('company_id', $companyId)
             ->whereBetween('expense_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->whereNotIn('status', ['cancelled', 'ملغي'])
             ->sum('amount');
 
         // حساب أرباح الفترة المحددة من جدول الأرباح
-        $periodProfit = \App\Models\Profit::where('company_id', $companyId)
+        $periodProfit = Profit::where('company_id', $companyId)
             ->whereBetween('profit_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->sum('profit_amount');
 
@@ -182,16 +191,16 @@ class DashboardController extends Controller
         $stats = [
             'total_sales' => (float) $totalSales,
             'monthly_sales' => (float) $periodSales,
-            'pending_payments' => (float) \Modules\Companies\Models\StakeholderFinancialBalance::where('company_id', $companyId)
+            'pending_payments' => (float) StakeholderFinancialBalance::where('company_id', $companyId)
                 ->where('relation_type', 'receivable')
                 ->sum('balance'),
-            'supplier_debts' => (float) \Modules\Companies\Models\StakeholderFinancialBalance::where('company_id', $companyId)
+            'supplier_debts' => (float) StakeholderFinancialBalance::where('company_id', $companyId)
                 ->where('relation_type', 'payable')
                 ->sum('balance'),
             'unpaid_installments' => (float) Installment::where('company_id', $companyId)
                 ->whereNotIn('status', ['paid', 'تم الدفع', 'canceled', 'cancelled', 'ملغي', 'ملغى'])
                 ->sum('remaining'),
-            'total_customers' => \Modules\Companies\Models\BusinessRelation::where('company_id', $companyId)
+            'total_customers' => BusinessRelation::where('company_id', $companyId)
                 ->where('relation_type', 'customer')
                 ->count(),
             'total_products' => Product::where('company_id', $companyId)->count(),
@@ -205,7 +214,7 @@ class DashboardController extends Controller
             ]
         ];
 
-        $salesTrend = \App\Models\DailySalesSummary::where('company_id', $companyId)
+        $salesTrend = DailySalesSummary::where('company_id', $companyId)
             ->where('date', '>=', $now->copy()->subDays(7)->toDateString())
             ->orderBy('date', 'asc')
             ->get(['date', 'total_revenue as total']);
