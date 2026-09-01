@@ -43,13 +43,19 @@ class AgentLineController extends Controller
             return api_error('الخط المالي غير متوفر أو غير مرتبط بهذا الجهاز.', [], 404);
         }
 
+        $account = $line->financialAccounts()->first();
+
+        if (!$account) {
+            return api_error('لا توجد محفظة مالية مرتبطة بهذا الخط.', [], 404);
+        }
+
         $targetBalance = (float) $request->target_balance;
-        $oldBalance = (float) $line->balance;
+        $oldBalance = (float) $account->balance;
         $difference = round($targetBalance - $oldBalance, 2);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($line, $user, $companyId, $targetBalance, $oldBalance, $difference, $request) {
-            // 1. تحديث الرصيد الحسابي للخط
-            $line->update([
+        \Illuminate\Support\Facades\DB::transaction(function () use ($account, $line, $user, $companyId, $targetBalance, $oldBalance, $difference, $request) {
+            // 1. تحديث الرصيد الحسابي للمحفظة
+            $account->update([
                 'balance' => $targetBalance,
             ]);
 
@@ -57,16 +63,16 @@ class AgentLineController extends Controller
             \Modules\HwnixCash\Models\HwnixCashWalletTransaction::create([
                 'company_id' => $companyId,
                 'created_by' => $user->id,
-                'line_id' => $line->id,
+                'financial_account_id' => $account->id,
                 'operation_type' => \Modules\HwnixCash\Domain\Enums\WalletOperationType::RECONCILIATION->value,
-                'provider' => $line->carrier ?? 'vodafone_cash',
+                'provider' => $account->provider ?? $line->carrier ?? 'vodafone_cash',
                 'status' => \Modules\HwnixCash\Domain\Enums\WalletTransactionStatus::SUCCESS->value,
                 'source' => \Modules\HwnixCash\Domain\Enums\WalletTransactionSource::MANUAL->value,
                 'amount' => abs($difference),
                 'fee' => 0.00,
                 'balance_after' => $targetBalance,
                 'currency' => 'EGP',
-                'operation_number' => 'REC-APP-' . date('YmdHis') . '-' . $line->id,
+                'operation_number' => 'REC-APP-' . date('YmdHis') . '-' . $account->id,
                 'operation_at' => now(),
                 'raw_sms' => 'تسوية مالية يدوية من تطبيق الأندرويد',
                 'metadata' => [
@@ -74,7 +80,7 @@ class AgentLineController extends Controller
                     'old_balance' => $oldBalance,
                     'new_balance' => $targetBalance,
                     'difference' => $difference,
-                    'actual_balance' => (float) $line->actual_balance,
+                    'actual_balance' => (float) $account->actual_balance,
                     'note' => $request->note ?? 'تسوية تمت من خلال تطبيق الهاتف',
                     'agent_device_id' => $request->device_id,
                 ],
