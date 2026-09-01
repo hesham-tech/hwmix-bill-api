@@ -77,6 +77,7 @@ class AgentLineController extends Controller
                 'company_id' => $companyId,
                 'created_by' => $user->id,
                 'financial_account_id' => $account->id,
+                'line_id' => $line->id,
                 'operation_type' => \Modules\HwnixCash\Domain\Enums\WalletOperationType::RECONCILIATION->value,
                 'provider' => $providerEnum,
                 'status' => \Modules\HwnixCash\Domain\Enums\WalletTransactionStatus::SUCCESS->value,
