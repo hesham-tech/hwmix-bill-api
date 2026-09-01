@@ -53,7 +53,20 @@ class AgentLineController extends Controller
         $oldBalance = (float) $account->balance;
         $difference = round($targetBalance - $oldBalance, 2);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($account, $line, $user, $companyId, $targetBalance, $oldBalance, $difference, $request) {
+        $providerStr = mb_strtolower($line->carrier ?? '');
+        $providerEnum = \Modules\HwnixCash\Domain\Enums\WalletProvider::OTHER->value;
+        
+        if (str_contains($providerStr, 'vodafone') || str_contains($providerStr, 'فودافون')) {
+            $providerEnum = \Modules\HwnixCash\Domain\Enums\WalletProvider::VODAFONE_CASH->value;
+        } elseif (str_contains($providerStr, 'orange') || str_contains($providerStr, 'اورنج') || str_contains($providerStr, 'أورنج')) {
+            $providerEnum = \Modules\HwnixCash\Domain\Enums\WalletProvider::ORANGE_CASH->value;
+        } elseif (str_contains($providerStr, 'etisalat') || str_contains($providerStr, 'اتصالات')) {
+            $providerEnum = \Modules\HwnixCash\Domain\Enums\WalletProvider::ETISALAT_CASH->value;
+        } elseif (str_contains($providerStr, 'we') || str_contains($providerStr, 'وي')) {
+            $providerEnum = \Modules\HwnixCash\Domain\Enums\WalletProvider::WE_PAY->value;
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($account, $line, $user, $companyId, $targetBalance, $oldBalance, $difference, $request, $providerEnum) {
             // 1. تحديث الرصيد الحسابي للمحفظة
             $account->update([
                 'balance' => $targetBalance,
@@ -65,7 +78,7 @@ class AgentLineController extends Controller
                 'created_by' => $user->id,
                 'financial_account_id' => $account->id,
                 'operation_type' => \Modules\HwnixCash\Domain\Enums\WalletOperationType::RECONCILIATION->value,
-                'provider' => $account->provider ?? $line->carrier ?? 'vodafone_cash',
+                'provider' => $providerEnum,
                 'status' => \Modules\HwnixCash\Domain\Enums\WalletTransactionStatus::SUCCESS->value,
                 'source' => \Modules\HwnixCash\Domain\Enums\WalletTransactionSource::MANUAL->value,
                 'amount' => abs($difference),
