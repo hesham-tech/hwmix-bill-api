@@ -144,7 +144,7 @@ class FinancialAccountController extends Controller
     public function update($id, UpdateFinancialAccountRequest $request): JsonResponse
     {
         if (!is_numeric($id)) {
-            return api_error('المعرف التابع للحساب غير صالح.', [], 400);
+            return api_error('المعرف المرسل غير صالح.', [], 400);
         }
 
         $user = $request->user();
@@ -153,7 +153,39 @@ class FinancialAccountController extends Controller
         $account = HwnixCashFinancialAccount::where('company_id', $companyId)
             ->findOrFail($id);
 
-        $account->update($request->validated());
+        $validated = $request->validated();
+
+        if (isset($validated['sender_identifier'])) {
+            $provider = \Modules\HwnixCash\Enums\WalletProvider::VODAFONE_CASH;
+            $search = strtolower($validated['sender_identifier']);
+            if (str_contains($search, 'instapay')) {
+                $provider = \Modules\HwnixCash\Enums\WalletProvider::INSTAPAY;
+            } elseif (str_contains($search, 'orange')) {
+                $provider = \Modules\HwnixCash\Enums\WalletProvider::ORANGE_CASH;
+            } elseif (str_contains($search, 'etisalat') || str_contains($search, 'e&')) {
+                $provider = \Modules\HwnixCash\Enums\WalletProvider::ETISALAT_CASH;
+            } elseif (str_contains($search, 'we')) {
+                $provider = \Modules\HwnixCash\Enums\WalletProvider::WE_CASH;
+            }
+
+            $messageSource = \Modules\HwnixCash\Models\HwnixCashMessageSource::firstOrCreate(
+                [
+                    'company_id' => $companyId,
+                    'sender_identifier' => trim($validated['sender_identifier']),
+                ],
+                [
+                    'created_by' => $user->id,
+                    'provider' => $provider->value,
+                    'is_active' => true,
+                    'note' => 'تم إنشاؤه تلقائياً عند تعديل الحساب المالي',
+                ]
+            );
+
+            $validated['message_source_id'] = $messageSource->id;
+            unset($validated['sender_identifier']);
+        }
+
+        $account->update($validated);
         $account->load(['line', 'messageSource']);
 
         return api_success(

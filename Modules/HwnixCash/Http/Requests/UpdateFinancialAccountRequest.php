@@ -17,6 +17,7 @@ class UpdateFinancialAccountRequest extends FormRequest
         return [
             'name' => 'sometimes|required|string|max:255',
             'account_number' => 'nullable|string|max:255',
+            'sender_identifier' => 'sometimes|required|string|max:255',
             'daily_withdraw_limit' => 'nullable|numeric|min:0',
             'daily_deposit_limit' => 'nullable|numeric|min:0',
             'monthly_withdraw_limit' => 'nullable|numeric|min:0',
