@@ -743,7 +743,11 @@ class UserController extends Controller
                             return api_forbidden('لا يمكنك منح أدوار لا تملكها: ' . implode(', ', $unauthorizedRoles));
                         }
                     }
-                    $user->syncRoles($requestedRoles);
+                    // فلترة الأدوار لتجنب أخطاء Spatie في حال إرسال أدوار غير موجودة
+                    $validRoles = \Spatie\Permission\Models\Role::whereIn('name', $requestedRoles)
+                        ->where('guard_name', 'web')
+                        ->pluck('name')->toArray();
+                    $user->syncRoles($validRoles);
                 }
 
                 if ($request->has('permissions')) {

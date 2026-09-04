@@ -257,7 +257,7 @@ class AgentAuthController extends Controller
         return api_success([
             'status' => 'success',
             'token' => $newToken,
-            'user' => new \App\Http\Resources\Auth\UserWithPermissionsResource($user),
+            'user' => new \App\Http\Resources\User\UserWithPermissionsResource($user),
         ]);
     }
 }

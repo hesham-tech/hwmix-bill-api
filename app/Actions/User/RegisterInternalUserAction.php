@@ -249,7 +249,11 @@ class RegisterInternalUserAction
                 $myRoles = $creatorUser->getRoleNames()->toArray();
                 $roles = array_intersect($roles, $myRoles);
             }
-            $user->syncRoles($roles);
+            // فلترة الأدوار لتجنب أخطاء Spatie في حال إرسال أدوار غير موجودة (مثل customer)
+            $validRoles = \Spatie\Permission\Models\Role::whereIn('name', $roles)
+                ->where('guard_name', 'web')
+                ->pluck('name')->toArray();
+            $user->syncRoles($validRoles);
         }
 
         if (isset($data['permissions'])) {
