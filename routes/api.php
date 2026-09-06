@@ -160,6 +160,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
             Route::post('users', 'store')->middleware('saas.limit:users');
             Route::get('users/{user}', 'show');
             Route::put('users/{user}', 'update');
+            Route::put('users/{user}/companies-access', 'syncCompaniesAccess');
             Route::put('change-company/{userId}', 'changeCompany');
             Route::put('users/{user}/cashbox/{cashBoxId}/set-default', 'setDefaultCashBox');
             Route::post('users/delete', 'destroy');

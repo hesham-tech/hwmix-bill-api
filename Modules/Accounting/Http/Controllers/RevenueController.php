@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Modules\Accounting\Services\RevenueService;
 use Throwable;
 
 /**
@@ -19,15 +20,11 @@ use Throwable;
 class RevenueController extends Controller
 {
     protected RevenueService $revenueService;
+    protected array $relations;
 
     public function __construct(RevenueService $revenueService)
     {
         $this->revenueService = $revenueService;
-    }
-    protected array $relations;
-
-    public function __construct()
-    {
         $this->relations = [
             'company',
             'customer',

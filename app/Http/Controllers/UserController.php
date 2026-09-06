@@ -654,35 +654,8 @@ class UserController extends Controller
                 $user->syncImages($request->input('images_ids'), 'avatar');
             }
 
-            // 3. مزامنة الشركات (Multi-Company Sync)
-            if ($request->has('company_ids')) {
-                $companyIds = array_filter((array) $request->input('company_ids'));
+            // 3. تمت إزالة مزامنة الشركات من هنا ليتم معالجتها في Endpoint منفصل (syncCompaniesAccess)
 
-                if ($isSuperAdmin) {
-                    // السوبر أدمن يمكنه التحكم في كافة الشركات (مزامنة كاملة)
-                    $user->companies()->sync($companyIds);
-                } else {
-                    // مدير الشركة يمكنه فقط التحكم في الشركات التي يديرها هو
-                    $myManagedCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
-
-                    // الشركات الحالية للمستخدم والتي لا يملك المدير سلطة عليها (يجب الحفاظ عليها)
-                    $othersCompanyIds = $user->companies()
-                        ->whereNotIn('companies.id', $myManagedCompanyIds)
-                        ->pluck('companies.id')
-                        ->toArray();
-
-                    // الشركات المختارة والتي يملك المدير سلطة عليها
-                    $allowedSelectedIds = array_intersect($companyIds, $myManagedCompanyIds);
-
-                    // القائمة النهائية = (ما لا يملكه المدير) + (ما اختاره المدير مما يملكه)
-                    $finalSyncIds = array_unique(array_merge($othersCompanyIds, $allowedSelectedIds));
-
-                    $user->companies()->syncWithPivotValues($finalSyncIds, [
-                        'created_by' => $authUser->id,
-                        'status' => 'active'
-                    ]);
-                }
-            }
 
             // مزامنة الفروع (Multi-Branch Sync)
             if ($request->has('branch_ids')) {
@@ -771,6 +744,60 @@ class UserController extends Controller
         } catch (Throwable $e) {
             DB::rollback();
             return api_exception($e);
+        }
+    }
+
+    /**
+     * @group 07. الإدارة وسجلات النظام
+     */
+    /**
+     * تحديث صلاحيات الوصول للشركات للمستخدم
+     */
+    public function syncCompaniesAccess(Request $request, User $user, \App\Actions\User\SyncUserCompaniesAction $syncAction)
+    {
+        $authUser = Auth::user();
+        if (!$authUser) return api_unauthorized();
+
+        $request->validate([
+            'company_ids' => 'present|array',
+            'company_ids.*' => 'integer|exists:companies,id',
+        ]);
+
+        $companyIds = array_filter((array) $request->input('company_ids'));
+
+        DB::beginTransaction();
+        try {
+            if ($authUser->can(perm_key('admin.super'))) {
+                // سوبر أدمن: يتحكم بكل الشركات
+                $syncAction->execute($user, $companyIds);
+            } else {
+                // ليس سوبر أدمن: يرسل الشركات التي أدارها فقط
+                $myManagedCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
+                
+                // الشركات الحالية للمستخدم التي لا يملكها الأدمن الحالي
+                $currentUserCompanyIds = $user->companies()->pluck('companies.id')->toArray();
+                $othersCompanyIds = array_diff($currentUserCompanyIds, $myManagedCompanyIds);
+
+                // الشركات المسموح له باختيارها
+                $allowedSelectedIds = array_intersect($companyIds, $myManagedCompanyIds);
+
+                // المجموع النهائي
+                $finalSyncIds = array_unique(array_merge($othersCompanyIds, $allowedSelectedIds));
+                
+                $syncAction->execute($user, $finalSyncIds);
+            }
+
+            // تصفير الكاش
+            \Illuminate\Support\Facades\Cache::forget("user_managed_companies_{$user->id}");
+
+            DB::commit();
+
+            // إرجاع استجابة
+            $user->load(['companies']);
+            return api_success(new \App\Http\Resources\User\UserResource($user), 'تم تحديث صلاحيات الشركات بنجاح.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return api_error('حدث خطأ أثناء التحديث: ' . $e->getMessage(), [], 500);
         }
     }
 
