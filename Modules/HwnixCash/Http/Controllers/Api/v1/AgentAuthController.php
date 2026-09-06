@@ -76,6 +76,36 @@ class AgentAuthController extends Controller
             return api_error('كلمة المرور غير صحيحة.', [], 421);
         }
 
+        // Mobile Specific Check: User MUST have a company to log in to the ERP mobile app
+        $hasCompany = false;
+        if ($user->active_company_id) {
+            $company = \App\Models\Company::withTrashed()->find($user->active_company_id);
+            if ($company && !$company->trashed()) {
+                $hasCompany = true;
+            }
+        }
+        
+        // If active_company_id is null or trashed, check if they belong to ANY other active company
+        if (!$hasCompany) {
+            $otherCompanyPivot = \DB::table('company_user')->where('user_id', $user->id)->get();
+            foreach ($otherCompanyPivot as $pivot) {
+                $comp = \App\Models\Company::withTrashed()->find($pivot->company_id);
+                if ($comp && !$comp->trashed()) {
+                    $user->update(['active_company_id' => $comp->id]);
+                    $hasCompany = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$hasCompany) {
+            return api_error(
+                'عفواً، لا يوجد لديك شركة صالحة للإدارة أو تم إيقاف شركتك، لا يمكنك استخدام التطبيق.', 
+                ['mobile_access_denied' => true], 
+                403
+            );
+        }
+
         if (!Auth::attempt([$loginField => $validated['login'], 'password' => $validated['password']])) {
             return api_error('فشل عملية تسجيل الدخول.', [], 421);
         }

@@ -65,10 +65,13 @@ class CompanyController extends Controller
                     : [];
                 $query->whereIn('created_by', array_merge([$user->id], $descendantIds));
             } elseif ($user->hasPermissionTo(perm_key('companies.view_self'))) {
-                // يرى ما أنشأه هو فقط
+                // مسموح برؤية شركاته هو فقط
                 $query->where('created_by', $user->id);
             } else {
-                return api_forbidden('ليس لديك صلاحية لعرض الشركات.');
+                // مسموح برؤية الشركات التي ينتمي إليها المستخدم (التي يديرها أو يعمل بها)
+                $query->whereHas('users', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
             }
 
             // ---- الفلاتر الاختيارية ----

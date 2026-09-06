@@ -152,7 +152,25 @@ class CompanyObserver
      */
     public function deleted(Company $company): void
     {
-        //
+        // 1. Clear cache for middleware
+        \Illuminate\Support\Facades\Cache::forget('company_active_status_' . $company->id);
+
+        // 2. Auto-heal users who have this as their active_company_id
+        $associatedUsers = $company->users()->where('active_company_id', $company->id)->get();
+        
+        foreach ($associatedUsers as $user) {
+            // Find another valid company for this user
+            $otherCompany = \DB::table('company_user')
+                ->where('user_id', $user->id)
+                ->where('company_id', '!=', $company->id)
+                ->first();
+
+            $user->update([
+                'active_company_id' => $otherCompany ? $otherCompany->company_id : null
+            ]);
+            
+            \Log::info("CompanyObserver: Soft deleted company {$company->id}. User {$user->id} active_company_id changed to " . ($otherCompany ? $otherCompany->company_id : 'null'));
+        }
     }
 
     /**
@@ -160,7 +178,7 @@ class CompanyObserver
      */
     public function restored(Company $company): void
     {
-        //
+        \Illuminate\Support\Facades\Cache::forget('company_active_status_' . $company->id);
     }
 
     /**

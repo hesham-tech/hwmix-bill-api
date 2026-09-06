@@ -39,8 +39,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'staff.only' => \App\Http\Middleware\CheckUserTypeMiddleware::class,
             'saas.limit' => \App\Http\Middleware\CheckSaaSResourceLimit::class,
             'mobile_company_context' => \App\Http\Middleware\MobileCompanyContextMiddleware::class,
+            'company.active' => \App\Http\Middleware\EnsureCompanyIsActive::class,
         ]);
         $middleware->appendToGroup('api', \App\Http\Middleware\MobileCompanyContextMiddleware::class);
+        $middleware->appendToGroup('api', \App\Http\Middleware\EnsureCompanyIsActive::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\ScopePermissionsByCompany::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\BranchContextMiddleware::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\IdempotencyMiddleware::class);

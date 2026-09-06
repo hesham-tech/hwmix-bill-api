@@ -179,10 +179,10 @@ class CompanyControllerTest extends TestCase
         // User who only belonged to company1 should be deleted permanently
         $this->assertDatabaseMissing('users', ['id' => $userOnlyCompany1->id]);
 
-        // User who belongs to multiple companies should NOT be deleted, and active_company_id should remain pointing to company1 (which is deleted)
+        // User who belongs to multiple companies should NOT be deleted, and active_company_id should automatically switch to another valid company they belong to (auto-heal)
         $this->assertDatabaseHas('users', [
             'id' => $userMultipleCompanies->id,
-            'active_company_id' => $company1->id
+            'active_company_id' => $otherCompany->id
         ]);
     }
 
