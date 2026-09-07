@@ -37,13 +37,15 @@ class DashboardController extends Controller
         $user = $request->user();
         $companyId = $user->active_company_id;
 
-        // فحص ما إذا كان المستخدم عميلاً (ليس لديه صلاحيات إدارية)
-        $isCustomer = !$user->hasAnyPermission([
+        // تحديد ما إذا كان المستخدم مؤهلاً لرؤية لوحة تحكم الإدارة.
+        // يتم التحقق بصلاحية صريحة وليس بالنفي، لمنع منح وصول غير مقصود
+        // لأي موظف يحمل صلاحية تشغيلية (مثل users.view_all).
+        $canViewAdminDashboard = $user->hasAnyPermission([
             perm_key('admin.super'),
             perm_key('admin.company'),
-            'admin.page',
-            perm_key('users.view_all')
+            perm_key('reports.view_liquidity'),
         ]);
+        $isCustomer = !$canViewAdminDashboard;
 
         $period = $request->get('period', 'month');
         $dateFrom = $request->get('date_from', '');

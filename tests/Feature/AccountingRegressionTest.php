@@ -625,7 +625,8 @@ class AccountingRegressionTest extends TestCase
         // -300 (withdraw - collect payment)
         // Expected net = 700
         $calculatedPartyBalance = $partyTransactions->reduce(function ($carry, $t) {
-            return in_array($t->type, ['deposit', 'transfer_in', 'reverse_withdraw']) 
+            // Party transactions are of type: receivable_add, receivable_reduce, payable_add, payable_reduce
+            return in_array($t->type, ['receivable_add', 'payable_reduce']) 
                 ? $carry + (float)$t->amount 
                 : $carry - (float)$t->amount;
         }, 0.00);

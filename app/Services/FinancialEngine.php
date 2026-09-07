@@ -421,74 +421,9 @@ class FinancialEngine implements FinancialEngineInterface
             }
 
 
-            // 3.8 Reverse Stakeholder Balances (Receivable/Payable)
-            $partyId = null;
-            $netReceivableAmount = 0;
-            $netPayableAmount = 0;
-
-            if ($originalOp->source_type === \App\Models\Invoice::class || $originalOp->source_type === \Modules\Sales\Models\Invoice::class) {
-                $invoice = clone $originalOp->source;
-                if ($invoice) {
-                    $partyId = $invoice->user_id;
-                    $party = User::withoutGlobalScopes()->find($partyId);
-                    if ($party && !$party->isDefaultCashCustomer($originalOp->company_id)) {
-                        $type = $invoice->invoice_type_code;
-                        $net = (float)$invoice->net_amount - (float)$invoice->paid_amount;
-                        if (in_array($type, ['sale', 'installment_sale', 'service_invoice'])) {
-                            $netReceivableAmount = $net;
-                        } elseif ($type === 'sale_return') {
-                            $netReceivableAmount = -$net;
-                        } elseif ($type === 'purchase') {
-                            $netPayableAmount = $net;
-                        } elseif ($type === 'purchase_return') {
-                            $netPayableAmount = -$net;
-                        }
-                    }
-                }
-            } elseif ($originalOp->type === 'payment_receipt') {
-                if ($originalOp->source_type === \App\Models\Invoice::class || $originalOp->source_type === \Modules\Sales\Models\Invoice::class) {
-                    $invoice = clone $originalOp->source;
-                    if ($invoice) {
-                        $partyId = $invoice->user_id;
-                        $party = User::withoutGlobalScopes()->find($partyId);
-                        if ($party && !$party->isDefaultCashCustomer($originalOp->company_id)) {
-                            // Payment receipt reduced receivable
-                            $netReceivableAmount = -(float)$originalOp->amount;
-                        }
-                    }
-                }
-            }
-
-            if ($partyId && $party) {
-                if ($netReceivableAmount > 0) {
-                    // Originally added receivable, so reduce it
-                    $this->receivableService->reduce($party, $netReceivableAmount, $reversalOpId, [
-                        'company_id' => $originalOp->company_id,
-                        'allow_negative' => true,
-                        'description' => "عكس مديونية لعملية ملغاة رقم {$originalOperationId}"
-                    ]);
-                } elseif ($netReceivableAmount < 0) {
-                    // Originally reduced receivable, so add it
-                    $this->receivableService->add($party, -$netReceivableAmount, $reversalOpId, [
-                        'company_id' => $originalOp->company_id,
-                        'description' => "إعادة مديونية لعملية ملغاة رقم {$originalOperationId}"
-                    ]);
-                }
-
-                if ($netPayableAmount > 0) {
-                    $this->payableService->reduce($party, $netPayableAmount, $reversalOpId, [
-                        'company_id' => $originalOp->company_id,
-                        'allow_negative' => true,
-                        'description' => "عكس التزام لعملية ملغاة رقم {$originalOperationId}"
-                    ]);
-                } elseif ($netPayableAmount < 0) {
-                    $this->payableService->add($party, -$netPayableAmount, $reversalOpId, [
-                        'company_id' => $originalOp->company_id,
-                        'description' => "إعادة التزام لعملية ملغاة رقم {$originalOperationId}"
-                    ]);
-                }
-            }
-
+            // Section 3.8 removed: Stakeholder Balances (Receivable/Payable) are already reversed automatically 
+            // by the generic Transaction loop (section 3) which processes 'receivable_add', 'receivable_reduce', etc.
+            
             // 4. Reverse Invoice Payments وجُدت
             $payments = InvoicePayment::withoutGlobalScopes()->where('financial_operation_id', $originalOperationId)->get();
             foreach ($payments as $payment) {

@@ -19,7 +19,14 @@ class CashBoxResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'balance' => $this->balance,
+            'balance' => $this->when(
+                auth()->user()?->hasAnyPermission([
+                    perm_key('cash_boxes.view_balance'),
+                    perm_key('admin.super'),
+                    perm_key('admin.company'),
+                ]),
+                $this->balance
+            ),
             'cash_type' => $this->typeBox?->name ?? 'نقدي',
             'cash_box_type_id' => $this->cash_box_type_id,
             'user_id' => $this->user_id,

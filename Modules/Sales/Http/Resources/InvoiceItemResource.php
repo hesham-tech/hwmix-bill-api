@@ -22,7 +22,14 @@ class InvoiceItemResource extends JsonResource
             'unit_price' => $this->unit_price,
             'cost_price' => $this->when(auth()->user()?->hasAnyPermission([perm_key('products.view_purchase_price'), 'admin.super', 'admin.company']), $this->cost_price),
             'discount' => $this->discount,
-            'profit_margin' => $this->profit_margin,
+            'profit_margin' => $this->when(
+                auth()->user()?->hasAnyPermission([
+                    perm_key('invoices.view_profit'),
+                    perm_key('admin.super'),
+                    perm_key('admin.company'),
+                ]),
+                $this->profit_margin
+            ),
             'total' => $this->total,
             'retail_price' => $this->variant?->retail_price ?? $this->variant?->price ?? 0,
             'wholesale_price' => $this->variant?->wholesale_price ?? 0,

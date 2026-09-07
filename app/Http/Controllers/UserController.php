@@ -419,7 +419,22 @@ class UserController extends Controller
             return api_success(new UserWithPermissionsResource($user), 'تم جلب بيانات الصلاحيات بنجاح.');
         }
 
-        // 3. المسار التقليدي (الملف الشخصي أو سوبر أدمن بدون صلاحيات تفصيلية)
+        if ($request->has('company_ids')) {
+                  $companyIds = array_filter((array) $request->input('company_ids'));
+                  $syncAction = app(\App\Actions\User\SyncUserCompaniesAction::class);
+                  if ($isSuperAdmin) {
+                      $syncAction->execute($user, $companyIds);
+                  } else {
+                      $myManagedCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
+                      $currentUserCompanyIds = $user->companies()->pluck('companies.id')->toArray();
+                      $othersCompanyIds = array_diff($currentUserCompanyIds, $myManagedCompanyIds);
+                      $allowedSelectedIds = array_intersect($companyIds, $myManagedCompanyIds);
+                      $finalSyncIds = array_unique(array_merge($othersCompanyIds, $allowedSelectedIds));
+                      $syncAction->execute($user, $finalSyncIds);
+                  }
+                  \Illuminate\Support\Facades\Cache::forget("user_managed_companies_{$user->id}");
+              }
+
         if ($isUpdatingSelf || $isSuperAdmin) {
             $user->load($this->relations);
             return api_success(new UserResource($user), 'تم جلب بيانات المستخدم بنجاح.');
@@ -654,7 +669,22 @@ class UserController extends Controller
                 $user->syncImages($request->input('images_ids'), 'avatar');
             }
 
-            // 3. تمت إزالة مزامنة الشركات من هنا ليتم معالجتها في Endpoint منفصل (syncCompaniesAccess)
+            if ($request->has('company_ids')) {
+                  $companyIds = array_filter((array) $request->input('company_ids'));
+                  $syncAction = app(\App\Actions\User\SyncUserCompaniesAction::class);
+                  if ($isSuperAdmin) {
+                      $syncAction->execute($user, $companyIds);
+                  } else {
+                      $myManagedCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
+                      $currentUserCompanyIds = $user->companies()->pluck('companies.id')->toArray();
+                      $othersCompanyIds = array_diff($currentUserCompanyIds, $myManagedCompanyIds);
+                      $allowedSelectedIds = array_intersect($companyIds, $myManagedCompanyIds);
+                      $finalSyncIds = array_unique(array_merge($othersCompanyIds, $allowedSelectedIds));
+                      $syncAction->execute($user, $finalSyncIds);
+                  }
+                  \Illuminate\Support\Facades\Cache::forget("user_managed_companies_{$user->id}");
+              }
+
 
 
             // مزامنة الفروع (Multi-Branch Sync)
@@ -879,7 +909,22 @@ class UserController extends Controller
                     $user->delete();
                     $deletedCount++;
                 } else {
-                    // 3. فك ارتباط بالشركة النشطة فقط (Un-link)
+                    if ($request->has('company_ids')) {
+                  $companyIds = array_filter((array) $request->input('company_ids'));
+                  $syncAction = app(\App\Actions\User\SyncUserCompaniesAction::class);
+                  if ($isSuperAdmin) {
+                      $syncAction->execute($user, $companyIds);
+                  } else {
+                      $myManagedCompanyIds = $authUser->companies()->pluck('companies.id')->toArray();
+                      $currentUserCompanyIds = $user->companies()->pluck('companies.id')->toArray();
+                      $othersCompanyIds = array_diff($currentUserCompanyIds, $myManagedCompanyIds);
+                      $allowedSelectedIds = array_intersect($companyIds, $myManagedCompanyIds);
+                      $finalSyncIds = array_unique(array_merge($othersCompanyIds, $allowedSelectedIds));
+                      $syncAction->execute($user, $finalSyncIds);
+                  }
+                  \Illuminate\Support\Facades\Cache::forget("user_managed_companies_{$user->id}");
+              }
+
                     if ($activeCompanyId && ($isSuperAdmin || $isCompanyAdmin || ($canDeleteChildren && in_array($user->id, $descendantUserIds)))) {
                         $companyUser = $user->companyUsers()->where('company_id', $activeCompanyId)->first();
 
@@ -1210,3 +1255,5 @@ class UserController extends Controller
         }
     }
 }
+
+

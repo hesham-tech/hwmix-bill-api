@@ -20,6 +20,46 @@ class UpdateProductRequest extends FormRequest
                 'variants' => json_decode($this->variants, true)
             ]);
         }
+
+        // فلترة حقول الأسعار والتكاليف الحساسة
+        // إذا لم يكن المستخدم يملك صلاحية تعديل الأسعار، يتم إزالة هذه الحقول من الطلب تماماً.
+        // هذا يضمن عدم إمكانية التلاعب بالتسعير عبر API حتى لو أُرسلت الحقول في الـ Request Body.
+        $user = auth()->user();
+        $canUpdatePrices = $user?->hasAnyPermission([
+            perm_key('products.update_prices'),
+            perm_key('admin.super'),
+            perm_key('admin.company'),
+        ]);
+
+        if (!$canUpdatePrices && $this->has('variants')) {
+            // الحقول التي تحتاج صلاحية products.update_prices لتعديلها
+            $priceFields = [
+                'retail_price', 'wholesale_price', 'purchase_price', 'profit_margin',
+                'unit_prices',
+            ];
+            $stockPriceFields = ['cost'];
+
+            $variants = collect($this->variants ?? [])->map(function ($variant) use ($priceFields, $stockPriceFields) {
+                // إزالة حقول الأسعار من الـ Variant
+                foreach ($priceFields as $field) {
+                    unset($variant[$field]);
+                }
+
+                // إزالة حقل الـ cost من كل Stock entry
+                if (isset($variant['stocks']) && is_array($variant['stocks'])) {
+                    $variant['stocks'] = collect($variant['stocks'])->map(function ($stock) use ($stockPriceFields) {
+                        foreach ($stockPriceFields as $field) {
+                            unset($stock[$field]);
+                        }
+                        return $stock;
+                    })->toArray();
+                }
+
+                return $variant;
+            })->toArray();
+
+            $this->merge(['variants' => $variants]);
+        }
     }
 
     public function rules()
