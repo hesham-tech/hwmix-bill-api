@@ -89,6 +89,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
         Route::get('/sales/top-products', [\App\Http\Controllers\Reports\SalesReportController::class, 'topProducts']);
         Route::get('/sales/top-customers', [\App\Http\Controllers\Reports\SalesReportController::class, 'topCustomers']);
         Route::get('/sales/trend', [\App\Http\Controllers\Reports\SalesReportController::class, 'trend']);
+        Route::get('/item-profitability', [\App\Http\Controllers\Reports\ItemProfitabilityController::class, 'index']);
 
         // Profit & Loss Reports
         Route::get('/profit-loss', [\App\Http\Controllers\Reports\ProfitLossReportController::class, 'index']);
