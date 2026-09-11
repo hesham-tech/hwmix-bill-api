@@ -44,7 +44,7 @@ class ItemProfitabilityController extends Controller
             ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
             ->whereIn('invoices.invoice_type_code', ['sale', 'installment_sale'])
             ->whereIn('invoices.payment_status', ['paid', 'partially_paid'])
-            ->whereBetween(DB::raw('DATE(invoices.issue_date)'), [$dateFrom, $dateTo]);
+            ->whereBetween(DB::raw('COALESCE(DATE(invoices.issue_date), DATE(invoices.created_at))'), [$dateFrom, $dateTo]);
 
         $summaryQuery = clone $baseQuery;
         $summary = $summaryQuery->select(
@@ -63,7 +63,7 @@ class ItemProfitabilityController extends Controller
             'invoice_items.id',
             'invoice_items.invoice_id',
             'invoices.invoice_number',
-            'invoices.issue_date',
+            DB::raw('COALESCE(invoices.issue_date, invoices.created_at) as issue_date'),
             'invoice_items.name',
             'invoice_items.quantity',
             'invoice_items.unit_price',
@@ -71,7 +71,7 @@ class ItemProfitabilityController extends Controller
             'invoice_items.subtotal',
             'invoice_items.total_cost'
         )
-        ->orderBy('invoices.issue_date', 'desc')
+        ->orderByRaw('COALESCE(invoices.issue_date, invoices.created_at) DESC')
         ->paginate($perPage);
 
         $items->getCollection()->transform(function ($item) {
