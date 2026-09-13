@@ -21,6 +21,8 @@ class PaymentResource extends JsonResource
             'method' => $this->method,
             'notes' => $this->notes,
             'is_split' => $this->is_split,
+            'status' => $this->status,
+            'financial_operation_id' => $this->financial_operation_id,
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
             'customer' => new UserBasicResource($this->whenLoaded('customer')),
