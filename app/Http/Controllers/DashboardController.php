@@ -149,11 +149,12 @@ class DashboardController extends Controller
         // حساب إجمالي المبيعات (مدى الحياة)
         $totalSales = DailySalesSummary::where('company_id', $companyId)->sum('total_revenue');
 
-        // حساب إيرادات الفترة المحددة بدقة
         $periodSales = Invoice::where('company_id', $companyId)
-            ->whereIn('invoice_type_id', [2]) // فاتورة بيع
+            ->whereIn('invoice_type_code', ['sale', 'installment_sale', 'sale_return'])
+            ->whereNotIn('status', ['draft', 'canceled'])
             ->whereBetween('issue_date', [$startDate->toDateString(), $endDate->toDateString()])
-            ->sum('net_amount');
+            ->selectRaw('SUM(CASE WHEN invoice_type_code = "sale_return" THEN -net_amount ELSE net_amount END) as total')
+            ->value('total') ?? 0;
 
         // حساب مصروفات الفترة المحددة
         $periodExpenses = Expense::where('company_id', $companyId)

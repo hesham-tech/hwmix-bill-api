@@ -1,0 +1,16 @@
+{
+    "name": "hwnix/store",
+    "description": "موديول المتجر الإلكتروني",
+    "authors": [{"name": "HWNix Team"}],
+    "extra": {
+        "laravel": {
+            "providers": []
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Store\\": "./"
+        }
+    },
+    "require": {}
+}

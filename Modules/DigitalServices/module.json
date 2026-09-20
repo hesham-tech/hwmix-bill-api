@@ -1,0 +1,11 @@
+{
+    "name": "DigitalServices",
+    "alias": "digitalservices",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DigitalServices\\Providers\\DigitalServicesServiceProvider"
+    ],
+    "files": []
+}

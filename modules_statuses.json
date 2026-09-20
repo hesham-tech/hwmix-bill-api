@@ -11,5 +11,7 @@
     "Media": true,
     "Legal": true,
     "HwnixCash": true,
-    "AiPlatform": true
+    "AiPlatform": true,
+    "DigitalServices": true,
+    "Store": true
 }

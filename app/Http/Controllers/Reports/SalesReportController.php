@@ -85,8 +85,9 @@ class SalesReportController extends BaseReportController
     private function getTotalItemsSold($query): float
     {
         return DB::table('invoice_items')
+            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
             ->whereIn('invoice_id', (clone $query)->select('id'))
-            ->sum('quantity');
+            ->sum(DB::raw('CASE WHEN invoices.invoice_type_code LIKE "%return%" THEN -invoice_items.quantity ELSE invoice_items.quantity END'));
     }
 
     /**
@@ -193,11 +194,12 @@ class SalesReportController extends BaseReportController
         $invoiceSubQuery = (clone $query)->select('id');
 
         $serviceItems = \DB::table('invoice_items')
-            ->whereIn('invoice_id', $invoiceSubQuery)
-            ->whereNotNull('service_id')
+            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+            ->whereIn('invoice_items.invoice_id', $invoiceSubQuery)
+            ->whereNotNull('invoice_items.service_id')
             ->select([
                 \DB::raw('COUNT(*) as count'),
-                \DB::raw('SUM(total) as total_revenue'),
+                \DB::raw('SUM(CASE WHEN invoices.invoice_type_code LIKE "%return%" THEN -invoice_items.total ELSE invoice_items.total END) as total_revenue'),
             ])
             ->first();
 

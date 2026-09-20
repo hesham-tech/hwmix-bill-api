@@ -94,10 +94,10 @@ abstract class BaseReportController extends Controller
         return $query->selectRaw("
                 {$selectRaw},
                 COUNT(*) as count,
-                SUM(net_amount) as total_amount,
-                SUM(net_amount) as total_sales,
-                SUM(paid_amount) as total_paid,
-                SUM(remaining_amount) as total_remaining
+                SUM(CASE WHEN invoices.invoice_type_code LIKE '%return%' THEN -invoices.net_amount ELSE invoices.net_amount END) as total_amount,
+                SUM(CASE WHEN invoices.invoice_type_code LIKE '%return%' THEN -invoices.net_amount ELSE invoices.net_amount END) as total_sales,
+                SUM(CASE WHEN invoices.invoice_type_code LIKE '%return%' THEN -invoices.paid_amount ELSE invoices.paid_amount END) as total_paid,
+                SUM(CASE WHEN invoices.invoice_type_code LIKE '%return%' THEN -invoices.remaining_amount ELSE invoices.remaining_amount END) as total_remaining
             ")
             ->groupBy('period')
             ->orderBy('period')
@@ -118,8 +118,8 @@ abstract class BaseReportController extends Controller
             ->select([
                 'products.id as product_id',
                 'products.name as product_name',
-                \DB::raw('SUM(invoice_items.quantity) as total_quantity'),
-                \DB::raw('SUM(invoice_items.total) as total_sales'),
+                \DB::raw('SUM(CASE WHEN invoices.invoice_type_code LIKE "%return%" THEN -invoice_items.quantity ELSE invoice_items.quantity END) as total_quantity'),
+                \DB::raw('SUM(CASE WHEN invoices.invoice_type_code LIKE "%return%" THEN -invoice_items.total ELSE invoice_items.total END) as total_sales'),
                 \DB::raw('COUNT(DISTINCT invoices.id) as invoice_count'),
                 \DB::raw('AVG(invoice_items.unit_price) as avg_price'),
             ])
@@ -138,10 +138,10 @@ abstract class BaseReportController extends Controller
                 'invoices.user_id',
                 'users.full_name as customer_name',
                 \DB::raw('COUNT(*) as invoice_count'),
-                \DB::raw('SUM(invoices.net_amount) as total_amount'),
-                \DB::raw('SUM(invoices.paid_amount) as total_paid'),
-                \DB::raw('SUM(invoices.remaining_amount) as total_remaining'),
-                \DB::raw('AVG(invoices.net_amount) as avg_invoice')
+                \DB::raw('SUM(CASE WHEN invoices.invoice_type_code LIKE "%return%" THEN -invoices.net_amount ELSE invoices.net_amount END) as total_amount'),
+                \DB::raw('SUM(CASE WHEN invoices.invoice_type_code LIKE "%return%" THEN -invoices.paid_amount ELSE invoices.paid_amount END) as total_paid'),
+                \DB::raw('SUM(CASE WHEN invoices.invoice_type_code LIKE "%return%" THEN -invoices.remaining_amount ELSE invoices.remaining_amount END) as total_remaining'),
+                \DB::raw('AVG(CASE WHEN invoices.invoice_type_code LIKE "%return%" THEN -invoices.net_amount ELSE invoices.net_amount END) as avg_invoice')
             ])
             ->groupBy('invoices.user_id', 'users.full_name')
             ->orderByDesc('total_amount')
@@ -155,12 +155,12 @@ abstract class BaseReportController extends Controller
     {
         $stats = $query->selectRaw('
             COUNT(*) as total_invoices,
-            SUM(net_amount) as total_amount,
-            SUM(paid_amount) as total_paid,
-            SUM(remaining_amount) as total_remaining,
-            SUM(total_tax) as total_tax,
-            SUM(total_discount) as total_discount,
-            AVG(net_amount) as average_invoice
+            SUM(CASE WHEN invoice_type_code LIKE "%return%" THEN -net_amount ELSE net_amount END) as total_amount,
+            SUM(CASE WHEN invoice_type_code LIKE "%return%" THEN -paid_amount ELSE paid_amount END) as total_paid,
+            SUM(CASE WHEN invoice_type_code LIKE "%return%" THEN -remaining_amount ELSE remaining_amount END) as total_remaining,
+            SUM(CASE WHEN invoice_type_code LIKE "%return%" THEN -total_tax ELSE total_tax END) as total_tax,
+            SUM(CASE WHEN invoice_type_code LIKE "%return%" THEN -total_discount ELSE total_discount END) as total_discount,
+            AVG(CASE WHEN invoice_type_code LIKE "%return%" THEN -net_amount ELSE net_amount END) as average_invoice
         ')->first();
 
         return [

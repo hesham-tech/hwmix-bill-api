@@ -1,0 +1,12 @@
+{
+    "name": "Store",
+    "alias": "store",
+    "description": "موديول المتجر الإلكتروني العام",
+    "keywords": ["store", "marketplace", "ecommerce"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Store\\Providers\\StoreServiceProvider"
+    ],
+    "aliases": {},
+    "files": []
+}

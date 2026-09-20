@@ -96,6 +96,8 @@ class UpdateProductRequest extends FormRequest
             'active' => 'sometimes|boolean',
             'featured' => 'sometimes|boolean',
             'returnable' => 'sometimes|boolean',
+            'is_active_in_store' => 'sometimes|boolean',
+            'is_active_in_sales' => 'sometimes|boolean',
             'base_unit_id' => 'nullable|integer|exists:units,id',
             'purchase_unit_id' => 'nullable|integer|exists:units,id',
             'display_unit_id' => 'nullable|integer|exists:units,id',

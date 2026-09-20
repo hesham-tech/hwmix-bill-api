@@ -42,15 +42,15 @@ class ItemProfitabilityController extends Controller
 
         $baseQuery = InvoiceItem::where('invoice_items.company_id', $companyId)
             ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
-            ->whereIn('invoices.invoice_type_code', ['sale', 'installment_sale'])
-            ->whereIn('invoices.payment_status', ['paid', 'partially_paid'])
+            ->whereIn('invoices.invoice_type_code', ['sale', 'installment_sale', 'sale_return'])
+            ->whereNotIn('invoices.status', ['draft', 'canceled'])
             ->whereBetween(DB::raw('COALESCE(DATE(invoices.issue_date), DATE(invoices.created_at))'), [$dateFrom, $dateTo]);
 
         $summaryQuery = clone $baseQuery;
         $summary = $summaryQuery->select(
-            DB::raw('SUM(invoice_items.quantity) as total_qty'),
-            DB::raw('SUM(invoice_items.total_cost) as total_cost'),
-            DB::raw('SUM(invoice_items.subtotal) as total_revenue')
+            DB::raw('SUM(CASE WHEN invoices.invoice_type_code = "sale_return" THEN -invoice_items.quantity ELSE invoice_items.quantity END) as total_qty'),
+            DB::raw('SUM(CASE WHEN invoices.invoice_type_code = "sale_return" THEN -invoice_items.total_cost ELSE invoice_items.total_cost END) as total_cost'),
+            DB::raw('SUM(CASE WHEN invoices.invoice_type_code = "sale_return" THEN -invoice_items.subtotal ELSE invoice_items.subtotal END) as total_revenue')
         )->first();
 
         $totalRevenue = (float) ($summary->total_revenue ?? 0);
@@ -63,6 +63,7 @@ class ItemProfitabilityController extends Controller
             'invoice_items.id',
             'invoice_items.invoice_id',
             'invoices.invoice_number',
+            'invoices.invoice_type_code',
             DB::raw('COALESCE(invoices.issue_date, invoices.created_at) as issue_date'),
             'invoice_items.name',
             'invoice_items.quantity',
@@ -75,7 +76,13 @@ class ItemProfitabilityController extends Controller
         ->paginate($perPage);
 
         $items->getCollection()->transform(function ($item) {
+            $sign = ($item->invoice_type_code === 'sale_return') ? -1 : 1;
+            
+            $item->quantity = $item->quantity * $sign;
+            $item->subtotal = $item->subtotal * $sign;
+            $item->total_cost = $item->total_cost * $sign;
             $item->profit = $item->subtotal - $item->total_cost;
+            
             return $item;
         });
 
