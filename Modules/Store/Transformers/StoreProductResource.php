@@ -20,14 +20,17 @@ class StoreProductResource extends JsonResource
             'category_id' => $this->category_id,
             'price' => (float)($this->variants->min('retail_price') ?? 0),
             'image' => $this->images->first()?->url ?? null,
+            'quantity' => $this->variants->sum(fn($v) => $v->stocks->sum(fn($s) => $s->quantity - $s->reserved)),
+            'stock_status' => $this->variants->sum(fn($v) => $v->stocks->sum(fn($s) => $s->quantity - $s->reserved)) > 0 ? 'in_stock' : 'out_of_stock',
+            'default_variant_id' => $this->variants->first()?->id ?? $this->id,
             'vendor' => new VendorResource($this->whenLoaded('company')),
             'variants' => $this->whenLoaded('variants', function() {
                 return $this->variants->map(function($variant) {
                     return [
                         'id' => $variant->id,
                         'name' => $variant->name,
-                        'price' => (float)$variant->price,
-                        'available_stock' => $variant->available_stock,
+                        'price' => (float)$variant->retail_price,
+                        'available_stock' => $variant->stocks->sum(fn($s) => $s->quantity - $s->reserved),
                     ];
                 });
             }),

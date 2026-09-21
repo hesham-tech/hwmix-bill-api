@@ -31,8 +31,29 @@ class StoreOrderService
             // التحقق من المخزون أولاً
             $this->stockReservation->validateAll($data['items']);
 
-            // حساب الإجماليات
-            $subtotal = collect($data['items'])->sum('total_price');
+            // Calculate exact secure prices from DB
+            $secureItems = [];
+            $orderSubtotal = 0;
+            
+            foreach ($data['items'] as $item) {
+                $variant = ProductVariant::withoutGlobalScopes()
+                    ->with('product')
+                    ->findOrFail($item['variant_id']);
+                
+                $unitPrice = $variant->retail_price ?? 0;
+                $totalPrice = $unitPrice * $item['quantity'];
+                
+                $secureItems[] = [
+                    'variant_id' => $variant->id,
+                    'company_id' => $variant->product->company_id, // Trust DB company_id over payload
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $unitPrice,
+                    'total_price' => $totalPrice,
+                    'variant' => $variant
+                ];
+                
+                $orderSubtotal += $totalPrice;
+            }
 
             // إنشاء الطلب الرئيسي
             $order = StoreOrder::create([
@@ -41,13 +62,13 @@ class StoreOrderService
                 'shipping_address_id' => $data['address_id'],
                 'payment_method'      => $data['payment_method'] ?? 'cod',
                 'payment_status'      => 'unpaid',
-                'subtotal'            => $subtotal,
-                'total_amount'        => $subtotal,
+                'subtotal'            => $orderSubtotal,
+                'total_amount'        => $orderSubtotal,
                 'customer_notes'      => $data['notes'] ?? null,
             ]);
 
             // تجميع العناصر حسب company_id
-            $grouped = collect($data['items'])->groupBy('company_id');
+            $grouped = collect($secureItems)->groupBy('company_id');
 
             $letter = 'A';
             foreach ($grouped as $companyId => $items) {
@@ -62,9 +83,7 @@ class StoreOrderService
                 ]);
 
                 foreach ($items as $item) {
-                    $variant = ProductVariant::withoutGlobalScopes()
-                        ->with('product')
-                        ->find($item['variant_id']);
+                    $variant = $item['variant'];
 
                     StoreOrderItem::create([
                         'store_order_id'         => $order->id,
@@ -80,7 +99,7 @@ class StoreOrderService
                     ]);
                 }
 
-                // حجز المخزون
+                // حجز المخزون (We pass the DB-verified array)
                 $this->stockReservation->reserveForSubOrder($subOrder, $items->toArray());
 
                 $letter++;

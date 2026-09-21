@@ -16,18 +16,28 @@ class StockReservationService
     public function reserveForSubOrder(StoreSubOrder $subOrder, iterable $items): void
     {
         foreach ($items as $item) {
-            $stock = Stock::withoutGlobalScopes()
+            $remainingToReserve = $item['quantity'];
+            
+            $stocks = Stock::withoutGlobalScopes()
                 ->where('variant_id', $item['variant_id'])
-                ->whereRaw('(quantity - reserved) >= ?', [$item['quantity']])
+                ->whereRaw('(quantity - reserved) > 0')
                 ->lockForUpdate()
-                ->first();
+                ->get();
 
-            if ($stock) {
-                $stock->increment('reserved', $item['quantity']);
-            } else {
-                Log::warning('StockReservation: لم يجد مخزون كافٍ للحجز', [
+            foreach ($stocks as $stock) {
+                if ($remainingToReserve <= 0) break;
+                
+                $available = $stock->quantity - $stock->reserved;
+                $toReserve = min($available, $remainingToReserve);
+                
+                $stock->increment('reserved', $toReserve);
+                $remainingToReserve -= $toReserve;
+            }
+
+            if ($remainingToReserve > 0) {
+                Log::warning('StockReservation: لم يجد مخزون كافٍ للحجز بشكل كامل', [
                     'variant_id' => $item['variant_id'],
-                    'quantity'   => $item['quantity'],
+                    'unreserved_quantity' => $remainingToReserve,
                 ]);
             }
         }
@@ -39,10 +49,21 @@ class StockReservationService
     public function releaseReservation(StoreSubOrder $subOrder): void
     {
         foreach ($subOrder->items as $item) {
-            Stock::withoutGlobalScopes()
+            $remainingToRelease = $item->quantity;
+            
+            $stocks = Stock::withoutGlobalScopes()
                 ->where('variant_id', $item->product_variant_id)
-                ->where('reserved', '>=', $item->quantity)
-                ->update(['reserved' => DB::raw('reserved - ' . $item->quantity)]);
+                ->where('reserved', '>', 0)
+                ->lockForUpdate()
+                ->get();
+                
+            foreach ($stocks as $stock) {
+                if ($remainingToRelease <= 0) break;
+                
+                $toRelease = min($stock->reserved, $remainingToRelease);
+                $stock->decrement('reserved', $toRelease);
+                $remainingToRelease -= $toRelease;
+            }
         }
     }
 

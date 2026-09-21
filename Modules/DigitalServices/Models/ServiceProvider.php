@@ -13,7 +13,7 @@ class ServiceProvider extends Model
     /**
      * The attributes that are mass assignable.
      */
-    protected $fillable = [];
+    protected $fillable = ['company_id', 'name', 'code', 'category', 'is_active', 'created_by'];
 
     // protected static function newFactory(): ServiceProviderFactory
     // {

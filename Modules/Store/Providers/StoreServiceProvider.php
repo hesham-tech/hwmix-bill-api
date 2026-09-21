@@ -3,6 +3,9 @@
 namespace Modules\Store\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Event;
+use Modules\Store\Events\SubOrderStatusChanged;
+use Modules\Store\Listeners\CreateInvoiceForDeliveredOrder;
 
 class StoreServiceProvider extends ServiceProvider
 {
@@ -29,6 +32,12 @@ class StoreServiceProvider extends ServiceProvider
     {
         $this->registerConfig();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'database/migrations'));
+
+        // Register Event Listeners for Store Module
+        Event::listen(
+            SubOrderStatusChanged::class,
+            CreateInvoiceForDeliveredOrder::class
+        );
     }
 
     /**

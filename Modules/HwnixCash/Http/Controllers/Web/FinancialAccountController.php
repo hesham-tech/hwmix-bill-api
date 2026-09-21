@@ -54,13 +54,13 @@ class FinancialAccountController extends Controller
         return api_success($senders, 'تم جلب أسماء المرسلين المكتشفة بنجاح.');
     }
 
-    public function store(StoreFinancialAccountRequest $request): JsonResponse
+    public function store(StoreFinancialAccountRequest $request, \Modules\DigitalServices\Services\ProviderAccountSetupService $setupService): JsonResponse
     {
         $user = $request->user();
         $companyId = $user->active_company_id ?? $user->company_id;
         $validated = $request->validated();
 
-        $account = DB::transaction(function () use ($validated, $companyId, $user) {
+        $account = DB::transaction(function () use ($validated, $companyId, $user, $setupService) {
             // 1. التأكد من وجود MessageSource أو إنشاؤه
             $provider = WalletProvider::VODAFONE_CASH;
             $search = strtolower($validated['sender_identifier']);
@@ -88,7 +88,7 @@ class FinancialAccountController extends Controller
             );
 
             // 2. إنشاء الحساب المالي المرتبط بالخط ومصدر الرسائل
-            return HwnixCashFinancialAccount::create([
+            $finAccount = HwnixCashFinancialAccount::create([
                 'company_id' => $companyId,
                 'created_by' => $user->id,
                 'line_id' => $validated['line_id'],
@@ -112,6 +112,18 @@ class FinancialAccountController extends Controller
                 'status' => 'active',
                 'note' => $validated['note'] ?? null,
             ]);
+
+            // 3. الربط الذكي: إنشاء محفظة الكاشير (Provider Account) إذا تم تفعيل الخيار
+            if (!empty($validated['create_provider_account']) && !empty($validated['service_provider_id'])) {
+                $setupService->setup([
+                    'service_provider_id' => $validated['service_provider_id'],
+                    'name' => trim($validated['name']),
+                    'type' => 'digital_wallet',
+                    'hwnix_cash_financial_account_id' => $finAccount->id
+                ], $companyId, $user->id);
+            }
+
+            return $finAccount;
         });
 
         $account->load(['line', 'messageSource']);

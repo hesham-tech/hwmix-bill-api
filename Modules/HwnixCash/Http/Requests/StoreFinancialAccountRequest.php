@@ -38,6 +38,10 @@ class StoreFinancialAccountRequest extends FormRequest
             'monthly_deposit_alert_value' => ['nullable', 'numeric', 'min:1', $this->validateAlertValueRule('monthly_deposit')],
 
             'note' => 'nullable|string',
+
+            // الربط الذكي مع شاشة الكاشير السريع (POS)
+            'create_provider_account' => 'nullable|boolean',
+            'service_provider_id' => 'nullable|integer|exists:service_providers,id',
         ];
     }
 
