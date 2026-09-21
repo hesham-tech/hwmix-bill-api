@@ -14,7 +14,7 @@ class VendorController extends Controller
      */
     public function index(Request $request)
     {
-        $vendors = Company::where('store_enabled', true)
+        $vendors = Company::storePublishEnabled()
             ->paginate($request->get('per_page', 15));
 
         return response()->json([
@@ -29,7 +29,7 @@ class VendorController extends Controller
      */
     public function show($id)
     {
-        $vendor = Company::where('store_enabled', true)->find($id);
+        $vendor = Company::storePublishEnabled()->find($id);
 
         if (!$vendor) {
             return response()->json([
@@ -48,7 +48,7 @@ class VendorController extends Controller
 
     public function products(Request $request, $id, \Modules\Store\Services\StoreProductQueryService $queryService)
     {
-        $vendor = Company::where('store_enabled', true)->find($id);
+        $vendor = Company::storePublishEnabled()->find($id);
 
         if (!$vendor) {
             return response()->json([

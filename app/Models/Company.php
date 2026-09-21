@@ -101,6 +101,42 @@ class Company extends Model
     /**
      * علاقة الشركة بالفروع
      */
+    public function subscriptions()
+    {
+        return $this->hasMany(CompanySubscription::class);
+    }
+
+    public function activeSubscription()
+    {
+        return $this->hasOne(CompanySubscription::class)
+            ->whereIn("status", ["active", "trial"])
+            ->where(function ($q) {
+                $q->whereNull("ends_at")
+                  ->orWhere("ends_at", ">=", now());
+            })
+            ->latest("id");
+    }
+
+    public function canPublishToStore(): bool
+    {
+        $sub = $this->activeSubscription;
+        if (!$sub) return false;
+        $features = $sub->features ?? [];
+        return isset($features["store_publish"]) && $features["store_publish"] == true;
+    }
+
+    public function scopeStorePublishEnabled($query)
+    {
+        return $query->whereHas("subscriptions", function ($sq) {
+            $sq->whereIn("status", ["active", "trial"])
+               ->where(function ($sq2) {
+                   $sq2->whereNull("ends_at")
+                       ->orWhere("ends_at", ">=", now());
+               })
+               ->where("features", "like", "%" . "\"store_publish\":true" . "%");
+        });
+    }
+
     public function branches()
     {
         return $this->hasMany(\Modules\Companies\Models\Branch::class);

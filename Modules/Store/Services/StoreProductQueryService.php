@@ -17,7 +17,7 @@ class StoreProductQueryService
     public function getProducts(array $filters = []): LengthAwarePaginator
     {
         $query = Product::withoutGlobalScopes()
-            ->whereHas('company', fn($q) => $q->where('store_enabled', true))
+            ->whereHas('company', fn($q) => $q->storePublishEnabled())
             ->where('is_active_in_store', true)
             ->where('active', true)
             ->with([
@@ -99,7 +99,7 @@ class StoreProductQueryService
             ->where('id', $id)
             ->where('is_active_in_store', true)
             ->where('active', true)
-            ->whereHas('company', fn($q) => $q->where('store_enabled', true))
+            ->whereHas('company', fn($q) => $q->storePublishEnabled())
             ->with([
                 'images',
                 'category',
@@ -123,7 +123,7 @@ class StoreProductQueryService
     public function getCategories(): \Illuminate\Support\Collection
     {
         $activeProductIds = Product::withoutGlobalScopes()
-            ->whereHas('company', fn($q) => $q->where('store_enabled', true))
+            ->whereHas('company', fn($q) => $q->storePublishEnabled())
             ->where('is_active_in_store', true)
             ->where('active', true)
             ->pluck('category_id')
@@ -148,7 +148,7 @@ class StoreProductQueryService
     public function getBrands(): \Illuminate\Support\Collection
     {
         $brandIds = Product::withoutGlobalScopes()
-            ->whereHas('company', fn($q) => $q->where('store_enabled', true))
+            ->whereHas('company', fn($q) => $q->storePublishEnabled())
             ->where('is_active_in_store', true)
             ->where('active', true)
             ->pluck('brand_id')
@@ -167,7 +167,7 @@ class StoreProductQueryService
     public function getVendors(): \Illuminate\Support\Collection
     {
         return Company::withoutGlobalScopes()
-            ->where('store_enabled', true)
+            ->storePublishEnabled()
             ->withCount(['products' => fn($q) =>
                 $q->withoutGlobalScopes()
                   ->where('is_active_in_store', true)
@@ -185,7 +185,7 @@ class StoreProductQueryService
     {
         return Company::withoutGlobalScopes()
             ->where('id', $companyId)
-            ->where('store_enabled', true)
+            ->storePublishEnabled()
             ->with(['logo', 'images'])
             ->first();
     }
