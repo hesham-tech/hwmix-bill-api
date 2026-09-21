@@ -270,6 +270,23 @@ class PlanController extends Controller
 
                 $plan->update($validatedData);
 
+                // Sync updated features and limits to all active subscriptions of this plan
+                $updateData = [];
+                if (isset($validatedData['features'])) $updateData['features'] = $validatedData['features'];
+                if (isset($validatedData['max_users'])) $updateData['max_users'] = $validatedData['max_users'];
+                if (isset($validatedData['max_products'])) $updateData['max_products'] = $validatedData['max_products'];
+                if (isset($validatedData['max_invoices'])) $updateData['max_invoices'] = $validatedData['max_invoices'];
+                if (isset($validatedData['max_warehouses'])) $updateData['max_warehouses'] = $validatedData['max_warehouses'];
+                
+                if (!empty($updateData)) {
+                    $activeSubs = \App\Models\CompanySubscription::where('plan_id', $plan->id)
+                        ->whereIn('status', ['active', 'trial'])
+                        ->get();
+                    foreach($activeSubs as $sub) {
+                        $sub->update($updateData);
+                    }
+                }
+
                 if ($pricingTiers !== null) {
                     // Delete existing tiers for this plan
                     DB::table('plan_pricing_tiers')->where('plan_id', $plan->id)->delete();
