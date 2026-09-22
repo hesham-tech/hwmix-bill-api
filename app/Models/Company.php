@@ -133,7 +133,9 @@ class Company extends Model
                    $sq2->whereNull("ends_at")
                        ->orWhere("ends_at", ">=", now());
                })
-               ->where("features", "like", "%" . "\"store_publish\":true" . "%");
+               ->whereHas("plan", function ($pq) {
+                   $pq->where("features", "like", '%"store_publish":true%');
+               });
         });
     }
 

@@ -158,7 +158,7 @@ class StoreProductQueryService
         return Brand::withoutGlobalScopes()
             ->whereIn('id', $brandIds)
             ->where('active', true)
-            ->get(['id', 'name', 'image']);
+            ->get(['id', 'name']);
     }
 
     /**
