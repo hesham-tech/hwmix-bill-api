@@ -30,6 +30,11 @@ class StoreProductQueryService
                     ->with(['stocks' => fn($sq) => $sq->withoutGlobalScopes()]),
             ]);
 
+        // فلتر مصفوفة أرقام المنتجات (للمفضلة مثلاً)
+        if (!empty($filters['ids']) && is_array($filters['ids'])) {
+            $query->whereIn('id', $filters['ids']);
+        }
+
         // فلتر البحث النصي
         if (!empty($filters['q'])) {
             $query->where(function ($q) use ($filters) {

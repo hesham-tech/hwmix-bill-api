@@ -22,7 +22,7 @@ class StoreProductController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only(['category_id', 'search', 'company_id', 'vendor_id', 'in_stock', 'price_min', 'price_max', 'sort']);
+        $filters = $request->only(['category_id', 'search', 'company_id', 'vendor_id', 'in_stock', 'price_min', 'price_max', 'sort', 'ids', 'per_page']);
         if ($request->has('search')) {
             $filters['q'] = $request->search;
         }

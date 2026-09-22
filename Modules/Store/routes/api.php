@@ -7,6 +7,7 @@ use Modules\Store\Http\Controllers\VendorController;
 use Modules\Store\Http\Controllers\CustomerAddressController;
 use Modules\Store\Http\Controllers\StoreOrderController;
 use Modules\Store\Http\Controllers\VendorOrderController;
+use Modules\Store\Http\Controllers\StoreWishlistController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,11 @@ Route::prefix('store')->group(function() {
     // Authenticated Customer Routes (and mixed)
     Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('/addresses', CustomerAddressController::class);
+        
+        // المفضلة
+        Route::get('/wishlist', [StoreWishlistController::class, 'index']);
+        Route::get('/wishlist/ids', [StoreWishlistController::class, 'getIds']);
+        Route::post('/wishlist/toggle', [StoreWishlistController::class, 'toggle']);
     });
 
     // Orders (Mixed: Guest & Auth)

@@ -16,9 +16,13 @@ class StoreProductResource extends JsonResource
             'company_id' => $this->company_id,
             'name' => $this->name,
             'sku' => $this->sku,
-            'description' => $this->description,
+            'description' => $this->desc,
             'category_id' => $this->category_id,
             'price' => (float)($this->variants->min('retail_price') ?? 0),
+            'discount' => (float)($this->variants->max('discount') ?? 0),
+            'old_price' => (float)($this->variants->min('retail_price') ?? 0) + (float)($this->variants->max('discount') ?? 0),
+            'rating' => 0, // TODO: Implement reviews system
+            'reviews_count' => 0, // TODO: Implement reviews system
             'image' => $this->images->first()?->url ?? null,
             'quantity' => $this->variants->sum(fn($v) => $v->stocks->sum(fn($s) => $s->quantity - $s->reserved)),
             'stock_status' => $this->variants->sum(fn($v) => $v->stocks->sum(fn($s) => $s->quantity - $s->reserved)) > 0 ? 'in_stock' : 'out_of_stock',
