@@ -34,14 +34,15 @@ Route::prefix('store')->group(function() {
         Route::get('/vendors/{id}/products', [VendorController::class, 'products']);
     });
 
-    // Authenticated Customer Routes
+    // Authenticated Customer Routes (and mixed)
     Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('/addresses', CustomerAddressController::class);
-        
-        Route::get('/orders', [StoreOrderController::class, 'index']);
-        Route::post('/orders', [StoreOrderController::class, 'store']);
-        Route::get('/orders/{id}', [StoreOrderController::class, 'show']);
     });
+
+    // Orders (Mixed: Guest & Auth)
+    Route::get('/orders', [StoreOrderController::class, 'index']);
+    Route::post('/orders', [StoreOrderController::class, 'store']);
+    Route::get('/orders/{id}', [StoreOrderController::class, 'show']);
 });
 
 // Authenticated Vendor (Staff) Routes

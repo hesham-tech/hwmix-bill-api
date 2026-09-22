@@ -13,6 +13,7 @@ use Modules\HwnixCash\Models\HwnixCashFinancialAccount;
 use Modules\HwnixCash\Models\HwnixCashLine;
 use Modules\HwnixCash\Models\HwnixCashMessageSource;
 use Modules\HwnixCash\Domain\Enums\LineStatus;
+use Modules\HwnixCash\Services\ProviderAccountSetupService;
 
 class AgentOnboardingController extends Controller
 {
@@ -108,6 +109,8 @@ class AgentOnboardingController extends Controller
             'sender' => 'required|string',
             'daily_withdraw_limit' => 'nullable|numeric',
             'daily_deposit_limit' => 'nullable|numeric',
+            'create_provider_account' => 'nullable|boolean',
+            'service_provider_id' => 'nullable|exists:service_providers,id',
         ]);
 
         $user = $request->user();
@@ -177,6 +180,11 @@ class AgentOnboardingController extends Controller
                 ]
             );
 
+            // 5. ????? ????? ??????? ?????? (POS) ???????? ???????? ??? ??? ???
+            if (!empty($validated['create_provider_account']) && !empty($validated['service_provider_id'])) {
+                app(ProviderAccountSetupService::class)->setup($wallet, $validated['service_provider_id']);
+            }
+
             DB::commit();
 
             return api_success($wallet, 'تم إعداد المحفظة وبدء العمل بنجاح');
@@ -186,3 +194,4 @@ class AgentOnboardingController extends Controller
         }
     }
 }
+

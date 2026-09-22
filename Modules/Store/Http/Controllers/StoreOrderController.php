@@ -27,8 +27,17 @@ class StoreOrderController extends Controller
      */
     public function index(Request $request)
     {
+        $userId = Auth::guard('sanctum')->id();
+        if (!$userId) {
+            return response()->json([
+                'success' => true,
+                'message' => 'لا يوجد طلبات للزوار',
+                'data' => []
+            ]);
+        }
+
         $orders = StoreOrder::with(['subOrders.items', 'subOrders.company'])
-            ->where('user_id', Auth::id())
+            ->where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->paginate($request->get('per_page', 15));
 
@@ -45,7 +54,47 @@ class StoreOrderController extends Controller
     public function store(PlaceOrderRequest $request)
     {
         try {
-            $order = $this->orderService->placeOrder(Auth::id(), $request->validated());
+            $userId = Auth::guard('sanctum')->id();
+            $validated = $request->validated();
+            
+            // Handle Guest Checkout
+            if (!$userId) {
+                if (empty($validated['guest_address'])) {
+                    throw new \Exception('بيانات الضيف مطلوبة');
+                }
+                
+                $guestData = $validated['guest_address'];
+                $phone = $guestData['phone'];
+                $name = $guestData['recipient_name'];
+                
+                // Try to find user by phone
+                $user = \App\Models\User::where('phone', $phone)->first();
+                
+                if (!$user) {
+                    $user = \App\Models\User::create([
+                        'name' => $name,
+                        'phone' => $phone,
+                        'email' => $phone . '@guest.local', // Dummy email
+                        'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(12)),
+                        'is_staff' => false,
+                        'company_id' => 1, // Fallback if necessary
+                    ]);
+                    $user->assignRole('customer');
+                }
+                $userId = $user->id;
+            }
+
+            // Create address if guest
+            if (!empty($validated['guest_address']) && empty($validated['shipping_address_id'])) {
+                $address = \Modules\Store\Models\CustomerAddress::create(array_merge(
+                    $validated['guest_address'],
+                    ['user_id' => $userId, 'label' => 'home']
+                ));
+                $validated['shipping_address_id'] = $address->id;
+            }
+
+            $userModel = \App\Models\User::find($userId);
+            $order = $this->orderService->placeOrder($validated, $userModel);
 
             return response()->json([
                 'success' => true,
@@ -66,9 +115,24 @@ class StoreOrderController extends Controller
      */
     public function show($id)
     {
-        $order = StoreOrder::with(['subOrders.items', 'subOrders.company'])
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
+        // For guest, they might track order without auth? For now, we only allow if authenticated.
+        $userId = Auth::guard('sanctum')->id();
+        
+        $query = StoreOrder::with(['subOrders.items', 'subOrders.company']);
+        
+        if ($userId) {
+            $query->where('user_id', $userId);
+        } else {
+            // If they track by order_number directly
+            $query->where('order_number', $id);
+        }
+
+        // If ID is numeric, search by ID, else by order_number
+        if (is_numeric($id) && $userId) {
+            $order = $query->findOrFail($id);
+        } else {
+            $order = $query->where('order_number', $id)->firstOrFail();
+        }
 
         return response()->json([
             'success' => true,

@@ -59,7 +59,7 @@ class StoreOrderService
             $order = StoreOrder::create([
                 'order_number'        => $this->generateOrderNumber(),
                 'customer_user_id'    => $customer->id,
-                'shipping_address_id' => $data['address_id'],
+                'shipping_address_id' => $data['shipping_address_id'],
                 'payment_method'      => $data['payment_method'] ?? 'cod',
                 'payment_status'      => 'unpaid',
                 'subtotal'            => $orderSubtotal,
