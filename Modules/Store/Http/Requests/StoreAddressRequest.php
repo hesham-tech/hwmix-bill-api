@@ -20,14 +20,17 @@ class StoreAddressRequest extends FormRequest
     public function rules()
     {
         return [
-            'title' => 'required|string|max:255',
-            'address_line_1' => 'required|string|max:255',
-            'address_line_2' => 'nullable|string|max:255',
-            'city' => 'required|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:50',
-            'country' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:50',
+            'label' => 'nullable|string|max:50',
+            'recipient_name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'country' => 'nullable|string|max:100',
+            'city' => 'required|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'street' => 'required|string|max:255',
+            'building' => 'nullable|string|max:255',
+            'floor' => 'nullable|string|max:255',
+            'apartment' => 'nullable|string|max:255',
+            'landmark' => 'nullable|string',
             'is_default' => 'boolean',
         ];
     }

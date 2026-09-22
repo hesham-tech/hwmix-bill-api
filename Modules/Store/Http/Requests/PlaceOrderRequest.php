@@ -20,7 +20,7 @@ class PlaceOrderRequest extends FormRequest
     public function rules()
     {
         return [
-            'payment_method' => 'required|string|in:cash_on_delivery,credit_card,hwnix_cash',
+            'payment_method' => 'required|string|in:cod,online',
             'shipping_address_id' => 'required_without:guest_address|nullable|exists:customer_addresses,id',
             
             // Guest address validation
