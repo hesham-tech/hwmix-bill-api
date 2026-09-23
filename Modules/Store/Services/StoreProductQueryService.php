@@ -136,6 +136,7 @@ class StoreProductQueryService
             ->unique();
 
         return Category::withoutGlobalScopes()
+            ->with('image')
             ->whereIn('id', $activeProductIds)
             ->where('active', true)
             ->withCount(['products' => fn($q) =>

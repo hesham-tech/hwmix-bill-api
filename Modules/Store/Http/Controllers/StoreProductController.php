@@ -70,7 +70,7 @@ class StoreProductController extends Controller
         $categories = $this->productQueryService->getCategories();
         return response()->json([
             'success' => true,
-            'data' => $categories
+            'data' => \Modules\Inventory\Http\Resources\CategoryResource::collection($categories)
         ]);
     }
 
