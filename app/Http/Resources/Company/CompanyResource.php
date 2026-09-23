@@ -37,6 +37,7 @@ class CompanyResource extends JsonResource
             'print_settings' => $this->print_settings,
             'created_by' => $this->created_by,
             'logo' => $this->logo?->url,
+            'can_publish_to_store' => $this->canPublishToStore(),
             'default_cash_customer_id' => $this->default_cash_customer_id,
             'default_cash_customer' => $cashCustomer ? [
                 'id' => $cashCustomer->id,
