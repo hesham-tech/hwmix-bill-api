@@ -69,6 +69,23 @@ class CustomerAddressController extends Controller
     }
 
     /**
+     * جعل العنوان افتراضيًا
+     */
+    public function setDefault($id)
+    {
+        $address = CustomerAddress::where('user_id', Auth::id())->findOrFail($id);
+        
+        CustomerAddress::where('user_id', Auth::id())->update(['is_default' => false]);
+        $address->update(['is_default' => true]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تعيين العنوان كافتراضي بنجاح',
+            'data' => new CustomerAddressResource($address)
+        ]);
+    }
+
+    /**
      * حذف عنوان
      */
     public function destroy($id)

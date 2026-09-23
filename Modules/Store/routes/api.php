@@ -37,6 +37,7 @@ Route::prefix('store')->group(function() {
 
     // Authenticated Customer Routes (and mixed)
     Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/addresses/{id}/default', [CustomerAddressController::class, 'setDefault']);
         Route::apiResource('/addresses', CustomerAddressController::class);
         
         // المفضلة
