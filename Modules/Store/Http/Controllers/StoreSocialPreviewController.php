@@ -19,7 +19,7 @@ class StoreSocialPreviewController extends Controller
             return $this->defaultPreview();
         }
 
-        $title = htmlspecialchars($product->name . ' - المتجر');
+        $title = htmlspecialchars($product->name . ' - هونكس');
         $description = htmlspecialchars(mb_substr($product->desc ?? 'تسوق الآن من متجرنا', 0, 160));
         
         $imageUrl = $product->images->first()?->url ?? 'https://bill.hwnix.com/loader.css';
@@ -36,8 +36,8 @@ class StoreSocialPreviewController extends Controller
 
     private function defaultPreview()
     {
-        $title = "المتجر - HWNix ERP";
-        $description = "تسوق الآن واكتشف أفضل العروض والمنتجات من متاجرنا";
+        $title = "هونكس - المتجر";
+        $description = "تسوق أفضل العروض والمنتجات من متاجرنا";
         $imageUrl = "https://bill.hwnix.com/favicon.ico"; 
         $url = "https://bill.hwnix.com/store";
 
