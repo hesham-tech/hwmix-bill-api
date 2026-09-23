@@ -17,7 +17,6 @@ class StoreProductResource extends JsonResource
             'name' => $this->name,
             'sku' => $this->sku,
             'description' => $this->desc,
-            'desc_long' => $this->desc_long,
             'category_id' => $this->category_id,
             'category' => $this->whenLoaded('category', fn() => ['id' => $this->category->id, 'name' => $this->category->name]),
             'brand' => $this->whenLoaded('brand', fn() => ['id' => $this->brand->id, 'name' => $this->brand->name]),
@@ -28,7 +27,6 @@ class StoreProductResource extends JsonResource
             'rating' => 0, // TODO: Implement reviews system
             'reviews_count' => 0, // TODO: Implement reviews system
             'image' => $this->images->first()?->url ?? null,
-            'images' => $this->images->map(fn($img) => ['id' => $img->id, 'url' => $img->url]),
             'quantity' => $this->variants->sum(fn($v) => $v->stocks->sum(fn($s) => $s->quantity - $s->reserved)),
             'stock_status' => $this->variants->sum(fn($v) => $v->stocks->sum(fn($s) => $s->quantity - $s->reserved)) > 0 ? 'in_stock' : 'out_of_stock',
             'default_variant_id' => $this->variants->first()?->id ?? $this->id,
@@ -39,17 +37,6 @@ class StoreProductResource extends JsonResource
                         'id' => $variant->id,
                         'name' => $variant->name,
                         'price' => (float)$variant->retail_price,
-                        'barcode' => $variant->barcode,
-                        'weight' => $variant->weight,
-                        'dimensions' => $variant->dimensions,
-                        'warranty_days' => $variant->warranty_days,
-                        'image' => $variant->images->first()?->url ?? null,
-                        'attributes' => $variant->relationLoaded('attributes') ? $variant->attributes->map(function($attr) {
-                            return [
-                                'name' => $attr->attribute->name ?? '',
-                                'value' => $attr->attributeValue->value ?? $attr->value ?? '',
-                            ];
-                        }) : [],
                         'available_stock' => $variant->stocks->sum(fn($s) => $s->quantity - $s->reserved),
                     ];
                 });
