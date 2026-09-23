@@ -45,6 +45,7 @@ class StoreProductDetailResource extends JsonResource
                         'dimensions' => $variant->dimensions,
                         'warranty_days' => $variant->warranty_days,
                         'image' => $variant->images->first()?->url ?? $variant->image ?? null,
+                        'images' => $variant->images->map(fn($img) => ['id' => $img->id, 'url' => $img->url]),
                         'attributes' => $variant->relationLoaded('attributes') ? $variant->attributes->map(function($attr) {
                             return [
                                 'name' => $attr->attribute->name ?? '',
