@@ -8,6 +8,7 @@ use Modules\Store\Http\Controllers\CustomerAddressController;
 use Modules\Store\Http\Controllers\StoreOrderController;
 use Modules\Store\Http\Controllers\VendorOrderController;
 use Modules\Store\Http\Controllers\StoreWishlistController;
+use Modules\Store\Http\Controllers\StoreSocialPreviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +22,11 @@ use Modules\Store\Http\Controllers\StoreWishlistController;
 */
 
 Route::prefix('store')->group(function() {
+    
+    // Social Media Bot Previews
+    Route::get('/og-preview/store-index', [StoreSocialPreviewController::class, 'storeIndexPreview']);
+    Route::get('/og-preview/{id}', [StoreSocialPreviewController::class, 'productPreview']);
+
     // Public Routes
     Route::prefix('public')->group(function() {
         Route::get('/products', [StoreProductController::class, 'index']);
