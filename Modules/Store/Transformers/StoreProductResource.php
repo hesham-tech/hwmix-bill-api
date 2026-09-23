@@ -19,6 +19,7 @@ class StoreProductResource extends JsonResource
             'description' => $this->desc,
             'desc_long' => $this->desc_long,
             'category_id' => $this->category_id,
+            'category' => $this->whenLoaded('category', fn() => ['id' => $this->category->id, 'name' => $this->category->name]),
             'brand' => $this->whenLoaded('brand', fn() => ['id' => $this->brand->id, 'name' => $this->brand->name]),
             'unit' => $this->whenLoaded('baseUnit', fn() => ['id' => $this->baseUnit->id, 'name' => $this->baseUnit->name]),
             'price' => (float)($this->variants->min('retail_price') ?? 0),
@@ -42,6 +43,13 @@ class StoreProductResource extends JsonResource
                         'weight' => $variant->weight,
                         'dimensions' => $variant->dimensions,
                         'warranty_days' => $variant->warranty_days,
+                        'image' => $variant->images->first()?->url ?? null,
+                        'attributes' => $variant->relationLoaded('attributes') ? $variant->attributes->map(function($attr) {
+                            return [
+                                'name' => $attr->attribute->name ?? '',
+                                'value' => $attr->attributeValue->value ?? $attr->value ?? '',
+                            ];
+                        }) : [],
                         'available_stock' => $variant->stocks->sum(fn($s) => $s->quantity - $s->reserved),
                     ];
                 });
