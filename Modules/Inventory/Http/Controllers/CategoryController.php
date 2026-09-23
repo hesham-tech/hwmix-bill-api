@@ -123,7 +123,14 @@ class CategoryController extends Controller
              if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $category->company_id !== $authUser->active_company_id) {
                  return api_forbidden('ليس لديك صلاحية للوصول إلى هذا القسم.');
              }
-             $category->update($request->validated());
+             $data = $request->validated();
+             $category->update($data);
+             
+             if (array_key_exists('image_id', $data)) {
+                 $newImageIds = !empty($data['image_id']) ? [$data['image_id']] : [];
+                 \App\Services\ImageService::syncImagesWithModel($newImageIds, $category, 'icon');
+             }
+
              $category->load($this->relations);
              return api_success(new CategoryResource($category), 'تم تحديث القسم بنجاح.');
          } catch (Throwable $e) {
