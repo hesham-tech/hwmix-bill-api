@@ -28,6 +28,10 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     Route::patch('brands/{brand}/toggle', [BrandController::class, 'toggle']);
 
     // الأقسام
+    Route::get('categories/{category}/breadcrumbs', [CategoryController::class, 'breadcrumbs']);
+    Route::post('categories/merge', [CategoryController::class, 'merge']);
+    Route::post('categories/{category}/globalize', [CategoryController::class, 'globalize']);
+    Route::post('categories/{category}/localize', [CategoryController::class, 'localize']);
     Route::apiResource('categories', CategoryController::class);
     Route::patch('categories/{category}/toggle', [CategoryController::class, 'toggle']);
 

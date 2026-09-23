@@ -32,7 +32,7 @@ class CategoryController extends Controller
 
             if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
                 $query->where(function ($q) {
-                    $q->whereCompanyIsCurrent()->orWhereNull('company_id');
+                    $q->whereCompanyIsCurrent()->orWhere('is_system', true);
                 });
             }
 
@@ -81,11 +81,33 @@ class CategoryController extends Controller
      {
          try {
              $authUser = Auth::user();
-             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $category->company_id !== null && $category->company_id !== $authUser->active_company_id) {
+             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && !$category->is_system && $category->company_id !== $authUser->active_company_id) {
                  return api_forbidden('ليس لديك صلاحية للوصول إلى هذا القسم.');
              }
              $category->load($this->relations);
              return api_success(new CategoryResource($category), 'تم استرداد القسم بنجاح.');
+         } catch (Throwable $e) {
+             return api_exception($e);
+         }
+     }
+
+     /**
+      * عرض مسار القسم (Breadcrumbs)
+      */
+     public function breadcrumbs(Category $category): JsonResponse
+     {
+         try {
+             $breadcrumbs = [];
+             $current = $category;
+             while ($current) {
+                 $breadcrumbs[] = [
+                     'id' => $current->id,
+                     'name' => $current->name,
+                 ];
+                 $current = $current->parent;
+             }
+             
+             return api_success(array_reverse($breadcrumbs), 'تم استرداد مسار القسم بنجاح.');
          } catch (Throwable $e) {
              return api_exception($e);
          }
@@ -98,7 +120,7 @@ class CategoryController extends Controller
      {
          try {
              $authUser = Auth::user();
-             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $category->company_id !== null && $category->company_id !== $authUser->active_company_id) {
+             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $category->company_id !== $authUser->active_company_id) {
                  return api_forbidden('ليس لديك صلاحية للوصول إلى هذا القسم.');
              }
              $category->update($request->validated());
@@ -116,7 +138,7 @@ class CategoryController extends Controller
      {
          try {
              $authUser = Auth::user();
-             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $category->company_id !== null && $category->company_id !== $authUser->active_company_id) {
+             if (!$authUser->hasPermissionTo(perm_key('admin.super')) && $category->company_id !== $authUser->active_company_id) {
                  return api_forbidden('ليس لديك صلاحية للوصول إلى هذا القسم.');
              }
              if ($category->products()->exists()) {
@@ -140,6 +162,74 @@ class CategoryController extends Controller
         try {
             $category->update(['active' => !$category->active]);
             return api_success(new CategoryResource($category), 'تم تغيير الحالة بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * تحويل القسم لسجل عالمي (Global)
+     */
+    public function globalize(Category $category): JsonResponse
+    {
+        try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                return api_forbidden('ليس لديك صلاحية للقيام بهذه العملية.');
+            }
+            $category->update(['is_system' => true]);
+            return api_success(new CategoryResource($category), 'تم تحويل القسم لسجل عالمي بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * تخصيص القسم للشركة الحالية
+     */
+    public function localize(Category $category): JsonResponse
+    {
+        try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                return api_forbidden('ليس لديك صلاحية للقيام بهذه العملية.');
+            }
+            $category->update(['is_system' => false]);
+            return api_success(new CategoryResource($category), 'تم تخصيص القسم للشركة الحالية بنجاح.');
+        } catch (Throwable $e) {
+            return api_exception($e);
+        }
+    }
+
+    /**
+     * دمج فئتين
+     */
+    public function merge(Request $request): JsonResponse
+    {
+        try {
+            $authUser = Auth::user();
+            if (!$authUser->hasPermissionTo(perm_key('admin.super'))) {
+                return api_forbidden('ليس لديك صلاحية للقيام بهذه العملية.');
+            }
+
+            $request->validate([
+                'source_id' => 'required|exists:categories,id',
+                'target_id' => 'required|exists:categories,id|different:source_id',
+            ]);
+
+            $source = Category::findOrFail($request->source_id);
+            $target = Category::findOrFail($request->target_id);
+
+            DB::transaction(function () use ($source, $target) {
+                // نقل المنتجات المرتبطة
+                $source->products()->update(['category_id' => $target->id]);
+                // نقل الأقسام الفرعية المرتبطة
+                $source->children()->update(['parent_id' => $target->id]);
+                
+                $source->delete();
+            });
+
+            return api_success([], 'تم دمج القسمين بنجاح.');
         } catch (Throwable $e) {
             return api_exception($e);
         }

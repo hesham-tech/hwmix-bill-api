@@ -25,11 +25,12 @@ class Category extends Model
         return \Database\Factories\CategoryFactory::new();
     }
 
-    protected $fillable = ['name', 'slug', 'description', 'active', 'parent_id', 'company_id', 'created_by', 'synonyms'];
+    protected $fillable = ['name', 'slug', 'description', 'active', 'parent_id', 'company_id', 'created_by', 'synonyms', 'is_system'];
 
     protected $casts = [
         'synonyms' => 'array',
         'active' => 'boolean',
+        'is_system' => 'boolean',
     ];
 
     public function products()
