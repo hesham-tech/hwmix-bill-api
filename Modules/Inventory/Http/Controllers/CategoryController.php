@@ -41,7 +41,11 @@ class CategoryController extends Controller
             }
 
             if ($request->filled('parent_id')) {
-                $query->where('parent_id', $request->parent_id);
+                if ($request->parent_id === 'null') {
+                    $query->whereNull('parent_id');
+                } else {
+                    $query->where('parent_id', $request->parent_id);
+                }
             }
 
             $perPage = max(1, (int) $request->get('per_page', 20));
