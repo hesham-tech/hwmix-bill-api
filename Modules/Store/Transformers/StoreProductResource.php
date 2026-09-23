@@ -17,7 +17,10 @@ class StoreProductResource extends JsonResource
             'name' => $this->name,
             'sku' => $this->sku,
             'description' => $this->desc,
+            'desc_long' => $this->desc_long,
             'category_id' => $this->category_id,
+            'brand' => $this->whenLoaded('brand', fn() => ['id' => $this->brand->id, 'name' => $this->brand->name]),
+            'unit' => $this->whenLoaded('baseUnit', fn() => ['id' => $this->baseUnit->id, 'name' => $this->baseUnit->name]),
             'price' => (float)($this->variants->min('retail_price') ?? 0),
             'discount' => (float)($this->variants->max('discount') ?? 0),
             'old_price' => (float)($this->variants->min('retail_price') ?? 0) + (float)($this->variants->max('discount') ?? 0),
@@ -34,6 +37,10 @@ class StoreProductResource extends JsonResource
                         'id' => $variant->id,
                         'name' => $variant->name,
                         'price' => (float)$variant->retail_price,
+                        'barcode' => $variant->barcode,
+                        'weight' => $variant->weight,
+                        'dimensions' => $variant->dimensions,
+                        'warranty_days' => $variant->warranty_days,
                         'available_stock' => $variant->stocks->sum(fn($s) => $s->quantity - $s->reserved),
                     ];
                 });
