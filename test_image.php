@@ -1,0 +1,1 @@
+<?php require 'vendor/autoload.php'; use Intervention\Image\ImageManager; use Intervention\Image\Drivers\Gd\Driver; \ = new ImageManager(new Driver()); \ = \->create(800,800)->fill('ffffff'); \->text('HWNix.com', 780, 780, function(\) { \->file(5); \->color('rgba(0,0,0,0.5)'); \->align('right'); \->valign('bottom'); }); echo 'success';

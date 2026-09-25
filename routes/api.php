@@ -173,6 +173,8 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
             Route::get('companies/trash', 'trash');
             Route::post('companies/restore', 'restore');
             Route::post('companies/force-delete', 'forceDestroy');
+            Route::get('companies/watermark-settings', 'getWatermarkSettings');
+            Route::post('companies/watermark-settings', 'updateWatermarkSettings');
             Route::get('companies', 'index');
             Route::post('companies', 'store');
             Route::get('companies/{company}', 'show');

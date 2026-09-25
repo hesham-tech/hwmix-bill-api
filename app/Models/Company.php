@@ -240,6 +240,42 @@ class Company extends Model
     }
 
     /**
+     * التحقق مما إذا كانت خطة الشركة تسمح بتخصيص العلامة المائية
+     */
+    public function canCustomizeWatermark(): bool
+    {
+        if ($this->id === 1) return true; // الشركة الافتراضية النظامية
+        
+        $sub = $this->activeSubscription;
+        if (!$sub) return false;
+        
+        $features = $sub->features ?? [];
+        return isset($features['custom_watermark']) && $features['custom_watermark'] == true;
+    }
+
+    /**
+     * الحصول على إعدادات العلامة المائية
+     */
+    public function getWatermarkSettingsAttribute(): array
+    {
+        $defaults = [
+            'enabled' => true,
+            'type' => 'text', // text, image, both
+            'text' => 'hwnix.com',
+            'image_path' => null,
+            'position' => 'bottom-right',
+            'opacity' => 40,
+            'size' => 24, // font size
+            'color' => '#888888',
+            'stroke' => true,
+            'scale' => 20, // image scale %
+            'apply_to' => ['product', 'variant'], // Entities to apply watermark to
+        ];
+
+        return array_merge($defaults, $this->settings['watermark'] ?? []);
+    }
+
+    /**
      * Label for activity logs.
      */
     public function logLabel()

@@ -529,6 +529,70 @@ class CompanyController extends Controller
     /**
      *   جلب بيانات الشركة الأولى في النظام لعرضها على صفحات الهبوط العامة.
      */
+    public function getWatermarkSettings(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $company = $user->company;
+
+        if (!$company) {
+            return api_error('لا توجد شركة مرتبطة', 404);
+        }
+
+        return api_success([
+            'can_customize' => $company->canCustomizeWatermark(),
+            'settings' => $company->watermark_settings
+        ]);
+    }
+
+    public function updateWatermarkSettings(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $company = $user->company;
+
+        if (!$company) {
+            return api_error('لا توجد شركة مرتبطة', 404);
+        }
+
+        if (!$company->canCustomizeWatermark()) {
+            return api_error('خطتك الحالية لا تدعم تخصيص العلامة المائية. يرجى الترقية للحصول على هذه الميزة.', 403);
+        }
+
+        $validated = $request->validate([
+            'enabled' => 'boolean',
+            'type' => 'in:text,image,both',
+            'text' => 'nullable|string|max:50',
+            'position' => 'in:top-left,top-right,bottom-left,bottom-right,center',
+            'opacity' => 'integer|min:0|max:100',
+            'size' => 'integer|min:10|max:100',
+            'color' => 'string|max:20',
+            'stroke' => 'boolean',
+            'scale' => 'integer|min:10|max:100',
+            'apply_to' => 'nullable|array',
+            'apply_to.*' => 'string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
+        ]);
+
+        $settings = $company->settings ?? [];
+        $watermark = $company->watermark_settings;
+
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store("uploads/{$company->id}/watermark", 'public');
+            $watermark['image_path'] = $path;
+        }
+
+        foreach (['enabled', 'type', 'text', 'position', 'opacity', 'size', 'color', 'stroke', 'scale', 'apply_to'] as $key) {
+            if (isset($validated[$key])) {
+                $watermark[$key] = $validated[$key];
+            }
+        }
+
+        $settings['watermark'] = $watermark;
+        $company->settings = $settings;
+        $company->save();
+
+        return api_success($company->watermark_settings, 'تم تحديث إعدادات العلامة المائية بنجاح');
+    }
+
     public function publicCompany(): JsonResponse
     {
         try {

@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage; // إضافة Facade التخزين
 use App\Http\Resources\Image\ImageResource;
 use App\Services\ImageService;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Format;
+use Intervention\Image\Alignment;
 
 class ImageController extends Controller
 {
@@ -73,12 +77,43 @@ class ImageController extends Controller
                     ? $request->input('media_file_ids')
                     : [$request->input('media_file_id')];
 
+                $manager = new ImageManager(new Driver());
+
                 foreach ($ids as $id) {
                     if (empty($id)) continue;
                     $mediaFile = \Modules\Media\Models\MediaFile::findOrFail($id);
 
+                    $companyModel = \App\Models\Company::find($companyId);
+                    $watermarkCompany = $companyModel && $companyModel->canCustomizeWatermark() ? $companyModel : \App\Models\Company::find(1);
+                    $applyTo = $watermarkCompany ? ($watermarkCompany->watermark_settings['apply_to'] ?? ['product', 'variant']) : ['product', 'variant'];
+
+                    if (in_array($type, $applyTo)) {
+                        $sourcePath = storage_path('app/public/' . $mediaFile->file_path);
+                        if (file_exists($sourcePath)) {
+                            $fileName = "temp_{$user->id}_" . uniqid() . '.webp';
+                            $dir = "uploads/{$companyId}/temp";
+                            Storage::disk('public')->makeDirectory($dir);
+                            $path = "{$dir}/{$fileName}";
+
+                            $img = $manager->decode($sourcePath);
+                            $img->scaleDown(800, 800);
+                            $canvas = $manager->createImage(800, 800)->fill('ffffff');
+                            $canvas->insert($img, 0, 0, 'center');
+                            $this->applyWatermark($canvas, \App\Models\Company::find($companyId));
+                            
+                            $encoded = $canvas->encodeUsingFormat(Format::WEBP, 90);
+                            Storage::disk('public')->put($path, (string) $encoded);
+                            
+                            $finalUrl = $path;
+                        } else {
+                            $finalUrl = '/storage/' . $mediaFile->file_path;
+                        }
+                    } else {
+                        $finalUrl = '/storage/' . $mediaFile->file_path;
+                    }
+
                     $image = Image::create([
-                        'url' => '/storage/' . $mediaFile->file_path, // الرابط المتوقع في حقل url للشركة والمنتجات
+                        'url' => $finalUrl,
                         'type' => $type,
                         'company_id' => $companyId,
                         'created_by' => $user->id,
@@ -110,16 +145,47 @@ class ImageController extends Controller
             $type = $request->input('type', 'misc');
             $uploadedImages = [];
 
+            // تهيئة مكتبة معالجة الصور
+            $manager = new ImageManager(new Driver());
+
             foreach ($request->file('images') as $file) {
-                // اسم الملف الفريد
-                $fileName = "temp_{$user->id}_" . uniqid() . '.' . $file->getClientOriginalExtension();
+                // اسم الملف الفريد بصيغة WebP لتوفير المساحة والسرعة
+                $fileName = "temp_{$user->id}_" . uniqid() . '.webp';
+                
+                $dir = "uploads/{$companyId}/temp";
+                Storage::disk('public')->makeDirectory($dir);
+                $path = "{$dir}/{$fileName}";
 
-                // تخزين الملف في مجلد مؤقت خاص بالشركة
-                // المسار: uploads/{company_id}/temp
-                $path = $file->storeAs("uploads/{$companyId}/temp", $fileName, 'public');
+                $companyModel = \App\Models\Company::find($companyId);
+                $watermarkCompany = $companyModel && $companyModel->canCustomizeWatermark() ? $companyModel : \App\Models\Company::find(1);
+                $applyTo = $watermarkCompany ? ($watermarkCompany->watermark_settings['apply_to'] ?? ['product', 'variant']) : ['product', 'variant'];
 
-                // URL العام للملف المخزن
-                $url = Storage::url($path);
+                if (in_array($type, $applyTo)) {
+                    // 1. معالجة وتوحيد صور المنتجات
+                    $img = $manager->decode($file->getRealPath());
+                    
+                    // تصغير الصورة بحيث لا تتجاوز 800x800 مع الحفاظ على نسبة الأبعاد الأصلية
+                    $img->scaleDown(800, 800);
+                    
+                    // إنشاء لوحة بيضاء بحجم 800x800
+                    $canvas = $manager->createImage(800, 800)->fill('ffffff');
+                    
+                    // وضع الصورة في منتصف اللوحة
+                    $canvas->insert($img, 0, 0, 'center');
+                    
+                    $this->applyWatermark($canvas, \App\Models\Company::find($companyId));
+                    
+                    // تحويل إلى WebP بجودة 90%
+                    $encoded = $canvas->encodeUsingFormat(Format::WEBP, 90);
+                    
+                    // الحفظ في التخزين
+                    Storage::disk('public')->put($path, (string) $encoded);
+                } else {
+                    // الصور العادية (بدون معالجة قوية، مجرد تحويل إلى WebP مثلا)
+                    $img = $manager->decode($file->getRealPath());
+                    $encoded = $img->encodeUsingFormat(Format::WEBP, 90);
+                    Storage::disk('public')->put($path, (string) $encoded);
+                }
 
                 $image = Image::create([
                     'url' => $path,
@@ -132,7 +198,7 @@ class ImageController extends Controller
                 $uploadedImages[] = $image;
             }
 
-            return api_success(ImageResource::collection($uploadedImages), 'تم رفع الصور بنجاح');
+            return api_success(ImageResource::collection($uploadedImages), 'تم رفع ومعالجة الصور بنجاح');
         } catch (Throwable $e) {
             // تسجيل الخطأ كاملاً لأغراض التصحيح
             logger()->error("خطأ أثناء رفع الصور: " . $e->getMessage() . " في الملف: " . $e->getFile() . " السطر: " . $e->getLine());
@@ -242,5 +308,94 @@ class ImageController extends Controller
             'Access-Control-Allow-Methods' => 'GET',
             'Cache-Control' => 'public, max-age=86400',
         ]);
+    }
+
+    /**
+     * Apply watermark settings to an image canvas
+     */
+    protected function applyWatermark($canvas, \App\Models\Company $company)
+    {
+        $companyModel = \App\Models\Company::find($company->id);
+        $watermarkCompany = $companyModel && $companyModel->canCustomizeWatermark() ? $companyModel : \App\Models\Company::find(1);
+        
+        $settings = $watermarkCompany ? $watermarkCompany->watermark_settings : [
+            'enabled' => true,
+            'type' => 'text',
+            'text' => 'hwnix.com',
+            'position' => 'bottom-right',
+            'opacity' => 40,
+            'size' => 24,
+            'color' => '#888888',
+            'stroke' => true,
+        ];
+
+        if (!($settings['enabled'] ?? true)) {
+            return;
+        }
+
+        $type = $settings['type'] ?? 'text';
+        $padding = 20;
+
+        $x = 0; $y = 0;
+        $alignHorizontal = 'center'; $alignVertical = 'middle';
+
+        switch ($settings['position'] ?? 'bottom-right') {
+            case 'top-left':
+                $x = $padding; $y = $padding;
+                $alignHorizontal = 'left'; $alignVertical = 'top';
+                break;
+            case 'top-right':
+                $x = 800 - $padding; $y = $padding;
+                $alignHorizontal = 'right'; $alignVertical = 'top';
+                break;
+            case 'bottom-left':
+                $x = $padding; $y = 800 - $padding;
+                $alignHorizontal = 'left'; $alignVertical = 'bottom';
+                break;
+            case 'bottom-right':
+                $x = 800 - $padding; $y = 800 - $padding;
+                $alignHorizontal = 'right'; $alignVertical = 'bottom';
+                break;
+            case 'center':
+                $x = 400; $y = 400;
+                break;
+        }
+
+        if (in_array($type, ['image', 'both']) && !empty($settings['image_path'])) {
+            $logoPath = storage_path('app/public/' . $settings['image_path']);
+            if (file_exists($logoPath)) {
+                try {
+                    $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                    $logo = $manager->decode($logoPath);
+                    $scalePercent = (int) ($settings['scale'] ?? 20);
+                    $targetWidth = (int) (800 * ($scalePercent / 100));
+                    $logo->scaleDown(width: $targetWidth);
+                    
+                    $canvas->insert($logo, 0, 0, $settings['position'] ?? 'bottom-right');
+                    
+                    if ($type == 'both') {
+                        if (str_contains($settings['position'], 'bottom')) {
+                            $y -= ($logo->height() + 10);
+                        } else {
+                            $y += ($logo->height() + 10);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Watermark Image Error: " . $e->getMessage());
+                }
+            }
+        }
+
+        if (in_array($type, ['text', 'both']) && !empty($settings['text'])) {
+            $canvas->text($settings['text'], $x, $y, function($font) use ($settings, $alignHorizontal, $alignVertical) {
+                $font->file(base_path('vendor/dompdf/dompdf/lib/fonts/DejaVuSans-Bold.ttf'));
+                $font->color($settings['color'] ?? '#888888');
+                $font->size((int) ($settings['size'] ?? 24));
+                if ($settings['stroke'] ?? true) {
+                    $font->stroke('#ffffff', 3);
+                }
+                $font->align($alignHorizontal, $alignVertical);
+            });
+        }
     }
 }
