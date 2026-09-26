@@ -279,7 +279,8 @@ class PlanController extends Controller
                 if (isset($validatedData['max_warehouses'])) $updateData['max_warehouses'] = $validatedData['max_warehouses'];
                 
                 if (!empty($updateData)) {
-                    $activeSubs = \App\Models\CompanySubscription::where('plan_id', $plan->id)
+                    $activeSubs = \App\Models\CompanySubscription::withoutGlobalScopes()
+                        ->where('plan_id', $plan->id)
                         ->whereIn('status', ['active', 'trial'])
                         ->get();
                     foreach($activeSubs as $sub) {
