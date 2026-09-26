@@ -344,20 +344,41 @@ class ImageController extends Controller
                 $x = $padding; $y = $padding;
                 $alignHorizontal = 'left'; $alignVertical = 'top';
                 break;
+            case 'top':
+                $x = 400; $y = $padding;
+                $alignHorizontal = 'center'; $alignVertical = 'top';
+                break;
             case 'top-right':
                 $x = 800 - $padding; $y = $padding;
                 $alignHorizontal = 'right'; $alignVertical = 'top';
+                break;
+            case 'left':
+                $x = $padding; $y = 400;
+                $alignHorizontal = 'left'; $alignVertical = 'middle';
+                break;
+            case 'center':
+                $x = 400; $y = 400;
+                $alignHorizontal = 'center'; $alignVertical = 'middle';
+                break;
+            case 'right':
+                $x = 800 - $padding; $y = 400;
+                $alignHorizontal = 'right'; $alignVertical = 'middle';
                 break;
             case 'bottom-left':
                 $x = $padding; $y = 800 - $padding;
                 $alignHorizontal = 'left'; $alignVertical = 'bottom';
                 break;
+            case 'bottom':
+                $x = 400; $y = 800 - $padding;
+                $alignHorizontal = 'center'; $alignVertical = 'bottom';
+                break;
             case 'bottom-right':
                 $x = 800 - $padding; $y = 800 - $padding;
                 $alignHorizontal = 'right'; $alignVertical = 'bottom';
                 break;
-            case 'center':
-                $x = 400; $y = 400;
+            default:
+                $x = 800 - $padding; $y = 800 - $padding;
+                $alignHorizontal = 'right'; $alignVertical = 'bottom';
                 break;
         }
 
