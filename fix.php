@@ -1,6 +1,0 @@
-<?php
-
-$content = file_get_contents('app/Models/PartnerOperation.php');
-$content = preg_replace('/public function transaction\(\).*?\{.*?\}/s', '', $content);
-$content = preg_replace('/\/\*\*.*?\*\/\s*(?=\/\*\*)/s', '', $content);
-file_put_contents('app/Models/PartnerOperation.php', $content);

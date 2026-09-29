@@ -45,7 +45,7 @@ class PartnerOperationService
         return DB::transaction(function () use ($data) {
             $companyId = Auth::user()->active_company_id ?? null;
             if (!$companyId) {
-                throw new Exception('?? ???? ????? ?????? ?????? ????????.');
+                throw new Exception('لم يتم العثور على الشركة النشطة للمستخدم.');
             }
 
             $type = $data['type'];
@@ -121,12 +121,12 @@ class PartnerOperationService
     public function reverseOperation(PartnerOperation $operation, int $userId): void
     {
         if ($operation->status === 'reversed') {
-            throw new Exception("??? ??????? ?????? ??????.");
+            throw new Exception("هذه العملية معكوسة مسبقاً.");
         }
 
         DB::transaction(function () use ($operation, $userId) {
             if ($operation->financial_operation_id) {
-                $this->engine->reverseOperation($operation->financial_operation_id, "??? ????? ????");
+                $this->engine->reverseOperation($operation->financial_operation_id, "عكس عملية شريك");
             }
             
             $operation->status = 'reversed';

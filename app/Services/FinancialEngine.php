@@ -685,8 +685,10 @@ class FinancialEngine implements FinancialEngineInterface
             // 2. تقليل ذمة العميل إذا لم يكن نقدياً افتراضياً
             if ($party && !$isCashCustomer) {
                 $this->reduceReceivable($party, $amount, $operationId, [
-                    'description' => "سداد دفعة من فاتورة رقم {$invoice->invoice_number}"
-                , 'company_id' => $companyId]);
+                    'description' => "سداد دفعة من فاتورة رقم {$invoice->invoice_number}",
+                    'company_id' => $companyId,
+                    'allow_negative' => true
+                ]);
             }
 
             // 3. توثيق دفعة التحصيل وتعديل حالة الفاتورة تلقائياً
@@ -946,8 +948,10 @@ class FinancialEngine implements FinancialEngineInterface
                 throw new \Exception("لم يتم العثور على العميل/المورد (User ID: {$userId})");
             }
             $this->reduceReceivable($party, $amount, $operationId, [
-                'description' => $metadata['description'] ?? "تخفيض ذمة سند قبض مباشر"
-            , 'company_id' => $companyId]);
+                'description' => $metadata['description'] ?? "تخفيض ذمة سند قبض مباشر",
+                'company_id' => $companyId,
+                'allow_negative' => true
+            ]);
 
             $cashBoxModel = \Modules\Accounting\Models\CashBox::withoutGlobalScopes()->find($cashBoxId);
             $this->ledgerService->recordEntry($cashBoxModel, 'asset', $amount, 'debit', $metadata['description'] ?? 'سند قبض مباشر', now(), $operationId);
@@ -987,8 +991,10 @@ class FinancialEngine implements FinancialEngineInterface
                 throw new \Exception("لم يتم العثور على العميل/المورد (User ID: {$userId})");
             }
             $this->reducePayable($party, $amount, $operationId, [
-                'description' => $metadata['description'] ?? "تخفيض ذمة سند صرف مباشر"
-            , 'company_id' => $companyId]);
+                'description' => $metadata['description'] ?? "تخفيض ذمة سند صرف مباشر",
+                'company_id' => $companyId,
+                'allow_negative' => true
+            ]);
 
             $cashBoxModel = \Modules\Accounting\Models\CashBox::withoutGlobalScopes()->find($cashBoxId);
             $this->ledgerService->recordEntry($cashBoxModel, 'asset', $amount, 'credit', $metadata['description'] ?? 'سند صرف مباشر', now(), $operationId);
