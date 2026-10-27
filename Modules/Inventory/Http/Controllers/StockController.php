@@ -87,7 +87,6 @@ class StockController extends Controller
 
             // Financial impact (COGS / Inventory Value)
             $cost = $stock->quantity * ($stock->cost ?? $productVariant->cost ?? 0); 
-            file_put_contents('debug.txt', 'Cost: ' . $cost . ' Qty: ' . $stock->quantity . ' StockCost: ' . $stock->cost . ' VariantCost: ' . $productVariant->cost);
 
             if ($cost > 0) {
                 $operationId = (string) Str::uuid();

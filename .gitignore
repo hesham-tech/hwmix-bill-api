@@ -30,3 +30,21 @@ debug_*.json
 ag_server_key.pem
 remote_key.pem
 server_key.pem
+
+# Generated diagnostics and local exports
+/.cache/
+/.scribe/endpoints.cache/
+/.scribe/.filehashes
+/_ide_helper.php
+/_ide_helper_models.php
+/.phpstorm.meta.php
+/api-docs*.json
+/backup/
+/deploy.zip
+/debug*.txt
+/diff.txt
+/output.txt
+/routes.txt
+/=
+**/desktop.ini
+*.pem
