@@ -22,6 +22,8 @@ class ProductVariantResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'product_id' => $this->product_id,
+            'product_available' => $this->relationLoaded('product') && $this->product !== null,
             'barcode' => $this->barcode,
             'sku' => $this->sku,
             'attributes_text' => $this->attributes_text,
@@ -48,7 +50,7 @@ class ProductVariantResource extends JsonResource
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
 
-            $this->mergeWhen($this->relationLoaded('product'), [
+            $this->mergeWhen($this->relationLoaded('product') && $this->product !== null, fn() => [
                 'product_id' => $this->product->id,
                 'product_name' => $this->product->name,
                 'product_slug' => $this->product->slug,

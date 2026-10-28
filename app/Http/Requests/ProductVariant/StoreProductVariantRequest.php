@@ -26,7 +26,7 @@ class StoreProductVariantRequest extends FormRequest
             'sku' => 'nullable|string|unique:product_variants,sku,' . $this->id,
             'retail_price' => 'nullable|numeric|min:0',
             'wholesale_price' => 'nullable|numeric|min:0',
-            'profit_margin' => 'nullable|numeric|min:0|max:100',
+            'profit_margin' => 'nullable|numeric',
             'image' => 'nullable|string|max:255',
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string|max:255',

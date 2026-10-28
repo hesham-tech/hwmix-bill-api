@@ -29,7 +29,7 @@ class UpdateProductVariantRequest extends FormRequest
             'sku' => 'sometimes|nullable|string|max:255|unique:product_variants,sku,' . $this->id,
             'retail_price' => 'sometimes|nullable|numeric|min:0',
             'wholesale_price' => 'sometimes|nullable|numeric|min:0',
-            'profit_margin' => 'sometimes|nullable|numeric|min:0|max:100',
+            'profit_margin' => 'sometimes|nullable|numeric',
             'image' => 'sometimes|nullable|string|max:255',
             'weight' => 'sometimes|nullable|numeric|min:0',
             'dimensions' => 'sometimes|nullable|string|max:255',

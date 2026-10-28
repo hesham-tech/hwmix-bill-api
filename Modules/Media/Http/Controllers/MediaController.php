@@ -28,7 +28,7 @@ class MediaController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = MediaFile::query();
+            $query = MediaFile::query()->where('file_path', 'not like', 'label-template-assets/%');
 
             // إذا لم يكن سوبر أدمن ولا مدير شركة ولا يملك صلاحية عرض جميع الصور
             if (
@@ -95,6 +95,10 @@ class MediaController extends Controller
                 }
             }
 
+            if (\Illuminate\Support\Facades\Schema::hasTable('label_template_asset_references') &&
+                \Illuminate\Support\Facades\DB::table('label_template_asset_references')->where('media_file_id', $mediaFile->id)->exists()) {
+                return api_error('هذه الصورة مرتبطة بنسخة محفوظة من قالب ملصقات ولا يمكن حذفها.', [], 409);
+            }
             $success = $this->storageService->delete($mediaFile);
 
             if (!$success) {

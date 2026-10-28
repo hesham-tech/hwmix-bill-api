@@ -18,6 +18,16 @@ class MediaFile extends Model
 
     protected $guarded = [];
 
+    protected static function booted(): void
+    {
+        static::deleting(function ($media) {
+            if (\Illuminate\Support\Facades\Schema::hasTable('label_template_asset_references') &&
+                \Illuminate\Support\Facades\DB::table('label_template_asset_references')->where('media_file_id', $media->id)->exists()) {
+                abort(409, 'هذه الصورة مرتبطة بقالب ملصقات محفوظ.');
+            }
+        });
+    }
+
     /**
      * ميثود للحصول على تفاصيل المسمى لأغراض السجلات.
      */

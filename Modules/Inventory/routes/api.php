@@ -65,3 +65,5 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     Route::apiResource('units', \Modules\Inventory\Http\Controllers\UnitController::class);
     Route::apiResource('unit-conversions', \Modules\Inventory\Http\Controllers\UnitConversionController::class);
 });
+
+require __DIR__.'/label-templates-routes.php';

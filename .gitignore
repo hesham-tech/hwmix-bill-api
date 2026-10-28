@@ -48,3 +48,6 @@ server_key.pem
 /=
 **/desktop.ini
 *.pem
+
+# Generated local code analysis
+graphify-out/

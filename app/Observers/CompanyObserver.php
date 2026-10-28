@@ -14,6 +14,7 @@ class CompanyObserver
      */
     public function created(Company $company): void
     {
+        \Modules\Inventory\Services\LabelTemplateBootstrapper::ensure($company->id);
         $creatorId = $company->created_by ?? \Auth::id();
 
         if (!$creatorId) {

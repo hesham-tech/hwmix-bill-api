@@ -39,6 +39,18 @@ class ProductVariantController extends Controller
         'stocks.warehouse',
     ];
 
+    protected function variantRelations(): array
+    {
+        $relations = $this->relations;
+
+        // Keep parent loading consistent with the super admin's cross-company access.
+        if (Auth::user()?->hasPermissionTo(perm_key('admin.super'))) {
+            $relations['product'] = fn($query) => $query->withoutGlobalScope('company_filter');
+        }
+
+        return $relations;
+    }
+
     /**
      * @group إدارة المتغيرات (Product Variants)
      * 
@@ -50,7 +62,7 @@ class ProductVariantController extends Controller
             /** @var \App\Models\User $authUser */
             $authUser = Auth::user();
 
-            $query = ProductVariant::with($this->relations);
+            $query = ProductVariant::with($this->variantRelations());
             $companyId = $authUser->active_company_id ?? null;
 
             if ($authUser->hasPermissionTo(perm_key('admin.super'))) {
@@ -227,7 +239,7 @@ class ProductVariantController extends Controller
                 }
 
                 DB::commit();
-                return api_success(new ProductVariantResource($productVariant->load($this->relations)), 'تم إنشاء متغير المنتج بنجاح.', 201);
+                return api_success(new ProductVariantResource($productVariant->load($this->variantRelations())), 'تم إنشاء متغير المنتج بنجاح.', 201);
             } catch (ValidationException $e) {
                 DB::rollBack();
                 return api_error('فشل التحقق من صحة البيانات أثناء تخزين متغير المنتج.', $e->errors(), 422);
@@ -259,7 +271,7 @@ class ProductVariantController extends Controller
                 return api_forbidden('يتطلب الارتباط بالشركة.');
             }
 
-            $productVariant = ProductVariant::with($this->relations)->findOrFail($id);
+            $productVariant = ProductVariant::with($this->variantRelations())->findOrFail($id);
 
             // التحقق من صلاحيات العرض
             $canView = false;
@@ -411,7 +423,7 @@ class ProductVariantController extends Controller
                 }
 
                 DB::commit();
-                return api_success(new ProductVariantResource($productVariant->load($this->relations)), 'تم تحديث متغير المنتج بنجاح.');
+                return api_success(new ProductVariantResource($productVariant->load($this->variantRelations())), 'تم تحديث متغير المنتج بنجاح.');
             } catch (ValidationException $e) {
                 DB::rollBack();
                 return api_error('فشل التحقق من صحة البيانات أثناء تحديث متغير المنتج.', $e->errors(), 422);

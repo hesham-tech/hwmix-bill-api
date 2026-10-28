@@ -59,6 +59,26 @@ class ProductVariantControllerTest extends TestCase
             ->assertJsonStructure(['status', 'data']);
     }
 
+    public function test_super_admin_can_load_parent_from_another_company(): void
+    {
+        $otherCompany = Company::factory()->create();
+        $otherProduct = Product::factory()->create(['company_id' => $otherCompany->id]);
+        $variant = ProductVariant::factory()->create([
+            'product_id' => $otherProduct->id,
+            'company_id' => $otherCompany->id,
+        ]);
+        $this->actingAs($this->admin);
+
+        $response = $this->getJson('/api/v1/product-variants');
+        $response->assertOk();
+        $rows = collect($response->json('data'));
+        $row = $rows->firstWhere('id', $variant->id);
+        $this->assertNotNull($row);
+        $this->assertSame($otherProduct->id, $row['product_id']);
+        $this->assertSame($otherProduct->name, $row['product_name']);
+        $this->assertTrue($row['product_available']);
+    }
+
     public function test_can_create_product_variant_with_attributes_and_stocks()
     {
         $this->actingAs($this->admin);

@@ -119,6 +119,8 @@ class ProductControllerTest extends TestCase
             'variants' => [
                 [
                     'sku' => 'UPDATED-SKU',
+                    'purchase_price' => 1,
+                    'profit_margin' => 7400,
                     'retail_price' => 150,
                     'stocks' => [
                         [
@@ -136,6 +138,11 @@ class ProductControllerTest extends TestCase
         $this->assertDatabaseHas('products', [
             'id' => $product->id,
             'name' => 'Updated Product'
+        ]);
+        $this->assertDatabaseHas('product_variants', [
+            'product_id' => $product->id,
+            'sku' => 'UPDATED-SKU',
+            'profit_margin' => 7400,
         ]);
     }
 

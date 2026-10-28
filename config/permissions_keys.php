@@ -864,4 +864,11 @@ return [
         "reverse" => ["key" => "owner_fund_transactions.reverse", "label" => "??? ?????? ????"],
     ],
 
+
+    'label_templates' => [
+        'name' => ['key' => 'label_templates', 'label' => 'قوالب الملصقات'],
+        'manage' => ['key' => 'label_templates.manage', 'label' => 'إنشاء قوالب الملصقات وإدارة المسودات'],
+        'publish' => ['key' => 'label_templates.publish', 'label' => 'نشر قوالب الملصقات'],
+        'set_default' => ['key' => 'label_templates.set_default', 'label' => 'تعيين قالب الملصقات الافتراضي'],
+    ],
 ];
