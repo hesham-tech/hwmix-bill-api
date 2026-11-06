@@ -16,13 +16,18 @@ use Modules\Companies\Models\Branch;
 
 class PaymentTransaction extends Model
 {
-    use HasFactory, SoftDeletes, Blameable, LogsActivity, Scopes, FilterableByCompany, FilterableByBranch;
+    // Collection attempts have their own audit trail and must not inherit a buyer's ERP branch/activity feed.
+    use HasFactory, SoftDeletes, Blameable, Scopes, FilterableByCompany;
 
     protected $guarded = [];
+    protected $hidden = ['gateway_config_snapshot'];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'payload' => 'array',
+        'gateway_config_snapshot' => 'encrypted:array',
+        'gateway_test_mode' => 'boolean',
+        'verified_at' => 'datetime',
     ];
 
     /**
@@ -30,7 +35,7 @@ class PaymentTransaction extends Model
      */
     public function gateway()
     {
-        return $this->belongsTo(PaymentGateway::class, 'payment_gateway_id');
+        return $this->belongsTo(PaymentGateway::class, 'payment_gateway_id')->withoutGlobalScopes()->withTrashed();
     }
 
     /**
@@ -38,7 +43,7 @@ class PaymentTransaction extends Model
      */
     public function payable()
     {
-        return $this->morphTo();
+        return $this->morphTo()->withoutGlobalScopes();
     }
 
     /**

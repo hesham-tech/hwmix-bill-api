@@ -16,20 +16,9 @@ class StoreProductQueryService
      */
     public function getProducts(array $filters = []): LengthAwarePaginator
     {
-        $query = Product::withoutGlobalScopes()
-            ->whereHas('company', fn($q) => $q->storePublishEnabled())
-            ->where('is_active_in_store', true)
-            ->where('active', true)
-            ->with([
-                'images',
-                'category',
-                'brand',
-                'company.logo',
-                'variants' => fn($q) => $q->withoutGlobalScopes()
-                    ->where('status', 'active')
-                    ->with(['stocks' => fn($sq) => $sq->withoutGlobalScopes()]),
-            ]);
-
+        $query = $this->catalogQuery();
+        $price = $this->displayPriceQuery();
+        $query->select('products.*')->selectSub($price, 'store_display_price');
         // فلتر مصفوفة أرقام المنتجات (للمفضلة مثلاً)
         if (!empty($filters['ids']) && is_array($filters['ids'])) {
             $query->whereIn('id', $filters['ids']);
@@ -63,35 +52,23 @@ class StoreProductQueryService
             $query->where('featured', true);
         }
 
-        // فلتر المتاح في المخزون
         if (!empty($filters['in_stock'])) {
-            $query->whereHas('variants.stocks', function ($q) {
-                $q->withoutGlobalScopes()
-                  ->whereRaw('(quantity - reserved) > 0');
-            });
+            $query->whereHas('variants',fn($q)=>$q->withoutGlobalScopes()->whereColumn('product_variants.company_id','products.company_id')->where('status','active')->where('retail_price','>',0)
+                ->whereRaw($this->availableBaseSql().' >= '.$this->factorSql()));
         }
-
-        // فلتر نطاق السعر — بناءً على variant prices
-        if (!empty($filters['price_min'])) {
-            $query->whereHas('variants', fn($q) =>
-                $q->withoutGlobalScopes()->where('retail_price', '>=', $filters['price_min'])
-            );
-        }
-        if (!empty($filters['price_max'])) {
-            $query->whereHas('variants', fn($q) =>
-                $q->withoutGlobalScopes()->where('retail_price', '<=', $filters['price_max'])
-            );
+        foreach(['price_min'=>'>=','price_max'=>'<='] as $key=>$operator) {
+            if(isset($filters[$key]) && $filters[$key] !== '') $query->whereRaw('('.$price->toSql().') '.$operator.' CAST(? AS DECIMAL(20,2))',array_merge($price->getBindings(),[$filters[$key]]));
         }
 
         // الترتيب
         match ($filters['sort'] ?? 'newest') {
-            'price_asc'    => $query->orderBy('id'),
-            'price_desc'   => $query->orderByDesc('id'),
+            'price_asc'    => $query->orderBy('store_display_price')->orderBy('products.id'),
+            'price_desc'   => $query->orderByDesc('store_display_price')->orderBy('products.id'),
             'best_selling' => $query->orderByDesc('sales_count'),
             default        => $query->orderByDesc('created_at'),
         };
 
-        $perPage = min((int) ($filters['per_page'] ?? 12), 48);
+        $perPage = max(1,min((int) ($filters['per_page'] ?? 12), 48));
         return $query->paginate($perPage);
     }
 
@@ -100,26 +77,32 @@ class StoreProductQueryService
      */
     public function getProductById(int $id): ?Product
     {
+        return $this->catalogQuery()->where('products.id',$id)->first();
+    }
+
+    private function availableBaseSql(): string {
+        $date = now('Africa/Cairo')->toDateString();
+        return "(SELECT COALESCE(SUM(stocks.quantity-stocks.reserved),0) FROM stocks INNER JOIN store_seller_profiles sp ON sp.company_id=stocks.company_id AND sp.warehouse_id=stocks.warehouse_id AND sp.is_enabled=1 WHERE stocks.variant_id=product_variants.id AND stocks.company_id=product_variants.company_id AND stocks.deleted_at IS NULL AND stocks.status='available' AND (stocks.expiry IS NULL OR DATE(stocks.expiry)>='$date'))";
+    }
+    private function factorSql(): string {
+        $unit='COALESCE(product_variants.display_unit_id,products.display_unit_id,product_variants.base_unit_id,products.base_unit_id)';
+        $base='COALESCE(product_variants.base_unit_id,products.base_unit_id)';
+        return "(CASE WHEN $base IS NULL THEN NULL WHEN $unit=$base THEN 1 ELSE (SELECT CASE WHEN conversion_factor_to_base>0 THEN conversion_factor_to_base ELSE NULL END FROM product_variant_units WHERE product_variant_id=product_variants.id AND unit_id=$unit LIMIT 1) END)";
+    }
+    private function displayPriceQuery() {
+        return \Illuminate\Support\Facades\DB::table('product_variants')->whereColumn('product_id','products.id')->whereColumn('company_id','products.company_id')
+            ->where('status','active')->where('retail_price','>',0)
+            ->selectRaw('COALESCE(MIN(CASE WHEN '.$this->availableBaseSql().' >= '.$this->factorSql().' THEN retail_price END),MIN(retail_price))');
+    }
+    private function catalogQuery() {
         return Product::withoutGlobalScopes()
-            ->where('id', $id)
-            ->where('is_active_in_store', true)
-            ->where('active', true)
-            ->whereHas('company', fn($q) => $q->storePublishEnabled())
-            ->with([
-                'images',
-                'category',
-                'brand',
-                'company.logo',
-                'variants' => fn($q) => $q->withoutGlobalScopes()
-                    ->where('status', 'active')
-                    ->with([
-                        'images',
-                        'attributes.attribute',
-                        'attributes.attributeValue',
-                        'stocks' => fn($sq) => $sq->withoutGlobalScopes(),
-                    ]),
-            ])
-            ->first();
+            ->whereHas('company',fn($q)=>$q->storePublishEnabled())->where('is_active_in_store',true)->where('active',true)
+            ->with(['images','category','brand','baseUnit'=>fn($q)=>$q->withoutGlobalScopes(),'displayUnit'=>fn($q)=>$q->withoutGlobalScopes(),'company.logo',
+                'variants'=>fn($q)=>$q->withoutGlobalScopes()->where('status','active')->where('retail_price','>',0)
+                    ->with(['images','baseUnit'=>fn($q)=>$q->withoutGlobalScopes(),'displayUnit'=>fn($q)=>$q->withoutGlobalScopes(),'units.unit'=>fn($q)=>$q->withoutGlobalScopes(),'attributes.attribute','attributes.attributeValue',
+                        'stocks'=>fn($sq)=>$sq->withoutGlobalScopes()->whereNull('deleted_at')->where('status','available')
+                            ->where(fn($eq)=>$eq->whereNull('expiry')->orWhereDate('expiry','>=',now('Africa/Cairo')->toDateString()))
+                            ->whereExists(fn($profile)=>$profile->selectRaw('1')->from('store_seller_profiles')->whereColumn('company_id','stocks.company_id')->whereColumn('warehouse_id','stocks.warehouse_id')->where('is_enabled',true))])]);
     }
 
     /**
@@ -210,27 +193,20 @@ class StoreProductQueryService
      */
     public function validateCartItems(array $items): array
     {
-        $errors = [];
-        foreach ($items as $item) {
-            $variant = \Modules\Inventory\Models\ProductVariant::withoutGlobalScopes()
-                ->find($item['variant_id']);
-
-            if (!$variant) {
-                $errors[] = ['variant_id' => $item['variant_id'], 'error' => 'المنتج غير موجود'];
-                continue;
-            }
-
-            $availableStock = $variant->stocks()->withoutGlobalScopes()
-                ->selectRaw('SUM(quantity - reserved) as available')
-                ->value('available') ?? 0;
-
-            if ($availableStock < $item['quantity']) {
-                $errors[] = [
-                    'variant_id' => $item['variant_id'],
-                    'error'      => 'الكمية المطلوبة غير متوفرة',
-                    'available'  => $availableStock,
-                ];
-            }
+        $ids=array_column($items,'variant_id');
+        $products=$this->catalogQuery()->whereHas('variants',fn($q)=>$q->withoutGlobalScopes()->whereIn('id',$ids))->get();
+        $variants=[];
+        foreach($products as $product) {
+            $data=(new \Modules\Store\Transformers\StoreProductResource($product))->resolve(request());
+            foreach($data['variants'] as $variant)$variants[$variant['id']]=$variant+['product_id'=>$product->id];
+        }
+        $errors=[];
+        foreach($items as $item) {
+            $variant=$variants[$item['variant_id']]??null;
+            if(!$variant || (isset($item['product_id'])&&(int)$item['product_id']!==$variant['product_id']))
+                $errors[]=['variant_id'=>$item['variant_id'],'error'=>'المنتج لم يعد متاحًا للشراء'];
+            elseif($variant['available_stock']<(int)$item['quantity'])
+                $errors[]=['variant_id'=>$item['variant_id'],'error'=>'الكمية المطلوبة غير متوفرة بوحدة البيع','available'=>$variant['available_stock']];
         }
         return $errors;
     }

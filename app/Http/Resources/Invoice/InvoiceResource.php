@@ -20,6 +20,8 @@ class InvoiceResource extends JsonResource
             'user_id' => $this->user_id,
             'invoice_type_id' => $this->invoice_type_id,
             'invoice_number' => $this->invoice_number,
+            'is_marketplace_managed' => (bool) $this->is_marketplace_managed,
+            'store_sub_order_id' => $this->store_sub_order_id,
             // الحقول المالية
             'gross_amount' => number_format($this->gross_amount, 2, '.', ''),
             'paid_amount' => number_format($this->paid_amount, 2, '.', ''),
@@ -49,7 +51,9 @@ class InvoiceResource extends JsonResource
             'updated_at' => optional($this->updated_at)->format('Y-m-d H:i:s'),
 
             // العلاقات لما تكون محملة فقط
-            'customer' => new UserBasicResource($this->whenLoaded('customer')),
+            'customer' => $this->is_marketplace_managed
+                ? $this->whenLoaded('customer',fn()=> $this->customer?['id'=>$this->customer->id,'name'=>$this->customer->name,'phone'=>$this->customer->phone]:null)
+                : new UserBasicResource($this->whenLoaded('customer')),
             'invoice_type' => new InvoiceTypeResource($this->whenLoaded('invoiceType')),
             'items' => $this->whenLoaded('items', fn() => InvoiceItemResource::collection($this->items)),
             'payments' => $this->whenLoaded('payments', function () {
@@ -65,7 +69,7 @@ class InvoiceResource extends JsonResource
             'company_id' => $this->company_id,
             'created_by' => $this->created_by,
             'installment_plan_id' => $this->installment_plan_id,
-            'user_balance' => $this->customer ? $this->customer->balance : 0,
+            'user_balance' => $this->is_marketplace_managed?null:($this->customer ? $this->customer->balance : 0),
         ];
     }
 

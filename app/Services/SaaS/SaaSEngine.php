@@ -34,13 +34,7 @@ class SaaSEngine
         }
 
         // 3. جلب الميزات المحددة للعميل
-        $features = $subscription->features ?? $subscription->plan?->features ?? [];
-        if (is_string($features)) {
-            $features = json_decode($features, true) ?: [];
-        }
-
-        // دعم الهيكل الهرمي: flags.feature_key أو المباشر feature_key
-        return (bool) ($features['flags'][$featureKey] ?? $features[$featureKey] ?? false);
+        return SubscriptionFeatures::has($subscription, $featureKey);
     }
 
     /**

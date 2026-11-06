@@ -33,7 +33,6 @@ class PaymentControllerTest extends TestCase
         $this->paymentMethod = PaymentMethod::factory()->create(['company_id' => $this->company->id]);
     }
 
-    /** @test */
     public function test_can_list_payments()
     {
         $this->withoutExceptionHandling();
@@ -51,7 +50,6 @@ class PaymentControllerTest extends TestCase
             ->assertJsonStructure(['status', 'data', 'message']);
     }
 
-    /** @test */
     public function test_can_create_payment()
     {
         $this->withoutExceptionHandling();
@@ -79,7 +77,6 @@ class PaymentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function test_can_show_payment()
     {
         $this->withoutExceptionHandling();
@@ -97,7 +94,6 @@ class PaymentControllerTest extends TestCase
             ->assertJsonPath('data.id', $payment->id);
     }
 
-    /** @test */
     public function test_can_update_payment()
     {
         $this->withoutExceptionHandling();
@@ -124,21 +120,28 @@ class PaymentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function test_can_delete_payment()
     {
         $this->withoutExceptionHandling();
         $this->actingAs($this->admin);
 
-        $payment = Payment::factory()->create([
-            'company_id' => $this->company->id,
-            'user_id' => $this->admin->id,
-            'created_by' => $this->admin->id,
-        ]);
+        $this->postJson('/api/v1/payments',[
+            'user_id'=>$this->admin->id,'payment_date'=>now()->toDateString(),'amount'=>1500.75,'cash_amount'=>1500.75,'credit_amount'=>0,
+            'method'=>'cash','is_split'=>false,'payment_method_id'=>$this->paymentMethod->id,'cash_box_id'=>$this->cashBox->id,
+        ])->assertCreated();
+        $payment=Payment::latest('id')->firstOrFail();
+        $this->assertNotNull($payment->financial_operation_id);
 
         $response = $this->deleteJson("/api/v1/payments/{$payment->id}");
 
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('payments', ['id' => $payment->id]);
+        $this->assertSoftDeleted('payments', ['id' => $payment->id]);
+    }
+
+    public function test_legacy_payment_without_a_financial_operation_requires_review_instead_of_unbalanced_deletion(): void {
+        $this->actingAs($this->admin);
+        $payment=Payment::factory()->create(['company_id'=>$this->company->id,'user_id'=>$this->admin->id,'created_by'=>$this->admin->id,'financial_operation_id'=>null]);
+        $this->deleteJson("/api/v1/payments/{$payment->id}")->assertUnprocessable();
+        $this->assertDatabaseHas('payments',['id'=>$payment->id]);
     }
 }

@@ -88,7 +88,7 @@ trait LogsActivity
         $filter = function ($data) use ($sensitiveFields) {
             if (!is_array($data))
                 return $data;
-            return array_diff_key($data, array_flip($sensitiveFields));
+            return \App\Support\SensitiveData::redact(array_diff_key($data, array_flip($sensitiveFields)));
         };
 
         // Determine user IDs and company ID

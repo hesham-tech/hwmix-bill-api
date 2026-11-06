@@ -41,7 +41,6 @@ class SaaSSubscriptionTest extends TestCase
         );
     }
 
-    /** @test */
     public function test_provision_company_initializes_master_company_membership_and_free_trial()
     {
         $payload = [
@@ -88,7 +87,6 @@ class SaaSSubscriptionTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function test_can_retrieve_my_subscription_usage_matrix()
     {
         // 1. تسجيل مستأجر جديد
@@ -126,7 +124,6 @@ class SaaSSubscriptionTest extends TestCase
             ]);
     }
 
-    /** @test */
     public function test_can_toggle_subscription_auto_renew()
     {
         // 1. تسجيل مستأجر جديد
@@ -176,7 +173,6 @@ class SaaSSubscriptionTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function test_limits_and_features_check()
     {
         // 1. تسجيل مستأجر جديد
@@ -201,7 +197,6 @@ class SaaSSubscriptionTest extends TestCase
         $this->assertTrue(LimitResolver::isWithinLimit($newCompany->id, 'users'));
     }
 
-    /** @test */
     public function test_can_upgrade_subscription_plan()
     {
         // 1. تسجيل مستأجر جديد
@@ -262,7 +257,6 @@ class SaaSSubscriptionTest extends TestCase
         $this->assertTrue(FeatureAccessService::hasAccess($newCompany->id, 'installment_system'));
     }
 
-    /** @test */
     public function test_super_admin_can_view_companies_subscriptions_and_change_plan()
     {
         // 1. إنشاء مستأجر جديد
@@ -341,7 +335,6 @@ class SaaSSubscriptionTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function test_change_plan_by_super_admin_bypasses_trial()
     {
         // 1. إنشاء شركة جديدة

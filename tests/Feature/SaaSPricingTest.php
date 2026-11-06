@@ -24,8 +24,10 @@ class SaaSPricingTest extends TestCase
         parent::setUp();
 
         // إنشاء مستخدم وشركة للتحقق
+        $company=Company::factory()->create();
         $this->user = User::factory()->create([
-            'active_company_id' => 2,
+            'company_id' => $company->id,
+            'active_company_id' => $company->id,
         ]);
 
         $this->plan = Plan::create([
@@ -95,7 +97,6 @@ class SaaSPricingTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function test_pricing_calculation_without_coupon()
     {
         $this->actingAs($this->user);
@@ -134,7 +135,6 @@ class SaaSPricingTest extends TestCase
             ->assertJsonPath('data.tiered_discount_amount', 120);
     }
 
-    /** @test */
     public function test_pricing_calculation_with_percent_coupon()
     {
         $this->actingAs($this->user);
@@ -157,7 +157,6 @@ class SaaSPricingTest extends TestCase
             ->assertJsonPath('data.savings', 216);
     }
 
-    /** @test */
     public function test_coupon_validation_endpoint_success()
     {
         $this->actingAs($this->user);
@@ -174,7 +173,6 @@ class SaaSPricingTest extends TestCase
             ->assertJsonPath('data.value', 20);
     }
 
-    /** @test */
     public function test_coupon_validation_endpoint_fails_when_expired()
     {
         $this->actingAs($this->user);

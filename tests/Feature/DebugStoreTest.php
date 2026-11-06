@@ -12,7 +12,7 @@ class DebugStoreTest extends TestCase {
         $this->seed(AddPermissionsSeeder::class);
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
-    public function test_store() {
+    public function test_creating_owner_funds_requires_administration_permission() {
         $this->withoutExceptionHandling();
         $company = \App\Models\Company::factory()->create();
         $admin = User::factory()->create([
@@ -51,6 +51,8 @@ class DebugStoreTest extends TestCase {
         ];
         
         $response = $this->actingAs($admin)->postJson('/api/v1/owner-fund-transactions', $payload);
-        $response->dump();
+        $response->assertStatus(403);
+        $this->assertDatabaseCount('owner_fund_transactions',0);
+        $this->assertDatabaseCount('financial_operations',0);
     }
 }

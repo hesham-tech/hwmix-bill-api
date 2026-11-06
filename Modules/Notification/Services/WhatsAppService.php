@@ -43,7 +43,7 @@ class WhatsAppService
         $this->config = array_merge([
             'access_token' => env('WHATSAPP_ACCESS_TOKEN', ''),
             'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID', ''),
-            'version' => 'v19.0',
+            'version' => config('notification.whatsapp_api_version'),
         ], (array) $config);
     }
 
@@ -56,7 +56,7 @@ class WhatsAppService
         $phoneNumberId = $this->config['phone_number_id'];
         $version = $this->config['version'];
 
-        if (!$accessToken || !$phoneNumberId) {
+        if (!$accessToken || !preg_match('/^\d{5,30}$/',(string)$phoneNumberId) || !preg_match('/^v\d{1,3}\.\d$/',(string)$version)) {
             return ['success' => false, 'error' => 'إعدادات WhatsApp Cloud API غير مكتملة.'];
         }
 
@@ -82,12 +82,12 @@ class WhatsAppService
                 ];
             }
 
-            $response = Http::withToken($accessToken)
+            $response = Http::withToken($accessToken)->connectTimeout(5)->timeout(15)
                 ->post($url, $payload);
 
             if ($response->failed()) {
-                Log::error('WhatsApp API failed response', ['body' => $response->body()]);
-                return ['success' => false, 'error' => $response->json('error.message') ?? $response->body()];
+                Log::warning('WhatsApp API rejected delivery', ['status' => $response->status(),'provider_code'=>$response->json('error.code')]);
+                return ['success' => false, 'error' => 'رفض مزود واتساب إرسال الرسالة. راجع القالب والصلاحية وإعداد الحساب.'];
             }
 
             return [
@@ -96,8 +96,8 @@ class WhatsAppService
                 'payload' => $response->json()
             ];
         } catch (\Exception $e) {
-            Log::error('WhatsApp send exception: ' . $e->getMessage());
-            return ['success' => false, 'error' => $e->getMessage()];
+            Log::warning('WhatsApp delivery failed',['exception_class'=>get_class($e)]);
+            return ['success' => false, 'error' => 'تعذر تأكيد إرسال الرسالة.'];
         }
     }
 }

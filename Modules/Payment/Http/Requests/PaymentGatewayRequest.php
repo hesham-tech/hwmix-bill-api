@@ -17,8 +17,9 @@ class PaymentGatewayRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'driver' => 'required|string|in:stripe,paymob',
-            'config' => 'required|array',
+            'driver' => ['required', \Illuminate\Validation\Rule::in(array_keys(\Modules\Payment\Services\GatewayRegistry::definitions()))],
+            'config' => 'present|array',
+            'config.*' => 'nullable|string|max:4096',
             'is_active' => 'nullable|boolean',
             'is_test_mode' => 'nullable|boolean',
             'is_default' => 'nullable|boolean',

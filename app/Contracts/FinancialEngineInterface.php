@@ -59,6 +59,9 @@ interface FinancialEngineInterface
      */
     public function processInvoiceCreation(Model $invoice, array $payload): string;
 
+    /** Marketplace clearing journals never move ERP cashboxes or create customer debt. */
+    public function postMarketplaceJournal(Model $source, int $companyId, string $type, array $lines, array $metadata = []): string;
+
     /**
      * ترحيل معالجة دفع الفاتورة بالكامل
      */

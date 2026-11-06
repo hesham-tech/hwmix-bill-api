@@ -169,7 +169,7 @@ class InstallmentPaymentControllerTest extends TestCase
     }
 
     /** @test */
-    public function test_cannot_delete_installment_payment()
+    public function test_legacy_installment_payment_without_financial_reference_cannot_be_reversed()
     {
         $this->actingAs($this->admin);
 
@@ -181,6 +181,8 @@ class InstallmentPaymentControllerTest extends TestCase
 
         $response = $this->deleteJson("/api/v1/installment-payments/{$payment->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(422);
+        $response->assertJsonPath('message','لا يمكن عكس دفعة أقساط قديمة لا تحتوي على رقم عملية مالية.');
+        $this->assertDatabaseHas('installment_payments',['id'=>$payment->id]);
     }
 }

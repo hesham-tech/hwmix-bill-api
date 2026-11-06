@@ -26,6 +26,7 @@ class ImageService
 
         foreach ($imageIds as $imageId) {
             $image = Image::where('id', $imageId)
+                ->where('company_id', $companyId)
                 ->where('created_by', $user->id)
                 ->first();
 
@@ -168,6 +169,9 @@ class ImageService
 
         $modelClass = get_class($model);
 
+        $imageIds=Image::whereIn('id',$imageIds)->where('imageable_type',$modelClass)->where('imageable_id',$model->id)->pluck('id')->all();
+        if(!$imageIds)return;
+
         // إذا تم تحديد ID معين كصورة أساسية
         if ($primaryImageId && in_array($primaryImageId, $imageIds)) {
             // تصفير كل الصور الأخرى لهذا الموديل
@@ -176,7 +180,7 @@ class ImageService
                 ->update(['is_primary' => false]);
 
             // تعيين الصورة المختارة كصورة أساسية
-            Image::where('id', $primaryImageId)->update(['is_primary' => true]);
+            Image::where('id', $primaryImageId)->whereIn('id',$imageIds)->update(['is_primary' => true]);
             return;
         }
 

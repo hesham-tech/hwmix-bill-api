@@ -19,8 +19,11 @@ class MarketplaceRegisterRequest extends FormRequest
         return [
             'full_name' => 'required|string|max:255',
             'nickname' => 'nullable|string|max:255',
-            'phone' => 'required|string|unique:users,phone',
-            'email' => 'nullable|email|unique:users,email',
+            'phone' => ['required','string','regex:/^(?:\\+?20|0)1[0125][0-9]{8}$/','unique:users,phone'],
+            'email' => 'required|email|max:255|unique:users,email',
+            'legal_accepted' => 'required|accepted',
+            'legal_version_ids' => 'required|array|min:1',
+            'legal_version_ids.*' => 'required|integer|distinct',
             'password' => 'required|string|min:8',
         ];
     }

@@ -10,6 +10,10 @@ use Jenssegers\Agent\Agent;
 
 class UserObserver
 {
+    public function updating(User $user): void
+    {
+        if($user->isDirty('email')) $user->email_verified_at=null;
+    }
     /**
      * Handle the User "creating" event.
      */

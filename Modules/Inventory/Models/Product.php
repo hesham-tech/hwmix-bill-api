@@ -55,6 +55,7 @@ class Product extends Model
         'base_unit_id',
         'purchase_unit_id',
         'display_unit_id',
+        'store_return_policy',
         'allow_decimal_quantities',
         'quantity_precision',
     ];
@@ -80,6 +81,7 @@ class Product extends Model
         'published_at' => 'datetime',
         'sales_count' => 'integer',
         'is_active_in_store' => 'boolean',
+        'store_return_policy' => 'array',
         'is_active_in_sales' => 'boolean',
     ];
 

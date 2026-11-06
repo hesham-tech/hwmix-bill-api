@@ -23,7 +23,7 @@ class SubscriptionService
         ?int $customDuration = null,
         ?string $customDurationUnit = null
     ): CompanySubscription {
-        $plan = Plan::findOrFail($planId);
+        $plan = Plan::withoutGlobalScopes()->where(fn($q)=>$q->whereNull('company_id')->orWhere('company_id',config('app.master_company_id',1)))->findOrFail($planId);
 
         // 1. حساب السعر والخصومات والكوبونات بدقة عبر PricingCalculator
         $pricing = PricingCalculator::calculate($planId, $months, $couponCode);
@@ -108,7 +108,7 @@ class SubscriptionService
      */
     public static function initializePendingSubscription(int $companyId, int $planId, int $months = 1, ?string $couponCode = null): CompanySubscription
     {
-        $plan = Plan::findOrFail($planId);
+        $plan = Plan::withoutGlobalScopes()->where(fn($q)=>$q->whereNull('company_id')->orWhere('company_id',config('app.master_company_id',1)))->findOrFail($planId);
 
         // حساب السعر والكوبونات بدقة للطلب المعلق
         $pricing = PricingCalculator::calculate($planId, $months, $couponCode);

@@ -153,11 +153,11 @@ if (!function_exists('api_exception')) {
         // التعامل مع أنواع محددة من الأخطاء
         if ($e instanceof ValidationException) {
             Log::warning("[HWNixCash API Validation Failed]", [
-                'url' => request()?->fullUrl(),
+                'url' => request()?->url(),
                 'method' => request()?->method(),
                 'ip' => request()?->ip(),
                 'user_id' => auth()->id(),
-                'payload' => request()?->except(['password', 'password_confirmation']),
+                'payload' => \App\Support\SensitiveData::redact(request()?->all() ?? []),
                 'errors' => $e->errors(),
             ]);
 

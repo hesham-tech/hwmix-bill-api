@@ -24,6 +24,8 @@ class StorePlanRequest extends FormRequest
             'trial_days' => 'nullable|integer|min:0',
             'is_active' => 'nullable|boolean',
             'features' => 'nullable|array',
+            'features.store_policy'=>'nullable|array',
+            ...\Modules\Store\Services\StorePolicyRules::rules('features.store_policy.',true),
             'max_users' => 'nullable|integer',
             'max_products' => 'nullable|integer',
             'max_invoices' => 'nullable|integer',

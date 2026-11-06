@@ -17,6 +17,8 @@ class StoreOrder extends Model
         'status', 'payment_method', 'payment_status',
         'subtotal', 'shipping_total', 'discount_total', 'total_amount',
         'customer_notes',
+        'checkout_key','checkout_fingerprint','tracking_token_hash','shipping_address_snapshot','currency',
+        'hold_expires_at','confirmed_at','cancellation_requested_at','policy_snapshot','legal_snapshot','tax_total',
     ];
 
     protected $casts = [
@@ -24,11 +26,18 @@ class StoreOrder extends Model
         'shipping_total' => 'decimal:2',
         'discount_total' => 'decimal:2',
         'total_amount'   => 'decimal:2',
+        'tax_total'=>'decimal:2','shipping_address_snapshot'=>'array','policy_snapshot'=>'array','legal_snapshot'=>'array',
+        'hold_expires_at'=>'datetime','confirmed_at'=>'datetime','cancellation_requested_at'=>'datetime',
     ];
 
     public function customer()
     {
         return $this->belongsTo(User::class, 'customer_user_id');
+    }
+
+    public function markAsPaid($transaction): void
+    {
+        app(\Modules\Store\Services\StorePaymentService::class)->confirmOnlinePayment($this, $transaction);
     }
 
     public function shippingAddress()
@@ -45,6 +54,7 @@ class StoreOrder extends Model
     {
         return $this->hasMany(StoreOrderItem::class);
     }
+    public function refunds() { return $this->hasMany(StoreRefund::class); }
 
     public function scopeForCustomer($query, $userId)
     {

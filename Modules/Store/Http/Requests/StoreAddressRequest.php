@@ -25,6 +25,7 @@ class StoreAddressRequest extends FormRequest
             'phone' => 'required|string|max:20',
             'country' => 'nullable|string|max:100',
             'city' => 'required|string|max:100',
+            'governorate_code' => ['required', \Illuminate\Validation\Rule::in(array_keys(\Modules\Store\Services\StoreGeography::governorates()))],
             'district' => 'nullable|string|max:100',
             'street' => 'required|string|max:255',
             'building' => 'nullable|string|max:255',

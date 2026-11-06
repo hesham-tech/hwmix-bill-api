@@ -25,14 +25,15 @@ class OwnerFundTransactionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(AddPermissionsSeeder::class);
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-
-        $this->company = Company::factory()->create();
+        // Bootstrap a real actor before permission seeders emit activity logs.
+        // MySQL enforces the user FK that SQLite test mode does not enforce.
+        $this->company = Company::withoutEvents(fn()=>Company::factory()->create(['created_by'=>null]));
         $this->admin = User::factory()->create([
             'company_id' => $this->company->id,
             'active_company_id' => $this->company->id,
         ]);
+        $this->seed(AddPermissionsSeeder::class);
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         
         setPermissionsTeamId($this->company->id);
 
@@ -141,7 +142,7 @@ class OwnerFundTransactionTest extends TestCase
             'balance' => 5000.00,
         ]);
         
-        $this->actingAs($this->admin)->postJson("/api/v1/owner-fund-transactions/{$txId}/reverse")->dump()->assertStatus(200);
+        $this->actingAs($this->admin)->postJson("/api/v1/owner-fund-transactions/{$txId}/reverse")->assertStatus(200);
 
         // Check it was reversed in stakeholder_financial_balances
         $this->assertDatabaseHas('stakeholder_financial_balances', [
@@ -154,6 +155,10 @@ class OwnerFundTransactionTest extends TestCase
             'id' => $op->id,
             'status' => 'reversed',
         ]);
+        $this->assertEquals(10000,$this->cashBox->fresh()->balance);
+        $this->assertSame(2,\App\Models\FinancialLedger::where('financial_operation_id',$op->id)->count());
+        $reverse=FinancialOperation::where('type','partner_fund_reversal')->firstOrFail();
+        $this->assertSame(2,\App\Models\FinancialLedger::where('financial_operation_id',$reverse->id)->count());
     }
 
     public function test_partner_drawing()
@@ -290,7 +295,7 @@ class OwnerFundTransactionTest extends TestCase
             'balance' => 25000.00,
         ]);
 
-        $this->actingAs($this->admin)->postJson("/api/v1/owner-fund-transactions/{$txId}/reverse")->dump()->assertStatus(200);
+        $this->actingAs($this->admin)->postJson("/api/v1/owner-fund-transactions/{$txId}/reverse")->assertStatus(200);
 
         $this->assertDatabaseHas('stakeholder_financial_balances', [
             'user_id' => $this->partner->id,
@@ -371,7 +376,7 @@ class OwnerFundTransactionTest extends TestCase
         $txId = $response->json('data.id');
 
         // First reverse
-        $this->actingAs($this->admin)->postJson("/api/v1/owner-fund-transactions/{$txId}/reverse")->dump()->assertStatus(200);
+        $this->actingAs($this->admin)->postJson("/api/v1/owner-fund-transactions/{$txId}/reverse")->assertStatus(200);
 
         // Second reverse
         $this->actingAs($this->admin)->postJson("/api/v1/owner-fund-transactions/{$txId}/reverse")->assertStatus(422);
@@ -395,5 +400,25 @@ class OwnerFundTransactionTest extends TestCase
         ]);
 
         $this->actingAs($unauthorizedUser)->postJson("/api/v1/owner-fund-transactions/{$txId}/reverse")->assertStatus(403);
+    }
+
+    public function test_unrelated_company_party_is_rejected_without_posting(): void
+    {
+        $foreign=User::factory()->create(['company_id'=>Company::factory()->create()->id]);
+        $this->actingAs($this->admin)->postJson('/api/v1/owner-fund-transactions',[
+            'cashbox_id'=>$this->cashBox->id,'user_id'=>$foreign->id,'type'=>'capital_increase',
+            'amount'=>100,'entry_date'=>now()->toIso8601String(),
+        ])->assertStatus(403);
+        $this->assertDatabaseCount('financial_operations',0);
+        $this->assertEquals(10000,$this->cashBox->fresh()->balance);
+    }
+
+    public function test_legacy_transaction_without_operation_is_not_blindly_reversed(): void
+    {
+        $tx=OwnerFundTransaction::create(['company_id'=>$this->company->id,'cashbox_id'=>$this->cashBox->id,
+            'user_id'=>$this->partner->id,'type'=>'capital_increase','amount'=>100,'entry_date'=>now(),'created_by'=>$this->admin->id]);
+        $this->actingAs($this->admin)->postJson("/api/v1/owner-fund-transactions/{$tx->id}/reverse")->assertStatus(422);
+        $this->assertDatabaseCount('financial_operations',0);
+        $this->assertEquals(10000,$this->cashBox->fresh()->balance);
     }
 }

@@ -268,6 +268,7 @@ class PlanController extends Controller
                 $pricingTiers = $validatedData['pricing_tiers'] ?? null;
                 unset($validatedData['pricing_tiers']);
 
+                $previousFeatures=$plan->features??[];
                 $plan->update($validatedData);
 
                 // Sync updated features and limits to all active subscriptions of this plan
@@ -284,7 +285,16 @@ class PlanController extends Controller
                         ->whereIn('status', ['active', 'trial'])
                         ->get();
                     foreach($activeSubs as $sub) {
-                        $sub->update($updateData);
+                        $changes=$updateData;
+                        if(isset($changes['features'])) {
+                            $changes['features']=array_replace_recursive($changes['features'],
+                                \App\Services\SaaS\SubscriptionFeatures::differences($sub->features??[],$previousFeatures));
+                        }
+                        $sub->update($changes);
+                        if(($previousFeatures['store_policy']??[])!==($plan->features['store_policy']??[])) {
+                            $profile=\Modules\Store\Models\StoreSellerProfile::where('company_id',$sub->company_id)->first();
+                            if($profile && $profile->policy_overrides) $profile->update(['policy_review_required'=>true]);
+                        }
                     }
                 }
 

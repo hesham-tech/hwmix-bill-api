@@ -8,6 +8,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 use Illuminate\Support\Facades\Schedule;
-Schedule::command('app:master-data-cleanup')->daily();
-Schedule::command('notifications:process-workflows')->daily();
-Schedule::command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
+Schedule::command('app:master-data-cleanup')->daily()->withoutOverlapping(60);
+Schedule::command('notifications:process-workflows --limit=100 --seconds=20')->everyMinute()->withoutOverlapping(2);
+// Queue workers belong to the VPS process supervisor. Shared hosting uses QUEUE_CONNECTION=sync.

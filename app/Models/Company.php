@@ -119,24 +119,15 @@ class Company extends Model
 
     public function canPublishToStore(): bool
     {
-        $sub = $this->activeSubscription;
-        if (!$sub) return false;
-        $features = $sub->features ?? [];
-        return isset($features["store_publish"]) && $features["store_publish"] == true;
+        if ($this->deleted_at) return false;
+        $sub = \App\Services\SaaS\SubscriptionFeatures::valid($this->subscriptions()->getQuery())->with('plan')->latest('id')->first();
+        return $sub && $sub->plan && ($sub->plan->company_id===null||(int)$sub->plan->company_id===(int)config('app.master_company_id',1))
+            && \App\Services\SaaS\SubscriptionFeatures::has($sub, 'store_publish');
     }
 
     public function scopeStorePublishEnabled($query)
     {
-        return $query->whereHas("subscriptions", function ($sq) {
-            $sq->whereIn("status", ["active", "trial"])
-               ->where(function ($sq2) {
-                   $sq2->whereNull("ends_at")
-                       ->orWhere("ends_at", ">=", now());
-               })
-               ->whereHas("plan", function ($pq) {
-                   $pq->where("features", "like", '%"store_publish":true%');
-               });
-        });
+        return \App\Services\SaaS\SubscriptionFeatures::publishingCompanies($query);
     }
 
     public function branches()

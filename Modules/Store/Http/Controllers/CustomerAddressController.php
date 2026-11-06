@@ -91,7 +91,14 @@ class CustomerAddressController extends Controller
     public function destroy($id)
     {
         $address = CustomerAddress::where('user_id', Auth::id())->findOrFail($id);
-        $address->delete();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($address) {
+            foreach (\Modules\Store\Models\StoreOrder::where('shipping_address_id',$address->id)->lockForUpdate()->get() as $order) {
+                $order->update(['shipping_address_id'=>null,'shipping_address_snapshot'=>$order->shipping_address_snapshot ?: $address->only([
+                    'recipient_name','phone','country','city','governorate_code','district','street','building','floor','apartment','landmark',
+                ])]);
+            }
+            $address->delete();
+        });
 
         return response()->json([
             'success' => true,

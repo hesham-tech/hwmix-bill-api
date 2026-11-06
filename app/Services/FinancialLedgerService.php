@@ -9,6 +9,32 @@ use Illuminate\Support\Facades\Auth;
 
 class FinancialLedgerService
 {
+    public function recordExactJournalEntry(string $operationId,string $journalEntryId,array $lines,$date=null): void
+    {
+        $debit=$credit='0';
+        foreach($lines as $line) {
+            if(!is_int($line['amount_minor'])||$line['amount_minor']<0) throw new \InvalidArgumentException('Invalid journal monetary amount.');
+            if($line['amount_minor']>999999999999999) throw new \OverflowException('ERP journal amount exceeds its decimal precision.');
+            if(!in_array($line['type'],['debit','credit'],true)||!in_array($line['account_type'],['asset','liability','revenue','expense','equity'],true))
+                throw new \InvalidArgumentException('Invalid journal account or direction.');
+            if($line['type']==='debit') $debit=bcadd($debit,(string)$line['amount_minor'],0);
+            else $credit=bcadd($credit,(string)$line['amount_minor'],0);
+        }
+        if(bccomp($debit,$credit,0)!==0) throw new \LogicException('Unbalanced marketplace ERP journal.');
+        if(FinancialLedger::withoutGlobalScopes()->where('financial_operation_id',$operationId)->where('journal_entry_id',$journalEntryId)->exists()) return;
+        foreach($lines as $line) {
+            if(!$line['amount_minor']) continue;
+            $entry=new FinancialLedger();
+            $entry->fill([
+                'entry_date'=>$date??now('UTC'),'type'=>$line['type'],'amount'=>\App\Support\Money::decimal($line['amount_minor']),
+                'description'=>$line['description']??'Marketplace posting','source_type'=>$line['source_type'],'source_id'=>$line['source_id'],
+                'account_type'=>$line['account_type'],'sub_account_type'=>$line['sub_account_type']??null,
+                'sub_account_id'=>$line['sub_account_id']??null,'financial_operation_id'=>$operationId,'journal_entry_id'=>$journalEntryId,
+                'company_id'=>$line['company_id'],'branch_id'=>$line['branch_id']??null,
+            ]);
+            $entry->saveQuietly();
+        }
+    }
     /**
      * Record a balanced double-entry journal.
      */

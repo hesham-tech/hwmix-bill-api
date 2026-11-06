@@ -48,36 +48,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('api', \App\Http\Middleware\IdempotencyMiddleware::class);
     })
     ->withSchedule(function (Schedule $schedule) {
-        $schedule->call(function () {
-            $frequency = \App\Models\BackupSetting::getVal('backup_frequency', 'daily');
-            $time = \App\Models\BackupSetting::getVal('backup_time', '03:00');
-
-            $options = [];
-            if (!\App\Models\BackupSetting::getVal('backup_include_files', false)) {
-                $options['--only-db'] = true;
-            }
-
-            // We use a custom logic to trigger at the right time based on DB settings
-            // But actually, Laravel's ->dailyAt() is better.
-            // However, since we want it dynamic, we can't easily use ->dailyAt() inside a closure that runs every minute
-            // unless we use some logic.
-        });
-
-        // Better approach: Register the command and use truth tests or just standard schedule if possible.
-        // For simplicity and robustness on Shared Hosting, we'll stick to a daily backup at 3 AM for now
-        // and allow manual triggers. 
-        // Real dynamic scheduling requires a more complex wrapper.
-    
-        $schedule->command('backup:run --only-db')->dailyAt('03:00')->onSuccess(function () {
-            \App\Models\Backup::create(['status' => 'success', 'type' => 'scheduled', 'completed_at' => now()]);
-        });
-
-        $schedule->command('backup:clean')->dailyAt('04:00');
-
-        // تشغيل الطوابير تلقائياً كل دقيقة ليتوافق مع الاستضافة المشتركة بدون Supervisor
-        $schedule->command('queue:work --stop-when-empty')
-            ->everyMinute()
-            ->withoutOverlapping();
+        $schedule->command('store:tick --limit=10 --seconds=20')->everyMinute()->withoutOverlapping(2);
+        $schedule->command('app:scheduled-backup')->everyMinute()->withoutOverlapping(120);
+        $schedule->command('backup:clean')->dailyAt('04:00')->timezone('UTC')->withoutOverlapping(120);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {

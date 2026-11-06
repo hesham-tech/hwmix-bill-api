@@ -36,10 +36,12 @@ class PaymentController extends Controller
             $result = $action->handle([
                 'driver' => $driver,
                 'payload' => $request->all(),
+                'raw_body' => $request->getContent(),
+                'signature' => match($driver) { 'stripe'=>(string)$request->header('Stripe-Signature',''),'kashier'=>(string)$request->header('x-kashier-signature',''),default=>(string)$request->query('hmac','') },
             ]);
 
             if (!$result['success']) {
-                return api_error($result['error'] ?? 'فشل معالجة التنبيه.', 400);
+                return api_error($result['error'] ?? 'فشل معالجة التنبيه.', [], 400);
             }
 
             return api_success($result, 'تمت معالجة التنبيه وتحديث حالة الدفعة بنجاح.');
@@ -51,10 +53,14 @@ class PaymentController extends Controller
     /**
      * رابط الكولباك بعد عودة المستخدم من صفحة الدفع (صفحة التوجيه والعودة للفرونت إند)
      */
-    public function callback(Request $request, string $driver): JsonResponse
+    public function callback(Request $request, string $driver)
     {
         try {
-            $status = $request->get('status', 'success');
+            $reference=(string)($request->query('session_id')?:$request->query('order'));
+            $payment=\Modules\Payment\Models\PaymentTransaction::withoutGlobalScopes()->where('gateway_driver',$driver)->where('gateway_reference',$reference)->first();
+            if($payment?->payable_type===\Modules\Store\Models\StoreOrder::class)
+                return redirect()->away(rtrim(config('store.frontend_url'),'/').'/store/payment-return');
+            $status = 'pending_verification';
             return api_success([
                 'driver' => $driver,
                 'status' => $status,

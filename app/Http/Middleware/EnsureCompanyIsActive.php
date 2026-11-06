@@ -18,6 +18,7 @@ class EnsureCompanyIsActive
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->is('api/v1/store/*', 'api/v1/payments/webhook/*', 'api/v1/payments/callback/*')) return $next($request);
         $companyId = app(CurrentCompanyResolver::class)->resolve();
 
         if ($companyId) {

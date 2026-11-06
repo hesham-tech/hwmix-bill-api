@@ -22,6 +22,7 @@ class WhatsAppSettingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['notification.whatsapp_api_version'=>'v99.0']); // Fixture URL only; HTTP is mocked.
 
         $this->seed(AddPermissionsSeeder::class);
         $this->company = Company::factory()->create();

@@ -19,6 +19,14 @@ use Modules\Inventory\Models\DigitalProductDelivery;
 #[ObservedBy([InvoiceItemObserver::class])]
 class InvoiceItem extends Model
 {
+    protected static function booted(): void {
+        static::saving(function ($item) {
+            if ($item->invoice?->is_marketplace_managed) throw \Illuminate\Validation\ValidationException::withMessages(['invoice'=>'عناصر فاتورة المتجر تتبع الطلب الأصلي.']);
+        });
+        static::deleting(function ($item) {
+            if ($item->invoice?->is_marketplace_managed) throw \Illuminate\Validation\ValidationException::withMessages(['invoice'=>'لا يمكن حذف عنصر فاتورة متجر مباشرة.']);
+        });
+    }
     use HasFactory, SoftDeletes, Blameable, Scopes, \App\Traits\LogsActivity;
 
     protected static function newFactory()

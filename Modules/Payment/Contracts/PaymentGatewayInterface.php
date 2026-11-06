@@ -21,5 +21,5 @@ interface PaymentGatewayInterface
     /**
      * استرداد مبلغ المعاملة
      */
-    public function refund(PaymentTransaction $transaction, float $amount): array;
+    public function refund(PaymentTransaction $transaction, string|float $amount): array;
 }

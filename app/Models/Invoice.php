@@ -81,6 +81,14 @@ class Invoice extends Model
 
     protected static function booted()
     {
+        static::saving(function ($invoice) {
+            if ($invoice->exists && $invoice->getRawOriginal('is_marketplace_managed') && array_diff(array_keys($invoice->getDirty()), ['updated_at','is_aggregated'])) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['invoice'=>'التعديلات المالية لفاتورة المتجر من الطلب أو المرتجع.']);
+            }
+        });
+        static::deleting(function ($invoice) {
+            if ($invoice->is_marketplace_managed) throw \Illuminate\Validation\ValidationException::withMessages(['invoice'=>'لا يمكن حذف فاتورة مرتبطة بالمتجر مباشرة.']);
+        });
         static::creating(function ($invoice) {
             $type = InvoiceType::find($invoice->invoice_type_id);
             if ($type) {

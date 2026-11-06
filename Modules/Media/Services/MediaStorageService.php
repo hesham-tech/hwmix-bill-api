@@ -39,7 +39,14 @@ class MediaStorageService
         $companyFolder = ($private ? 'label-template-assets/' : 'media/') . $companyId;
         Storage::disk($diskName)->makeDirectory($companyFolder);
 
-        if ($isImage && !$isSvg) {
+        if ($isSvg) {
+            $clean=app(SvgSanitizer::class)->clean(file_get_contents($file->getRealPath()));
+            $filename=\Illuminate\Support\Str::uuid().'.svg';
+            $path=$companyFolder.'/'.$filename;
+            Storage::disk($diskName)->put($path,$clean);
+            $fileSize=strlen($clean);
+            $mimeType='image/svg+xml';
+        } elseif ($isImage) {
             // تحسين وضغط الصورة بصيغة WebP
             $optimizedData = $this->optimizer->convertToWebp($file);
 

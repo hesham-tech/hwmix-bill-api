@@ -32,6 +32,28 @@ use App\Traits\LogsActivity;
  */
 class CompanySubscription extends Model
 {
+    protected static function booted(): void {
+        static::creating(function(self $subscription) {
+            if(!\Illuminate\Support\Facades\Schema::hasColumn('company_subscriptions','feature_overrides'))return;
+            if(array_key_exists('feature_overrides',$subscription->getAttributes()))return;
+            $previous=self::withoutGlobalScopes()->where('company_id',$subscription->company_id)->whereNull('deleted_at')
+                ->whereIn('status',['active','trial','canceled','cancelled','expired'])->with('plan')->latest('id')->first();
+            if(!$previous)return;
+            if(!$previous->plan||($previous->plan->company_id!==null&&(int)$previous->plan->company_id!==(int)config('app.master_company_id',1)))return;
+            $legacy=\App\Services\SaaS\SubscriptionFeatures::differences($previous->features??[],$previous->plan?->features??[]);
+            unset($legacy['store_policy']);
+            $subscription->feature_overrides=array_replace_recursive($legacy,$previous->feature_overrides??[]);
+        });
+        static::saved(function(self $subscription) {
+            if(!\Illuminate\Support\Facades\Schema::hasTable('store_seller_profiles'))return;
+            if(!in_array($subscription->status,['active','trial'],true)||!($subscription->wasRecentlyCreated||$subscription->wasChanged(['status','plan_id'])))return;
+            $previous=self::withoutGlobalScopes()->where('company_id',$subscription->company_id)->where('id','<',$subscription->id)->whereNull('deleted_at')->latest('id')->first();
+            if($previous&&(int)$previous->plan_id!==(int)$subscription->plan_id) {
+                $profile=\Modules\Store\Models\StoreSellerProfile::where('company_id',$subscription->company_id)->first();
+                if($profile&&$profile->policy_overrides)$profile->update(['policy_review_required'=>true]);
+            }
+        });
+    }
     use HasFactory, SoftDeletes, Blameable, Scopes, LogsActivity;
 
     protected $table = 'company_subscriptions';
@@ -44,6 +66,8 @@ class CompanySubscription extends Model
         'price' => 'decimal:2',
         'months' => 'integer',
         'features' => 'array',
+        'feature_overrides' => 'array',
+        'paid_at' => 'datetime',
         'max_users' => 'integer',
         'max_products' => 'integer',
         'max_invoices' => 'integer',
@@ -75,6 +99,7 @@ class CompanySubscription extends Model
      */
     public function isActive(): bool
     {
+        if ($this->starts_at && $this->starts_at->isFuture()) return false;
         if ($this->status !== 'active' && $this->status !== 'trial') {
             return false;
         }
@@ -97,6 +122,16 @@ class CompanySubscription extends Model
      */
     public function markAsPaid($transaction = null)
     {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($transaction) {
+            $locked = self::withoutGlobalScopes()->lockForUpdate()->findOrFail($this->id);
+            if (!$locked->paid_at) $locked->applyPaidActivation($transaction);
+        }, 3);
+        $this->refresh();
+    }
+
+    protected function applyPaidActivation($transaction = null)
+    {
+        if ($this->paid_at) return;
         // 1. إلغاء أي اشتراكات سابقة نشطة للشركة
         self::where('company_id', $this->company_id)
             ->where('id', '!=', $this->id)
@@ -111,6 +146,7 @@ class CompanySubscription extends Model
             'status' => 'active',
             'starts_at' => $startsAt,
             'ends_at' => $endsAt,
+            'paid_at' => now(),
         ]);
 
         // إذا كان هناك كود كوبون، نزيد عدد الاستخدامات له عند الدفع والتفعيل

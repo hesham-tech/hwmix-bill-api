@@ -18,23 +18,32 @@ class SavePaymentGatewayAction extends BaseAction
 
         /** @var PaymentGatewayDTO $dto */
         $dto = $data['dto'];
+        $gatewayId = $data['id'] ?? null;
         $companyId = Auth::user()->active_company_id;
         $existingConfig = [];
 
         if ($gatewayId) {
             $gateway = PaymentGateway::findOrFail($gatewayId);
+            if ((int) $gateway->company_id !== (int) $companyId) abort(404);
+            if ($gateway->driver !== $dto->driver) throw \Illuminate\Validation\ValidationException::withMessages(['driver'=>'أضف حسابًا جديدًا لتغيير مزود الدفع.']);
             $existingConfig = $gateway->config ?? [];
         }
 
         // تشفير الحقول السرية الحساسة قبل الحفظ لضمان الأمان وعدم تسريب المفاتيح
+        $definition = \Modules\Payment\Services\GatewayRegistry::definition($dto->driver);
+        $incomingConfig = array_filter(array_intersect_key($dto->config, $definition['fields']), fn ($value) => $value !== null && $value !== '' && !(is_string($value) && str_contains($value, '****')));
         $encryptedConfig = array_map(function ($value) {
             if (is_string($value) && !empty($value)) {
                 return Crypt::encryptString($value);
             }
             return $value;
-        }, $dto->config);
+        }, $incomingConfig);
 
         $finalConfig = array_merge($existingConfig, $encryptedConfig);
+        $candidate = new PaymentGateway(['driver'=>$dto->driver,'config'=>$finalConfig,'is_test_mode'=>$dto->isTestMode]);
+        if ($dto->isActive && !\Modules\Payment\Services\GatewayRegistry::ready($dto->driver, \Modules\Payment\Services\PaymentGatewayFactory::configuration($candidate))) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['config'=>'أكمل بيانات الحساب وتوقيع الإشعارات قبل تفعيله.']);
+        }
 
         $gatewayData = [
             'name' => $dto->name,

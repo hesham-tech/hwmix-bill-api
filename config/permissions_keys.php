@@ -871,4 +871,14 @@ return [
         'publish' => ['key' => 'label_templates.publish', 'label' => 'نشر قوالب الملصقات'],
         'set_default' => ['key' => 'label_templates.set_default', 'label' => 'تعيين قالب الملصقات الافتراضي'],
     ],
+    'store' => [
+        'name' => ['key'=>'store','label'=>'إدارة المتجر'],
+        'settings_manage' => ['key'=>'store.settings.manage','label'=>'إدارة إعدادات المتجر والتكاملات'],
+        'orders_manage' => ['key'=>'store.orders.manage','label'=>'إدارة طلبات المتجر والشحن والمرتجعات'],
+        'finance_manage' => ['key'=>'store.finance.manage','label'=>'إدارة أرصدة البائعين والتسويات'],
+        'vendor_orders_view' => ['key'=>'store.vendor.orders.view','label'=>'عرض طلبات متجر الشركة'],
+        'vendor_orders_manage' => ['key'=>'store.vendor.orders.manage','label'=>'تجهيز طلبات متجر الشركة'],
+        'vendor_finance_view' => ['key'=>'store.vendor.finance.view','label'=>'عرض حساب متجر الشركة'],
+        'vendor_finance_manage' => ['key'=>'store.vendor.finance.manage','label'=>'طلب صرف رصيد متجر الشركة'],
+    ],
 ];

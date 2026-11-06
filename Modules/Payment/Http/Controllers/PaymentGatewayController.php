@@ -91,7 +91,7 @@ class PaymentGatewayController extends Controller
     {
         try {
             $gateway = PaymentGateway::findOrFail($id);
-
+            if (!$gateway->is_active) throw \Illuminate\Validation\ValidationException::withMessages(['gateway'=>'فعّل الحساب قبل تعيينه افتراضيًا.']);
             \Illuminate\Support\Facades\DB::transaction(function () use ($gateway) {
                 // إلغاء الافتراضية للبوابات الأخرى لنفس الشركة
                 PaymentGateway::where('company_id', $gateway->company_id)

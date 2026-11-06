@@ -48,6 +48,7 @@ class StoreServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->register(RouteServiceProvider::class);
+        if ($this->app->runningInConsole()) $this->commands([\Modules\Store\Console\StoreTickCommand::class,\Modules\Store\Console\StoreReadinessCommand::class]);
     }
 
     /**

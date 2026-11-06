@@ -22,7 +22,7 @@ class ImageController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Image::query()->where('created_by', Auth::id());
+            $query = Image::query()->where('company_id',Auth::user()->active_company_id)->where('created_by', Auth::id());
 
             if ($request->filled('linked')) {
                 if ($request->linked === '1') {
@@ -57,7 +57,6 @@ class ImageController extends Controller
     {
         try {
             // سجل جميع بيانات الطلب
-            logger($request->all());
 
             // دعم تحويل ملف وسائط من المكتبة العامة إلى سجل صورة مرتبط بالشركة
             if ($request->has('media_file_id') || $request->has('media_file_ids')) {
@@ -65,7 +64,7 @@ class ImageController extends Controller
                     'media_file_id' => ['nullable', 'integer', 'exists:media_files,id'],
                     'media_file_ids' => ['nullable', 'array'],
                     'media_file_ids.*' => ['integer', 'exists:media_files,id'],
-                    'type' => ['nullable', 'string'],
+                    'type' => ['nullable', 'string','regex:/^[a-zA-Z0-9_-]{1,40}$/'],
                 ]);
 
                 $user = Auth::user();
@@ -132,12 +131,11 @@ class ImageController extends Controller
             }
 
             // سجل بيانات ملفات الصور
-            logger($request->file('images'));
 
             $request->validate([
                 'images' => ['required', 'array'],
                 'images.*' => ['image', 'max:5120'], // 5 ميجابايت كحد أقصى
-                'type' => ['nullable', 'string'],
+                'type' => ['nullable', 'string','regex:/^[a-zA-Z0-9_-]{1,40}$/'],
             ]);
 
             $user = Auth::user();
@@ -212,7 +210,7 @@ class ImageController extends Controller
     public function update(Request $request, Image $image)
     {
         try {
-            if ($image->created_by !== Auth::id()) {
+            if ((int)$image->created_by !== (int)Auth::id() || (int)$image->company_id !== (int)Auth::user()->active_company_id) {
                 return api_error('غير مصرح لك بتعديل هذه الصورة', [], 403);
             }
 
@@ -236,6 +234,7 @@ class ImageController extends Controller
     public function setPrimary(Image $image)
     {
         try {
+            if((int)$image->company_id!==(int)Auth::user()->active_company_id || (int)$image->created_by!==(int)Auth::id()) return api_error('غير مصرح بتعديل الصورة.',[],403);
             if (!$image->imageable_id || !$image->imageable_type) {
                 return api_error('هذه الصورة غير مرتبطة بمنتج أو متغير للتغيير.', [], 400);
             }
@@ -274,7 +273,7 @@ class ImageController extends Controller
             $userId = Auth::id();
 
             $imageIds = Image::whereIn('id', $request->ids)
-                ->where('created_by', $userId)
+                ->where('company_id',Auth::user()->active_company_id)->where('created_by', $userId)
                 ->pluck('id')
                 ->toArray();
 

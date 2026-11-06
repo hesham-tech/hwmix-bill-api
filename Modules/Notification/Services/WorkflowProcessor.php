@@ -17,6 +17,31 @@ use Modules\Sales\Models\InvoicePayment;
 
 class WorkflowProcessor
 {
+    public function deliverScheduledEmail(NotificationWorkflowStep $step,Invoice $invoice,string $key): string {
+        $template=$step->template;$companyId=(int)$step->workflow->company_id;
+        if(!$template||!$template->is_active)return 'completed';
+        if((int)$template->company_id!==$companyId&&!($template->is_global&&($template->company_id===null||(int)$template->company_id===(int)config('app.master_company_id',1))))
+            throw new \RuntimeException('Notification template ownership mismatch.');
+        $recipient=$invoice->customer;
+        if(!$recipient||!filter_var($recipient->email,FILTER_VALIDATE_EMAIL))return 'manual_review';
+        $this->sendTransactionalEmail($companyId,$recipient->email,$this->replaceVariables($template->subject?:'إشعار فاتورة',$invoice,$recipient),
+            $this->replaceVariables($template->body,$invoice,$recipient,true),$key,$recipient->name??'');
+        return 'completed';
+    }
+    public function sendTransactionalEmail(int $companyId,string $toEmail,string $subject,string $body,?string $messageKey=null,string $toName=''): void {
+        $setting=app(NotificationIntegrationResolver::class)->mail($companyId);
+        if(app()->environment('testing'))$mailer=Mail::mailer('array');
+        elseif($setting)$mailer=DynamicMailer::getMailer($setting);
+        else throw new \RuntimeException('Transactional mail is not configured.');
+        $subject=str_replace(["\r","\n"],' ',$subject);
+        $mailer->html($body,function($message)use($toEmail,$toName,$subject,$messageKey,$setting){
+            $message->to($toEmail,$toName)->subject($subject);
+            if($messageKey){
+                $domain=substr(strrchr((string)($setting?->mail_from_address??config('mail.from.address','store@store.invalid')),'@')?:'@store.invalid',1);
+                $headers=$message->getSymfonyMessage()->getHeaders();$headers->remove('Message-ID');$headers->addIdHeader('Message-ID',hash('sha256',$messageKey).'@'.$domain);
+            }
+        });
+    }
     /**
      * تنفيذ خطوات الأتمتة لقاعدة معينة.
      */
@@ -42,6 +67,8 @@ class WorkflowProcessor
         $template = $step->template;
         if (!$template || !$template->is_active)
             return;
+        if((int)$template->company_id!==(int)$step->workflow->company_id&&!($template->is_global&&($template->company_id===null||(int)$template->company_id===(int)config('app.master_company_id',1))))
+            throw new \RuntimeException('Notification template does not belong to workflow company.');
 
         $companyId = $step->workflow->company_id;
 
@@ -53,23 +80,11 @@ class WorkflowProcessor
         }
 
         // التحقق من توافر قنوات الاتصال والربط النشطة للشركة أو العامة بالنظام
-        $hasEmail = \Modules\Notification\Models\MailSetting::withoutGlobalScopes()
-            ->where(function ($query) use ($companyId) {
-                $query->where('company_id', $companyId)
-                    ->orWhere('is_global', true);
-            })
-            ->where('is_active', true)
-            ->exists();
+        $resolver=app(NotificationIntegrationResolver::class);
+        $hasEmail=(bool)$resolver->mail((int)$companyId);
+        $hasWhatsApp=(bool)$resolver->whatsapp((int)$companyId);
 
-        $hasWhatsApp = \Modules\Notification\Models\WhatsAppSetting::withoutGlobalScopes()
-            ->where(function ($query) use ($companyId) {
-                $query->where('company_id', $companyId)
-                    ->orWhere('is_global', true);
-            })
-            ->where('is_active', true)
-            ->exists();
-
-        $replacedContent = $this->replaceVariables($template->body, $entity, $recipient);
+        $replacedContent = $this->replaceVariables($template->body, $entity, $recipient, true);
         $subject = $template->subject ? $this->replaceVariables($template->subject, $entity, $recipient) : 'إشعار جديد';
 
         // channel مخزن كـ JSON array مثل ['email', 'whatsapp'] — نحوله لمصفوفة PHP
@@ -86,7 +101,7 @@ class WorkflowProcessor
 
         if (in_array('email', $channels)) {
             if ($hasEmail && !empty($recipient->email)) {
-                $this->sendEmail($companyId, $recipient->email, $recipient->name, $subject, $replacedContent);
+                $this->sendEmail($companyId, $recipient->email, (string)($recipient->name??$recipient->full_name??''), $subject, $replacedContent);
             } else {
                 Log::warning("تنبيه أتمتة: تم تخطي إرسال البريد للشركة {$companyId} لعدم تهيئة الخدمة أو نقص بيانات المستلم.");
             }
@@ -94,7 +109,7 @@ class WorkflowProcessor
 
         if (in_array('whatsapp', $channels)) {
             if ($hasWhatsApp && !empty($recipient->phone)) {
-                $this->sendWhatsApp($companyId, $recipient->phone, $replacedContent);
+                $this->sendWhatsApp($companyId, $recipient->phone, strip_tags($this->replaceVariables($template->body,$entity,$recipient)));
             } else {
                 Log::warning("تنبيه أتمتة: تم تخطي إرسال الواتساب للشركة {$companyId} لعدم تهيئة الخدمة أو نقص بيانات المستلم.");
             }
@@ -155,7 +170,7 @@ class WorkflowProcessor
     /**
      * استبدال المتغيرات الديناميكية في النص.
      */
-    protected function replaceVariables(string $text, $entity, User $recipient): string
+    protected function replaceVariables(string $text, $entity, User $recipient, bool $escape = false): string
     {
         $variables = [
             '{customer_name}' => $recipient->name ?? '',
@@ -252,116 +267,21 @@ class WorkflowProcessor
             $variables['{installment_plan_progress}'] = ($entity->plan?->payment_progress ?? 0) . '%';
         }
 
+        if($escape)$variables=array_map(fn($value)=>e((string)$value),$variables);
         return strtr($text, $variables);
     }
 
     /**
      * إرسال البريد باستخدام إعدادات البريد الافتراضية للشركة أو النظام.
      */
-    protected function sendEmail($companyId, string $toEmail, string $toName, string $subject, string $body)
-    {
-        try {
-            // 1. البحث عن الإعداد الافتراضي والنشط الخاص بالشركة (غير العامة)
-            $setting = MailSetting::withoutGlobalScopes()
-                ->where('company_id', $companyId)
-                ->where('is_global', false)
-                ->where('is_active', true)
-                ->where('is_default', true)
-                ->first();
-
-            // 2. في حال لم يجد، نأخذ أي حساب نشط للشركة نفسها (غير العامة) كـ fallback
-            if (!$setting) {
-                $setting = MailSetting::withoutGlobalScopes()
-                    ->where('company_id', $companyId)
-                    ->where('is_global', false)
-                    ->where('is_active', true)
-                    ->first();
-            }
-
-            // 3. في حال لم يجد، نأخذ الحساب الافتراضي العام للنظام (سيستم)
-            if (!$setting) {
-                $setting = MailSetting::withoutGlobalScopes()
-                    ->where('is_global', true)
-                    ->where('is_active', true)
-                    ->where('is_default', true)
-                    ->first();
-            }
-
-            // 4. في حال لم يجد، نأخذ أي حساب عام نشط للنظام
-            if (!$setting) {
-                $setting = MailSetting::withoutGlobalScopes()
-                    ->where('is_global', true)
-                    ->where('is_active', true)
-                    ->first();
-            }
-
-            if ($setting) {
-                $mailer = DynamicMailer::getMailer($setting);
-                $mailer->html($body, function ($message) use ($toEmail, $toName, $subject, $setting) {
-                    $message->to($toEmail, $toName)
-                        ->subject($subject)
-                        ->from($setting->mail_from_address, $setting->mail_from_name);
-                });
-            } else {
-                Log::warning("تنبيه أتمتة: تكامل البريد الإلكتروني غير متاح أو غير مهيأ للنظام أو للشركة {$companyId}.");
-            }
-        } catch (\Throwable $e) {
-            Log::error("فشل إرسال بريد الأتمتة للشركة {$companyId}: " . $e->getMessage());
-        }
+    protected function sendEmail($companyId,string $toEmail,string $toName,string $subject,string $body) {
+        try {$this->sendTransactionalEmail((int)$companyId,$toEmail,$subject,$body,null,$toName);}
+        catch(\Throwable $error){Log::warning('Workflow email failed',['company_id'=>$companyId,'exception_class'=>get_class($error)]);}
     }
-
-    /**
-     * إرسال الواتساب باستخدام إعدادات الواتساب الافتراضية للشركة أو النظام.
-     */
-    protected function sendWhatsApp($companyId, string $toPhone, string $body)
-    {
-        try {
-            // تنظيف رقم الهاتف ليتوافق مع صيغة واتساب
-            $phone = preg_replace('/[^0-9]/', '', $toPhone);
-
-            // 1. البحث عن الإعداد الافتراضي والنشط الخاص بالشركة (غير العامة)
-            $setting = \Modules\Notification\Models\WhatsAppSetting::withoutGlobalScopes()
-                ->where('company_id', $companyId)
-                ->where('is_global', false)
-                ->where('is_active', true)
-                ->where('is_default', true)
-                ->first();
-
-            // 2. في حال لم يجد، نأخذ أي حساب نشط للشركة نفسها (غير العامة) كـ fallback
-            if (!$setting) {
-                $setting = \Modules\Notification\Models\WhatsAppSetting::withoutGlobalScopes()
-                    ->where('company_id', $companyId)
-                    ->where('is_global', false)
-                    ->where('is_active', true)
-                    ->first();
-            }
-
-            // 3. في حال لم يجد، نأخذ الحساب الافتراضي العام للنظام (سيستم)
-            if (!$setting) {
-                $setting = \Modules\Notification\Models\WhatsAppSetting::withoutGlobalScopes()
-                    ->where('is_global', true)
-                    ->where('is_active', true)
-                    ->where('is_default', true)
-                    ->first();
-            }
-
-            // 4. في حال لم يجد، نأخذ أي حساب عام نشط للنظام
-            if (!$setting) {
-                $setting = \Modules\Notification\Models\WhatsAppSetting::withoutGlobalScopes()
-                    ->where('is_global', true)
-                    ->where('is_active', true)
-                    ->first();
-            }
-
-            if (!$setting) {
-                Log::warning("تنبيه أتمتة: تكامل واتساب غير متاح أو غير مهيأ للنظام أو للشركة {$companyId}.");
-                return;
-            }
-
-            $whatsappService = new WhatsAppService($setting);
-            $whatsappService->sendMessage($phone, $body);
-        } catch (\Throwable $e) {
-            Log::error("فشل إرسال واتساب الأتمتة للشركة {$companyId}: " . $e->getMessage());
-        }
+    protected function sendWhatsApp($companyId,string $toPhone,string $body) {
+        $setting=app(NotificationIntegrationResolver::class)->whatsapp((int)$companyId);
+        if(!$setting)return;
+        $result=(new WhatsAppService($setting))->sendMessage(preg_replace('/[^0-9]/','',$toPhone),$body);
+        if(!($result['success']??false))Log::warning('Workflow WhatsApp delivery was not confirmed',['company_id'=>$companyId]);
     }
 }

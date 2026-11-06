@@ -23,19 +23,9 @@ class SaveNotificationWorkflowAction extends BaseAction
         $id = $data['id'] ?? null;
 
         // التحقق من توافر قنوات الاتصال والربط النشطة للشركة أو النظام العام
-        $hasEmail = \Modules\Notification\Models\MailSetting::where(function ($query) use ($companyId) {
-            $query->where('company_id', $companyId)
-                ->orWhere('is_global', true);
-        })
-            ->where('is_active', true)
-            ->exists();
-
-        $hasWhatsApp = \Modules\Notification\Models\WhatsAppSetting::where(function ($query) use ($companyId) {
-            $query->where('company_id', $companyId)
-                ->orWhere('is_global', true);
-        })
-            ->where('is_active', true)
-            ->exists();
+        $resolver=app(\Modules\Notification\Services\NotificationIntegrationResolver::class);
+        $hasEmail=(bool)$resolver->mail($companyId);
+        $hasWhatsApp=(bool)$resolver->whatsapp($companyId);
 
         // 1. إذا تم طلب تفعيل القاعدة بالكامل
         if (isset($data['is_active']) && (bool) $data['is_active']) {

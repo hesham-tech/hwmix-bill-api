@@ -22,6 +22,33 @@ use Exception;
  */
 class FinancialEngine implements FinancialEngineInterface
 {
+    public function postMarketplaceJournal(Model $source,int $companyId,string $type,array $lines,array $metadata=[]): string
+    {
+        if(!str_starts_with($type,'marketplace_')||!$source->getKey()) throw new \InvalidArgumentException('Invalid marketplace posting source.');
+        if(isset($source->company_id)&&(int)$source->company_id!==$companyId) throw new \LogicException('Marketplace posting company mismatch.');
+        $operationId=$metadata['operation_id']??(string)Str::uuid();
+        $fingerprint=hash('sha256',json_encode([$companyId,$type,$source->getMorphClass(),$source->getKey(),$lines],JSON_THROW_ON_ERROR));
+        return DB::transaction(function() use($source,$companyId,$type,$lines,$metadata,$operationId,$fingerprint) {
+            $existing=FinancialOperation::withoutGlobalScopes()->lockForUpdate()->find($operationId);
+            if($existing) {
+                if(($existing->metadata['journal_fingerprint']??'')!==$fingerprint) throw new \LogicException('Marketplace posting operation key was reused.');
+                return $existing->id;
+            }
+            $metadata['journal_fingerprint']=$fingerprint;
+            $this->operationService->createOperation([
+                'id'=>$operationId,'company_id'=>$companyId,'type'=>$type,'amount'=>$metadata['amount']??'0.00',
+                'source_type'=>$source->getMorphClass(),'source_id'=>$source->getKey(),'metadata'=>$metadata,
+            ]);
+            foreach($lines as &$line) {
+                $line['company_id']=$companyId;
+                $line['source_type']=$source->getMorphClass(); $line['source_id']=$source->getKey();
+                $line['branch_id']=$metadata['branch_id']??null;
+            }
+            unset($line);
+            $this->ledgerService->recordExactJournalEntry($operationId,(string)Str::uuid(),$lines,$metadata['entry_date']??now('UTC'));
+            return $operationId;
+        },3);
+    }
     protected FinancialOperationService $operationService;
     protected CashService $cashService;
     protected ReceivableService $receivableService;
@@ -233,7 +260,8 @@ class FinancialEngine implements FinancialEngineInterface
     public function reverseOperation(string $originalOperationId, ?string $reason = null): string
     {
         return DB::transaction(function () use ($originalOperationId, $reason) {
-            $originalOp = FinancialOperation::withoutGlobalScopes()->findOrFail($originalOperationId);
+            $originalOp = FinancialOperation::withoutGlobalScopes()->lockForUpdate()->findOrFail($originalOperationId);
+            if (str_starts_with($originalOp->type, 'marketplace_')) throw \Illuminate\Validation\ValidationException::withMessages(['invoice'=>'تُعالج عمليات المتجر من دورة الطلبات والمرتجعات، دون عكسها من شاشة الفواتير.']);
             
             // Invariant: لا يمكن إلغاء عملية ملغاة مسبقاً
             if ($originalOp->status === 'reversed') {
@@ -446,6 +474,7 @@ class FinancialEngine implements FinancialEngineInterface
      */
     public function processInvoiceCreation(Model $invoice, array $payload): string
     {
+        if ($invoice->is_marketplace_managed) throw \Illuminate\Validation\ValidationException::withMessages(['invoice'=>'هذه الفاتورة مرحّلة من المتجر بالفعل.']);
         $operationId = $payload['operation_id'] ?? (string) Str::uuid();
 
         if (FinancialOperation::withoutGlobalScopes()->where('id', $operationId)->exists()) {
@@ -645,6 +674,7 @@ class FinancialEngine implements FinancialEngineInterface
      */
     public function processPaymentReceipt(Model $invoice, float $amount, array $payload): string
     {
+        if ($invoice->is_marketplace_managed) throw \Illuminate\Validation\ValidationException::withMessages(['invoice'=>'تحصيل فواتير المتجر يُدار من حسابات المتجر، دون تحريك الخزائن مرة أخرى.']);
         $operationId = $payload['operation_id'] ?? (string) Str::uuid();
 
         if (FinancialOperation::withoutGlobalScopes()->where('id', $operationId)->exists()) {

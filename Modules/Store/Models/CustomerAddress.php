@@ -14,6 +14,7 @@ class CustomerAddress extends Model
     protected $fillable = [
         'user_id', 'label', 'recipient_name', 'phone',
         'country', 'city', 'district', 'street',
+        'governorate_code',
         'building', 'floor', 'apartment', 'landmark', 'is_default',
     ];
 

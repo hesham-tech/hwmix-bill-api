@@ -22,7 +22,11 @@ class StoreProductController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only(['category_id', 'search', 'company_id', 'vendor_id', 'in_stock', 'price_min', 'price_max', 'sort', 'ids', 'per_page']);
+        $request->merge(['price_min'=>$request->input('min_price',$request->input('price_min')),'price_max'=>$request->input('max_price',$request->input('price_max')),
+            'vendor_id'=>$request->input('vendor_id',$request->input('company_id')),'in_stock'=>filter_var($request->input('in_stock',false),FILTER_VALIDATE_BOOLEAN,FILTER_NULL_ON_FAILURE)??'invalid']);
+        $filters = $request->validate(['category_id'=>'nullable|integer|min:1','brand_id'=>'nullable|integer|min:1','vendor_id'=>'nullable|integer|min:1',
+            'search'=>'nullable|string|max:200','in_stock'=>'boolean','price_min'=>'nullable|numeric|min:0|max:9999999999','price_max'=>'nullable|numeric|min:0|max:9999999999|gte:price_min',
+            'sort'=>'nullable|in:newest,price_asc,price_desc,best_selling','ids'=>'nullable|array|max:100','ids.*'=>'integer|min:1|distinct','per_page'=>'nullable|integer|min:1|max:48']);
         if ($request->has('search')) {
             $filters['q'] = $request->search;
         }
@@ -44,6 +48,13 @@ class StoreProductController extends Controller
             'message' => 'تم جلب المنتجات المميزة بنجاح',
             'data' => StoreProductResource::collection($products)->response()->getData(true)
         ]);
+    }
+
+    public function validateCart(Request $request) {
+        $data=$request->validate(['items'=>'required|array|min:1|max:100','items.*.variant_id'=>'required|integer|min:1|distinct',
+            'items.*.product_id'=>'nullable|integer|min:1','items.*.quantity'=>'required|integer|min:1|max:9999']);
+        $errors=$this->productQueryService->validateCartItems($data['items']);
+        return response()->json(['success'=>true,'data'=>['valid'=>!$errors,'errors'=>$errors]]);
     }
 
     public function show($id)
