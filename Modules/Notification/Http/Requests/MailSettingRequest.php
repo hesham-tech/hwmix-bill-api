@@ -25,6 +25,8 @@ class MailSettingRequest extends FormRequest
             'mail_encryption' => 'nullable|string|in:tls,ssl',
             'mail_from_address' => 'required|email',
             'mail_from_name' => 'required|string|max:255',
+            'mail_reply_to_address' => 'nullable|email|max:255',
+            'mail_reply_to_name' => 'nullable|string|max:255',
             'is_active' => 'nullable|boolean',
             'is_default' => 'nullable|boolean',
             'is_global' => [

@@ -16,6 +16,14 @@ class SaveMailSettingAction extends BaseAction
 
         $companyId = Auth::user()->active_company_id;
         $id = $data['id'] ?? null;
+        $setting = null;
+        if ($id) {
+            $setting = Auth::user()->hasPermissionTo(perm_key('admin.super'))
+                ? MailSetting::findOrFail($id)
+                : MailSetting::where('company_id',$companyId)->findOrFail($id);
+            // Editing a shared account must not move it into the active tenant.
+            $companyId = $setting->company_id;
+        }
 
         $isDefault = isset($data['is_default']) ? (bool) $data['is_default'] : false;
 
@@ -48,17 +56,17 @@ class SaveMailSettingAction extends BaseAction
             $settingData['is_global'] = (bool) $data['is_global'];
         }
 
+        // Omitted fields preserve the reply destination during activation toggles.
+        foreach (['mail_reply_to_address','mail_reply_to_name'] as $field) {
+            if (array_key_exists($field,$data)) $settingData[$field]=$data[$field]?:null;
+        }
+
         // نقوم بإضافة وتشفير كلمة السر فقط في حال تمريرها لتجنب الكتابة فوقها بقيمة فارغة
         if (!empty($data['mail_password'])) {
             $settingData['mail_password'] = $data['mail_password'];
         }
 
         if ($id) {
-            if (Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
-                $setting = MailSetting::findOrFail($id);
-            } else {
-                $setting = MailSetting::where('company_id', $companyId)->findOrFail($id);
-            }
             $setting->update($settingData);
         } else {
             $setting = MailSetting::create($settingData);

@@ -19,6 +19,9 @@ class DynamicMailer
             $setting->mail_from_address?:config('mail.from.address'),
             $setting->mail_from_name?:config('mail.from.name')
         );
+        if($setting->mail_reply_to_address) $mailer->alwaysReplyTo(
+            $setting->mail_reply_to_address,$setting->mail_reply_to_name
+        );
         return $mailer;
     }
 }

@@ -68,11 +68,14 @@ class MailSettingTest extends TestCase
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@hwnix-test.com',
             'mail_from_name' => 'HWNix Test',
+            'mail_reply_to_address' => 'support@hwnix-test.com',
+            'mail_reply_to_name' => 'Support',
         ];
 
         $response = $this->postJson('/api/v1/mail-settings', $payload);
 
         $response->assertStatus(201);
+        $response->assertJsonPath('data.mail_reply_to_address','support@hwnix-test.com');
         $response->assertJson([
             'status' => true,
             'message' => 'تم إضافة حساب البريد بنجاح'
@@ -101,6 +104,42 @@ class MailSettingTest extends TestCase
             'id' => $setting->id,
             'title' => 'خادم البريد الرئيسي المحدث',
         ]);
+        unset($updatePayload['mail_reply_to_address'],$updatePayload['mail_reply_to_name']);
+        $this->putJson("/api/v1/mail-settings/{$setting->id}",$updatePayload)->assertOk();
+        $this->assertSame('support@hwnix-test.com',$setting->fresh()->mail_reply_to_address);
+        $updatePayload['mail_reply_to_address']="support@example.test\r\nBcc: victim@example.test";
+        $this->withExceptionHandling();
+        $this->putJson("/api/v1/mail-settings/{$setting->id}",$updatePayload)->assertStatus(422);
+    }
+
+    public function test_dynamic_mailer_sets_reply_header_and_clears_stale_reply_configuration(): void
+    {
+        $setting=new MailSetting(['id'=>98765,'mail_transport'=>'array','mail_from_address'=>'sender@example.test','mail_from_name'=>'Sender',
+            'mail_reply_to_address'=>'support@example.test','mail_reply_to_name'=>'Support']);
+        $mailer=\Modules\Notification\Services\DynamicMailer::getMailer($setting);
+        $mailer->raw('Fixture',fn($m)=>$m->to('receiver@example.test')->subject('Fixture'));
+        $message=$mailer->getSymfonyTransport()->messages()->last()->getOriginalMessage();
+        $this->assertSame('support@example.test',$message->getReplyTo()[0]->getAddress());
+        $setting->mail_reply_to_address=null;
+        $mailer=\Modules\Notification\Services\DynamicMailer::getMailer($setting);
+        $mailer->raw('Fixture',fn($m)=>$m->to('receiver@example.test')->subject('Fixture'));
+        $this->assertSame([],$mailer->getSymfonyTransport()->messages()->last()->getOriginalMessage()->getReplyTo());
+    }
+
+    public function test_editing_shared_sender_from_another_active_company_preserves_its_owner(): void
+    {
+        $setting=MailSetting::create(['company_id'=>$this->company->id,'title'=>'Shared sender','mail_transport'=>'smtp',
+            'mail_host'=>'smtp.example.test','mail_port'=>465,'mail_username'=>'sender@example.test','mail_from_address'=>'sender@example.test',
+            'mail_from_name'=>'Sender','is_global'=>true,'is_active'=>true,'is_default'=>true]);
+        $other=Company::factory()->create();
+        $this->admin->active_company_id=$other->id;$this->admin->save();
+        setPermissionsTeamId($other->id);$this->admin->givePermissionTo('admin.super');
+        $this->actingAs($this->admin)->putJson('/api/v1/mail-settings/'.$setting->id,[
+            'title'=>'Updated sender','mail_transport'=>'smtp','mail_host'=>'smtp.example.test','mail_port'=>465,
+            'mail_username'=>'sender@example.test','mail_from_address'=>'sender@example.test','mail_from_name'=>'Sender',
+            'is_global'=>true,'is_active'=>true,'is_default'=>true,
+        ])->assertOk();
+        $this->assertSame((int)$this->company->id,(int)$setting->fresh()->company_id);
     }
 
     /**
