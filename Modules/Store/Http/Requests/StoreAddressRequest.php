@@ -32,7 +32,7 @@ class StoreAddressRequest extends FormRequest
             'floor' => 'nullable|string|max:255',
             'apartment' => 'nullable|string|max:255',
             'landmark' => 'nullable|string',
-            'is_default' => 'boolean',
+            'is_default' => 'boolean','latitude'=>'nullable|required_with:longitude|numeric|between:-90,90','longitude'=>'nullable|required_with:latitude|numeric|between:-180,180','location_confirmed'=>'sometimes|boolean',
         ];
     }
 }

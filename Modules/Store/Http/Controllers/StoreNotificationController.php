@@ -8,8 +8,8 @@ class StoreNotificationController extends Controller {
     private function query(Request $request,string $scope) {
         $q=DB::table('store_notifications');
         if($scope==='admin') {app(StoreAccess::class)->platform('store.orders.manage');return $q->whereNull('user_id')->where('company_id',config('app.master_company_id',1));}
-        if($scope==='vendor')return $q->whereNull('user_id')->where('company_id',app(StoreAccess::class)->seller());
-        return $q->where('user_id',$request->user()->id);
+        if($scope==='vendor')return $q->where('company_id',app(StoreAccess::class)->seller())->where(fn($u)=>$u->whereNull('user_id')->orWhere('user_id',$request->user()->id));
+        return $q->where('user_id',$request->user()->id)->whereNull('company_id');
     }
     public function index(Request $request,string $scope='customer') {
         $query=$this->query($request,$scope);$unread=(clone $query)->whereNull('read_at')->count();

@@ -69,7 +69,7 @@ class StoreInvoiceBridge
             $subsidy=(int)($sub->financial_policy_snapshot['seller_shipping_subsidy_minor']??0);
             $asset=$codSeller?Money::minor($sub->subtotal)+$tax+Money::minor($sub->shipping_cost)-Money::minor($sub->discount_total):$gross-$commission-$subsidy;
             $lines=[
-                ['type'=>'debit','account_type'=>'asset','sub_account_type'=>$codSeller?'courier_receivable':'marketplace_clearing','amount_minor'=>$asset],
+                ['type'=>'debit','account_type'=>'asset','sub_account_type'=>$codSeller?($shipment->delivery_method==='seller_local'?'seller_local_collections':'courier_receivable'):'marketplace_clearing','amount_minor'=>$asset],
                 ['type'=>'debit','account_type'=>'expense','sub_account_type'=>'marketplace_commission','amount_minor'=>$commission],
                 ['type'=>'credit','account_type'=>'revenue','sub_account_type'=>'marketplace_sales','amount_minor'=>$subtotal+$shipping],
                 ['type'=>'credit','account_type'=>'liability','sub_account_type'=>'sales_tax','amount_minor'=>$tax],

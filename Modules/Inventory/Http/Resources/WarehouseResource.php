@@ -80,6 +80,7 @@ class WarehouseResource extends JsonResource
         $totalUniqueItems = count($uniqueActiveVariants);
 
         return [
+            'latitude'=>$this->latitude,'longitude'=>$this->longitude,'location_confirmed'=>$this->location_confirmed,
             'id' => $this->id,
             'name' => $this->name,
             'location' => $this->location,

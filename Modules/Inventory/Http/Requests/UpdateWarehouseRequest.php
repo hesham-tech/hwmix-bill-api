@@ -24,6 +24,7 @@ class UpdateWarehouseRequest extends FormRequest
         return [
             'name' => 'sometimes|required|string|max:255',
             'location' => 'sometimes|nullable|string|max:255',
+            'latitude'=>'nullable|required_with:longitude|numeric|between:-90,90','longitude'=>'nullable|required_with:latitude|numeric|between:-180,180','location_confirmed'=>'required_with:latitude,longitude|boolean',
             'description' => 'sometimes|nullable|string',
             'manager' => 'sometimes|nullable|string|max:255',
             'capacity' => 'sometimes|nullable|integer|min:0',

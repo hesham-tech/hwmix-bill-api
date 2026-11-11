@@ -148,7 +148,7 @@ class StoreReturnService
         $shipping=(int)$s['shipping_minor'];$cost=(int)$s['restored_cost_minor'];
         $lines=[['type'=>'debit','account_type'=>'revenue','sub_account_type'=>'marketplace_sales','amount_minor'=>$goods],
             ['type'=>'debit','account_type'=>'liability','sub_account_type'=>'sales_tax','amount_minor'=>$tax],
-            ['type'=>'credit','account_type'=>'asset','sub_account_type'=>$codSeller?'courier_receivable':'marketplace_clearing','amount_minor'=>$goods+$tax-$commission],
+            ['type'=>'credit','account_type'=>'asset','sub_account_type'=>$codSeller?($sub->shipment?->delivery_method==='seller_local'?'seller_local_collections':'courier_receivable'):'marketplace_clearing','amount_minor'=>$goods+$tax-$commission],
             ['type'=>'credit','account_type'=>'expense','sub_account_type'=>'marketplace_commission','amount_minor'=>$commission]];
         if($shipping) {$lines[]=['type'=>'debit','account_type'=>'expense','sub_account_type'=>'return_shipping','amount_minor'=>$shipping];$lines[]=['type'=>'credit','account_type'=>'asset','sub_account_type'=>'marketplace_clearing','amount_minor'=>$shipping];}
         if($cost) {$lines[]=['type'=>'debit','account_type'=>'asset','sub_account_type'=>'inventory','amount_minor'=>$cost];$lines[]=['type'=>'credit','account_type'=>'expense','sub_account_type'=>'cost_of_goods_sold','amount_minor'=>$cost];}

@@ -14,12 +14,12 @@ class CustomerAddress extends Model
     protected $fillable = [
         'user_id', 'label', 'recipient_name', 'phone',
         'country', 'city', 'district', 'street',
-        'governorate_code',
+        'governorate_code','latitude','longitude','location_confirmed',
         'building', 'floor', 'apartment', 'landmark', 'is_default',
     ];
 
     protected $casts = [
-        'is_default' => 'boolean',
+        'is_default' => 'boolean','latitude'=>'float','longitude'=>'float','location_confirmed'=>'boolean',
     ];
 
     public function user()

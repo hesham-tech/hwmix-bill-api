@@ -31,6 +31,8 @@ class StoreSubOrder extends Model
         'settlement_available_at'=>'datetime','commission_recognized_at'=>'datetime','settled_at'=>'datetime','refund_requested_at'=>'datetime',
     ];
 
+    public function shipment() {return $this->hasOne(StoreShipment::class);}
+
     public function order()
     {
         return $this->belongsTo(StoreOrder::class, 'store_order_id');

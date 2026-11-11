@@ -17,6 +17,7 @@ class QuoteOrderRequest extends FormRequest {
             'guest_address.district'=>'nullable|string|max:100','guest_address.street'=>'required_with:guest_address|string|max:255',
             'guest_address.building'=>'nullable|string|max:50','guest_address.floor'=>'nullable|string|max:50',
             'guest_address.apartment'=>'nullable|string|max:50','guest_address.landmark'=>'nullable|string|max:500',
+            'guest_address.latitude'=>'nullable|required_with:guest_address.longitude|numeric|between:-90,90','guest_address.longitude'=>'nullable|required_with:guest_address.latitude|numeric|between:-180,180','guest_address.location_confirmed'=>'sometimes|boolean',
             'notes'=>'nullable|string|max:2000','items'=>'required|array|min:1|max:100',
             'items.*.product_id'=>'required|integer|min:1','items.*.variant_id'=>'required|integer|min:1|distinct',
             'items.*.quantity'=>'required|integer|min:1|max:10000',

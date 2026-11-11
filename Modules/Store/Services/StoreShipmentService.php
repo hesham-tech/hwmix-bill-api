@@ -10,10 +10,11 @@ class StoreShipmentService {
         $shipment=DB::transaction(function() use($subOrderId) {
             $sub=StoreSubOrder::with('order')->lockForUpdate()->findOrFail($subOrderId);
             $shipment=StoreShipment::where('store_sub_order_id',$sub->id)->lockForUpdate()->firstOrFail();
-            if(in_array($shipment->status,['created','awaiting_manual_dispatch','in_transit','delivered','cancelled','returned'],true)) return null;
+            if(in_array($shipment->status,['created','awaiting_local_dispatch','awaiting_manual_dispatch','in_transit','delivered','cancelled','returned'],true)) return null;
             if($sub->status!=='processing'||!$sub->seller_ready_at||$sub->order->status==='cancelled'
                 ||($sub->order->payment_method==='online'&&!$sub->collected_at))
                 throw ValidationException::withMessages(['shipment'=>'الشحنة لم تستوفِ شروط التجهيز والتحصيل.']);
+            if($shipment->delivery_method==='seller_local'){$shipment->update(['status'=>'awaiting_local_dispatch']);return null;}
             if($shipment->status==='creating'||$shipment->status==='reconciliation_needed') {
                 $shipment->update(['status'=>'reconciliation_needed']); return false;
             }
@@ -46,6 +47,10 @@ class StoreShipmentService {
         },3);
     }
     public function cancel(StoreShipment $shipment,bool $manualConfirmed=false): string {
+        if($shipment->delivery_method==='seller_local'){
+            if(in_array($shipment->status,['in_transit','delivered'],true))throw ValidationException::withMessages(['shipment'=>'وثق الاستلام الفعلي عبر مسار الرجوع أو المرتجعات.']);
+            $shipment->update(['status'=>'cancelled']);return 'completed';
+        }
         $driver=ShippingGatewayRegistry::make($shipment->integration_snapshot);
         if(($shipment->integration_snapshot['driver']??'')==='manual') {
             if(!$manualConfirmed) throw ValidationException::withMessages(['confirmed'=>'أكد إلغاء الشحنة لدى شركة الشحن قبل تحرير المخزون.']);

@@ -21,6 +21,7 @@ class StoreOutboxProcessor {
                 'notification.erp_scheduled'=>app(\Modules\Notification\Services\ErpScheduledWorkflowDispatcher::class)->deliver($entry),
                 'order.customer_notification'=>$this->notifyCustomer($entry),
                 'order.vendor_notification'=>$this->notifyVendor($entry),
+                'order.vendor_member_notification'=>app(StoreNotificationService::class)->vendorMember($entry),
                 'shipment.create'=>app(StoreShipmentService::class)->createForSubOrder($entry->payload['sub_order_id']),
                 'refund.process'=>app(StoreRefundService::class)->process(\Modules\Store\Models\StoreRefund::findOrFail($entry->payload['refund_id'])),
                 'invoice.create'=>app(StoreInvoiceBridge::class)->create($entry->payload['sub_order_id']),

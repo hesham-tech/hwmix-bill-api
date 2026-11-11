@@ -22,6 +22,7 @@ class StoreReadinessService {
         $issues=array_merge($issues,app(StoreOperationalHealth::class)->issues());
         if($profiles->isEmpty()) $issues[]='تجهيز بائع واحد على الأقل ومخزن وعنوان استلام وخدمة شحن مسعرة.';
         foreach($profiles as $profile) {
+            if(!empty($profile->local_delivery['enabled'])&&!app(LocalDeliveryService::class)->available($profile))$issues[]='استكمال إحداثيات مخزن التوصيل الذاتي للشركة #'.$profile->company_id;
             if($settings['tax_mode']==='per_seller') {
                 try {app(StoreTaxService::class)->resolve((int)$profile->company_id,0,$settings);}
                 catch(\Illuminate\Validation\ValidationException $error){$issues[]='تسجيل المعالجة الضريبية للشركة #'.$profile->company_id;}
@@ -39,6 +40,7 @@ class StoreReadinessService {
         return $issues;
     }
     private function hasShippingRoute(StoreSellerProfile $profile,array $settings): bool {
+        if(app(LocalDeliveryService::class)->available($profile))return true;
         $rates=\Illuminate\Support\Facades\DB::table('store_shipping_rates as r')->join('store_shipping_accounts as a','a.id','=','r.shipping_account_id')
             ->where('a.is_active',true)->where('r.is_active',true)->whereIn('r.governorate_code',array_keys(StoreGeography::governorates()))->whereIn('r.scope_company_id',[0,$profile->company_id])
             ->where(fn($owner)=>$owner->where(fn($own)=>$own->where('a.company_id',$profile->company_id)->when($profile->shipping_account_id,fn($id)=>$id->where('a.id',$profile->shipping_account_id)))

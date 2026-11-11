@@ -12,6 +12,7 @@ class StoreRtoService {
             $sub=StoreSubOrder::lockForUpdate()->findOrFail($sub->id);$sub->setRelation('order',$order);
             $shipment=StoreShipment::where('store_sub_order_id',$sub->id)->lockForUpdate()->firstOrFail();
             $fee=Money::minor((string)$data['carrier_cost']);
+            if($shipment->delivery_method==='seller_local'&&$fee!==0)throw ValidationException::withMessages(['carrier_cost'=>'لا توجد تكلفة ناقل خارجي للتوصيل الذاتي.']);
             if($fee<0||!in_array($data['condition'],['saleable','damaged'],true))throw ValidationException::withMessages(['rto'=>'بيانات الفحص أو التكلفة غير صحيحة.']);
             $payer=$sub->financial_policy_snapshot['rto_fee_payer']??'platform';
             $fingerprint=hash('sha256',json_encode([$data['condition'],$data['reason'],$data['carrier_reference'],$fee,$payer],JSON_THROW_ON_ERROR));

@@ -306,16 +306,7 @@ class StoreAdminController extends Controller
         $this->access->platform('store.orders.manage');$this->access->platform('store.finance.manage');
         $data=$request->validate(['confirmed'=>'required|accepted','reference'=>'required|string|max:150']);
         $sub=StoreSubOrder::findOrFail($id);
-        DB::transaction(function()use($sub,$data){
-            StoreOrder::lockForUpdate()->findOrFail($sub->store_order_id);
-            $locked=StoreSubOrder::lockForUpdate()->findOrFail($sub->id);
-            $shipment=StoreShipment::where('store_sub_order_id',$locked->id)->firstOrFail();
-            $gross=Money::minor($locked->subtotal)+Money::minor($locked->tax_total)+Money::minor($locked->shipping_cost)-Money::minor($locked->discount_total);
-            app(\Modules\Store\Services\StorePaymentProofService::class)->claim('cod:carrier:'.$shipment->shipping_account_id,$data['reference'],$locked,$gross,$locked->order->currency);
-            $wasCollected=(bool)$locked->collected_at;
-            app(StorePaymentService::class)->confirmCodCollection($locked);
-            if(!$wasCollected)app(StoreOrderService::class)->event($locked->order,'cod.collection_verified',['sub_order_id'=>$locked->id,'reference'=>$data['reference']],$locked->company_id);
-        },3);
+        app(\Modules\Store\Services\StoreCodCollectionService::class)->record($sub,$data['reference']);
         return $this->order($request,(string)$sub->store_order_id);
     }
     public function dispatch(Request $request,string $id) {

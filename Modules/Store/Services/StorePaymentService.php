@@ -76,7 +76,7 @@ class StorePaymentService
         $sub->update(['collected_at'=>now('UTC')]);
         $policy=$sub->financial_policy_snapshot;
         if($policy['cod_beneficiary']==='seller') {
-            if($policy['commission_timing']==='delivered_collected') $this->finance->recognizeCod($sub);
+            if($policy['commission_timing']==='delivered_collected'||($policy['commission_timing']==='remitted'&&$sub->shipment?->delivery_method==='seller_local')) $this->finance->recognizeCod($sub);
         } else {
             $gross=Money::minor($sub->subtotal)+Money::minor($sub->tax_total)+Money::minor($sub->shipping_cost)-Money::minor($sub->discount_total);
             $this->ledger->journal('cod:'.$sub->id.':receipt','cod_customer_collection',$order->currency,[
@@ -96,6 +96,7 @@ class StorePaymentService
             StoreOrder::lockForUpdate()->findOrFail($sub->store_order_id);
             $sub=StoreSubOrder::lockForUpdate()->findOrFail($sub->id);
             $shipment=\Modules\Store\Models\StoreShipment::where('store_sub_order_id',$sub->id)->lockForUpdate()->firstOrFail();
+            if($shipment->delivery_method==='seller_local')throw ValidationException::withMessages(['remittance'=>'تحصيل التوصيل الذاتي لا يحتاج توريد شركة شحن.']);
             if(!$sub->collected_at||$sub->order->payment_method!=='cod')
                 throw ValidationException::withMessages(['remittance'=>'يجب إثبات تحصيل العميل أولًا.']);
             $gross=Money::minor($sub->subtotal)+Money::minor($sub->tax_total)+Money::minor($sub->shipping_cost)-Money::minor($sub->discount_total);

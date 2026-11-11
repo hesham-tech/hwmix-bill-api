@@ -3,7 +3,9 @@ namespace Modules\Store\Transformers;
 use Illuminate\Http\Resources\Json\JsonResource;
 class StoreSubOrderResource extends JsonResource {
     public function toArray($request): array {
+        $shipment=$this->shipment;
         $result=[
+            'delivery_method'=>$shipment?->delivery_method??'carrier','delivery_name'=>$shipment?->delivery_method==='seller_local'?'توصيل البائع':$this->shipping_carrier,
             'id'=>$this->id,'store_order_id'=>$this->store_order_id,'company_id'=>$this->company_id,
             'sub_order_number'=>$this->sub_order_number,'status'=>$this->status,'subtotal'=>(string)$this->subtotal,
             'tax_total'=>(string)$this->tax_total,'shipping_cost'=>(string)$this->shipping_cost,'discount_total'=>(string)$this->discount_total,
@@ -27,6 +29,11 @@ class StoreSubOrderResource extends JsonResource {
             'payment_status'=>$this->order->payment_status,'shipping_address'=>$this->order->shipping_address_snapshot,
             'customer_notes'=>$this->order->customer_notes,
         ];
+        if($request->attributes->get('store_staff_view',false)) {
+            $result['pickup']=['warehouse_id'=>$shipment?->quote_snapshot['warehouse_id']??null,'original'=>$shipment?->quote_snapshot['pickup_address']??$shipment?->pickup_address,
+                'current'=>$shipment?->pickup_address,'override'=>$shipment?->pickup_override,
+                'can_override'=>in_array($this->status,['pending','confirmed','processing'],true)&&!$shipment?->provider_reference&&in_array($shipment?->status,['waiting_ready','pending','awaiting_local_dispatch','awaiting_manual_dispatch'],true)];
+        }
         if($request->attributes->get('store_staff_view',false)) $result['financial']=[
             'commission_minor'=>(int)$this->commission_minor,'seller_net_minor'=>$this->financial_policy_snapshot['seller_net_minor']??null,
             'rto_fee_payer'=>$this->financial_policy_snapshot['rto_fee_payer']??'platform',

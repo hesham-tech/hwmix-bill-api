@@ -19,7 +19,7 @@ class ErpScheduledNotificationTest extends TestCase {
   $workflow->steps()->create(['step_number'=>1,'delay_days'=>0,'channel'=>['email'],'template_id'=>$template->id,'is_active'=>true]);
   $invoice=Invoice::withoutEvents(fn()=>Invoice::factory()->create(['company_id'=>$company->id,'user_id'=>$customer->id,'created_by'=>$customer->id,
    'status'=>'confirmed','payment_status'=>'unpaid','gross_amount'=>'100.00','net_amount'=>'100.00','total_discount'=>0,'total_tax'=>0,
-   'remaining_amount'=>'100.00','due_date'=>now()->toDateString(),'is_marketplace_managed'=>false]));
+   'remaining_amount'=>'100.00','due_date'=>now(config('store.business_timezone', 'Africa/Cairo'))->toDateString(),'is_marketplace_managed'=>false]));
   return [$company,$invoice];
  }
  public function test_missed_day_is_recovered_and_repeated_scans_do_not_repeat_delivery(): void {

@@ -94,7 +94,7 @@ class CustomerAddressController extends Controller
         \Illuminate\Support\Facades\DB::transaction(function () use ($address) {
             foreach (\Modules\Store\Models\StoreOrder::where('shipping_address_id',$address->id)->lockForUpdate()->get() as $order) {
                 $order->update(['shipping_address_id'=>null,'shipping_address_snapshot'=>$order->shipping_address_snapshot ?: $address->only([
-                    'recipient_name','phone','country','city','governorate_code','district','street','building','floor','apartment','landmark',
+                    'recipient_name','phone','country','city','governorate_code','district','street','building','floor','apartment','landmark','latitude','longitude','location_confirmed',
                 ])]);
             }
             $address->delete();

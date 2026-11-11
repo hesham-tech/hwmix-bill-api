@@ -54,7 +54,9 @@ class StoreProductController extends Controller
         $data=$request->validate(['items'=>'required|array|min:1|max:100','items.*.variant_id'=>'required|integer|min:1|distinct',
             'items.*.product_id'=>'nullable|integer|min:1','items.*.quantity'=>'required|integer|min:1|max:9999']);
         $errors=$this->productQueryService->validateCartItems($data['items']);
-        return response()->json(['success'=>true,'data'=>['valid'=>!$errors,'errors'=>$errors]]);
+        $companies=\Modules\Inventory\Models\ProductVariant::withoutGlobalScopes()->whereIn('id',array_column($data['items'],'variant_id'))->pluck('company_id');
+        $location=\Modules\Store\Models\StoreSellerProfile::whereIn('company_id',$companies)->get()->contains(fn($p)=>!empty($p->local_delivery['enabled']));
+        return response()->json(['success'=>true,'data'=>['valid'=>!$errors,'errors'=>$errors,'requires_delivery_location'=>$location]]);
     }
 
     public function show($id)

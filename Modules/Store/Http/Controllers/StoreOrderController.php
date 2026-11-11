@@ -51,7 +51,7 @@ class StoreOrderController extends Controller
             'shipping_minor'=>$snapshot['shipping_minor'],'total_minor'=>$snapshot['total_minor'],
             'legal_documents'=>$snapshot['legal'],'groups'=>array_map(fn($g)=>[
                 'company_id'=>$g['company_id'],'subtotal_minor'=>$g['subtotal_minor'],'tax_minor'=>$g['tax_minor'],
-                'shipping_minor'=>$g['shipping']['fee_minor'],'carrier_name'=>$g['shipping']['carrier_name'],
+                'delivery_method'=>$g['shipping']['delivery_method']??'carrier','shipping_minor'=>$g['shipping']['fee_minor'],'carrier_name'=>$g['shipping']['carrier_name'],
                 'items'=>array_map(fn($i)=>array_intersect_key($i,array_flip(['product_id','variant_id','product_name','quantity','unit_price_minor','total_minor','unit_name'])),$g['items']),
             ],$snapshot['groups']),
         ]]);

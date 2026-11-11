@@ -76,6 +76,10 @@ Route::prefix('store')->group(function() {
 Route::prefix('vendor/store')->middleware('auth:sanctum')->group(function () {
     Route::get('/notifications',[\Modules\Store\Http\Controllers\StoreNotificationController::class,'index'])->defaults('scope','vendor');
     Route::post('/notifications/{id}/read',[\Modules\Store\Http\Controllers\StoreNotificationController::class,'read'])->defaults('scope','vendor')->whereNumber('id');
+    Route::patch('/orders/{id}/pickup',[\Modules\Store\Http\Controllers\LocalDeliveryController::class,'pickup']);
+    Route::get('/local-delivery',[\Modules\Store\Http\Controllers\LocalDeliveryController::class,'show']);
+    Route::put('/local-delivery',[\Modules\Store\Http\Controllers\LocalDeliveryController::class,'save']);
+    Route::post('/deliveries/{id}/{action}',[\Modules\Store\Http\Controllers\LocalDeliveryController::class,'action'])->middleware('throttle:20,1');
     Route::get('/account', [VendorOrderController::class, 'account']);
     Route::post('/payouts',[VendorOrderController::class,'requestPayout'])->middleware('throttle:10,1');
     Route::get('/orders', [VendorOrderController::class, 'index']);
@@ -92,6 +96,10 @@ Route::prefix('admin/store')->middleware('auth:sanctum')->group(function () {
     Route::post('/sub-orders/{id}/rto',[$controller,'rto'])->middleware('throttle:20,1');
     Route::get('/bootstrap',[$controller,'bootstrap']);
     Route::put('/settings',[$controller,'settings']);
+    Route::patch('/sub-orders/{id}/pickup',[\Modules\Store\Http\Controllers\LocalDeliveryController::class,'pickup']);
+    Route::get('/sellers/{id}/local-delivery',[\Modules\Store\Http\Controllers\LocalDeliveryController::class,'show']);
+    Route::put('/sellers/{id}/local-delivery',[\Modules\Store\Http\Controllers\LocalDeliveryController::class,'save']);
+    Route::post('/deliveries/{id}/{action}',[\Modules\Store\Http\Controllers\LocalDeliveryController::class,'action'])->middleware('throttle:20,1');
     Route::get('/sellers/{id}',[$controller,'seller']);
     Route::put('/sellers/{id}',[$controller,'saveSeller']);
     Route::put('/sellers/{id}/products/{productId}/return-policy',[$controller,'saveProductReturnPolicy']);

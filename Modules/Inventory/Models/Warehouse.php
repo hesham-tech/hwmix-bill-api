@@ -34,6 +34,7 @@ class Warehouse extends Model
     protected $guarded = [];
 
     protected $casts = [
+        'latitude'=>'float','longitude'=>'float','location_confirmed'=>'boolean',
         'capacity' => 'integer',
         'is_default' => 'boolean',
     ];

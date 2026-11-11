@@ -99,7 +99,7 @@ class SellerFinanceService
         if($subOrder->commission_recognized_at) return;
         if(!$subOrder->delivered_at||!$subOrder->collected_at) return;
         $timing=$subOrder->financial_policy_snapshot['commission_timing']??'delivered_collected';
-        if($timing==='remitted'&&!$subOrder->remitted_at)return;
+        if($timing==='remitted'&&!$subOrder->remitted_at&&$subOrder->shipment?->delivery_method!=='seller_local')return;
         if($timing==='after_return_window'&&(!$subOrder->settlement_available_at||$subOrder->settlement_available_at->isFuture()))return;
         $commission=(int)$subOrder->commission_minor-(int)$subOrder->commission_reversed_minor;
         if($commission) $this->ledger->journal('paid:'.$subOrder->id.':commission','commission_recognized',$subOrder->order->currency,[

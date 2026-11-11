@@ -12,7 +12,7 @@ class CustomerAddressResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
+            'id' => $this->id,'latitude'=>$this->latitude,'longitude'=>$this->longitude,'location_confirmed'=>$this->location_confirmed,
             'label' => $this->label,
             'recipient_name' => $this->recipient_name,
             'street' => $this->street,

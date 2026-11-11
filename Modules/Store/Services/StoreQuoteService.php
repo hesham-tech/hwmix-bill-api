@@ -19,7 +19,7 @@ class StoreQuoteService
         if($id) {
             if(!$customer) throw ValidationException::withMessages(['shipping_address_id'=>'يجب تسجيل الدخول لاستخدام عنوان محفوظ.']);
             $address=CustomerAddress::where('user_id',$customer->id)->findOrFail($id)->only([
-                'recipient_name','phone','country','city','governorate_code','district','street','building','floor','apartment','landmark']);
+                'recipient_name','phone','country','city','governorate_code','district','street','building','floor','apartment','landmark','latitude','longitude','location_confirmed']);
         } else $address=$data['guest_address']??[];
         $address['country']='EG';
         $code=$address['governorate_code']??array_search($address['city']??'',StoreGeography::governorates(),true);
@@ -28,6 +28,8 @@ class StoreQuoteService
         $address['governorate_code']=$code;
         if(empty($address['recipient_name'])||empty($address['phone'])||empty($address['street']))
             throw ValidationException::withMessages(['shipping_address_id'=>'أكمل اسم المستلم والهاتف والعنوان.']);
+        foreach(['latitude','longitude'] as $key)$address[$key]=isset($address[$key])?(float)$address[$key]:null;
+        $address['location_confirmed']=(bool)($address['location_confirmed']??false);
         ksort($address);
         return $address;
     }
@@ -116,7 +118,7 @@ class StoreQuoteService
         foreach(collect($items)->groupBy('company_id')->sortKeys() as $companyId=>$lines) {
             $sum=fn($key)=>Money::minor($lines->reduce(fn($carry,$line)=>bcadd($carry,(string)$line[$key],0),'0'),0);
             $groupSubtotal=$sum('subtotal_minor'); $groupTax=$sum('tax_minor'); $groupGross=$sum('total_minor');
-            $shippingQuote=$this->shipping->quote((int)$companyId,$address['governorate_code'],$data['payment_method'],$groupGross);
+            $shippingQuote=$this->shipping->quote((int)$companyId,$address,$data['payment_method'],$groupGross);
             $policy=$this->policies->resolve((int)$companyId);
             $commission=$this->finance->commission($groupSubtotal,$policy);
             $shippingFinancials=ShippingFinancials::snapshot($shippingQuote,$groupGross,$commission);

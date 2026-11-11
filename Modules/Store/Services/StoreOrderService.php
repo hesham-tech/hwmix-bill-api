@@ -59,7 +59,7 @@ class StoreOrderService
                     ||$this->policies->hash($this->policies->resolve($group['company_id']))!==$group['policy_hash'])
                     throw ValidationException::withMessages(['quote_id'=>'تغيرت أهلية أحد البائعين. راجع عرض السعر.']);
                 foreach($group['items'] as $item) {
-                    if(($item['tax_snapshot']??null)!==app(StoreTaxService::class)->resolve((int)$group['company_id'],(int)$item['product_id'],$currentSettings))
+                    if(!StoreSnapshot::same($item['tax_snapshot']??null,app(StoreTaxService::class)->resolve((int)$group['company_id'],(int)$item['product_id'],$currentSettings)))
                         throw ValidationException::withMessages(['quote_id'=>'تغيرت المعالجة الضريبية. اطلب عرض سعر جديدًا.']);
                     $variant=ProductVariant::withoutGlobalScopes()->with(['product'=>fn($q)=>$q->withoutGlobalScopes()])->where('status','active')->find($item['variant_id']);
                     if(!$variant||!$variant->product?->active||!$variant->product?->is_active_in_store||$variant->product?->deleted_at
@@ -73,8 +73,9 @@ class StoreOrderService
                     if((int)$base!==(int)($item['base_unit_id']??0)||bccomp($factor,(string)$item['conversion_factor'],6)!==0)
                         throw ValidationException::withMessages(['quote_id'=>'تغير تحويل وحدة البيع. اطلب عرض سعر جديدًا.']);
                 }
-                $shippingAccount=\Modules\Store\Models\StoreShippingAccount::find($group['shipping']['shipping_account_id']);
-                if (!$shippingAccount?->is_active) throw ValidationException::withMessages(['shipping'=>'حساب الشحن المختار متوقف. اطلب عرضًا جديدًا.']);
+                $fresh=app(StoreShippingQuoteService::class)->quote((int)$group['company_id'],$snapshot['address'],$snapshot['payment_method'],(int)$group['subtotal_minor']+(int)$group['tax_minor']);
+                foreach(['delivery_method','shipping_account_id','fee_minor','carrier_fee_minor','rate_id','warehouse_id','routing_version','pickup_address','cod_beneficiary','shipping_fee_beneficiary','local_snapshot'] as $key)
+                    if(!StoreSnapshot::same($fresh[$key]??null,$group['shipping'][$key]??null))throw ValidationException::withMessages(['quote_id'=>'تغيرت طريقة التوصيل أو تكلفتها. اطلب عرضًا جديدًا.']);
             }
             $order=StoreOrder::create([
                 'order_number'=>'ORD-'.Str::ulid(),'customer_user_id'=>$customer?->id,'shipping_address_id'=>$snapshot['shipping_address_id'],
@@ -114,7 +115,7 @@ class StoreOrderService
                 if($order->payment_method==='cod'&&$shipping['cod_beneficiary']==='seller')
                     $this->finance->reserve($sub,$group['commission_minor']+$financial['platform_shipping_due_minor'],$financial);
                 StoreShipment::create(['store_sub_order_id'=>$sub->id,'company_id'=>$sub->company_id,
-                    'shipping_account_id'=>$shipping['shipping_account_id'],'idempotency_key'=>(string)Str::uuid(),
+                    'delivery_method'=>$shipping['delivery_method']??'carrier','shipping_account_id'=>$shipping['shipping_account_id'],'idempotency_key'=>(string)Str::uuid(),
                     'integration_snapshot'=>$shipping['integration'],'pickup_address'=>$shipping['pickup_address'],
                     'delivery_address'=>$snapshot['address'],'quote_snapshot'=>array_diff_key($shipping,['integration'=>true]),
                     'cod_beneficiary'=>$shipping['cod_beneficiary'],'currency'=>$order->currency,
@@ -211,7 +212,10 @@ class StoreOrderService
                 throw ValidationException::withMessages(['status'=>'تغيير حالة الطلب غير مسموح بهذا الترتيب.']);
             if($status==='confirmed') { $this->confirm($order,(bool)($extra['phone_confirmed']??false)); return; }
             if($status==='processing') { $this->sellerReady($sub); return; }
+            if($sub->shipment?->delivery_method==='seller_local'&&($extra['collected']??false))throw ValidationException::withMessages(['collected'=>'استخدم إجراء تحصيل التوصيل الذاتي مع مرجع وتأكيد.']);
             $old=$sub->status;
+            if($sub->shipment?->delivery_method==='seller_local'&&in_array($status,['shipped','delivered'],true)&&!($extra['local_delivery_verified']??false))
+                throw ValidationException::withMessages(['delivery'=>'استخدم إجراء التوصيل الذاتي المؤكد.']);
             $sub->update(array_merge(['status'=>$status],array_intersect_key($extra,array_flip(['tracking_number','shipping_carrier']))));
             if($status==='shipped') StoreShipment::where('store_sub_order_id',$sub->id)->update(['status'=>'in_transit']);
             if($status==='delivered') {
