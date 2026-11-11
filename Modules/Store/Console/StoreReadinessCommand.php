@@ -16,7 +16,7 @@ class StoreReadinessCommand extends Command {
                     if(!app()->environment('production'))$issues[]='البيئة المفحوصة ليست production.';
                     if(config('app.debug'))$issues[]='يجب تعطيل APP_DEBUG.';
                     if(!$settings['enabled'])$issues[]='المتجر لم يُفتح لاستقبال الطلبات.';
-                    if(!$settings['cod_enabled']||!$settings['online_enabled'])$issues[]='الإطلاق المعتمد يتطلب COD والبطاقات معًا.';
+                    if(!$settings['cod_enabled']&&!$settings['online_enabled'])$issues[]='يلزم تفعيل طريقة دفع واحدة على الأقل؛ لا يشترط تفعيل بوابة مؤجلة.';
                 }
                 $applied=DB::table('migrations')->pluck('migration')->all();
                 foreach(glob(database_path('migrations/*.php')) as $file)

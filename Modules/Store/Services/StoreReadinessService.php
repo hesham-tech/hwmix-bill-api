@@ -14,7 +14,7 @@ class StoreReadinessService {
         if(!$settings['legal_setup_confirmed']) $issues[]='اعتماد الإعداد القانوني والضريبي.';
         if($settings['tax_mode']==='unconfigured') $issues[]='اختيار أسلوب احتساب الضريبة وقيمتها.';
         if(!app(StoreQuoteService::class)->documents()) $issues[]='اختيار ونشر وثائق الشراء والخصوصية والمرتجعات.';
-        if($settings['return_policy']['window_days']===null) $issues[]='ضبط سياسة المرتجعات الافتراضية أو سياسات المنتجات.';
+        if((int)($settings['return_policy']['change_of_mind_days']??0)<14||(int)($settings['return_policy']['defect_days']??0)<30) $issues[]='ضبط مدد المرتجعات: 14 يومًا لتغيير الرأي و30 يومًا للعيب على الأقل.';
         if(!app(NotificationIntegrationResolver::class)->mail()) $issues[]='تفعيل إعداد بريد المنصة لإرسال رموز التوثيق والإشعارات.';
         if(!$settings['cod_enabled']&&!$settings['online_enabled']) $issues[]='تفعيل طريقة دفع واحدة على الأقل.';
         if($settings['online_enabled']&&!app(StorePaymentService::class)->gateways()) $issues[]='إضافة حساب دفع مفعل مكتمل الإعداد ومناسب لبيئة التشغيل.';
@@ -22,6 +22,10 @@ class StoreReadinessService {
         $issues=array_merge($issues,app(StoreOperationalHealth::class)->issues());
         if($profiles->isEmpty()) $issues[]='تجهيز بائع واحد على الأقل ومخزن وعنوان استلام وخدمة شحن مسعرة.';
         foreach($profiles as $profile) {
+            if($settings['tax_mode']==='per_seller') {
+                try {app(StoreTaxService::class)->resolve((int)$profile->company_id,0,$settings);}
+                catch(\Illuminate\Validation\ValidationException $error){$issues[]='تسجيل المعالجة الضريبية للشركة #'.$profile->company_id;}
+            }
             if($profile->policy_review_required) $issues[]='مراجعة استثناءات سياسة الشركة #'.$profile->company_id;
             if(!$this->hasShippingRoute($profile,$settings)) $issues[]='إضافة أسعار الشحن للمحافظات المدعومة للشركة #'.$profile->company_id;
             if(!$profile->warehouse_id||empty($profile->pickup_address['street'])||empty($profile->pickup_address['phone'])

@@ -59,4 +59,14 @@ class StoreRegistrationLegalTest extends TestCase
         app(StoreSettingsService::class)->save(['enabled'=>true]);
         $this->assertSame([],app(StoreRegistrationLegalService::class)->documents());
     }
+
+    public function test_published_store_policies_do_not_create_erp_pending_acceptances(): void {
+        [, $erp]=$this->document('terms-of-use','published',$this->platform);
+        $this->document('store-terms-of-sale','published',$this->platform);
+        $this->document('store-privacy-policy','published',$this->platform);
+        $this->document('store-returns-policy','published',$this->platform);
+        $user=\App\Models\User::factory()->create(['company_id'=>$this->platform,'active_company_id'=>$this->platform]);
+        $result=$this->actingAs($user,'sanctum')->getJson('/api/v1/legal/acceptances/pending')->assertOk()->json('data');
+        $this->assertSame([$erp],array_column($result,'id'));
+    }
 }

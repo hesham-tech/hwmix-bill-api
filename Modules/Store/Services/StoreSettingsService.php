@@ -12,7 +12,7 @@ class StoreSettingsService
             'hold_hours'=>24,'quote_minutes'=>15,'auto_confirm_paid_orders'=>true,
             'platform_shipping_account_id'=>null,'legal_document_ids'=>[],
             'tax_mode'=>'unconfigured','default_tax_rate_bps'=>0,'legal_setup_confirmed'=>false,
-            'return_policy'=>['window_days'=>null,'allow_change_of_mind'=>true,'allow_defect'=>true],
+            'return_policy'=>['window_days'=>null,'change_of_mind_days'=>14,'defect_days'=>30,'allow_change_of_mind'=>true,'allow_defect'=>true],
             'seller_policy'=>[
                 'funding_mode'=>'prepaid','credit_limit_minor'=>0,'commission_type'=>'percent',
                 'commission_percent'=>'0.00','commission_fixed_minor'=>0,'commission_timing'=>'delivered_collected',

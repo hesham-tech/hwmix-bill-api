@@ -53,12 +53,14 @@ class StoreOrderService
             if($accepted!==$expected||$current!==$expected)
                 throw ValidationException::withMessages(['legal_version_ids'=>'راجع الإصدارات الحالية من شروط المتجر.']);
             foreach($snapshot['groups'] as $group) {
-                $profile=StoreSellerProfile::where('company_id',$group['company_id'])->first();
+                $profile=StoreSellerProfile::where('company_id',$group['company_id'])->lockForUpdate()->first();
                 if(!$profile?->is_enabled||$profile->policy_review_required||(int)$profile->warehouse_id!==(int)$group['shipping']['warehouse_id']
                     ||!$this->policies->canPublish($group['company_id'])
                     ||$this->policies->hash($this->policies->resolve($group['company_id']))!==$group['policy_hash'])
                     throw ValidationException::withMessages(['quote_id'=>'تغيرت أهلية أحد البائعين. راجع عرض السعر.']);
                 foreach($group['items'] as $item) {
+                    if(($item['tax_snapshot']??null)!==app(StoreTaxService::class)->resolve((int)$group['company_id'],(int)$item['product_id'],$currentSettings))
+                        throw ValidationException::withMessages(['quote_id'=>'تغيرت المعالجة الضريبية. اطلب عرض سعر جديدًا.']);
                     $variant=ProductVariant::withoutGlobalScopes()->with(['product'=>fn($q)=>$q->withoutGlobalScopes()])->where('status','active')->find($item['variant_id']);
                     if(!$variant||!$variant->product?->active||!$variant->product?->is_active_in_store||$variant->product?->deleted_at
                         ||(int)$variant->product_id!==(int)$item['product_id']||(int)$variant->company_id!==(int)$group['company_id']
@@ -106,7 +108,7 @@ class StoreOrderService
                     'total_price'=>Money::decimal($item['total_minor']),'tax_total'=>Money::decimal($item['tax_minor']),
                     'selling_unit_id'=>$item['selling_unit_id'],'unit_name_snapshot'=>$item['unit_name'],
                     'conversion_factor_snapshot'=>$item['conversion_factor'],'base_quantity'=>$item['base_quantity'],
-                    'return_policy_snapshot'=>$item['return_policy'],
+                    'return_policy_snapshot'=>$item['return_policy'],'tax_snapshot'=>$item['tax_snapshot'],
                 ]);
                 $this->stockReservation->reserveForSubOrder($sub,$sub->items,$shipping['warehouse_id']);
                 if($order->payment_method==='cod'&&$shipping['cod_beneficiary']==='seller')
@@ -214,7 +216,10 @@ class StoreOrderService
             if($status==='shipped') StoreShipment::where('store_sub_order_id',$sub->id)->update(['status'=>'in_transit']);
             if($status==='delivered') {
                 $this->stockReservation->consumeReservation($sub);
-                $days=max(0,(int)$sub->items->max(fn($item)=>$item->return_policy_snapshot['window_days']??0));
+                $days=(int)$sub->items->max(function($item) {
+                    $policy=app(StoreReturnPolicy::class)->resolve($item->return_policy_snapshot??[],$item->return_policy_snapshot??[]);
+                    return max($policy['change_of_mind_days'],$policy['defect_days']);
+                });
                 $sub->update(['delivered_at'=>now('UTC'),'settlement_available_at'=>now('UTC')->addDays($days+(int)($sub->financial_policy_snapshot['settlement_delay_days']??0))]);
                 StoreShipment::where('store_sub_order_id',$sub->id)->update(['status'=>'delivered']);
                 if($order->payment_method==='cod'&&($extra['collected']??false)) app(StorePaymentService::class)->confirmCodCollection($sub);

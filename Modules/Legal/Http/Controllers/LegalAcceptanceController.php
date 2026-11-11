@@ -85,9 +85,10 @@ class LegalAcceptanceController extends Controller
 
         // 1. جلب جميع المستندات النشطة الخاصة بنطاق المستخدم (العامة + شركته)
         $activeDocVersions = LegalDocumentVersion::whereHas('document', function ($query) {
-                $query->where('is_active', true);
+                $query->where('is_active', true)->whereNotIn('key',['store-terms-of-sale','store-privacy-policy','store-returns-policy']);
             })
             ->where('status', 'published')
+            ->where('published_at','<=',now())
             ->get();
 
         // 2. جلب معرفات الإصدارات التي وافق عليها المستخدم مسبقاً

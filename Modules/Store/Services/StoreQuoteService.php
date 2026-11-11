@@ -44,6 +44,9 @@ class StoreQuoteService
                 'version'=>$version->version,'title'=>$version->title,'content_hash'=>hash('sha256',$version->content)];
         }
         if(count($result)!==count(array_unique($ids))) return [];
+        $keys=array_column($result,'key');
+        foreach([['store-terms-of-sale','terms-of-use'],['store-privacy-policy','privacy-policy'],['store-returns-policy','refund-policy']] as $required)
+            if(!array_intersect($keys,$required))return [];
         return $result;
     }
     public function fingerprint(array $data,?User $customer): string {
@@ -98,17 +101,12 @@ class StoreQuoteService
             $unitMinor=Money::minor((string)$variant->retail_price);
             if($unitMinor<=0) throw ValidationException::withMessages(['items'=>'سعر أحد المنتجات غير صالح.']);
             $line=Money::minor(bcmul((string)$unitMinor,(string)$quantity,0),0);
-            $rate=(int)$settings['default_tax_rate_bps'];
-            $tax=$settings['tax_mode']==='exclusive'
-                ?(int)bcdiv(bcadd(bcmul((string)$line,(string)$rate,0),'5000',0),'10000',0)
-                :($settings['tax_mode']==='included'?$line-(int)bcdiv(bcadd(bcmul((string)$line,'10000',0),(string)intdiv(10000+$rate,2),0),(string)(10000+$rate),0):0);
-            $gross=$settings['tax_mode']==='exclusive'?Money::minor(bcadd((string)$line,(string)$tax,0),0):$line;
-            $returnPolicy=array_replace($settings['return_policy'],$product->store_return_policy??[]);
-            if($returnPolicy['window_days']===null)
-                throw ValidationException::withMessages(['items'=>'سياسة مرتجع أحد المنتجات لم تكتمل.']);
+            $taxSnapshot=app(StoreTaxService::class)->resolve((int)$product->company_id,(int)$product->id,$settings);
+            ['tax'=>$tax,'gross'=>$gross]=app(StoreTaxService::class)->calculate($line,$taxSnapshot);
+            $returnPolicy=app(StoreReturnPolicy::class)->resolve($settings['return_policy'],$product->store_return_policy??[]);
             $items[]=['product_id'=>$product->id,'variant_id'=>$id,'company_id'=>$product->company_id,
                 'product_name'=>$product->name,'sku'=>$variant->sku,'image'=>$variant->primary_image_url,
-                'quantity'=>$quantity,'unit_price_minor'=>$unitMinor,'total_minor'=>$gross,'tax_minor'=>$tax,
+                'quantity'=>$quantity,'unit_price_minor'=>$unitMinor,'total_minor'=>$gross,'tax_minor'=>$tax,'tax_snapshot'=>$taxSnapshot,
                 'subtotal_minor'=>$gross-$tax,'selling_unit_id'=>(int)$unit,'base_unit_id'=>(int)$base,
                 'unit_name'=>\Modules\Inventory\Models\Unit::withoutGlobalScopes()->find($unit)?->name,
                 'conversion_factor'=>$factor,'base_quantity'=>bcmul((string)$quantity,$factor,6),'return_policy'=>$returnPolicy];

@@ -23,16 +23,17 @@ class StoreReturnService
             }
             $item=$order->items()->whereKey($data['item_id'])->firstOrFail();
             $sub=$item->subOrder;
-            if($sub->status!=='delivered'||!$sub->delivered_at||!$sub->collected_at) $this->fail('يمكن طلب الإرجاع بعد التسليم والتحصيل.');
-            $policy=$item->return_policy_snapshot??[];
+            if($sub->status!=='delivered'||!$sub->delivered_at) $this->fail('يمكن طلب الإرجاع بعد التسليم.');
+            $policy=app(StoreReturnPolicy::class)->resolve($item->return_policy_snapshot??[],$item->return_policy_snapshot??[]);
             $defect=in_array($data['reason'],['defect','wrong_item'],true);
             if(!($policy[$defect?'allow_defect':'allow_change_of_mind']??false)) $this->fail('سبب الإرجاع غير متاح وفق السياسة المحفوظة للمنتج.');
-            if(!isset($policy['window_days'])||now('UTC')->gt($sub->delivered_at->copy()->addDays((int)$policy['window_days']))) $this->fail('انتهت مهلة الإرجاع لهذا المنتج.');
+            $days=(int)$policy[$defect?'defect_days':'change_of_mind_days'];
+            if(now('UTC')->gt($sub->delivered_at->copy()->addDays($days))) $this->fail('انتهت مهلة الإرجاع لهذا السبب؛ تواصل مع الدعم لحقوق الضمان الأخرى.');
             $reserved=(int)StoreReturn::where('store_order_item_id',$item->id)->whereNotIn('status',['rejected','cancelled'])->lockForUpdate()->get(['quantity'])->sum('quantity');
             if($reserved+(int)$data['quantity']>(int)$item->quantity) $this->fail('الكمية تتجاوز الكمية المتاحة للإرجاع.');
             $refund=$this->share(Money::minor($item->total_price)-Money::minor($item->discount_total),(int)$data['quantity'],(int)$item->quantity);
             $return=StoreReturn::create(['store_order_item_id'=>$item->id,'operation_key'=>$data['operation_key'],'quantity'=>$data['quantity'],
-                'reason'=>$data['reason'],'shipping_payer'=>$defect?'seller':'customer','refund_minor'=>$refund,'customer_notes'=>$data['notes']??null]);
+                'reason'=>$data['reason'],'shipping_payer'=>'seller','refund_minor'=>$refund,'customer_notes'=>$data['notes']??null]);
             app(StoreOrderService::class)->event($order,'return.requested',['return_id'=>$return->id,'item_id'=>$item->id],$sub->company_id);
             app(StoreOutboxService::class)->enqueue('order.vendor_notification','return:'.$return->id.':requested',['order_id'=>$order->id,'sub_order_id'=>$sub->id,'company_id'=>$sub->company_id,'event'=>'return_requested']);
             return $return;
@@ -63,6 +64,8 @@ class StoreReturnService
     }
     private function receive(StoreReturn $return,array $data): void {
         $item=$return->item; $sub=StoreSubOrder::lockForUpdate()->findOrFail($item->store_sub_order_id); $order=$sub->order;
+        // Accept the customer's request immediately; reconciliation must precede financial reversal.
+        if(!$sub->collected_at) $this->fail('طلب العميل محفوظ؛ وثق التحصيل أو تسوية حالة الدفع قبل تنفيذ الرد المالي، دون تأخير حقوق العميل.');
         $prior=(int)StoreReturn::where('store_order_item_id',$item->id)->whereNotNull('received_at')->lockForUpdate()->get(['quantity'])->sum('quantity');
         $net=Money::minor($item->total_price)-Money::minor($item->tax_total)-Money::minor($item->discount_total);
         $goods=$this->share($net,$prior+$return->quantity,(int)$item->quantity)-$this->share($net,$prior,(int)$item->quantity);
@@ -72,8 +75,7 @@ class StoreReturnService
         $subtotal=Money::minor($sub->subtotal)-Money::minor($sub->discount_total);
         $commission=$subtotal>0?$this->share((int)$sub->commission_minor,$previousGoods+$goods,$subtotal)-(int)$sub->commission_reversed_minor:0;
         $commission=max(0,$commission);
-        $shippingGoods=(int)$previous->filter(fn($r)=>in_array($r->reason,['defect','wrong_item'],true))->sum(fn($r)=>(int)($r->inspection_snapshot['goods_minor']??0));
-        $shipping=in_array($return->reason,['defect','wrong_item'],true)&&$subtotal>0?$this->share(Money::minor($sub->shipping_cost),$shippingGoods+$goods,$subtotal)-(int)$previous->sum(fn($r)=>(int)($r->inspection_snapshot['shipping_minor']??0)):0;
+        $shipping=$subtotal>0?$this->share(Money::minor($sub->shipping_cost),$previousGoods+$goods,$subtotal)-(int)$previous->sum(fn($r)=>(int)($r->inspection_snapshot['shipping_minor']??0)):0;
         $gross=$goods+$tax+$shipping;
         $codSeller=$order->payment_method==='cod'&&($sub->financial_policy_snapshot['cod_beneficiary']??'')==='seller';
         $transaction=$order->payment_method==='online'?PaymentTransaction::withoutGlobalScopes()->where('payable_type',$order->getMorphClass())->where('payable_id',$order->id)->whereIn('status',['completed','partially_refunded'])->firstOrFail():null;

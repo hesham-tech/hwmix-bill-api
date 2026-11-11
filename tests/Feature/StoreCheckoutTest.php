@@ -55,7 +55,7 @@ class StoreCheckoutTest extends TestCase
         return array_merge($payload,['quote_id'=>$quote['id'],'legal_accepted'=>true,
             'legal_version_ids'=>array_column($quote['legal_documents'],'version_id')]);
     }
-    private function deliveredOrder(): StoreOrder {
+    private function deliveredOrder(bool $collected=true): StoreOrder {
         $this->actingAs($this->customer,'sanctum');
         $result=$this->postJson('/api/v1/store/orders',$this->submit($this->payload))->assertCreated()->json('data');
         $order=StoreOrder::findOrFail($result['id']); $sub=$order->subOrders->first();
@@ -63,7 +63,7 @@ class StoreCheckoutTest extends TestCase
         $service->confirm($order,true);$service->sellerReady($sub);
         $shipment=\Modules\Store\Models\StoreShipment::where('store_sub_order_id',$sub->id)->firstOrFail();
         app(\Modules\Store\Services\StoreShipmentService::class)->dispatchManual($shipment,'RETURN-TEST');
-        $service->updateSubOrderStatus($sub,'delivered',['collected'=>true]);
+        $service->updateSubOrderStatus($sub,'delivered',['collected'=>$collected]);
         return $order->fresh();
     }
     public function test_partial_cod_return_restores_only_received_stock_and_reverses_only_its_commission(): void {
@@ -365,5 +365,101 @@ class StoreCheckoutTest extends TestCase
         $this->assertSame('50.00',$order->subOrders->first()->shipping_cost);
         $this->assertSame(5000,\Modules\Store\Models\StoreShipment::where('store_sub_order_id',$order->subOrders->first()->id)->firstOrFail()->quote_snapshot['fee_minor']);
         $this->postJson('/api/v1/store/checkout/quote',$this->payload)->assertOk()->assertJsonPath('data.shipping_minor',10000);
+    }
+
+    public function test_per_seller_nonregistered_price_and_immutable_tax_snapshot(): void {
+        app(StoreSettingsService::class)->save(['tax_mode'=>'per_seller']);
+        $profile=StoreSellerProfile::where('company_id',$this->product->company_id)->firstOrFail();
+        $profile->update(['tax_profile'=>['status'=>'not_registered','mode'=>'none','rate_bps'=>0,'basis'=>'Seller declaration below registration threshold','product_rules'=>[]]]);
+        $order=$this->deliveredOrder();
+        $this->assertSame('250.00',$order->total_amount);
+        $this->assertSame('0.00',$order->tax_total);
+        $this->assertSame('not_registered',$order->items->first()->tax_snapshot['status']);
+        $profile->update(['tax_profile'=>['status'=>'registered','mode'=>'exclusive','rate_bps'=>1400,'registration_number'=>'VAT-FIXTURE','basis'=>'Fixture verified registration']]);
+        $this->assertSame('not_registered',$order->items->first()->fresh()->tax_snapshot['status']);
+    }
+    public function test_mixed_seller_basket_does_not_tax_nonregistered_seller(): void {
+        $sellerId=$this->product->company_id;
+        StoreSellerProfile::where('company_id',$sellerId)->update(['tax_profile'=>json_encode(['status'=>'not_registered','mode'=>'none','rate_bps'=>0,'basis'=>'Declaration'])]);
+        $other=Company::factory()->create();
+        $subscription=CompanySubscription::where('company_id',$sellerId)->firstOrFail()->replicate();$subscription->company_id=$other->id;$subscription->save();
+        $warehouse=Warehouse::factory()->create(['company_id'=>$other->id]);
+        $product=$this->product->replicate();$product->company_id=$other->id;$product->slug='mixed-vat-fixture-'.Str::uuid();$product->save();
+        $variant=$this->variant->replicate();$variant->company_id=$other->id;$variant->product_id=$product->id;$variant->sku='MIXED-VAT-FIXTURE';$variant->barcode='MIXED-VAT-UNIQUE';$variant->save();
+        $stock=$this->stock->replicate();$stock->company_id=$other->id;$stock->warehouse_id=$warehouse->id;$stock->variant_id=$variant->id;$stock->save();
+        $shipping=StoreShippingAccount::create(['company_id'=>$other->id,'name'=>'Fixture carrier','driver'=>'manual','is_active'=>true,'cod_beneficiary'=>'seller']);
+        StoreShippingRate::create(['shipping_account_id'=>$shipping->id,'governorate_code'=>'cairo','fee_minor'=>5000]);
+        StoreSellerProfile::create(['company_id'=>$other->id,'is_enabled'=>true,'warehouse_id'=>$warehouse->id,'shipping_account_id'=>$shipping->id,
+            'pickup_address'=>['recipient_name'=>'Seller','phone'=>'01012345678','street'=>'Fixture','city'=>'Cairo','governorate_code'=>'cairo'],
+            'tax_profile'=>['status'=>'registered','mode'=>'exclusive','rate_bps'=>1400,'registration_number'=>'VAT-FIXTURE','basis'=>'Registration']]);
+        app(StoreSettingsService::class)->save(['tax_mode'=>'per_seller']);
+        $this->actingAs($this->customer,'sanctum');
+        $payload=$this->payload;$payload['items'][]=['product_id'=>$product->id,'variant_id'=>$variant->id,'quantity'=>1];
+        $order=$this->postJson('/api/v1/store/orders',$this->submit($payload))->assertCreated()->json('data');
+        $this->assertSame('414.00',$order['total_amount']);
+        $this->assertSame('14.00',$order['tax_total']);
+        $saved=StoreOrder::findOrFail($order['id']);
+        $this->assertSame('0.00',$saved->subOrders->firstWhere('company_id',$sellerId)->tax_total);
+        $this->assertSame('14.00',$saved->subOrders->firstWhere('company_id',$other->id)->tax_total);
+    }
+    public function test_changed_tax_treatment_invalidates_quote_without_creating_order(): void {
+        $this->actingAs($this->customer,'sanctum');$payload=$this->submit($this->payload);
+        app(StoreSettingsService::class)->save(['tax_mode'=>'exclusive','default_tax_rate_bps'=>1400]);
+        $this->postJson('/api/v1/store/orders',$payload)->assertStatus(422)->assertJsonValidationErrors('quote_id');
+        $this->assertDatabaseCount('store_orders',0);
+    }
+    public function test_unconfigured_seller_blocks_checkout_but_does_not_change_publishing(): void {
+        app(StoreSettingsService::class)->save(['tax_mode'=>'per_seller']);$this->actingAs($this->customer,'sanctum');
+        $this->postJson('/api/v1/store/checkout/quote',$this->payload)->assertStatus(422)->assertJsonValidationErrors('tax_profile');
+        $this->assertTrue($this->product->fresh()->is_active_in_store);
+    }
+    public function test_defect_and_change_of_mind_have_separate_deadlines_and_no_customer_return_fee(): void {
+        $order=$this->deliveredOrder();$sub=$order->subOrders->first();$item=$order->items->first();
+        $sub->update(['delivered_at'=>now('UTC')->subDays(20)]);
+        $data=['item_id'=>$item->id,'operation_key'=>(string)Str::uuid(),'quantity'=>1,'reason'=>'change_of_mind'];
+        $this->postJson('/api/v1/store/orders/'.$order->order_number.'/returns',$data)->assertStatus(422);
+        $data['reason']='defect';$data['operation_key']=(string)Str::uuid();
+        $this->postJson('/api/v1/store/orders/'.$order->order_number.'/returns',$data)->assertCreated()->assertJsonPath('data.shipping_payer','seller');
+        $sub->update(['delivered_at'=>now('UTC')->subDays(31)]);$data['operation_key']=(string)Str::uuid();
+        $this->postJson('/api/v1/store/orders/'.$order->order_number.'/returns',$data)->assertStatus(422);
+    }
+    public function test_customer_can_request_return_before_courier_collection_is_recorded(): void {
+        $order=$this->deliveredOrder(false);$sub=$order->subOrders->first();
+        $data=['item_id'=>$order->items->first()->id,'operation_key'=>(string)Str::uuid(),'quantity'=>1,'reason'=>'change_of_mind'];
+        $result=$this->postJson('/api/v1/store/orders/'.$order->order_number.'/returns',$data)->assertCreated()->assertJsonPath('data.shipping_payer','seller')->json('data');
+        $service=app(\Modules\Store\Services\StoreReturnService::class);$return=\Modules\Store\Models\StoreReturn::findOrFail($result['id']);
+        $service->act($return,['action'=>'approve']);
+        try{$service->act($return,['action'=>'receive','condition'=>'damaged']);$this->fail('Do not reverse unrecorded collection');}
+        catch(\Illuminate\Validation\ValidationException $error){$this->assertDatabaseCount('store_refunds',0);}
+        $this->seed(\Database\Seeders\AddPermissionsSeeder::class);setPermissionsTeamId($this->customer->active_company_id);$this->customer->givePermissionTo('admin.super');
+        $url='/api/v1/admin/store/sub-orders/'.$sub->id.'/collection';
+        $proof=['confirmed'=>true,'reference'=>'COD-COLLECTION-FIXTURE'];
+        $this->postJson($url,$proof)->assertOk();$this->postJson($url,$proof)->assertOk();
+        $this->assertDatabaseCount('store_payment_proofs',1);
+        $this->assertNotNull($sub->fresh()->collected_at);
+        $service->act($return,['action'=>'receive','condition'=>'damaged']);
+        $this->assertSame(12500,$return->fresh()->refund_minor);
+        $this->assertDatabaseCount('store_refunds',1);
+    }
+    public function test_legal_product_exception_does_not_remove_defect_rights(): void {
+        $this->product->update(['store_return_policy'=>['allow_change_of_mind'=>false,'allow_defect'=>false,'change_of_mind_exception'=>'custom_made','exception_basis'=>'Fixture made to customer specifications']]);
+        $order=$this->deliveredOrder();$data=['item_id'=>$order->items->first()->id,'operation_key'=>(string)Str::uuid(),'quantity'=>1,'reason'=>'change_of_mind'];
+        $this->postJson('/api/v1/store/orders/'.$order->order_number.'/returns',$data)->assertStatus(422);
+        $data['reason']='defect';$data['operation_key']=(string)Str::uuid();
+        $this->postJson('/api/v1/store/orders/'.$order->order_number.'/returns',$data)->assertCreated();
+    }
+
+    public function test_registered_inclusive_and_product_zero_or_exempt_treatments_do_not_raise_final_price(): void {
+        app(StoreSettingsService::class)->save(['tax_mode'=>'per_seller']);
+        $profile=StoreSellerProfile::where('company_id',$this->product->company_id)->firstOrFail();
+        $tax=['status'=>'registered','mode'=>'included','rate_bps'=>1400,'registration_number'=>'VAT-FIXTURE','basis'=>'Registration','product_rules'=>[]];
+        $profile->update(['tax_profile'=>$tax]);$this->actingAs($this->customer,'sanctum');
+        $this->postJson('/api/v1/store/checkout/quote',$this->payload)->assertOk()->assertJsonPath('data.tax_minor',2456)->assertJsonPath('data.total_minor',25000);
+        foreach(['zero_rated','exempt'] as $treatment){
+            $tax['product_rules']=[['product_id'=>$this->product->id,'treatment'=>$treatment,'rate_bps'=>0,'basis'=>'Fixture product treatment']];$profile->update(['tax_profile'=>$tax]);
+            $quote=$this->postJson('/api/v1/store/checkout/quote',$this->payload)->assertOk()->assertJsonPath('data.tax_minor',0)->assertJsonPath('data.total_minor',25000)->json('data');
+            $snapshot=\Modules\Store\Models\StoreCheckoutQuote::findOrFail($quote['id'])->snapshot;
+            $this->assertSame($treatment,$snapshot['groups'][0]['items'][0]['tax_snapshot']['treatment']);
+        }
     }
 }

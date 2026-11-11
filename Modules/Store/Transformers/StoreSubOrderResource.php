@@ -17,7 +17,7 @@ class StoreSubOrderResource extends JsonResource {
                 'id'=>$item->id,'product_id'=>$item->product_id,'product_variant_id'=>$item->product_variant_id,
                 'quantity'=>$item->quantity,'unit_price'=>(string)$item->unit_price,'subtotal'=>(string)$item->total_price,
                 'tax_total'=>(string)$item->tax_total,'unit_name'=>$item->unit_name_snapshot,
-                'return_policy'=>$item->return_policy_snapshot,
+                'return_policy'=>app(\Modules\Store\Services\StoreReturnPolicy::class)->resolve($item->return_policy_snapshot??[],$item->return_policy_snapshot??[]),
                 'product'=>['id'=>$item->product_id,'name'=>$item->product_name_snapshot,'image'=>$item->variant_image_snapshot],
                 'variant'=>['id'=>$item->product_variant_id,'name'=>$item->variant_sku_snapshot,'sku'=>$item->variant_sku_snapshot],
             ])),

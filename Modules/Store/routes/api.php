@@ -94,6 +94,7 @@ Route::prefix('admin/store')->middleware('auth:sanctum')->group(function () {
     Route::put('/settings',[$controller,'settings']);
     Route::get('/sellers/{id}',[$controller,'seller']);
     Route::put('/sellers/{id}',[$controller,'saveSeller']);
+    Route::put('/sellers/{id}/products/{productId}/return-policy',[$controller,'saveProductReturnPolicy']);
     Route::get('/shipping-accounts',[$controller,'shippingAccounts']);
     Route::get('/shipping-drivers',function() {
         app(\Modules\Store\Services\StoreAccess::class)->platform();
@@ -122,7 +123,7 @@ Route::prefix('admin/store')->middleware('auth:sanctum')->group(function () {
     Route::post('/payouts/{id}/action',[$controller,'updatePayout']);
     Route::get('/accounts/{id}/ledger',[$controller,'ledger']);
     Route::post('/accounts/{id}/topup',[$controller,'topup']);
-    Route::post('/sub-orders/{id}/collection',[$controller,'collection']);
+    Route::post('/sub-orders/{id}/collection',[$controller,'collection'])->middleware('throttle:20,1');
     Route::post('/sub-orders/{id}/remittance',[$controller,'remittance']);
     Route::get('/outbox',[$controller,'outbox']);
     Route::post('/outbox/{id}/retry',[$controller,'retry']);

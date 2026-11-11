@@ -42,4 +42,37 @@ class StoreAdminTest extends TestCase {
         $response=$this->getJson('/api/v1/admin/store/shipping-accounts')->assertOk();
         $this->assertStringNotContainsString('never-return-this',$response->getContent());
     }
+
+    public function test_seller_tax_configuration_requires_a_basis_and_scopes_product_exceptions(): void {
+        $this->actingAs($this->admin,'sanctum');$seller=Company::factory()->create();
+        $data=['is_enabled'=>false,'warehouse_id'=>null,'shipping_account_id'=>null,'policy_overrides'=>[],
+            'pickup_address'=>['recipient_name'=>'Fixture','phone'=>'01012345678','street'=>'Fixture street','city'=>'Cairo','governorate_code'=>'cairo'],
+            'tax_profile'=>['status'=>'not_registered','mode'=>'none','rate_bps'=>0,'basis'=>'Owner declaration','registration_number'=>null,'product_rules'=>[]]];
+        $url='/api/v1/admin/store/sellers/'.$seller->id;
+        $this->putJson($url,$data)->assertOk()->assertJsonPath('data.profile.tax_profile.status','not_registered');
+        $data['tax_profile']['rate_bps']=1400;
+        $this->putJson($url,$data)->assertStatus(422);
+        $data['tax_profile']=['status'=>'registered','mode'=>'included','rate_bps'=>1400,'basis'=>'Fixture registration','registration_number'=>'VAT-FIXTURE','product_rules'=>[]];
+        $this->putJson($url,$data)->assertOk();
+        $foreign=\Modules\Inventory\Models\Product::factory()->create(['company_id'=>$this->admin->company_id]);
+        $data['tax_profile']['product_rules']=[['product_id'=>$foreign->id,'treatment'=>'exempt','rate_bps'=>0,'basis'=>'Fixture']];
+        $this->putJson($url,$data)->assertStatus(422)->assertJsonValidationErrors('tax_profile.product_rules.0.product_id');
+        $data['tax_profile']['product_rules']=[];$data['tax_profile']['basis']='';
+        $this->putJson($url,$data)->assertStatus(422)->assertJsonValidationErrors('tax_profile.basis');
+        $this->assertSame('registered',StoreSellerProfile::where('company_id',$seller->id)->firstOrFail()->tax_profile['status']);
+    }
+    public function test_product_return_exception_requires_legal_basis_and_cannot_reduce_minimum_period(): void {
+        $this->actingAs($this->admin,'sanctum');$seller=Company::factory()->create();
+        $product=\Modules\Inventory\Models\Product::factory()->create(['company_id'=>$seller->id]);
+        $url='/api/v1/admin/store/sellers/'.$seller->id.'/products/'.$product->id.'/return-policy';
+        $data=['change_of_mind_days'=>14,'defect_days'=>30,'change_of_mind_exception'=>'custom_made','exception_basis'=>'Made to customer specification'];
+        $this->assertDatabaseHas('products',['id'=>$product->id,'company_id'=>$seller->id]);
+        $this->withoutExceptionHandling()->putJson($url,$data)->assertOk();
+        $this->withExceptionHandling();
+        $this->assertTrue($product->fresh()->store_return_policy['allow_defect']);
+        $this->assertFalse($product->fresh()->store_return_policy['allow_change_of_mind']);
+        $data['defect_days']=14;$this->putJson($url,$data)->assertStatus(422);
+        $data['defect_days']=30;$data['exception_basis']='';$this->putJson($url,$data)->assertStatus(422);
+        $this->putJson('/api/v1/admin/store/sellers/'.$this->admin->company_id.'/products/'.$product->id.'/return-policy',$data)->assertNotFound();
+    }
 }

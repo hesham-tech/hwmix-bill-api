@@ -126,12 +126,16 @@ class StoreAdminController extends Controller
             'settings.auto_confirm_paid_orders'=>'required|boolean','settings.platform_shipping_account_id'=>'nullable|integer',
             'settings.legal_setup_confirmed'=>'required|boolean','settings.legal_document_ids'=>'required|array|min:1',
             'settings.legal_document_ids.*'=>'integer|exists:legal_documents,id',
-            'settings.tax_mode'=>'required|in:unconfigured,none,included,exclusive','settings.default_tax_rate_bps'=>'required|integer|min:0|max:10000',
+            'settings.tax_mode'=>'required|in:unconfigured,per_seller,none,included,exclusive','settings.default_tax_rate_bps'=>'required|integer|min:0|max:10000',
             'settings.return_policy'=>'required|array','settings.return_policy.window_days'=>'nullable|integer|min:0|max:365',
+            'settings.return_policy.change_of_mind_days'=>'sometimes|integer|min:14|max:365',
+            'settings.return_policy.defect_days'=>'sometimes|integer|min:30|max:365',
             'settings.return_policy.allow_change_of_mind'=>'required|boolean','settings.return_policy.allow_defect'=>'required|boolean',
             'settings.seller_policy'=>'required|array',
         ]+StorePolicyRules::rules('settings.seller_policy.');
         $data=$request->validate($rules)['settings'];
+        if(!$data['return_policy']['allow_defect']||!$data['return_policy']['allow_change_of_mind'])
+            throw \Illuminate\Validation\ValidationException::withMessages(['settings.return_policy'=>'لا تعطل الحقوق العامة؛ تسجل استثناءات تغيير الرأي لكل منتج بسبب قانوني.']);
         $data=array_intersect_key($data,app(StoreSettingsService::class)->defaults());
         if($data['platform_shipping_account_id']) StoreShippingAccount::where('company_id',config('app.master_company_id',1))->findOrFail($data['platform_shipping_account_id']);
         DB::transaction(function() use($data) {
@@ -145,8 +149,11 @@ class StoreAdminController extends Controller
         $this->access->platform();
         $company=Company::withoutGlobalScopes()->whereNull('deleted_at')->findOrFail($id);
         $profile=StoreSellerProfile::firstOrNew(['company_id'=>$company->id]);
+        $profile->tax_profile=array_replace(app(\Modules\Store\Services\StoreTaxService::class)->defaults(),$profile->tax_profile??[]);
+        $profile->business_profile=array_replace(['seller_kind'=>'individual','document_status'=>'self_declared','reference'=>null],$profile->business_profile??[]);
         return response()->json(['success'=>true,'data'=>[
             'profile'=>$profile,'payout_destination_configured'=>(bool)$profile->payout_destination,
+            'products'=>\Modules\Inventory\Models\Product::withoutGlobalScopes()->where('company_id',$company->id)->orderBy('id')->get(['id','name','store_return_policy']),
             'effective_policy'=>app(SellerPolicyService::class)->resolve($company->id),
             'warehouses'=>Warehouse::withoutGlobalScopes()->where('company_id',$company->id)->get(['id','name']),
         ]]);
@@ -162,9 +169,39 @@ class StoreAdminController extends Controller
             'pickup_address.city'=>'required|string|max:100','pickup_address.governorate_code'=>['required',Rule::in(array_keys(StoreGeography::governorates()))],
             'pickup_address.district'=>'nullable|string|max:100','pickup_address.building'=>'nullable|string|max:100',
             'policy_overrides'=>'present|array','payout_destination'=>'nullable|array','payout_destination.bank_name'=>'required_with:payout_destination|string|max:150',
+            'tax_profile'=>'sometimes|array:status,mode,rate_bps,registration_number,basis,product_rules',
+            'business_profile'=>'sometimes|array:seller_kind,document_status,reference',
+            'business_profile.seller_kind'=>'required_with:business_profile|in:individual,unregistered_business,registered_business',
+            'business_profile.document_status'=>'required_with:business_profile|in:self_declared,documents_reviewed',
+            'business_profile.reference'=>'nullable|string|max:1000',
+            'tax_profile.status'=>'required_with:tax_profile|in:unconfigured,not_registered,registered,exempt',
+            'tax_profile.mode'=>'required_with:tax_profile|in:none,included,exclusive',
+            'tax_profile.rate_bps'=>'required_with:tax_profile|integer|min:0|max:10000',
+            'tax_profile.registration_number'=>'nullable|string|max:100',
+            'tax_profile.basis'=>'nullable|string|max:1000',
+            'tax_profile.product_rules'=>'sometimes|array|max:500',
+            'tax_profile.product_rules.*'=>'array:product_id,treatment,rate_bps,basis',
+            'tax_profile.product_rules.*.product_id'=>['required','integer','distinct',Rule::exists('products','id')->where('company_id',$company->id)],
+            'tax_profile.product_rules.*.treatment'=>'required|in:taxable,zero_rated,exempt',
+            'tax_profile.product_rules.*.rate_bps'=>'required|integer|min:0|max:10000',
+            'tax_profile.product_rules.*.basis'=>'required|string|max:1000',
             'payout_destination.account_holder'=>'required_with:payout_destination|string|max:150',
             'payout_destination.account_number'=>'nullable|string|max:80','payout_destination.iban'=>'nullable|string|max:80',
         ]+StorePolicyRules::rules('policy_overrides.',true));
+        if(($data['business_profile']['document_status']??null)==='documents_reviewed'&&empty($data['business_profile']['reference']))
+            throw \Illuminate\Validation\ValidationException::withMessages(['business_profile.reference'=>'أدخل مرجع مراجعة المستندات؛ أو اختر بيانات معلنة دون مستندات.']);
+        if(isset($data['tax_profile'])) {
+            $tax=array_replace(app(\Modules\Store\Services\StoreTaxService::class)->defaults(),$data['tax_profile']);
+            if($tax['status']!=='unconfigured'&&empty(trim((string)$tax['basis'])))
+                throw \Illuminate\Validation\ValidationException::withMessages(['tax_profile.basis'=>'سجل مستند أو إفادة الحالة وأساس المعالجة.']);
+            if($tax['status']==='registered'&&(empty(trim((string)$tax['registration_number']))||!in_array($tax['mode'],['included','exclusive'],true)))
+                throw \Illuminate\Validation\ValidationException::withMessages(['tax_profile'=>'يلزم رقم التسجيل وطريقة احتساب ضريبة البائع المسجل.']);
+            if($tax['status']!=='registered'&&($tax['mode']!=='none'||(int)$tax['rate_bps']!==0||!empty($tax['product_rules'])))
+                throw \Illuminate\Validation\ValidationException::withMessages(['tax_profile'=>'الحالة غير المسجلة أو المعفاة لا تتيح تحصيل VAT أو استثناءً ضريبيًا موجبًا.']);
+            foreach($tax['product_rules'] as &$rule) if($rule['treatment']!=='taxable')$rule['rate_bps']=0;
+            unset($rule);
+            $data['tax_profile']=$tax;
+        }
         if(!empty($data['warehouse_id'])) Warehouse::withoutGlobalScopes()->where('company_id',$company->id)->findOrFail($data['warehouse_id']);
         if(!empty($data['shipping_account_id'])) StoreShippingAccount::whereIn('company_id',[$company->id,config('app.master_company_id',1)])->findOrFail($data['shipping_account_id']);
         if(!empty($data['payout_destination'])) {
@@ -175,8 +212,17 @@ class StoreAdminController extends Controller
         $profile=StoreSellerProfile::firstOrCreate(['company_id'=>$company->id]);
         $data['policy_version']=$profile->policy_version+1;
         $data['policy_review_required']=false;
-        $data['policy_overrides']=array_filter(array_intersect_key($data['policy_overrides'],app(StoreSettingsService::class)->defaults()['seller_policy']),fn($v)=>$v!==null);
+        $data['policy_overrides']=array_filter(array_intersect_key($data['policy_overrides']??[],app(StoreSettingsService::class)->defaults()['seller_policy']),fn($v)=>$v!==null);
         $profile->update($data);
+        return $this->seller($id);
+    }
+    public function saveProductReturnPolicy(Request $request,string $id,string $productId) {
+        $this->access->platform();
+        $product=\Modules\Inventory\Models\Product::withoutGlobalScopes()->where('company_id',$id)->findOrFail($productId);
+        $data=$request->validate(['change_of_mind_days'=>'required|integer|min:14|max:365','defect_days'=>'required|integer|min:30|max:365',
+            'change_of_mind_exception'=>['nullable',Rule::in(\Modules\Store\Services\StoreReturnPolicy::EXCEPTIONS)],
+            'exception_basis'=>'required_with:change_of_mind_exception|nullable|string|max:1000']);
+        $product->update(['store_return_policy'=>app(\Modules\Store\Services\StoreReturnPolicy::class)->resolve([],$data)]);
         return $this->seller($id);
     }
     public function shippingAccounts() {
@@ -256,6 +302,22 @@ class StoreAdminController extends Controller
         app(StoreOrderService::class)->updateSubOrderStatus($sub,$data['status'],$data);
         return $this->order($request,(string)$sub->store_order_id);
     }
+    public function collection(Request $request,string $id) {
+        $this->access->platform('store.orders.manage');$this->access->platform('store.finance.manage');
+        $data=$request->validate(['confirmed'=>'required|accepted','reference'=>'required|string|max:150']);
+        $sub=StoreSubOrder::findOrFail($id);
+        DB::transaction(function()use($sub,$data){
+            StoreOrder::lockForUpdate()->findOrFail($sub->store_order_id);
+            $locked=StoreSubOrder::lockForUpdate()->findOrFail($sub->id);
+            $shipment=StoreShipment::where('store_sub_order_id',$locked->id)->firstOrFail();
+            $gross=Money::minor($locked->subtotal)+Money::minor($locked->tax_total)+Money::minor($locked->shipping_cost)-Money::minor($locked->discount_total);
+            app(\Modules\Store\Services\StorePaymentProofService::class)->claim('cod:carrier:'.$shipment->shipping_account_id,$data['reference'],$locked,$gross,$locked->order->currency);
+            $wasCollected=(bool)$locked->collected_at;
+            app(StorePaymentService::class)->confirmCodCollection($locked);
+            if(!$wasCollected)app(StoreOrderService::class)->event($locked->order,'cod.collection_verified',['sub_order_id'=>$locked->id,'reference'=>$data['reference']],$locked->company_id);
+        },3);
+        return $this->order($request,(string)$sub->store_order_id);
+    }
     public function dispatch(Request $request,string $id) {
         $this->access->platform('store.orders.manage'); $data=$request->validate(['tracking_number'=>'required|string|max:100']);
         $shipment=StoreShipment::findOrFail($id); app(StoreShipmentService::class)->dispatchManual($shipment,$data['tracking_number']);
@@ -282,12 +344,6 @@ class StoreAdminController extends Controller
         $data=$request->validate(['amount'=>'required|decimal:0,2|gt:0|max:9999999999.99','operation_key'=>'required|uuid','reference'=>'required|string|max:150','purpose'=>'nullable|in:topup,debt']);
         $account=app(StoreLedgerService::class)->topUp((int)$id,Money::minor((string)$data['amount']),$data['operation_key'],$data['reference'],app(StoreSettingsService::class)->get()['currency'],($data['purpose']??'topup')==='debt');
         return response()->json(['success'=>true,'data'=>$account]);
-    }
-    public function collection(Request $request,string $id) {
-        $this->access->platform('store.finance.manage'); $request->validate(['confirmed'=>'required|accepted']);
-        $sub=StoreSubOrder::findOrFail($id);
-        DB::transaction(function() use($sub) { StoreOrder::lockForUpdate()->findOrFail($sub->store_order_id); app(StorePaymentService::class)->confirmCodCollection($sub); },3);
-        return $this->order($request,(string)$sub->store_order_id);
     }
     public function remittance(Request $request,string $id) {
         $this->access->platform('store.finance.manage'); $data=$request->validate(['reference'=>'required|string|max:150',
