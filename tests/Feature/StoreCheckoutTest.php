@@ -348,7 +348,7 @@ class StoreCheckoutTest extends TestCase
         $service=app(\Modules\Store\Services\StoreShippingQuoteService::class);
         $this->assertSame(3500,$service->quote($this->product->company_id,'cairo','cod',20000)['fee_minor']);
         $this->assertSame(5000,$service->quote($this->product->company_id,'cairo','cod',20000)['carrier_fee_minor']);
-        $missingRoute='إضافة أسعار الشحن للمحافظات المدعومة للشركة #'.$this->product->company_id;
+        $missingRoute='تجهيز التوصيل الذاتي أو ناقل مسعّر للشركة #'.$this->product->company_id;
         $this->assertNotContains($missingRoute,app(\Modules\Store\Services\StoreReadinessService::class)->issues());
         $scoped->update(['is_active'=>false]);
         $this->assertContains($missingRoute,app(\Modules\Store\Services\StoreReadinessService::class)->issues());

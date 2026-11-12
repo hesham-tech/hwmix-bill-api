@@ -157,6 +157,7 @@ class MailSettingController extends Controller
                 }
             );
 
+            \Modules\Guidance\Services\SetupConnectionCheck::record('email',$setting);
             return api_success(null, 'تم إرسال البريد التجريبي بنجاح، يرجى التحقق من صندوق الوارد.');
         } catch (\Throwable $e) {
             return api_error('فشل الاتصال أو الإرسال: ' . $e->getMessage());

@@ -153,6 +153,7 @@ class StoreAdminController extends Controller
         $profile->business_profile=array_replace(['seller_kind'=>'individual','document_status'=>'self_declared','reference'=>null],$profile->business_profile??[]);
         return response()->json(['success'=>true,'data'=>[
             'profile'=>$profile,'payout_destination_configured'=>(bool)$profile->payout_destination,
+            'payout_proposal'=>$this->access->canPlatform('store.finance.manage')?$profile->payout_destination_proposal:null,
             'products'=>\Modules\Inventory\Models\Product::withoutGlobalScopes()->where('company_id',$company->id)->orderBy('id')->get(['id','name','store_return_policy']),
             'effective_policy'=>app(SellerPolicyService::class)->resolve($company->id),
             'warehouses'=>Warehouse::withoutGlobalScopes()->where('company_id',$company->id)->get(['id','name']),

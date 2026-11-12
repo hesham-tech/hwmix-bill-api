@@ -156,6 +156,7 @@ class WhatsAppSettingController extends Controller
                 return api_error('فشل إرسال الرسالة التجريبية: ' . ($result['error'] ?? 'خطأ غير معروف'));
             }
 
+            \Modules\Guidance\Services\SetupConnectionCheck::record('whatsapp',$setting);
             return api_success(null, 'تم إرسال الرسالة التجريبية للواتساب بنجاح، يرجى التحقق من جوال المستلم.');
         } catch (\Throwable $e) {
             return api_error('فشل الاتصال أو الإرسال: ' . $e->getMessage());

@@ -871,6 +871,7 @@ return [
         'publish' => ['key' => 'label_templates.publish', 'label' => 'نشر قوالب الملصقات'],
         'set_default' => ['key' => 'label_templates.set_default', 'label' => 'تعيين قالب الملصقات الافتراضي'],
     ],
+    'guidance_setup' => ['manage'=>['key'=>'guidance.setup.manage','label'=>'إعداد الشركة خطوة بخطوة']],
     'store' => [
         'name' => ['key'=>'store','label'=>'إدارة المتجر'],
         'settings_manage' => ['key'=>'store.settings.manage','label'=>'إدارة إعدادات المتجر والتكاملات'],

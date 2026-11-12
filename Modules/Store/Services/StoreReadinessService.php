@@ -37,7 +37,7 @@ class StoreReadinessService {
         }
         return $issues;
     }
-    private function hasShippingRoute(StoreSellerProfile $profile,array $settings): bool {
+    public function hasShippingRoute(StoreSellerProfile $profile,array $settings): bool {
         if(app(LocalDeliveryService::class)->available($profile))return true;
         $rates=\Illuminate\Support\Facades\DB::table('store_shipping_rates as r')->join('store_shipping_accounts as a','a.id','=','r.shipping_account_id')
             ->where('a.is_active',true)->where('r.is_active',true)->whereIn('r.governorate_code',array_keys(StoreGeography::governorates()))->whereIn('r.scope_company_id',[0,$profile->company_id])

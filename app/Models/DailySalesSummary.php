@@ -31,6 +31,13 @@ class DailySalesSummary extends Model
         'net_profit' => 'float',
     ];
 
+    // This column is a calendar date, not a timestamp. Keep equality lookups
+    // and the unique company/date key consistent on SQLite as well as MySQL.
+    public function setDateAttribute($value): void
+    {
+        $this->attributes['date'] = \Carbon\CarbonImmutable::parse($value)->toDateString();
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class);
