@@ -70,7 +70,7 @@ class StoreQuoteService
         }
         if(!$settings['enabled']||!$settings['legal_setup_confirmed']||$settings['tax_mode']==='unconfigured')
             throw ValidationException::withMessages(['store'=>'المتجر غير جاهز لاستقبال الطلبات حاليًا.']);
-        if(!($settings[$data['payment_method']==='cod'?'cod_enabled':'online_enabled']))
+        if(!(app(StorePaymentService::class)->methods($settings)[$data['payment_method']==='cod'?'cod_enabled':'online_enabled']))
             throw ValidationException::withMessages(['payment_method'=>'طريقة الدفع غير متاحة حاليًا.']);
         $legal=$this->documents();
         if(!$legal) throw ValidationException::withMessages(['legal'=>'شروط المتجر المنشورة لم تكتمل.']);

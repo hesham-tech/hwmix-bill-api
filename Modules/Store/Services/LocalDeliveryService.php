@@ -42,20 +42,20 @@ class LocalDeliveryService
         return !empty($settings['enabled'])&&!empty($settings['pickup_confirmed'])&&is_numeric($settings['pickup_latitude']??null)&&is_numeric($settings['pickup_longitude']??null)
             &&abs((float)$settings['pickup_latitude'])<=90&&abs((float)$settings['pickup_longitude'])<=180&&(int)($settings['radius_meters']??0)>0;
     }
-    public function quote(StoreSellerProfile $profile,array $address,int $goodsGross): ?array {
+    public function quote(StoreSellerProfile $profile,array $address,int $goodsGross,bool $withoutCarrier=false): ?array {
         $s=$this->configuration($profile);
         if(!$s['enabled'])return null;
         if(!$this->complete($s))throw ValidationException::withMessages(['shipping'=>'إعداد نطاق التوصيل الذاتي للبائع غير مكتمل.']);
         if(!is_numeric($address['latitude']??null)||!is_numeric($address['longitude']??null)||!($address['location_confirmed']??false))
             throw ValidationException::withMessages(['delivery_location'=>'حدد موقع عنوان التسليم على الخريطة وأكده لحساب التوصيل.']);
         $distance=self::distance((float)$s['pickup_latitude'],(float)$s['pickup_longitude'],(float)$address['latitude'],(float)$address['longitude']);
-        if($distance>(int)$s['radius_meters'])return null;
+        if(!$withoutCarrier&&$distance>(int)$s['radius_meters'])return null;
         return ['delivery_method'=>'seller_local','shipping_account_id'=>null,'carrier_name'=>'توصيل البائع','driver'=>'seller_local',
             'fee_minor'=>$s['free_above_minor']!==null&&$goodsGross>=(int)$s['free_above_minor']?0:(int)$s['fee_minor'],
             'carrier_fee_minor'=>0,'subsidy_payer'=>'seller','rate_id'=>null,'governorate_code'=>$address['governorate_code'],
             'cod_beneficiary'=>'seller','shipping_fee_beneficiary'=>'seller','warehouse_id'=>$profile->warehouse_id,'pickup_address'=>app(WarehousePickupService::class)->address($profile),
             'routing_version'=>(int)$profile->local_delivery_version,
-            'local_snapshot'=>['pickup_latitude'=>$s['pickup_latitude'],'pickup_longitude'=>$s['pickup_longitude'],'radius_meters'=>$s['radius_meters'],'distance_meters'=>$distance,
+            'local_snapshot'=>['selection_reason'=>$withoutCarrier?'no_available_carrier':'within_radius','pickup_latitude'=>$s['pickup_latitude'],'pickup_longitude'=>$s['pickup_longitude'],'radius_meters'=>$s['radius_meters'],'distance_meters'=>$distance,
                 'latitude'=>$address['latitude'],'longitude'=>$address['longitude'],'fee_minor'=>$s['fee_minor'],'free_above_minor'=>$s['free_above_minor']],
             'integration'=>['driver'=>'seller_local']];
     }

@@ -36,6 +36,7 @@ class StoreShippingQuoteService
                     'configuration'=>$account->configuration??[],'is_test_mode'=>$account->is_test_mode],
             ];
         }
+        $local=app(LocalDeliveryService::class)->quote($profile,$address,$subtotal,true);if($local)return $local;
         throw ValidationException::withMessages(['shipping'=>'البائع #'.$companyId.' لا يخدم هذا العنوان بطريقة توصيل مسعرة؛ عدل السلة أو العنوان.']);
     }
 }

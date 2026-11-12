@@ -38,7 +38,7 @@ class StoreOrderService
                 throw ValidationException::withMessages(['quote_id'=>'انتهى عرض السعر أو تغيرت بياناته. اطلب عرضًا جديدًا.']);
             $snapshot=$quote->snapshot;
             $currentSettings=$this->settings->get();
-            if (!$currentSettings[$snapshot['payment_method']==='cod'?'cod_enabled':'online_enabled']) throw ValidationException::withMessages(['payment_method'=>'طريقة الدفع لم تعد متاحة لطلبات جديدة.']);
+            if (!app(StorePaymentService::class)->methods($currentSettings)[$snapshot['payment_method']==='cod'?'cod_enabled':'online_enabled']) throw ValidationException::withMessages(['payment_method'=>'طريقة الدفع لم تعد متاحة لطلبات جديدة.']);
             if ($customer && StoreOrder::where('customer_user_id',$customer->id)->where('status','pending')->count()>=(int)$currentSettings['max_unconfirmed_orders_per_customer'])
                 throw ValidationException::withMessages(['orders'=>'لديك طلبات غير مؤكدة. أكملها أو ألغِ غير المطلوب قبل إنشاء طلب آخر.']);
             if ($snapshot['payment_method']==='online' && !in_array((int)($data['payment_gateway_id']??0),array_column(app(StorePaymentService::class)->gateways(),'id'),true))

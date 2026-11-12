@@ -104,9 +104,11 @@ class StoreLocalDeliveryTest extends TestCase
         $this->payload['guest_address']['location_confirmed']=true;$this->payload['guest_address']['latitude']=100;
         $this->postJson('/api/v1/store/checkout/quote',$this->payload)->assertStatus(422)->assertJsonValidationErrors('guest_address.latitude');
     }
-    public function test_no_service_outside_radius_blocks_order_and_names_seller(): void {
+    public function test_missing_carrier_outside_radius_uses_seller_delivery_and_its_fee(): void {
         $this->local(['radius_meters'=>100]);StoreShippingAccount::query()->update(['is_active'=>false]);
-        $this->postJson('/api/v1/store/checkout/quote',$this->payload)->assertStatus(422)->assertJsonValidationErrors('shipping');$this->assertDatabaseCount('store_orders',0);
+        $quote=$this->postJson('/api/v1/store/checkout/quote',$this->payload)->assertOk()->json('data');
+        $this->assertSame('seller_local',$quote['groups'][0]['delivery_method']);$this->assertSame(2000,$quote['shipping_minor']);
+        $this->assertDatabaseCount('store_orders',0);
     }
     public function test_fee_zero_and_free_threshold_apply_to_this_seller_goods(): void {
         $p=$this->local(['free_above_minor'=>20000]);
@@ -301,6 +303,38 @@ class StoreLocalDeliveryTest extends TestCase
         $this->assertSame(20000,$account->fresh()->balance_minor);$this->assertSame(0,$account->fresh()->pending_minor);
         $this->assertFalse(\Illuminate\Support\Facades\DB::table('store_financial_lines')->whereIn('account_code',['asset:carrier_receivable','liability:carrier'])->exists());
         \Illuminate\Support\Facades\Http::assertSentCount(2);
+    }
+
+    public function test_no_gateway_falls_back_to_cod_even_with_stale_disabled_cod_setting(): void {
+        $this->local(['radius_meters'=>100]);StoreShippingAccount::query()->update(['is_active'=>false]);
+        app(StoreSettingsService::class)->save(['online_enabled'=>true,'cod_enabled'=>false]);
+        $this->getJson('/api/v1/store/public/checkout-config')->assertOk()->assertJsonPath('data.cod_enabled',true)->assertJsonPath('data.online_enabled',false)->assertJsonCount(0,'data.gateways');
+        $online=$this->payload;$online['payment_method']='online';
+        $this->postJson('/api/v1/store/checkout/quote',$online)->assertStatus(422)->assertJsonValidationErrors('payment_method');
+        $this->postJson('/api/v1/store/orders',$this->submit($this->payload))->assertCreated();
+        $this->assertSame('seller_local',\Modules\Store\Models\StoreShipment::firstOrFail()->delivery_method);
+        $issues=app(\Modules\Store\Services\StoreReadinessService::class)->issues();
+        $this->assertFalse(collect($issues)->contains(fn($issue)=>str_contains($issue,'دفع')||str_contains($issue,'أسعار الشحن')));
+    }
+    public function test_ready_enabled_gateway_exposes_both_payment_methods(): void {
+        app(StoreSettingsService::class)->save(['online_enabled'=>true,'cod_enabled'=>false]);
+        \Modules\Payment\Models\PaymentGateway::create(['company_id'=>config('app.master_company_id'),'driver'=>'stripe','name'=>'Fixture','is_active'=>true,'is_test_mode'=>true,'config'=>['secret_key'=>'sk_test_fixture','webhook_secret'=>'whsec_fixture']]);
+        $this->getJson('/api/v1/store/public/checkout-config')->assertOk()->assertJsonPath('data.cod_enabled',true)->assertJsonPath('data.online_enabled',true)->assertJsonCount(1,'data.gateways');
+    }
+
+    public function test_carrier_without_cod_service_falls_back_to_seller_outside_radius(): void {
+        $this->local(['radius_meters'=>100]);StoreShippingRate::query()->update(['cod_allowed'=>false]);
+        $this->postJson('/api/v1/store/checkout/quote',$this->payload)->assertOk()->assertJsonPath('data.groups.0.delivery_method','seller_local')->assertJsonPath('data.shipping_minor',2000);
+    }
+    public function test_carrier_becoming_available_invalidates_an_unconfirmed_fallback_quote(): void {
+        $this->local(['radius_meters'=>100]);StoreShippingAccount::query()->update(['is_active'=>false]);
+        $payload=$this->submit($this->payload);StoreShippingAccount::query()->update(['is_active'=>true]);
+        $this->postJson('/api/v1/store/orders',$payload)->assertStatus(422)->assertJsonValidationErrors('quote_id');
+        $this->assertDatabaseCount('store_orders',0);$this->assertSame('0.000000',$this->stock->fresh()->reserved);
+    }
+    public function test_missing_carrier_does_not_invent_unconfigured_seller_delivery(): void {
+        $this->local(['enabled'=>false]);StoreShippingAccount::query()->update(['is_active'=>false]);
+        $this->postJson('/api/v1/store/checkout/quote',$this->payload)->assertStatus(422)->assertJsonValidationErrors('shipping');
     }
 }
 

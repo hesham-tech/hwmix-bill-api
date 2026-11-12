@@ -11,6 +11,11 @@ class StorePaymentService
 {
     public function __construct(private StoreLedgerService $ledger,private SellerFinanceService $finance,
         private StoreSettingsService $settings,private StoreOutboxService $outbox) {}
+    public function methods(?array $settings=null): array {
+        $settings=$settings??$this->settings->get();
+        $gateways=$settings['online_enabled']?$this->gateways():[];
+        return ['cod_enabled'=>true,'online_enabled'=>(bool)$gateways,'gateways'=>$gateways];
+    }
     public function gateways(): array {
         return PaymentGateway::withoutGlobalScopes()->whereNull('deleted_at')->where('is_active',true)
             ->where('company_id',config('app.master_company_id',1))->orderByDesc('is_default')->get()

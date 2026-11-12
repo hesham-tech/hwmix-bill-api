@@ -32,11 +32,11 @@ class StoreOrderController extends Controller
         return response()->json(['success'=>true,'data'=>StoreOrderResource::collection($orders)->response()->getData(true)]);
     }
     public function configuration(StoreSettingsService $settings,StoreQuoteService $quotes,StorePaymentService $payments) {
-        $config=$settings->get(); $gateways=$config['online_enabled']?$payments->gateways():[];
+        $config=$settings->get(); $methods=$payments->methods($config);$gateways=$methods['gateways'];
         return response()->json(['success'=>true,'data'=>[
             'enabled'=>$config['enabled']&&$config['legal_setup_confirmed']&&$config['tax_mode']!=='unconfigured'&&(bool)$quotes->documents()
                 &&(!app()->environment('production')||!app(\Modules\Store\Services\StoreOperationalHealth::class)->issues()),
-            'currency'=>$config['currency'],'cod_enabled'=>$config['cod_enabled'],'online_enabled'=>(bool)$gateways,
+            'currency'=>$config['currency'],'cod_enabled'=>$methods['cod_enabled'],'online_enabled'=>(bool)$gateways,
             'requires_account'=>!$config['allow_guest_checkout'],'requires_verified_email'=>$config['require_verified_email'],
             'gateways'=>$gateways,'governorates'=>collect(StoreGeography::governorates())->map(fn($name,$id)=>['id'=>$id,'name'=>$name])->values(),
             'legal_documents'=>$quotes->documents(),

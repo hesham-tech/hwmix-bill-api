@@ -16,8 +16,6 @@ class StoreReadinessService {
         if(!app(StoreQuoteService::class)->documents()) $issues[]='اختيار ونشر وثائق الشراء والخصوصية والمرتجعات.';
         if((int)($settings['return_policy']['change_of_mind_days']??0)<14||(int)($settings['return_policy']['defect_days']??0)<30) $issues[]='ضبط مدد المرتجعات: 14 يومًا لتغيير الرأي و30 يومًا للعيب على الأقل.';
         if(!app(NotificationIntegrationResolver::class)->mail()) $issues[]='تفعيل إعداد بريد المنصة لإرسال رموز التوثيق والإشعارات.';
-        if(!$settings['cod_enabled']&&!$settings['online_enabled']) $issues[]='تفعيل طريقة دفع واحدة على الأقل.';
-        if($settings['online_enabled']&&!app(StorePaymentService::class)->gateways()) $issues[]='إضافة حساب دفع مفعل مكتمل الإعداد ومناسب لبيئة التشغيل.';
         $profiles=StoreSellerProfile::where('is_enabled',true)->get();
         $issues=array_merge($issues,app(StoreOperationalHealth::class)->issues());
         if($profiles->isEmpty()) $issues[]='تجهيز بائع واحد على الأقل ومخزن وعنوان استلام وخدمة شحن مسعرة.';
@@ -28,7 +26,7 @@ class StoreReadinessService {
                 catch(\Illuminate\Validation\ValidationException $error){$issues[]='تسجيل المعالجة الضريبية للشركة #'.$profile->company_id;}
             }
             if($profile->policy_review_required) $issues[]='مراجعة استثناءات سياسة الشركة #'.$profile->company_id;
-            if(!$this->hasShippingRoute($profile,$settings)) $issues[]='إضافة أسعار الشحن للمحافظات المدعومة للشركة #'.$profile->company_id;
+            if(!$this->hasShippingRoute($profile,$settings)) $issues[]='تجهيز التوصيل الذاتي أو ناقل مسعّر للشركة #'.$profile->company_id;
             if(!$profile->warehouse_id||empty($profile->pickup_address['street'])||empty($profile->pickup_address['phone'])
                 ||!\Modules\Inventory\Models\Warehouse::withoutGlobalScopes()->where('company_id',$profile->company_id)->whereKey($profile->warehouse_id)->exists())
                 $issues[]='استكمال مخزن وعنوان استلام الشركة #'.$profile->company_id;
@@ -48,7 +46,7 @@ class StoreReadinessService {
             ->where(fn($scope)=>$scope->where('r.scope_company_id',$profile->company_id)->orWhere(fn($base)=>$base->where('r.scope_company_id',0)->whereNotExists(fn($exception)=>$exception->selectRaw('1')->from('store_shipping_rates as e')
                 ->whereColumn('e.shipping_account_id','r.shipping_account_id')->whereColumn('e.governorate_code','r.governorate_code')->where('e.scope_company_id',$profile->company_id))));
         if(app()->environment('production'))$rates->where('a.is_test_mode',false);
-        if(!$settings['online_enabled'])$rates->where('r.cod_allowed',true);
+        if(!app(StorePaymentService::class)->methods($settings)['online_enabled'])$rates->where('r.cod_allowed',true);
         return $rates->exists();
     }
 }
