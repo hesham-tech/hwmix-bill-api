@@ -130,4 +130,13 @@ class CompanySetupTest extends TestCase {
         $this->save('store',['warehouse_id'=>$w['id'],'recipient_name'=>'البائع','phone'=>'01012345678','city'=>'القاهرة','governorate_code'=>'cairo','seller_kind'=>'individual','tax_status'=>'not_registered','tax_mode'=>'none','rate_bps'=>0,'basis'=>'إفادة','local_enabled'=>true,'radius_km'=>5,'fee'=>15])->assertUnprocessable();
         $this->assertDatabaseCount('store_seller_profiles',0);$this->assertNotContains('store',$this->getSetup()['state']['reviewed']);
     }
+
+    public function test_assigned_shared_invoice_type_is_usable_but_unassigned_foreign_type_is_not(): void {
+        $other=Company::factory()->create();$shared=InvoiceType::create(['company_id'=>$other->id,'name'=>'نوع مشترك معتمد','code'=>'sale','context'=>'sales']);
+        $foreign=InvoiceType::create(['company_id'=>$other->id,'name'=>'غير متاح','code'=>'purchase','context'=>'purchases']);
+        $this->company->invoiceTypes()->attach($shared->id,['is_active'=>true]);$r=$this->getSetup();
+        $this->assertContains($shared->id,array_column($r['data']['invoice_types'],'id'));$this->assertNotContains($foreign->id,array_column($r['data']['invoice_types'],'id'));
+        $this->assertFalse(collect($r['issues'])->contains(fn($i)=>str_contains($i['message'],'نوع فاتورة المبيعات')));
+        $this->save('billing',['invoice_type_ids'=>[$foreign->id],'payment_method_id'=>null,'payment_method_name'=>'نقدًا','create_cash_box'=>false,'create_cash_customer'=>false,'print_format'=>'standard','show_logo'=>true])->assertUnprocessable();
+    }
 }

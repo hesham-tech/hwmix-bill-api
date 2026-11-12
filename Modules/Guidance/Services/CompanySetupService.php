@@ -43,7 +43,7 @@ class CompanySetupService {
         $warehouses=$this->rows(Warehouse::class,$c->id,['id','name','branch_id','location','latitude','longitude','location_confirmed','is_default','status']);
         $units=Unit::withoutGlobalScopes()->where(fn($q)=>$q->where('company_id',$c->id)->orWhereNull('company_id'))->where('is_active',true)->get(['id','name','code','unit_group_id','decimal_places','company_id'])->toArray();
         $methods=PaymentMethod::withoutGlobalScopes()->where('company_id',$c->id)->where('active',true)->get(['id','name','code'])->toArray();
-        $types=InvoiceType::where(fn($q)=>$q->whereNull('company_id')->orWhere('company_id',$c->id))->get(['id','name','code'])->toArray();
+        $types=InvoiceType::where(fn($q)=>$q->whereNull('company_id')->orWhere('company_id',$c->id)->orWhereHas('companies',fn($assigned)=>$assigned->where('companies.id',$c->id)))->get(['id','name','code'])->toArray();
         $activeTypes=DB::table('company_invoice_type')->where('company_id',$c->id)->where('is_active',true)->pluck('invoice_type_id')->all();
         $boxes=CashBox::withoutGlobalScopes()->where('company_id',$c->id)->where('status','active')->get()->filter(fn($box)=>$u->canAccessCashBox($box))->map(fn($box)=>$box->only(['id','name','branch_id','is_default']))->values()->all();
         $profile=StoreSellerProfile::where('company_id',$c->id)->first();
@@ -83,7 +83,7 @@ class CompanySetupService {
         if(!$warehouse||!$warehouse->location||!$branch||$warehouse->branch_id!=$branch->id)$add('locations','أكمل عنوان المخزن الرئيسي واربطه بالفرع الرئيسي.');
         if(in_array('inventory',$uses)&&!Unit::withoutGlobalScopes()->where(fn($q)=>$q->where('company_id',$c->id)->orWhereNull('company_id'))->where('is_active',true)->exists())$add('inventory','أضف وحدة بيع واحدة على الأقل.');
         if(array_intersect(['sales','purchases'],$uses)){
-            $codes=InvoiceType::join('company_invoice_type as p','p.invoice_type_id','=','invoice_types.id')->where('p.company_id',$c->id)->where('p.is_active',true)->where(fn($q)=>$q->whereNull('invoice_types.company_id')->orWhere('invoice_types.company_id',$c->id))->pluck('invoice_types.code')->all();
+            $codes=InvoiceType::join('company_invoice_type as p','p.invoice_type_id','=','invoice_types.id')->where('p.company_id',$c->id)->where('p.is_active',true)->pluck('invoice_types.code')->all();
             if(in_array('sales',$uses)&&!array_intersect(['sale','sales','sales_invoice'],$codes))$add('billing','فعّل نوع فاتورة المبيعات.');
             if(in_array('purchases',$uses)&&!array_intersect(['purchase','purchases'],$codes))$add('billing','فعّل نوع فاتورة المشتريات.');
             if(!PaymentMethod::withoutGlobalScopes()->where('company_id',$c->id)->where('active',true)->exists())$add('billing','أضف وسيلة لاستلام الأموال.');
@@ -190,7 +190,7 @@ class CompanySetupService {
                 $v['invoice_type_ids']=array_values(array_unique($v['invoice_type_ids']));
             }
             if(!$v['invoice_type_ids'])throw ValidationException::withMessages(['invoice_type_ids'=>'اختر نوع فاتورة أو جهز الأنواع الأساسية.']);
-            $types=InvoiceType::where(fn($q)=>$q->whereNull('company_id')->orWhere('company_id',$c->id))->whereIn('id',$v['invoice_type_ids'])->pluck('id')->all();
+            $types=InvoiceType::where(fn($q)=>$q->whereNull('company_id')->orWhere('company_id',$c->id)->orWhereHas('companies',fn($assigned)=>$assigned->where('companies.id',$c->id)))->whereIn('id',$v['invoice_type_ids'])->pluck('id')->all();
             if(count($types)!==count(array_unique($v['invoice_type_ids'])))throw ValidationException::withMessages(['invoice_type_ids'=>'اختر أنواع فواتير متاحة لشركتك.']);
             // Preserve additional existing invoice types; the guide never disables working configuration.
             $c->invoiceTypes()->syncWithoutDetaching(array_fill_keys($types,['is_active'=>true]));
