@@ -139,4 +139,11 @@ class CompanySetupTest extends TestCase {
         $this->assertFalse(collect($r['issues'])->contains(fn($i)=>str_contains($i['message'],'نوع فاتورة المبيعات')));
         $this->save('billing',['invoice_type_ids'=>[$foreign->id],'payment_method_id'=>null,'payment_method_name'=>'نقدًا','create_cash_box'=>false,'create_cash_customer'=>false,'print_format'=>'standard','show_logo'=>true])->assertUnprocessable();
     }
+
+    public function test_existing_company_channels_are_preselected_until_an_explicit_choice_is_saved(): void {
+        \Modules\Notification\Models\MailSetting::create(['company_id'=>$this->company->id,'title'=>'البريد الموجود','mail_transport'=>'smtp','mail_host'=>'fixture.invalid','mail_port'=>587,'mail_from_address'=>'sender@example.test','mail_from_name'=>'اختبار','is_active'=>true]);
+        $this->assertContains('email',$this->getSetup()['data']['uses']);
+        $this->save('uses',['uses'=>['inventory','sales']])->assertOk();
+        $this->assertNotContains('email',$this->getSetup()['data']['uses']);
+    }
 }

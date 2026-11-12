@@ -25,6 +25,9 @@ class CompanySetupService {
         $uses=['inventory','sales'];
         if(StoreSellerProfile::where('company_id',$c->id)->exists())$uses[]='store';
         if($this->staff($c)->count()>1)$uses[]='team';
+        if(DB::table('invoices as i')->join('invoice_types as t','t.id','=','i.invoice_type_id')->where('i.company_id',$c->id)->whereIn('t.code',['purchase','purchases'])->exists())$uses[]='purchases';
+        foreach(['email'=>\Modules\Notification\Models\MailSetting::class,'whatsapp'=>\Modules\Notification\Models\WhatsAppSetting::class] as $feature=>$model)if($model::withoutGlobalScopes()->whereNull('deleted_at')->where('company_id',$c->id)->where('is_active',true)->exists())$uses[]=$feature;
+        if(\Modules\Notification\Models\NotificationWorkflow::withoutGlobalScopes()->whereNull('deleted_at')->where('company_id',$c->id)->where('is_active',true)->exists())$uses[]='automation';
         return $uses;
     }
     private function steps(array $uses): array {
