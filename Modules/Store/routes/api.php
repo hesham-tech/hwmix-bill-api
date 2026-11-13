@@ -29,6 +29,7 @@ Route::prefix('store')->group(function() {
 
     // Public Routes
     Route::prefix('public')->group(function() {
+        Route::get('/contact',[\Modules\Store\Http\Controllers\StorePublicContactController::class,'show']);
         Route::get('/registration-legal', fn()=>response()->json(['success'=>true,'data'=>app(\Modules\Store\Services\StoreRegistrationLegalService::class)->documents()]));
         Route::get('/checkout-config', [StoreOrderController::class, 'configuration']);
         Route::get('/legal/{id}', [StoreOrderController::class, 'legal']);
@@ -88,6 +89,8 @@ Route::prefix('vendor/store')->middleware('auth:sanctum')->group(function () {
 });
 
 Route::prefix('admin/store')->middleware('auth:sanctum')->group(function () {
+    Route::get('/contact',[\Modules\Store\Http\Controllers\StorePublicContactController::class,'adminShow']);
+    Route::patch('/contact',[\Modules\Store\Http\Controllers\StorePublicContactController::class,'update']);
     Route::get('/notifications',[\Modules\Store\Http\Controllers\StoreNotificationController::class,'index'])->defaults('scope','admin');
     Route::post('/notifications/{id}/read',[\Modules\Store\Http\Controllers\StoreNotificationController::class,'read'])->defaults('scope','admin')->whereNumber('id');
     $controller=\Modules\Store\Http\Controllers\StoreAdminController::class;

@@ -874,6 +874,7 @@ return [
     'guidance_setup' => ['manage'=>['key'=>'guidance.setup.manage','label'=>'إعداد الشركة خطوة بخطوة']],
     'store' => [
         'name' => ['key'=>'store','label'=>'إدارة المتجر'],
+        'contact_manage' => ['key'=>'store.contact.manage','label'=>'تعديل بيانات تواصل المتجر'],
         'settings_manage' => ['key'=>'store.settings.manage','label'=>'إدارة إعدادات المتجر والتكاملات'],
         'orders_manage' => ['key'=>'store.orders.manage','label'=>'إدارة طلبات المتجر والشحن والمرتجعات'],
         'finance_manage' => ['key'=>'store.finance.manage','label'=>'إدارة أرصدة البائعين والتسويات'],
