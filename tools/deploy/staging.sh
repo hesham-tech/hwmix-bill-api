@@ -58,7 +58,13 @@ php artisan view:clear
 php artisan event:clear
 php artisan config:cache
 php artisan route:cache
-php artisan storage:link
+# Hostinger disables PHP symlink/exec; create the configured link in SSH.
+if [[ -L public/storage ]]; then
+    [[ "$(readlink public/storage)" == "$shared/storage/app/public" ]] || exit 2
+else
+    [[ ! -e public/storage ]] || exit 2
+    ln -s "$shared/storage/app/public" public/storage
+fi
 php tools/deploy/staging-guard.php assert
 printf '%s\n' "$revision" > public/staging-revision.txt
 printf 'User-agent: *\nDisallow: /\n' > public/robots.txt
