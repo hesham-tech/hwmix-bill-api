@@ -1,0 +1,55 @@
+name: Backend audit phase checks
+
+on:
+  push:
+    branches:
+      - 'codex/audit-phase-**'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'app/Http/Controllers/RevenueController.php'
+      - 'Modules/Accounting/routes/api.php'
+      - 'tests/Unit/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - '.github/workflows/backend-audit-phase-checks.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout phase
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: bcmath, ctype, dom, fileinfo, gd, iconv, intl, mbstring, pcntl, pdo_sqlite, posix, xml, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Install locked dependencies without application scripts
+        run: composer install --no-interaction --prefer-dist --no-progress --no-scripts
+
+      - name: Check PHP syntax without booting the application
+        run: find app bootstrap config routes database/migrations Modules tests -type f -name '*.php' ! -path '*/resources/*' -print0 | xargs -0 -n 1 php -d log_errors=0 -l
+
+      - name: Run isolated bootstrap and domain tests
+        run: >-
+          php -d log_errors=0 vendor/phpunit/phpunit/phpunit
+          --no-configuration --bootstrap vendor/autoload.php --do-not-cache-result
+          tests/Unit/RevenueControllerBootstrapTest.php
+          tests/Unit/StoreMoneyAndSignatureTest.php
+          tests/Unit/StoreDeliveryGeometryTest.php
+          tests/Unit/StoreCompliancePolicyTest.php
+          tests/Unit/ShippingFinancialsTest.php
