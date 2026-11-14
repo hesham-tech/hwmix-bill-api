@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'codex/audit-phase-**'
+      - staging
   pull_request:
     branches:
       - master
@@ -14,13 +15,14 @@ on:
       - 'composer.json'
       - 'composer.lock'
       - '.github/workflows/backend-audit-phase-checks.yml'
+      - 'tools/deploy/**'
 
 permissions:
   contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/staging' }}
 
 jobs:
   isolated-checks:
@@ -53,3 +55,81 @@ jobs:
           tests/Unit/StoreDeliveryGeometryTest.php
           tests/Unit/StoreCompliancePolicyTest.php
           tests/Unit/ShippingFinancialsTest.php
+
+      - name: Check staging deployment scripts
+        run: |
+          bash -n tools/deploy/staging.sh
+          php -l tools/deploy/staging-guard.php
+
+  deploy-staging:
+    needs: isolated-checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    environment: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      STAGING_HOST: ${{ vars.STAGING_SSH_HOST }}
+      STAGING_USER: ${{ vars.STAGING_SSH_USER }}
+      STAGING_PORT: ${{ vars.STAGING_SSH_PORT }}
+    steps:
+      - name: Checkout tested revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require latest production changes to be integrated
+        run: |
+          git fetch origin master
+          git merge-base --is-ancestor origin/master HEAD || {
+            echo 'Merge the latest master into staging and pass checks before deployment.'
+            exit 1
+          }
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: bcmath, ctype, dom, fileinfo, gd, iconv, intl, mbstring, pcntl, pdo_mysql, posix, xml, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Build production dependencies without application scripts
+        run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress --no-scripts
+
+      - name: Configure staging-only SSH credentials
+        env:
+          DEPLOY_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+        run: |
+          test -n "$STAGING_HOST" && test -n "$STAGING_USER" && test -n "$STAGING_PORT"
+          test -n "$DEPLOY_KEY" && test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/staging_deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/staging_deploy ~/.ssh/known_hosts
+
+      - name: Package and upload tested revision
+        run: |
+          tar --exclude='./.git' --exclude='./.github' --exclude='./node_modules' \
+            --exclude='./tests' --exclude='./docs' --exclude='./storage' \
+            --exclude='./public/storage' --exclude='./bootstrap/cache/*.php' \
+            --exclude='.env*' --exclude='*.pem' --exclude='*.sql' --exclude='*.log' \
+            -czf "$RUNNER_TEMP/staging-$GITHUB_SHA.tgz" .
+          scp -i ~/.ssh/staging_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -P "$STAGING_PORT" "$RUNNER_TEMP/staging-$GITHUB_SHA.tgz" \
+            "$STAGING_USER@$STAGING_HOST:/home/u715355537/apps/hwnix-bill-staging/incoming/$GITHUB_SHA.tgz"
+
+      - name: Migrate, seed, optimize and activate staging
+        run: |
+          ssh -i ~/.ssh/staging_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=20 -p "$STAGING_PORT" "$STAGING_USER@$STAGING_HOST" \
+            "bash -s -- $GITHUB_SHA" < tools/deploy/staging.sh
+
+      - name: Verify staging API with certificate validation
+        run: |
+          curl --fail --silent --show-error --retry 3 --retry-delay 5 https://staging-api.hwnix.com/up
+          curl --fail --silent --show-error https://staging-api.hwnix.com/api/v1/public/plans > /dev/null
+
+      - name: Remove runner deployment key
+        if: always()
+        run: rm -f ~/.ssh/staging_deploy
