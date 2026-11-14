@@ -18,15 +18,11 @@ use Throwable;
 class RevenueController extends Controller
 {
     protected RevenueService $revenueService;
+    protected array $relations;
 
     public function __construct(RevenueService $revenueService)
     {
         $this->revenueService = $revenueService;
-    }
-    protected array $relations;
-
-    public function __construct()
-    {
         $this->relations = [
             'company',   // Ù„Ù„ØªØ­Ù‚Ù‚ Ù…Ù† belongsToCurrentCompany
             'customer',  // Ø§Ù„Ø¹Ù…ÙŠÙ„ Ø§Ù„Ù…Ø±ØªØ¨Ø· Ø¨Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯
