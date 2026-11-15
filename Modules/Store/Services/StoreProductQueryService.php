@@ -32,15 +32,7 @@ class StoreProductQueryService
             });
         }
 
-        // فلتر القسم
-        if (!empty($filters['category_id'])) {
-            $query->where('category_id', $filters['category_id']);
-        }
-
-        // فلتر الماركة
-        if (!empty($filters['brand_id'])) {
-            $query->where('brand_id', $filters['brand_id']);
-        }
+        StoreCatalogFilters::apply($query, $filters);
 
         // فلتر البائع (الشركة)
         if (!empty($filters['vendor_id'])) {

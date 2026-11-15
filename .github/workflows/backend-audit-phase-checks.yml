@@ -55,6 +55,7 @@ jobs:
           tests/Unit/StoreDeliveryGeometryTest.php
           tests/Unit/StoreCompliancePolicyTest.php
           tests/Unit/ShippingFinancialsTest.php
+          tests/Unit/StoreCatalogFiltersTest.php
 
       - name: Check staging deployment scripts
         run: |
