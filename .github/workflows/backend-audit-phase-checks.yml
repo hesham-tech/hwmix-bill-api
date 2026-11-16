@@ -32,6 +32,9 @@ jobs:
       - name: Checkout phase
         uses: actions/checkout@v4
 
+      - name: Reject tracked secret material
+        run: python3 tools/security/scan_tracked_secrets.py
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:

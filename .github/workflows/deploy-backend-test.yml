@@ -5,17 +5,25 @@ on:
     branches:
       - restructure-v2 # هذا هو البرانش الذي تعمل عليه حالياً
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   deploy:
+    environment: legacy-testing
+    timeout-minutes: 25
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Reject tracked secret material
+        run: python3 tools/security/scan_tracked_secrets.py
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -26,21 +34,23 @@ jobs:
       - name: Install Composer Dependencies
         run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
 
+      - name: Configure trusted SSH host
+        env:
+          SSH_KNOWN_HOSTS: ${{ secrets.LEGACY_SSH_KNOWN_HOSTS }}
+        run: |
+          test -n "$SSH_KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
       - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: |
-            -----BEGIN OPENSSH PRIVATE KEY-----
-            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-            QyNTUxOQAAACA6g37ShyPiZgfHaFfVnmicCN5PLQIWh4/t247UWaQcEAAAAIgdHZUuHR2V
-            LgAAAAtzc2gtZWQyNTUxOQAAACA6g37ShyPiZgfHaFfVnmicCN5PLQIWh4/t247UWaQcEA
-            AAAEBclRKUG/1G65MQ0XImU2COe0ZPBRsZaFhBvYsDc2sHlDqDftKHI+JmB8doV9WeaJwI
-            3k8tAhaHj+3bjtRZpBwQAAAABWh3bml4
-            -----END OPENSSH PRIVATE KEY-----
+          ssh-private-key: ${{ secrets.LEGACY_SSH_PRIVATE_KEY }}
 
       - name: Deploy via Rsync
         run: |
-          rsync -avz --delete -e "ssh -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=15" \
+          rsync -avz --delete -e "ssh -p 65002 -o StrictHostKeyChecking=yes -o BatchMode=yes -o ForwardAgent=no -o ConnectTimeout=30 -o ServerAliveInterval=15" \
           --rsync-path="mkdir -p /home/u715355537/domains/hwnix.com/public_html/api-teste/ && rsync" \
           --exclude='.git/' \
           --exclude='.github/' \
@@ -55,7 +65,7 @@ jobs:
 
       - name: Run Post-Deployment Commands
         run: |
-          ssh -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=15 u715355537@212.107.17.234 << 'EOF'
+          ssh -p 65002 -o StrictHostKeyChecking=yes -o BatchMode=yes -o ForwardAgent=no -o ConnectTimeout=15 -o ServerAliveInterval=15 u715355537@212.107.17.234 << 'EOF'
             set -euo pipefail
             cd /home/u715355537/domains/hwnix.com/public_html/api-teste
             echo "🚀 Running Database Migrations..."
@@ -85,7 +95,7 @@ jobs:
       - name: Run Post-Deployment Health Check
         run: |
           echo "🔍 Running API health check on test subdomain..."
-          curl -f -I -k https://api-teste.hwnix.com/api/v1/public/plans || exit 1
+          curl -f -I https://api-teste.hwnix.com/api/v1/public/plans || exit 1
 
       - name: Deployment Complete
         run: echo "✅ Deployment successful! Migrations run, caches cleared, and application optimized."
