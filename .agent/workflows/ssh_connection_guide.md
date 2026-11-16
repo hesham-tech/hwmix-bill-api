@@ -1,88 +1,23 @@
 ---
-description: دليل الاتصال بالسيرفر عبر SSH من بيئة ويندوز (Windows/PowerShell)
+description: اتصال إداري آمن باستضافة HWNIX دون مفاتيح مضمنة
 ---
 
-# متطلبات البيانات (Required Data)
+# اتصال SSH باستضافة HWNIX
 
-عند طلب الاتصال بسيرفر جديد، يرجى تزويدي بالبيانات التالية:
+الموقعان الإنتاجيان هما bill.hwnix.com وbill-api.hwnix.com؛ ونسخة الاختبار الحالية staging.hwnix.com وstaging-api.hwnix.com. تحقق من الهدف والمسار قبل أي كتابة. بيانات الاتصال العامة: u715355537 على212.107.17.234 والمنفذ65002.
 
-1. **عنوان السيرفر (Host IP):** (مثال: `212.107.17.234`)
-2. **اسم المستخدم (Username):** (مثال: `u715355537`)
-3. **منفذ الاتصال (Port):** (مثال: `65002` أو `22`)
-4. **المفتاح الخاص (Private Key):** المحتوى الكامل للمفتاح.
+## الدخول الإداري
 
----
-
-# خطوات الاتصال (Connection Workflow)
-
-اتبع الخطوات التالية في PowerShell لإنشاء الملف وضبط صلاحياته ثم الاتصال.
-
-## 1. إنشاء ملف المفتاح (Create Key File)
-
-هذا السكربت يضمن استخدام Unix Line Endings (LF) الضرورية لعمل OpenSSH.
+استخدم هوية SSH إدارية مستقلة موجودة في مجلد SSH الخاص بصاحب الجهاز بصلاحياته فقط. لا تكتب المفتاح في ملف داخل المشروع أو في أمر أو محادثة أو سجل. إعداد ~/.ssh/config المحلي يحدد الهوية المناسبة لهذا المضيف؛ لا تنسخ ملفات PEM قديمة ولا تعطل فحص هوية المضيف.
 
 ```powershell
-$key = @"
-[REMOVED: use a dedicated GitHub Environment secret; never embed private keys]
-"@
-
-# إضافة سطر جديد في النهاية إذا لم يوجد
-if (-not $key.EndsWith("`n")) { $key += "`n" }
-
-# تحويل الرموز إلى LF فقط
-$cleanKey = $key -replace "`r`n", "`n"
-
-# حفظ الملف
-[System.IO.File]::WriteAllText("$PWD\server_key.pem", $cleanKey)
+ssh -p 65002 -o BatchMode=yes -o StrictHostKeyChecking=yes u715355537@212.107.17.234 "whoami"
 ```
 
-## 2. ضبط الصلاحيات (Fix Permissions)
+الدخول الناجح قراءة فقط وليس تفويضًا لنشر أو حذف. إذا تعذر الاتصال فلا ترجع إلى مفتاح تاريخي؛ راجع إعداد الهوية الإدارية الحالية والمضيف الموثوق. معلومات البيئات وأسماء Secrets وسياسة الفروع في docs/DEPLOYMENT_CREDENTIALS.md.
 
-هذه الخطوة حرجة؛ إذا لم تنفذها سيرفض SSH الملف بخطأ "Permissions are too open".
+## GitHub Actions
 
-```powershell
-# 1. إزالة جميع التوريثات (Inheritance)
-# 2. منح صلاحية القراءة (Read) للمستخدم الحالي فقط
-icacls server_key.pem /inheritance:r /grant:r "$($env:USERNAME):R"
-```
+لكل مستودع وبيئة مفتاح نشر مختلف داخل GitHub Environment Secret، مع known_hosts موثوق وقيود فروع. يستعمل النشر الآلي هويته المستقلة ولا يستعمل المفتاح الإداري المحلي. لا تعدّل بيانات التطبيق أو قاعدة الإنتاج لمجرد اختبار SSH؛ استعمل workflow التحقق الذي ينفذ أوامر قراءة فقط.
 
-## 3. الاتصال (Connect)
-
-استخدم هذا الأمر للاتصال مباشرة:
-
-```powershell
-ssh -i server_key.pem -p 65002 -o StrictHostKeyChecking=no u715355537@212.107.17.234
-```
-
----
-
-# أوامر سريعة للتصحيح (Debugging Shortcuts)
-
-### 📂 المسارات الأساسية (Core Paths)
-
-- **API (Production):** `/home/u715355537/domains/hwnix.com/public_html/api`
-- **Frontend (Production):** `/home/u715355537/domains/hwnix.com/public_html/bill`
-
-### 📝 سجلات الأخطاء (Logs)
-
-لقراءة آخر 50 خطأ في مشروع الـ API:
-
-```bash
-tail -n 50 /home/u715355537/domains/hwnix.com/public_html/api/storage/logs/laravel.log
-```
-
-لقراءة الأخطاء المسجلة من الواجهة (Frontend Errors):
-
-```bash
-tail -n 50 /home/u715355537/domains/hwnix.com/public_html/api/error.log
-```
-
-### 🗄️ الاستعلام عن جدول الأخطاء (Database Logs)
-
-إذا فشل `tinker` بسبب تصاريح المجلد، استخدم SQL مباشرة:
-
-```bash
-mysql -u u715355537_api_teste -p u715355537_api_teste -e "SELECT id, message, type, created_at FROM error_reports ORDER BY id DESC LIMIT 5;"
-```
-
-_(ملاحظة: سيطلب كلمة المرور: `29Qjbd$J`)_
+المفتاح الذي كان مضمنًا في تاريخ المشروع لا يُستخدم لأي دخول أو تراجع. عند فشل البديل يولد مسؤول مخول مفتاحًا جديدًا بعد تثبيت مسار دخول إداري بديل، ولا يعيد تفعيل القديم. تجنب حفظ نسخة خاصة في workspace أو Git؛ أمثلة الوثائق لا تحتوي كتل مفاتيح قابلة للنسخ.

@@ -57,3 +57,5 @@ graphify-out/
 *.key
 /id_rsa
 /id_ed25519
+
+/temp_ssh_key*
