@@ -15,13 +15,7 @@
 ### 🗝️ مفتاح SSH (Private Key)
 
 ```text
------BEGIN OPENSSH PRIVATE KEY-----
-b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-QyNTUxOQAAACA6g37ShyPiZgfHaFfVnmicCN5PLQIWh4/t247UWaQcEAAAAIgdHZUuHR2V
-LgAAAAtzc2gtZWQyNTUxOQAAACA6g37ShyPiZgfHaFfVnmicCN5PLQIWh4/t247UWaQcEA
-AAAEBclRKUG/1G65MQ0XImU2COe0ZPBRsZaFhBvYsDc2sHlDqDftKHI+JmB8doV9WeaJwI
-3k8tAhaHj+3bjtRZpBwQAAAABWh3bml4
------END OPENSSH PRIVATE KEY-----
+[REMOVED: use a dedicated GitHub Environment secret]
 ```
 
 ---
@@ -45,4 +39,4 @@ AAAEBclRKUG/1G65MQ0XImU2COe0ZPBRsZaFhBvYsDc2sHlDqDftKHI+JmB8doV9WeaJwI
 
 - **اسم المستخدم:** `u715355537_api_teste`
 - **اسم قاعدة البيانات:** `u715355537_api_teste`
-- **كلمة المرور:** `29Qjbd$J`
+- بيانات الاعتماد تُدار خارج Git داخل إعدادات الخادم الخاصة.
