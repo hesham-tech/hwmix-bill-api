@@ -23,9 +23,7 @@ description: دليل الاتصال بالسيرفر عبر SSH من بيئة �
 
 ```powershell
 $key = @"
------BEGIN OPENSSH PRIVATE KEY-----
-[ضع_المفتاح_هنا_بدون_مسافات_زائدة]
------END OPENSSH PRIVATE KEY-----
+[REMOVED: use a dedicated GitHub Environment secret; never embed private keys]
 "@
 
 # إضافة سطر جديد في النهاية إذا لم يوجد
