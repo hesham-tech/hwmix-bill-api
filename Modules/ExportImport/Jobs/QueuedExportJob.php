@@ -63,9 +63,8 @@ class QueuedExportJob implements ShouldQueue
                 $query = \Illuminate\Support\Facades\DB::table('products')
                     ->where('company_id', $exportJob->company_id);
 
-                if ($exportJob->branch_id) {
-                    $query->where('branch_id', $exportJob->branch_id);
-                }
+                // Products are a company-wide catalog (there is no products.branch_id).
+                // The captured branch scopes job access, not ownership of catalog rows.
 
                 $total = $query->count();
                 $processed = 0;

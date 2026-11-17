@@ -71,7 +71,7 @@ class ExportDownloadAuthorizationTest extends TestCase
         $connection->statement('CREATE TABLE export_import_jobs (id INTEGER PRIMARY KEY, company_id INTEGER, branch_id INTEGER, type TEXT, model_type TEXT, status TEXT, file_path TEXT, deleted_at TEXT, progress INTEGER, created_by INTEGER, errors TEXT, created_at TEXT, updated_at TEXT)');
         $connection->statement('CREATE TABLE company_user (user_id INTEGER, company_id INTEGER, status TEXT)');
         $connection->statement('CREATE TABLE branches (id INTEGER, company_id INTEGER, deleted_at TEXT)');
-        $connection->statement('CREATE TABLE products (id INTEGER, company_id INTEGER, branch_id INTEGER, name TEXT, desc TEXT, active INTEGER)');
+        $connection->statement('CREATE TABLE products (id INTEGER, company_id INTEGER, name TEXT, desc TEXT, active INTEGER)');
         $connection->table('company_user')->insert(['user_id' => 7, 'company_id' => 1, 'status' => 'active']);
         $connection->table('branches')->insert(['id' => 10, 'company_id' => 1]);
         $connection->table('export_import_jobs')->insert([
@@ -218,9 +218,9 @@ class ExportDownloadAuthorizationTest extends TestCase
         $db = $this->db->getConnection();
         $db->table('branches')->insert([['id' => 11, 'company_id' => 1], ['id' => 20, 'company_id' => 2]]);
         $db->table('products')->insert([
-            ['id' => 1, 'company_id' => 1, 'branch_id' => 10, 'name' => 'ALLOWED-PRODUCT', 'desc' => '', 'active' => 1],
-            ['id' => 2, 'company_id' => 1, 'branch_id' => 11, 'name' => 'OTHER-BRANCH', 'desc' => '', 'active' => 1],
-            ['id' => 3, 'company_id' => 2, 'branch_id' => 20, 'name' => 'OTHER-COMPANY', 'desc' => '', 'active' => 1],
+            ['id' => 1, 'company_id' => 1, 'name' => 'ALLOWED-PRODUCT', 'desc' => '', 'active' => 1],
+            ['id' => 2, 'company_id' => 1, 'name' => 'SHARED-CATALOG', 'desc' => '', 'active' => 1],
+            ['id' => 3, 'company_id' => 2, 'name' => 'OTHER-COMPANY', 'desc' => '', 'active' => 1],
         ]);
         $response = $this->schedule(['X-Branch-Id' => '10']);
         $this->assertSame(202, $response->getStatusCode());
@@ -234,7 +234,7 @@ class ExportDownloadAuthorizationTest extends TestCase
         $this->assertSame('completed', $job->status);
         $csv = file_get_contents($this->directory.'/'.$job->file_path);
         $this->assertStringContainsString('ALLOWED-PRODUCT', $csv);
-        $this->assertStringNotContainsString('OTHER-BRANCH', $csv);
+        $this->assertStringContainsString('SHARED-CATALOG', $csv);
         $this->assertStringNotContainsString('OTHER-COMPANY', $csv);
         config(['app.active_branch_id' => 10]);
         $status = $this->request(true, $id, [], true);
@@ -252,7 +252,7 @@ class ExportDownloadAuthorizationTest extends TestCase
         ExportImportJob::withoutEvents(fn () => $this->queued[1]->handle());
         $secondPath = $db->table('export_import_jobs')->where('id', $secondId)->value('file_path');
         $this->assertNotSame($job->file_path, $secondPath);
-        $this->assertStringContainsString('OTHER-BRANCH', file_get_contents($this->directory.'/'.$secondPath));
+        $this->assertStringContainsString('SHARED-CATALOG', file_get_contents($this->directory.'/'.$secondPath));
         $this->assertSame($csv, file_get_contents($this->directory.'/'.$job->file_path));
     }
 
