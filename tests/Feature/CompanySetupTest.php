@@ -47,7 +47,7 @@ class CompanySetupTest extends TestCase {
         $this->save('review')->assertOk()->assertJsonPath('data.state.finished',false);
         $this->assertSame($before,$this->getSetup()['ready']);$this->assertTrue($this->getSetup()['state']['hidden']);
     }
-    public function test_features_control_steps_and_defer_does_not_fix_store_readiness(): void {
+    public function test_all_pages_are_visible_and_defer_does_not_fix_existing_store_readiness(): void {
         $this->save('uses',['uses'=>['inventory','sales','store']])->assertOk();
         $this->save('store',[],null,true)->assertOk()->assertJsonPath('data.state.current_step','review');
         $r=$this->getSetup();$this->assertFalse($r['ready']);$this->assertContains('store',$r['state']['deferred']);
@@ -140,10 +140,53 @@ class CompanySetupTest extends TestCase {
         $this->save('billing',['invoice_type_ids'=>[$foreign->id],'payment_method_id'=>null,'payment_method_name'=>'نقدًا','create_cash_box'=>false,'create_cash_customer'=>false,'print_format'=>'standard','show_logo'=>true])->assertUnprocessable();
     }
 
-    public function test_existing_company_channels_are_preselected_until_an_explicit_choice_is_saved(): void {
+    public function test_existing_company_channels_remain_required_even_after_a_legacy_choice(): void {
         \Modules\Notification\Models\MailSetting::create(['company_id'=>$this->company->id,'title'=>'البريد الموجود','mail_transport'=>'smtp','mail_host'=>'fixture.invalid','mail_port'=>587,'mail_from_address'=>'sender@example.test','mail_from_name'=>'اختبار','is_active'=>true]);
         $this->assertContains('email',$this->getSetup()['data']['uses']);
         $this->save('uses',['uses'=>['inventory','sales']])->assertOk();
-        $this->assertNotContains('email',$this->getSetup()['data']['uses']);
+        $this->assertContains('email',$this->getSetup()['data']['uses']);
+    }
+
+    public function test_first_page_is_company_and_all_actual_pages_are_available_without_choices(): void {
+        $r=$this->getSetup();
+        $this->assertSame('company',$r['state']['current_step']);
+        $this->assertSame(['company','locations','inventory','billing','team','email','whatsapp','automation','store','review'],array_column($r['steps'],'key'));
+        $this->assertNotContains('store',$r['data']['uses']);
+        $this->assertSame([],$r['state']['reviewed']);
+    }
+
+    public function test_skip_any_form_keeps_company_and_configuration_unchanged_and_does_not_acknowledge_completion(): void {
+        $before=$this->company->fresh()->getAttributes();
+        foreach(['company','locations','inventory','billing','team','email','whatsapp','automation','store'] as $step){
+            $this->save($step,['name'=>'لا تحفظني'],null,true)->assertOk();
+            $r=$this->getSetup();$this->assertContains($step,$r['state']['deferred']);$this->assertNotContains($step,$r['state']['reviewed']);
+        }
+        $this->assertSame($before,$this->company->fresh()->getAttributes());
+        $this->assertDatabaseCount('store_seller_profiles',0);
+        $this->assertSame('review',$this->getSetup()['state']['current_step']);
+        $this->assertFalse($this->getSetup()['basic_ready']);
+        $this->save('review',[],null,true)->assertUnprocessable();
+        $this->save('company',['name'=>$this->company->name,'phone'=>$this->company->phone,'address'=>$this->company->address])->assertOk();
+        $this->assertNotContains('company',$this->getSetup()['state']['deferred']);
+    }
+
+    public function test_old_progress_resumes_without_removed_choice_page_or_losing_preferences(): void {
+        $s=CompanySetupState::create(['user_id'=>$this->owner->id,'company_id'=>$this->company->id,'current_step'=>'uses','reviewed'=>['uses','company'],'deferred'=>['messages'],'hidden'=>true]);
+        $r=$this->getSetup();$this->assertSame('company',$r['state']['current_step']);$this->assertTrue($r['state']['hidden']);$this->assertContains('company',$r['state']['reviewed']);
+        $s->update(['current_step'=>'messages']);$this->assertSame('email',$this->getSetup()['state']['current_step']);
+        $this->assertContains('email',$this->getSetup()['state']['deferred']);
+        $this->save('email')->assertOk();
+        $this->assertNotContains('email',$this->getSetup()['state']['deferred']);
+        $this->assertContains('whatsapp',$this->getSetup()['state']['deferred']);
+        $this->save('messages',[],null,true)->assertOk()->assertJsonPath('data.state.current_step','store');
+    }
+
+    public function test_saving_optional_page_selects_only_that_function_and_skip_does_not_disable_it(): void {
+        $this->save('email')->assertOk();$r=$this->getSetup();
+        $this->assertContains('email',$r['data']['uses']);$this->assertNotContains('whatsapp',$r['data']['uses']);$this->assertNotContains('automation',$r['data']['uses']);
+        $this->assertTrue(collect($r['issues'])->contains(fn($i)=>$i['step']==='email'));
+        $this->save('email',[],null,true)->assertOk();
+        $this->assertContains('email',$this->getSetup()['data']['uses']);
+        $this->assertTrue(collect($this->getSetup()['issues'])->contains(fn($i)=>$i['step']==='email'));
     }
 }

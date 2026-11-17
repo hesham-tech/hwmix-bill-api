@@ -13,7 +13,7 @@ use Modules\Store\Services\{LocalDeliveryService,SellerPolicyService,StoreTaxSer
 /** Company data and user acknowledgements deliberately remain separate. */
 class CompanySetupService {
     private const FEATURES=['inventory','sales','purchases','team','email','whatsapp','automation','store'];
-    private const TITLES=['uses'=>'كيف ستستخدم شركتك؟','company'=>'بيانات شركتك','locations'=>'مكان عملك ومخزنك','inventory'=>'منتجاتك ومخزونك','billing'=>'فواتيرك واستلام الأموال','team'=>'فريق عملك','messages'=>'رسائلك وتنبيهاتك','store'=>'البيع في المتجر','review'=>'مراجعة الإعدادات'];
+    private const TITLES=['company'=>'بيانات شركتك','locations'=>'مكان عملك ومخزنك','inventory'=>'منتجاتك ومخزونك','billing'=>'فواتيرك واستلام الأموال','team'=>'فريق عملك','email'=>'البريد الإلكتروني','whatsapp'=>'رسائل واتساب','automation'=>'التنبيهات التلقائية','store'=>'البيع في المتجر','review'=>'مراجعة الإعدادات'];
     public function company(User $user): Company {
         $id=(int)$user->active_company_id;
         abort_unless($id&&$user->companies()->where('companies.id',$id)->wherePivot('status','active')->exists(),403);
@@ -21,23 +21,16 @@ class CompanySetupService {
     }
     private function manager(User $u): bool {return $u->checkPermissionTo('admin.super')||$u->checkPermissionTo('admin.company')||$u->checkPermissionTo('guidance.setup.manage');}
     private function uses(Company $c): array {
-        if(isset($c->settings['setup_uses']))return array_values(array_intersect(self::FEATURES,$c->settings['setup_uses']));
-        $uses=['inventory','sales'];
+        $uses=isset($c->settings['setup_uses'])?array_values(array_intersect(self::FEATURES,$c->settings['setup_uses'])):['inventory','sales'];
         if(StoreSellerProfile::where('company_id',$c->id)->exists())$uses[]='store';
         if($this->staff($c)->count()>1)$uses[]='team';
         if(DB::table('invoices as i')->join('invoice_types as t','t.id','=','i.invoice_type_id')->where('i.company_id',$c->id)->whereIn('t.code',['purchase','purchases'])->exists())$uses[]='purchases';
         foreach(['email'=>\Modules\Notification\Models\MailSetting::class,'whatsapp'=>\Modules\Notification\Models\WhatsAppSetting::class] as $feature=>$model)if($model::withoutGlobalScopes()->whereNull('deleted_at')->where('company_id',$c->id)->where('is_active',true)->exists())$uses[]=$feature;
         if(\Modules\Notification\Models\NotificationWorkflow::withoutGlobalScopes()->whereNull('deleted_at')->where('company_id',$c->id)->where('is_active',true)->exists())$uses[]='automation';
-        return $uses;
+        return array_values(array_unique($uses));
     }
     private function steps(array $uses): array {
-        $keys=['uses','company','locations'];
-        if(in_array('inventory',$uses))$keys[]='inventory';
-        if(array_intersect(['sales','purchases'],$uses))$keys[]='billing';
-        if(in_array('team',$uses))$keys[]='team';
-        if(array_intersect(['email','whatsapp','automation'],$uses))$keys[]='messages';
-        if(in_array('store',$uses))$keys[]='store';
-        return [...$keys,'review'];
+        return array_keys(self::TITLES);
     }
     private function rows(string $model,int $company,array $fields): array {return $model::withoutGlobalScopes()->where('company_id',$company)->get($fields)->toArray();}
     private function data(Company $c,User $u): array {
@@ -68,16 +61,20 @@ class CompanySetupService {
     public function snapshot(User $u): array {
         $c=$this->company($u);$state=CompanySetupState::where('user_id',$u->id)->where('company_id',$c->id)->first();$uses=$this->uses($c);
         $issues=$this->issues($c,$u,$uses);$keys=$this->steps($uses);$manager=$this->manager($u);
-        return ['company_id'=>$c->id,'revision'=>$this->revision($c),'can_manage'=>$manager,'steps'=>array_map(fn($k)=>['key'=>$k,'title'=>self::TITLES[$k],'can_edit'=>$manager||in_array($k,['review','team','messages'])],$keys),
-            'state'=>['current_step'=>in_array($state?->current_step,$keys)?$state->current_step:'uses','reviewed'=>$state?->reviewed??[], 'deferred'=>$state?->deferred??[], 'hidden'=>$state?->hidden??false,'finished'=>!!$state?->finished_at],
+        $current=$state?->current_step==='messages'?'email':$state?->current_step;
+        $reviewed=$state?->reviewed??[];$deferred=$state?->deferred??[];
+        if(in_array('messages',$reviewed))$reviewed=[...$reviewed,...array_intersect(['email','whatsapp','automation'],$uses)];
+        if(in_array('messages',$deferred))$deferred=[...$deferred,'email','whatsapp','automation'];
+        return ['company_id'=>$c->id,'revision'=>$this->revision($c),'can_manage'=>$manager,'steps'=>array_map(fn($k)=>['key'=>$k,'title'=>self::TITLES[$k],'can_edit'=>$manager||in_array($k,['review','team','email','whatsapp','automation'])],$keys),
+            'state'=>['current_step'=>in_array($current,$keys)?$current:'company','reviewed'=>array_values(array_unique(array_intersect($reviewed,$keys))), 'deferred'=>array_values(array_unique(array_intersect($deferred,$keys))), 'hidden'=>$state?->hidden??false,'finished'=>!!$state?->finished_at],
             'data'=>$this->data($c,$u),'issues'=>$issues,'ready'=>!$issues,'basic_ready'=>!array_filter($issues,fn($i)=>$i['group']==='basic')];
     }
     private function issues(Company $c,User $u,array $uses): array {
         $issues=[];$add=function($step,$message,$group='basic')use(&$issues){$issues[]=['step'=>$step,'message'=>$message,'group'=>$group];};
         if((int)$c->id!==(int)config('app.master_company_id',1)&&!$u->checkPermissionTo('admin.super')){
             $subscription=\App\Services\SaaS\SaaSEngine::getActiveSubscription($c->id);
-            if(!$subscription)$add('uses','اشتراك الشركة غير نشط. راجع اشتراكك قبل بدء العمل.');
-            else foreach(['inventory'=>'products','sales'=>'invoices','purchases'=>'invoices'] as $feature=>$resource)if(in_array($feature,$uses)&&!\App\Services\SaaS\LimitResolver::isWithinLimit($c->id,$resource))$add('uses','حد الاستخدام المتاح في باقتك لا يسمح ببدء عملية جديدة؛ راجع اشتراكك.');
+            if(!$subscription)$add('company','اشتراك الشركة غير نشط. راجع اشتراكك قبل بدء العمل.');
+            else foreach(['inventory'=>'products','sales'=>'invoices','purchases'=>'invoices'] as $feature=>$resource)if(in_array($feature,$uses)&&!\App\Services\SaaS\LimitResolver::isWithinLimit($c->id,$resource))$add('company','حد الاستخدام المتاح في باقتك لا يسمح ببدء عملية جديدة؛ راجع اشتراكك.');
         }
         if(!$c->name||!$c->phone||!$c->address)$add('company','أكمل اسم الشركة ورقم التواصل والعنوان.');
         $branch=Branch::withoutGlobalScopes()->whereNull('deleted_at')->where('company_id',$c->id)->where('is_active',true)->where('is_default',true)->first();
@@ -93,15 +90,15 @@ class CompanySetupService {
             if(!CashBox::withoutGlobalScopes()->where('company_id',$c->id)->where('status','active')->get()->contains(fn($box)=>$u->canAccessCashBox($box)))$add('billing','جهّز خزنة نشطة مسموحة لك لاستلام الأموال.');
             if(!$c->default_cash_customer_id||!$c->users()->where('users.id',$c->default_cash_customer_id)->wherePivot('status','active')->exists())$add('billing','جهّز العميل النقدي للفواتير التي لا تحتاج عميلًا مسجلًا.');
         }
-        if(in_array('team',$uses)&&$this->staff($c)->count()<2)$add('team','أضف موظفًا وحدد دوره وأماكن عمله، أو اختر العمل منفردًا.','team');
+        if(in_array('team',$uses)&&$this->staff($c)->count()<2)$add('team','أضف موظفًا وحدد دوره وأماكن عمله. يمكنك تأجيل ذلك إذا كنت تعمل منفردًا حاليًا.','team');
         if(in_array('team',$uses))foreach($this->staff($c) as $member){
             if($member->getAllPermissions()->isEmpty())$add('team','حدد دورًا وصلاحيات للموظفين الذين أضفتهم.','team');
             if(!$member->branches()->where('branches.company_id',$c->id)->where('is_active',true)->exists())$add('team','اربط كل موظف بفرع العمل المسموح له.','team');
         }
         $resolver=app(\Modules\Notification\Services\NotificationIntegrationResolver::class);
-        if(in_array('email',$uses)&&!SetupConnectionCheck::verified('email',$resolver->mail($c->id)))$add('messages','أضف وسيلة بريد مفعلة واختبر إرسال رسالة منها.','messages');
-        if(in_array('whatsapp',$uses)&&!SetupConnectionCheck::verified('whatsapp',$resolver->whatsapp($c->id)))$add('messages','أكمل حساب واتساب واختبر إرسال رسالة منه.','messages');
-        if(in_array('automation',$uses)&&!$this->automationReady($c))$add('messages','أكمل تنبيهًا فعالًا بقالب وخطوة إرسال وقناة مجربة متاحة لشركتك.','messages');
+        if(in_array('email',$uses)&&!SetupConnectionCheck::verified('email',$resolver->mail($c->id)))$add('email','أضف وسيلة بريد مفعلة واختبر إرسال رسالة منها.','messages');
+        if(in_array('whatsapp',$uses)&&!SetupConnectionCheck::verified('whatsapp',$resolver->whatsapp($c->id)))$add('whatsapp','أكمل حساب واتساب واختبر إرسال رسالة منه.','messages');
+        if(in_array('automation',$uses)&&!$this->automationReady($c))$add('automation','أكمل تنبيهًا فعالًا بقالب وخطوة إرسال وقناة مجربة متاحة لشركتك.','messages');
         if(in_array('store',$uses)){
             $p=StoreSellerProfile::where('company_id',$c->id)->first();
             if(!$p||!$p->warehouse_id||empty($p->pickup_address['street'])||empty($p->pickup_address['phone']))$add('store','أكمل بيانات البائع ومخزن تجهيز الطلبات وعنوان الاستلام.','store');
@@ -125,16 +122,28 @@ class CompanySetupService {
         DB::transaction(function()use($u,$company,$step,$data,$revision,$defer){
             $c=Company::withoutGlobalScopes()->lockForUpdate()->findOrFail($company->id);
             abort_unless(hash_equals($this->revision($c),$revision),409,'تغيرت بعض البيانات منذ فتحها. حدّث البيانات وراجعها قبل الحفظ.');
-            $keys=$this->steps($this->uses($c));abort_unless(in_array($step,$keys),404);
+            $keys=$this->steps($this->uses($c));abort_unless(in_array($step,[...$keys,'uses','messages']),404);
             $s=CompanySetupState::firstOrCreate(['user_id'=>$u->id,'company_id'=>$c->id]);
-            if($defer){abort_unless(in_array($step,['team','messages','store']),422);}
-            elseif(!in_array($step,['team','messages','review'])){
+            // Normalize legacy acknowledgements once before updating a split message page.
+            if(in_array('messages',$s->reviewed??[]))$s->reviewed=array_values(array_unique([...array_diff($s->reviewed,['messages']),...array_intersect(['email','whatsapp','automation'],$this->uses($c))]));
+            if(in_array('messages',$s->deferred??[]))$s->deferred=array_values(array_unique([...array_diff($s->deferred,['messages']),'email','whatsapp','automation']));
+            if($defer){abort_unless(in_array($step,[...array_diff($keys,['review']),'messages']),422);}
+            elseif(!in_array($step,['team','messages','email','whatsapp','automation','review'])){
                 if($this->manager($u))$this->write($u,$c,$step,$data);else abort_unless($data===[],403);
             }
-            $s->reviewed=array_values(array_unique([...($s->reviewed??[]),$step]));
+            if(!$defer&&$this->manager($u)){
+                $features=match($step){'inventory'=>['inventory'],'team'=>['team'],'email'=>['email'],'whatsapp'=>['whatsapp'],'automation'=>['automation'],'store'=>['store'],default=>[]};
+                if($step==='billing'){
+                    $codes=$c->invoiceTypes()->wherePivot('is_active',true)->pluck('code')->all();
+                    if(array_intersect(['sale','sales','sales_invoice'],$codes))$features[]='sales';
+                    if(array_intersect(['purchase','purchases'],$codes))$features[]='purchases';
+                }
+                if($features){$settings=$c->fresh()->settings??[];$settings['setup_uses']=array_values(array_unique([...$this->uses($c->fresh()),...$features]));$c->update(['settings'=>$settings]);}
+            }
+            $s->reviewed=$defer?array_values(array_diff($s->reviewed??[],[$step])):array_values(array_unique([...($s->reviewed??[]),$step]));
             $s->deferred=$defer?array_values(array_unique([...($s->deferred??[]),$step])):array_values(array_diff($s->deferred??[],[$step]));
             $keys=$this->steps($this->uses($c->fresh()));$index=array_search($step,$keys);
-            $s->current_step=$keys[min(($index===false?0:$index)+1,count($keys)-1)];
+            $s->current_step=$step==='uses'?'company':($step==='messages'?'store':$keys[min(($index===false?0:$index)+1,count($keys)-1)]);
             if($step==='review'){
                 $basicMissing=array_filter($this->issues($c->fresh(),$u,$this->uses($c->fresh())),fn($i)=>$i['group']==='basic');
                 $s->finished_at=(!$basicMissing||!$this->manager($u))?now():null;
