@@ -1,125 +1,163 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Backup;
-use App\Models\BackupSetting;
-use App\Services\BackupService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Middleware\EnsureSystemBackupAdministrator;
+use App\Models\{Backup, BackupSetting};
+use App\Services\{BackupConfirmation, BackupService};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Routing\Controllers\{HasMiddleware, Middleware};
+use Illuminate\Support\Facades\{DB, Hash, Log, Storage, Validator};
 
-class BackupController extends Controller
+class BackupController extends Controller implements HasMiddleware
 {
-    protected $backupService;
+    private const SETTINGS = [
+        'backup_frequency' => ['type' => 'string', 'default' => 'daily'],
+        'backup_time' => ['type' => 'string', 'default' => '03:00'],
+        'backup_retention_days' => ['type' => 'integer', 'default' => 7],
+        'backup_include_files' => ['type' => 'boolean', 'default' => false],
+    ];
+    private const FIELDS = ['id', 'filename', 'size_bytes', 'status', 'type', 'completed_at', 'created_at'];
 
-    public function __construct(BackupService $backupService)
+    public function __construct(private BackupService $backupService, private BackupConfirmation $confirmation) {}
+
+    public static function middleware(): array
     {
-        $this->backupService = $backupService;
+        return ['auth:sanctum', EnsureSystemBackupAdministrator::class,
+            new Middleware('throttle:5,1', only: ['confirmPassword'])];
     }
 
-    /**
-     * List all backup history.
-     */
+    private function audit(Request $request, string $action, ?int $id = null, string $outcome = 'allowed'): void
+    {
+        Log::notice('system_backup.action', ['actor_id' => $request->user()->getAuthIdentifier(),
+            'action' => $action, 'backup_id' => $id, 'outcome' => $outcome]);
+    }
+
+    private function invalid(string $message, int $status = 403): JsonResponse
+    {
+        // Never send request bodies, archive paths or service exceptions through generic error logging.
+        return new JsonResponse(['status' => false, 'message' => $message], $status);
+    }
+
     public function index()
     {
-        $backups = Backup::latest()->paginate(15);
-        return api_success($backups);
+        return api_success(Backup::query()->select(self::FIELDS)->latest()->paginate(15));
     }
 
-    /**
-     * Run a manual backup.
-     */
-    public function run()
-    {
-        try {
-            $result = $this->backupService->runBackup('manual');
-            return api_success($result, 'بدأت عملية النسخ الاحتياطي بنجاح');
-        } catch (\Exception $e) {
-            return api_error('فشلت عملية النسخ الاحتياطي: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Download a specific backup file.
-     */
-    public function download($id)
-    {
-        $backup = Backup::findOrFail($id);
-        $path = config('backup.backup.name') . '/' . $backup->filename;
-
-        if (!Storage::disk($backup->disk)->exists($path)) {
-            return api_error('ملف النسخ الاحتياطي غير موجود');
-        }
-
-        return Storage::disk($backup->disk)->download($path);
-    }
-
-    /**
-     * Delete a backup record and file.
-     */
-    public function destroy($id)
-    {
-        $backup = Backup::findOrFail($id);
-        $path = config('backup.backup.name') . '/' . $backup->filename;
-
-        if (Storage::disk($backup->disk)->exists($path)) {
-            Storage::disk($backup->disk)->delete($path);
-        }
-
-        $backup->delete();
-
-        return api_success(null, 'تم حذف النسخة الاحتياطية بنجاح');
-    }
-
-    /**
-     * Get backup settings.
-     */
-    public function getSettings()
-    {
-        return api_success(BackupSetting::all());
-    }
-
-    /**
-     * Update backup settings.
-     */
-    public function updateSettings(Request $request)
-    {
-        $settings = $request->all();
-
-        foreach ($settings as $key => $value) {
-            BackupSetting::where('key', $key)->update(['value' => $value]);
-        }
-
-        return api_success(BackupSetting::all(), 'تم تحديث الإعدادات بنجاح');
-    }
-
-    /**
-     * Restore from backup (High Security).
-     */
-    public function restore(Request $request, $id)
+    public function confirmPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'token' => 'required|string',
+            'password' => 'required|string|max:1024', 'action' => 'required|in:download,restore',
+            'backup_id' => 'required|integer|min:1',
         ]);
-
-        if ($validator->fails()) {
-            return api_error('كود التحقق مطلوب لإتمام عملية الاسترجاع');
+        if ($validator->fails()) return $this->invalid('بيانات تأكيد الهوية غير صالحة.', 422);
+        if (!Hash::check($request->input('password'), $request->user()->getAuthPassword())) {
+            $this->audit($request, 'confirm', null, 'denied');
+            return $this->invalid('كلمة المرور غير صحيحة.', 422);
         }
+        return api_success(['confirmation_token' => $this->confirmation->issue($request, $request->input('action'), (int) $request->input('backup_id')),
+            'expires_in' => BackupConfirmation::TTL]);
+    }
 
-        $backup = Backup::findOrFail($id);
-        $storedToken = BackupSetting::getVal('backup_restore_token');
-
-        if ($request->token !== $storedToken) {
-            return api_error('كود التحقق غير صحيح');
+    public function run(Request $request)
+    {
+        $this->audit($request, 'run');
+        try {
+            $result = $this->backupService->runBackup('manual');
+            return api_success(['success' => $result['success'] ?? false,
+                'record' => isset($result['record']) ? $result['record']->only(self::FIELDS) : null], 'تم تنفيذ طلب النسخ الاحتياطي.');
+        } catch (\Throwable) {
+            $this->audit($request, 'run', null, 'failed');
+            return $this->invalid('تعذر تنفيذ النسخ الاحتياطي. راجع سجل التشغيل.', 500);
         }
+    }
 
+    private function backup($id): ?Backup
+    {
+        return Backup::find($id);
+    }
+
+    public function download(Request $request, $id)
+    {
+        if (!$this->confirmation->valid($request, 'download', (int) $id)) return $this->invalid('أكد كلمة المرور مجددًا لتنزيل نسخة النظام.');
+        $backup = $this->backup($id);
+        if (!$backup || $backup->status !== 'success' || !$backup->filename) return $this->invalid('النسخة غير متاحة.', 404);
+        $path = config('backup.backup.name').'/'.$backup->filename;
+        if (!Storage::disk($backup->disk)->exists($path)) return $this->invalid('النسخة غير متاحة.', 404);
+        $this->audit($request, 'download', (int) $id);
+        return Storage::disk($backup->disk)->download($path, 'backup-'.(int) $id.'.zip', [
+            'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $backup = $this->backup($id);
+        if (!$backup) return $this->invalid('النسخة غير متاحة.', 404);
+        $this->audit($request, 'delete', (int) $id);
+        $path = config('backup.backup.name').'/'.$backup->filename;
+        if ($backup->filename && Storage::disk($backup->disk)->exists($path)) Storage::disk($backup->disk)->delete($path);
+        $backup->delete();
+        return api_success(null, 'تم حذف النسخة الاحتياطية.');
+    }
+
+    private function settings(): array
+    {
+        $stored = BackupSetting::query()->whereIn('key', array_keys(self::SETTINGS))->pluck('value', 'key');
+        $result = [];
+        foreach (self::SETTINGS as $key => $spec) {
+            $value = $stored[$key] ?? $spec['default'];
+            if ($spec['type'] === 'boolean') $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+            elseif ($spec['type'] === 'integer') $value = (int) $value;
+            $result[] = ['key' => $key, 'value' => $value, 'type' => $spec['type']];
+        }
+        return $result;
+    }
+
+    public function getSettings()
+    {
+        return api_success($this->settings());
+    }
+
+    public function updateSettings(Request $request)
+    {
+        if (array_diff(array_keys($request->all()), array_keys(self::SETTINGS))) return $this->invalid('يوجد إعداد غير مسموح.', 422);
+        $validator = Validator::make($request->all(), [
+            'backup_frequency' => 'sometimes|required|in:daily,weekly,monthly,none',
+            'backup_time' => 'sometimes|required|date_format:H:i',
+            'backup_retention_days' => 'sometimes|required|integer|min:1|max:365',
+            'backup_include_files' => 'sometimes|required|boolean',
+        ]);
+        if ($validator->fails()) return $this->invalid('قيم إعدادات النسخ غير صالحة.', 422);
+        $this->audit($request, 'settings.update');
+        DB::transaction(function () use ($request) {
+            foreach ($request->all() as $key => $value) {
+                $type = self::SETTINGS[$key]['type'];
+                if ($type === 'boolean') $value = $value ? '1' : '0';
+                BackupSetting::updateOrCreate(['key' => $key], ['value' => (string) $value, 'type' => $type]);
+            }
+        });
+        return api_success($this->settings(), 'تم تحديث الإعدادات.');
+    }
+
+    public function restore(Request $request, $id)
+    {
+        if (!$this->confirmation->valid($request, 'restore', (int) $id)) return $this->invalid('أكد كلمة المرور مجددًا للاستعادة.');
+        $supplied = $request->input('token');
+        $stored = BackupSetting::getVal('backup_restore_token');
+        if (!is_string($supplied) || !is_string($stored) || $stored === '' || !hash_equals($stored, $supplied)) {
+            $this->audit($request, 'restore', (int) $id, 'denied');
+            return $this->invalid('رمز الاستعادة غير صحيح.');
+        }
+        $backup = $this->backup($id);
+        if (!$backup || $backup->status !== 'success' || !$backup->filename) return $this->invalid('النسخة غير متاحة.', 404);
+        $this->audit($request, 'restore', (int) $id);
         try {
             $this->backupService->restore($backup->filename);
-            return api_success(null, 'تمت استعادة البيانات بنجاح');
-        } catch (\Exception $e) {
-            return api_error('فشلت عملية الاستعادة: ' . $e->getMessage());
+            return api_success(null, 'تمت استعادة البيانات.');
+        } catch (\Throwable) {
+            $this->audit($request, 'restore', (int) $id, 'failed');
+            return $this->invalid('تعذرت الاستعادة. راجع سجل التشغيل.', 500);
         }
     }
 }

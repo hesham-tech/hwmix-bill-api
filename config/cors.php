@@ -32,6 +32,7 @@ return [
         'X-Company-Id',
         'X-Branch-Id',
         'X-Idempotency-Key',
+        'X-Backup-Confirmation-Token',
         'X-Requested-With',
     ],
 

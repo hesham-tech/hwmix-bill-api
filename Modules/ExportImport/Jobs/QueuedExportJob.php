@@ -11,6 +11,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Modules\ExportImport\Models\ExportImportJob;
 
 class QueuedExportJob implements ShouldQueue
@@ -32,13 +34,21 @@ class QueuedExportJob implements ShouldQueue
             return;
         }
 
+        if (!$exportJob->branch_id || !DB::table('branches')->where('id', $exportJob->branch_id)
+            ->where('company_id', $exportJob->company_id)->whereNull('deleted_at')->exists()) {
+            $exportJob->update(['status' => 'failed', 'progress' => 0,
+                'errors' => ['message' => 'نطاق الفرع غير مثبت. أعد التصدير بعد اختيار فرع صالح.']]);
+            return;
+        }
+
         try {
             $exportJob->update([
                 'status' => 'processing',
                 'progress' => 10,
             ]);
 
-            $fileName = 'exports/' . $exportJob->company_id . '/' . strtolower($exportJob->model_type) . '_' . time() . '.csv';
+            $fileName = 'exports/' . $exportJob->company_id . '/' . strtolower($exportJob->model_type)
+                . '_' . $exportJob->id . '_' . Str::uuid() . '.csv';
 
             Storage::disk('public')->makeDirectory('exports/' . $exportJob->company_id);
             $filePath = Storage::disk('public')->path($fileName);
@@ -53,9 +63,8 @@ class QueuedExportJob implements ShouldQueue
                 $query = \Illuminate\Support\Facades\DB::table('products')
                     ->where('company_id', $exportJob->company_id);
 
-                if ($exportJob->branch_id) {
-                    $query->where('branch_id', $exportJob->branch_id);
-                }
+                // Products are a company-wide catalog (there is no products.branch_id).
+                // The captured branch scopes job access, not ownership of catalog rows.
 
                 $total = $query->count();
                 $processed = 0;

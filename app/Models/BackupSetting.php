@@ -28,7 +28,7 @@ class BackupSetting extends Model
             case 'integer':
                 return (int) $setting->value;
             case 'boolean':
-                return (bool) $setting->value;
+                return filter_var($setting->value, FILTER_VALIDATE_BOOLEAN);
             case 'json':
                 return json_decode($setting->value, true);
             default:

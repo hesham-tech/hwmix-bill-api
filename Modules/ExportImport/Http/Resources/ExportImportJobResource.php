@@ -18,7 +18,7 @@ class ExportImportJobResource extends JsonResource
             'status' => $this->status,
             'progress' => $this->progress,
             // توفير رابط التحميل الآمن فقط إذا كانت المهمة مكتملة ومسار الملف موجود
-            'download_url' => ($this->status === 'completed' && $this->file_path)
+            'download_url' => ($this->status === 'completed' && $this->file_path && $this->branch_id)
                 ? route('api.export-import.download', ['id' => $this->id])
                 : null,
             'errors' => $this->errors,
