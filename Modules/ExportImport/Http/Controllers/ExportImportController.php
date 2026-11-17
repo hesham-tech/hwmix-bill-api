@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Modules\ExportImport\Models\ExportImportJob;
 use Modules\ExportImport\Http\Resources\ExportImportJobResource;
@@ -131,26 +132,39 @@ class ExportImportController extends Controller
      */
     public function download($id)
     {
-        try {
-            // نستخدم withoutGlobalScopes لضمان إمكانية تنزيل الملف بالخلفية أو عبر الروابط المباشرة المؤقتة
-            $job = ExportImportJob::withoutGlobalScopes()->findOrFail($id);
+        $user = Auth::user();
+        abort_unless($user, 401);
 
-            // التحقق من الأمان: يجب أن يتبع الملف نفس شركة المستخدم الموثق
-            if (Auth::check() && Auth::user()->active_company_id !== $job->company_id) {
-                return abort(403, 'غير مصرح لك بتحميل هذا الملف.');
-            }
+        // Use the authenticated account's company, never an arbitrary request header.
+        $companyId = (int) $user->active_company_id;
+        abort_unless($companyId > 0, 404);
+        // Resolve permissions in the same company used by the download query.
+        setPermissionsTeamId($companyId);
+        $user->unsetRelation('permissions');
+        $user->unsetRelation('roles');
+        $isSuper = $user->checkPermissionTo(perm_key('admin.super'));
+        abort_unless($isSuper || DB::table('company_user')
+            ->where('user_id', $user->id)->where('company_id', $companyId)
+            ->where('status', 'active')->exists(), 404);
 
-            if (!$job->file_path || $job->status !== 'completed') {
-                return abort(404, 'الملف المطلوب غير جاهز أو غير موجود.');
-            }
+        // Replace only the header-driven company scope; keep branch and soft-delete scopes.
+        $job = ExportImportJob::withoutGlobalScope('company_filter')
+            ->where('company_id', $companyId)->where('type', 'export')->find($id);
+        // The application's custom exception handler does not normalize ModelNotFoundException.
+        abort_unless($job, 404);
 
-            if (!Storage::disk('public')->exists($job->file_path)) {
-                return abort(404, 'الملف الفعلي غير موجود على خادم التخزين.');
-            }
+        // Products are the only implemented exporter with a defined export permission.
+        abort_unless($job->model_type === 'products'
+            && ($isSuper || $user->checkPermissionTo(perm_key('products.export'))), 403);
 
-            return Storage::disk('public')->download($job->file_path);
-        } catch (\Throwable $e) {
-            return abort(500, 'حدث خطأ أثناء محاولة تحميل الملف: ' . $e->getMessage());
-        }
+        abort_unless($job->status === 'completed' && $job->file_path, 404);
+        $disk = Storage::disk('public');
+        abort_unless($disk->exists($job->file_path), 404);
+
+        // Expected 401/403/404 errors must not become a 500 containing exception details.
+        return $disk->download($job->file_path, 'products_export_'.$job->id.'.csv', [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 }
