@@ -14,6 +14,7 @@ use Modules\ExportImport\Models\ExportImportJob;
 use Modules\ExportImport\Http\Resources\ExportImportJobResource;
 use Modules\ExportImport\Jobs\QueuedExportJob;
 use Modules\ExportImport\Jobs\QueuedImportJob;
+use Modules\ExportImport\Services\ExportBranchContext;
 
 class ExportImportController extends Controller
 {
@@ -60,6 +61,8 @@ class ExportImportController extends Controller
         try {
             $modelType = $request->model_type;
 
+            $context = ExportBranchContext::resolve(Auth::user(), $request);
+
             // التحقق من الصلاحيات حسب نوع الكيان
             if ($modelType === 'products' && !Auth::user()->hasPermissionTo(perm_key('products.export')) && !Auth::user()->hasPermissionTo(perm_key('admin.super'))) {
                 return api_forbidden('غير مصرح لك بتصدير المنتجات.');
@@ -71,8 +74,8 @@ class ExportImportController extends Controller
                 'model_type' => $modelType,
                 'status' => 'pending',
                 'progress' => 0,
-                'company_id' => Auth::user()->active_company_id,
-                'branch_id' => Auth::user()->active_branch_id ?? null,
+                'company_id' => $context['company_id'],
+                'branch_id' => $context['branch_id'],
                 'created_by' => Auth::id(),
             ]);
 
@@ -152,6 +155,9 @@ class ExportImportController extends Controller
             ->where('company_id', $companyId)->where('type', 'export')->find($id);
         // The application's custom exception handler does not normalize ModelNotFoundException.
         abort_unless($job, 404);
+        // Older company-wide files cannot safely be relabelled as a single branch export.
+        abort_unless($job->branch_id && DB::table('branches')->where('id', $job->branch_id)
+            ->where('company_id', $companyId)->whereNull('deleted_at')->exists(), 404);
 
         // Products are the only implemented exporter with a defined export permission.
         abort_unless($job->model_type === 'products'

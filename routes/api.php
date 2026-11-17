@@ -196,6 +196,7 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
     Route::controller(BackupController::class)->group(function () {
         Route::get('backups', 'index');
         Route::post('backups/run', 'run');
+        Route::post('backups/confirm-password', 'confirmPassword');
         Route::get('backups/{id}/download', 'download');
         Route::delete('backups/{id}', 'destroy');
         Route::get('backups/settings', 'getSettings');

@@ -13,6 +13,13 @@ on:
       - 'Modules/Accounting/routes/api.php'
       - 'tests/Unit/**'
       - 'Modules/ExportImport/**'
+      - 'app/Http/Controllers/Api/BackupController.php'
+      - 'app/Http/Middleware/EnsureSystemBackupAdministrator.php'
+      - 'app/Policies/SystemBackupPolicy.php'
+      - 'app/Services/BackupConfirmation.php'
+      - 'app/Models/BackupSetting.php'
+      - 'config/cors.php'
+      - 'routes/api.php'
       - 'composer.json'
       - 'composer.lock'
       - '.github/workflows/backend-audit-phase-checks.yml'
@@ -61,6 +68,7 @@ jobs:
           tests/Unit/ShippingFinancialsTest.php
           tests/Unit/StoreCatalogFiltersTest.php
           tests/Unit/ExportDownloadAuthorizationTest.php
+          tests/Unit/SystemBackupAuthorizationTest.php
 
       - name: Check staging deployment scripts
         run: |
