@@ -12,6 +12,7 @@ on:
       - 'app/Http/Controllers/RevenueController.php'
       - 'Modules/Accounting/routes/api.php'
       - 'tests/Unit/**'
+      - 'Modules/ExportImport/**'
       - 'composer.json'
       - 'composer.lock'
       - '.github/workflows/backend-audit-phase-checks.yml'
@@ -59,6 +60,7 @@ jobs:
           tests/Unit/StoreCompliancePolicyTest.php
           tests/Unit/ShippingFinancialsTest.php
           tests/Unit/StoreCatalogFiltersTest.php
+          tests/Unit/ExportDownloadAuthorizationTest.php
 
       - name: Check staging deployment scripts
         run: |
