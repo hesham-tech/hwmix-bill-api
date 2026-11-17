@@ -8,7 +8,6 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Config\Repository;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Foundation\Application;
@@ -98,8 +97,6 @@ class ExportDownloadAuthorizationTest extends TestCase
             return $this->router->dispatch($request);
         } catch (AuthenticationException $e) {
             return new \Illuminate\Http\JsonResponse(['message' => 'Unauthenticated'], 401);
-        } catch (ModelNotFoundException $e) {
-            return new \Illuminate\Http\JsonResponse(['message' => 'Not found'], 404);
         } catch (HttpExceptionInterface $e) {
             return new \Illuminate\Http\JsonResponse(['message' => $e->getMessage()], $e->getStatusCode());
         }

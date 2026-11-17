@@ -149,7 +149,9 @@ class ExportImportController extends Controller
 
         // Replace only the header-driven company scope; keep branch and soft-delete scopes.
         $job = ExportImportJob::withoutGlobalScope('company_filter')
-            ->where('company_id', $companyId)->where('type', 'export')->findOrFail($id);
+            ->where('company_id', $companyId)->where('type', 'export')->find($id);
+        // The application's custom exception handler does not normalize ModelNotFoundException.
+        abort_unless($job, 404);
 
         // Products are the only implemented exporter with a defined export permission.
         abort_unless($job->model_type === 'products'
