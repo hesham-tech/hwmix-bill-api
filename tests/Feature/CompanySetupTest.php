@@ -189,4 +189,65 @@ class CompanySetupTest extends TestCase {
         $this->assertContains('email',$this->getSetup()['data']['uses']);
         $this->assertTrue(collect($this->getSetup()['issues'])->contains(fn($i)=>$i['step']==='email'));
     }
+
+    public function test_compact_pages_preserve_old_progress_and_separate_readiness(): void {
+        CompanySetupState::create(['user_id'=>$this->owner->id,'company_id'=>$this->company->id,'current_step'=>'billing','reviewed'=>['company','locations'],'hidden'=>true]);
+        $r=$this->getJson('/api/v1/guidance/setup/compact')->assertOk()->json('data');
+        $this->assertSame(['basics','preferences','store_setup','summary'],array_column($r['steps'],'key'));
+        $this->assertSame('preferences',$r['state']['current_step']);$this->assertTrue($r['state']['hidden']);$this->assertContains('basics',$r['state']['reviewed']);$this->assertFalse($r['store_ready']);
+    }
+    private function compactSave(string $step,array $data=[],bool $defer=false){
+        $revision=$this->getJson('/api/v1/guidance/setup/compact')->assertOk()->json('data.revision');
+        return $this->putJson('/api/v1/guidance/setup/compact/'.$step,['revision'=>$revision,'data'=>$data,'defer'=>$defer]);
+    }
+    public function test_compact_preferences_do_not_create_units_or_financial_records(): void {
+        $before=$this->company->fresh()->settings??[];$before['unrelated']='keep';$before['print_settings']=['custom_keep'=>'yes'];$this->company->update(['settings'=>$before]);
+        $units=DB::table('units')->count();$boxes=DB::table('cash_boxes')->count();
+        $this->compactSave('preferences',['auto_update_purchase_price'=>true,'print_format'=>'thermal','show_logo'=>false,'footer_text'=>'شكرا','setup_unit_id'=>987])->assertOk();
+        $settings=$this->company->fresh()->settings;$this->assertSame('keep',$settings['unrelated']);$this->assertSame('yes',$settings['print_settings']['custom_keep']);$this->assertSame('thermal',$settings['print_settings']['print_format']);$this->assertArrayNotHasKey('setup_unit_id',$settings);
+        $this->assertSame($units,DB::table('units')->count());$this->assertSame($boxes,DB::table('cash_boxes')->count());$this->assertDatabaseCount('invoices',0);
+    }
+    public function test_compact_skip_does_not_save_or_claim_reviewed_and_stale_save_rejected(): void {
+        $this->compactSave('basics',['company'=>['name'=>'لا تحفظ']],true)->assertOk()->assertJsonPath('data.state.current_step','preferences');
+        $r=$this->getJson('/api/v1/guidance/setup/compact')->json('data');$this->assertNotContains('basics',$r['state']['reviewed']);$this->assertContains('basics',$r['state']['deferred']);
+        $this->assertNotSame('لا تحفظ',$this->company->fresh()->name);
+        $this->putJson('/api/v1/guidance/setup/compact/preferences',['revision'=>'stale','data'=>['show_logo'=>false]])->assertConflict();
+    }
+    public function test_compact_basics_preserve_branch_and_excluded_company_fields(): void {
+        $this->company->update(['website'=>'https://example.test']);$w=DB::table('warehouses')->where('company_id',$this->company->id)->first();$branch=$w->branch_id;
+        $this->compactSave('basics',['company'=>['name'=>'نشاطي','phone'=>'01012345678','address'=>'عنوان النشاط'],'warehouse'=>['id'=>$w->id,'location'=>'عنوان المخزن']])->assertOk();
+        $this->assertSame('https://example.test',$this->company->fresh()->website);$this->assertSame($branch,DB::table('warehouses')->where('id',$w->id)->value('branch_id'));
+    }
+    public function test_compact_store_delivery_save_neither_invents_tax_answers_nor_self_approves(): void {
+        $w=DB::table('warehouses')->where('company_id',$this->company->id)->first();
+        $this->compactSave('store_setup',['warehouse_id'=>$w->id,'phone'=>'01012345678','city'=>'القاهرة','governorate_code'=>'cairo','local_enabled'=>false,'is_enabled'=>true,'tax_status'=>'not_registered'])->assertOk();
+        $p=\Modules\Store\Models\StoreSellerProfile::where('company_id',$this->company->id)->firstOrFail();$this->assertFalse($p->is_enabled);$this->assertEmpty($p->tax_profile);$this->assertEmpty($p->business_profile);$this->assertNull($p->payout_destination);
+    }
+    public function test_compact_options_do_not_advance_progress_and_deny_limited_member(): void {
+        $r=$this->getJson('/api/v1/guidance/setup/compact')->json('data');
+        $this->putJson('/api/v1/guidance/setup/options/company_extra',['revision'=>$r['revision'],'data'=>['website'=>'https://example.test']])->assertOk();
+        $this->assertDatabaseCount('company_setup_states',0);
+        $member=User::factory()->create(['company_id'=>$this->company->id,'active_company_id'=>$this->company->id]);$member->companies()->attach($this->company->id,['status'=>'active']);$this->actingAs($member,'sanctum');
+        $r=$this->getJson('/api/v1/guidance/setup/compact')->assertOk()->json('data');$this->assertFalse($r['can_manage']);$this->assertNull($r['data']['store']);
+        $this->putJson('/api/v1/guidance/setup/options/company_extra',['revision'=>$r['revision'],'data'=>['website'=>'https://other.test']])->assertForbidden();
+        $this->compactSave('preferences',['show_logo'=>false])->assertForbidden();
+    }
+
+    public function test_setup_resource_gateway_reuses_domain_actions_and_isolates_company(): void {
+        Permission::firstOrCreate(['name'=>'brands.create','guard_name'=>'web']);
+        $created=$this->postJson('/api/v1/guidance/setup/resources/brands',['name'=>'علامة من الإعداد','active'=>true]);$this->assertSame(200,$created->status(),(string)$created->json('message'));
+        $this->assertDatabaseHas('brands',['company_id'=>$this->company->id,'name'=>'علامة من الإعداد']);
+        $other=Company::factory()->create();$foreign=\Modules\Inventory\Models\Brand::create(['company_id'=>$other->id,'name'=>'شركة أخرى','slug'=>'foreign-setup-brand','created_by'=>$this->owner->id]);
+        $this->assertContains($this->getJson('/api/v1/guidance/setup/resources/brands/'.$foreign->id)->status(),[403,404]);
+        $this->assertContains($this->putJson('/api/v1/guidance/setup/resources/brands/'.$foreign->id,['name'=>'مرفوض'])->status(),[403,404]);
+        $this->assertSame('شركة أخرى',$foreign->fresh()->name);
+    }
+    public function test_setup_resource_gateway_denies_unpermitted_staff_and_cross_company_mail(): void {
+        $other=Company::factory()->create();$mail=\Modules\Notification\Models\MailSetting::create(['company_id'=>$other->id,'title'=>'خاص','mail_transport'=>'smtp','mail_from_address'=>'other@example.test','mail_from_name'=>'اختبار','is_active'=>true]);
+        $this->getJson('/api/v1/guidance/setup/resources/mail-settings/'.$mail->id)->assertForbidden();
+        $member=User::factory()->create(['company_id'=>$this->company->id,'active_company_id'=>$this->company->id]);$member->companies()->attach($this->company->id,['status'=>'active']);$this->actingAs($member,'sanctum');
+        foreach(['mail-settings','whatsapp-settings','notification-templates','notification-workflows','brands','units','branches','cash-boxes','payment-methods','users','roles'] as $resource)$this->getJson('/api/v1/guidance/setup/resources/'.$resource)->assertForbidden();
+        $this->postJson('/api/v1/guidance/setup/resources/brands',['name'=>'مرفوض'])->assertForbidden();
+        $this->assertDatabaseMissing('brands',['company_id'=>$this->company->id,'name'=>'مرفوض']);
+    }
 }

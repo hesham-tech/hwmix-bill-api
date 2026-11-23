@@ -29,6 +29,8 @@ Route::prefix('store')->group(function() {
 
     // Public Routes
     Route::prefix('public')->group(function() {
+        Route::get('/map-config',[\Modules\Store\Http\Controllers\StoreMapController::class,'configuration']);
+        Route::get('/map-search',[\Modules\Store\Http\Controllers\StoreMapController::class,'search'])->middleware('throttle:20,1');
         Route::get('/contact',[\Modules\Store\Http\Controllers\StorePublicContactController::class,'show']);
         Route::get('/registration-legal', fn()=>response()->json(['success'=>true,'data'=>app(\Modules\Store\Services\StoreRegistrationLegalService::class)->documents()]));
         Route::get('/checkout-config', [StoreOrderController::class, 'configuration']);
