@@ -19,8 +19,8 @@ class CompanySetupService {
         abort_unless($id&&$user->companies()->where('companies.id',$id)->wherePivot('status','active')->exists(),403);
         return Company::withoutGlobalScopes()->whereNull('deleted_at')->findOrFail($id);
     }
-    private function manager(User $u): bool {return $u->checkPermissionTo('admin.super')||$u->checkPermissionTo('admin.company')||$u->checkPermissionTo('guidance.setup.manage');}
-    private function uses(Company $c): array {
+    protected function manager(User $u): bool {return $u->checkPermissionTo('admin.super')||$u->checkPermissionTo('admin.company')||$u->checkPermissionTo('guidance.setup.manage');}
+    protected function uses(Company $c): array {
         $uses=isset($c->settings['setup_uses'])?array_values(array_intersect(self::FEATURES,$c->settings['setup_uses'])):['inventory','sales'];
         if(StoreSellerProfile::where('company_id',$c->id)->exists())$uses[]='store';
         if($this->staff($c)->count()>1)$uses[]='team';
@@ -33,7 +33,7 @@ class CompanySetupService {
         return array_keys(self::TITLES);
     }
     private function rows(string $model,int $company,array $fields): array {return $model::withoutGlobalScopes()->where('company_id',$company)->get($fields)->toArray();}
-    private function data(Company $c,User $u): array {
+    protected function data(Company $c,User $u): array {
         $manage=$this->manager($u);
         $branches=Branch::withoutGlobalScopes()->whereNull('deleted_at')->where('company_id',$c->id)->get(['id','name','address','phone','is_active','is_default'])->toArray();
         $warehouses=$this->rows(Warehouse::class,$c->id,['id','name','branch_id','location','latitude','longitude','location_confirmed','is_default','status']);
@@ -51,7 +51,7 @@ class CompanySetupService {
                 'delivery'=>app(LocalDeliveryService::class)->settings($c->id),'can_publish'=>app(SellerPolicyService::class)->canPublish($c->id),'payout_destination_configured'=>(bool)$profile?->payout_destination,'payout_proposal'=>$profile?->payout_destination_proposal,'return_policy'=>app(StoreSettingsService::class)->get()['return_policy'],
                 'policy'=>app(SellerPolicyService::class)->resolve($c->id)]:null];
     }
-    private function revision(Company $c): string {
+    protected function revision(Company $c): string {
         $parts=[$c->getAttributes()];
         foreach(['branches','warehouses','payment_methods','units','company_invoice_type','store_seller_profiles'] as $table)
             $parts[]=DB::table($table)->where('company_id',$c->id)->orderBy($table==='company_invoice_type'?'invoice_type_id':'id')->get()->toArray();
@@ -69,7 +69,7 @@ class CompanySetupService {
             'state'=>['current_step'=>in_array($current,$keys)?$current:'company','reviewed'=>array_values(array_unique(array_intersect($reviewed,$keys))), 'deferred'=>array_values(array_unique(array_intersect($deferred,$keys))), 'hidden'=>$state?->hidden??false,'finished'=>!!$state?->finished_at],
             'data'=>$this->data($c,$u),'issues'=>$issues,'ready'=>!$issues,'basic_ready'=>!array_filter($issues,fn($i)=>$i['group']==='basic')];
     }
-    private function issues(Company $c,User $u,array $uses): array {
+    protected function issues(Company $c,User $u,array $uses): array {
         $issues=[];$add=function($step,$message,$group='basic')use(&$issues){$issues[]=['step'=>$step,'message'=>$message,'group'=>$group];};
         if((int)$c->id!==(int)config('app.master_company_id',1)&&!$u->checkPermissionTo('admin.super')){
             $subscription=\App\Services\SaaS\SaaSEngine::getActiveSubscription($c->id);
@@ -155,7 +155,7 @@ class CompanySetupService {
     public function preferences(User $u,bool $hidden): array {
         $c=$this->company($u);CompanySetupState::updateOrCreate(['user_id'=>$u->id,'company_id'=>$c->id],['hidden'=>$hidden]);return $this->snapshot($u);
     }
-    private function write(User $u,Company $c,string $step,array $input): void {
+    protected function write(User $u,Company $c,string $step,array $input): void {
         $validate=fn($rules)=>Validator::make($input,$rules)->validate();
         if($step==='uses'){
             $v=$validate(['uses'=>'required|array|min:1','uses.*'=>['required',Rule::in(self::FEATURES)]]);
