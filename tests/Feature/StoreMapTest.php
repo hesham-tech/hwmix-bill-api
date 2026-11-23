@@ -3,6 +3,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Support\Facades\{Cache,Http,RateLimiter};
 class StoreMapTest extends TestCase {
+    use \Illuminate\Foundation\Testing\RefreshDatabase;
     protected function setUp(): void {parent::setUp();config(['cache.default'=>'array','maps.geoapify_key'=>null,'maps.geoapify_map_key'=>null,'maps.daily_search_limit'=>500]);Cache::flush();RateLimiter::clear('map-provider-outbound');}
     public function test_missing_key_keeps_fallback_available_without_outbound_calls(): void {
         Http::preventStrayRequests();$this->getJson('/api/v1/store/public/map-config')->assertOk()->assertJsonPath('data.search_enabled',false)->assertJsonPath('data.tile_url',null);

@@ -91,6 +91,9 @@ Route::prefix('vendor/store')->middleware('auth:sanctum')->group(function () {
 });
 
 Route::prefix('admin/store')->middleware('auth:sanctum')->group(function () {
+    Route::get('/maps',[\Modules\Store\Http\Controllers\StoreMapSettingsController::class,'show']);
+    Route::patch('/maps',[\Modules\Store\Http\Controllers\StoreMapSettingsController::class,'update']);
+    Route::post('/maps/test',[\Modules\Store\Http\Controllers\StoreMapSettingsController::class,'test'])->middleware('throttle:3,1');
     Route::get('/contact',[\Modules\Store\Http\Controllers\StorePublicContactController::class,'adminShow']);
     Route::patch('/contact',[\Modules\Store\Http\Controllers\StorePublicContactController::class,'update']);
     Route::get('/notifications',[\Modules\Store\Http\Controllers\StoreNotificationController::class,'index'])->defaults('scope','admin');
