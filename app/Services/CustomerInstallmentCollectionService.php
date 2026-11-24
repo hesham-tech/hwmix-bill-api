@@ -157,7 +157,7 @@ class CustomerInstallmentCollectionService
                 foreach (collect($fresh['allocations'])->groupBy('installment_plan_id')->sortKeys() as $planId => $rows) {
                     $allocations = $rows->mapWithKeys(fn ($row) => [$row['id'] => $row['amount']])->all();
                     $amount = $this->sum($rows->all(), 'amount');
-                    $result = app(InstallmentPaymentService::class)->payInstallments(array_keys($allocations), $amount,
+                    $result = app(InstallmentPaymentService::class)->payExactInstallments(array_keys($allocations), $amount,
                         array_merge($signed['input'], ['installment_plan_id' => $planId, 'exact_allocations' => $allocations]));
                     $payments[] = ['installment_plan_id' => $planId, 'payment_id' => $result['installmentPayment']->id, 'amount' => $amount];
                 }

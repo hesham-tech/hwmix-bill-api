@@ -261,4 +261,15 @@ class CustomerInstallmentCollectionTest extends TestCase
         $this->assertEquals('0.00', $a->fresh()->remaining);
         $this->assertEquals('0.00', $b->fresh()->remaining);
     }
+
+    public function test_legacy_numeric_input_keeps_its_existing_coercion_contract(): void
+    {
+        $a = $this->installment('2026-11-01', '200.00');
+        $this->mock(\App\Contracts\FinancialEngineInterface::class)->shouldReceive('processPaymentReceipt')->once()->andReturn('test-operation');
+        $result = app(InstallmentPaymentService::class)->payInstallments([$a->id], '1e2', [
+            'installment_plan_id'=>$a->installment_plan_id,'cash_box_id'=>$this->box->id,'payment_method_id'=>$this->method->id,
+        ]);
+        $this->assertEquals('100.00', $result['installmentPayment']->amount_paid);
+        $this->assertEquals('100.00', $a->fresh()->remaining);
+    }
 }

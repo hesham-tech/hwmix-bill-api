@@ -19,12 +19,26 @@ class InstallmentPaymentService
      * يدفع الأقساط المحددة، مع التعامل مع المدفوعات الجزئية والمبالغ الزائدة.
      *
      * @param array $installmentIds معرفات الأقساط المراد دفعها.
-     * @param string|int|float $amount مبلغ عشري؛ تقبل الأنواع القديمة للتوافق.
+     * @param float $amount المبلغ الإجمالي المدفوع؛ توقيع المسار القديم محفوظ للتوافق.
      * @param array $options خيارات إضافية (user_id, installment_plan_id, payment_method_id, cash_box_id, notes, paid_at).
      * @return array يحتوي على الدفعة الرئيسية والأقساط المتأثرة.
      * @throws \Throwable
      */
-    public function payInstallments(array $installmentIds, string|int|float $amount, array $options = [])
+    public function payInstallments(array $installmentIds, float $amount, array $options = [])
+    {
+        return $this->applyPayments($installmentIds, (string) $amount, $options);
+    }
+
+    /** Internal collection entry point keeps decimal strings through allocation. */
+    public function payExactInstallments(array $installmentIds, string $amount, array $options = [])
+    {
+        if (!isset($options['exact_allocations'])) {
+            throw new \InvalidArgumentException('Exact installment allocations are required.');
+        }
+        return $this->applyPayments($installmentIds, $amount, $options);
+    }
+
+    private function applyPayments(array $installmentIds, string $amount, array $options)
     {
         DB::beginTransaction();
 
