@@ -19,22 +19,22 @@ class InstallmentPaymentService
      * يدفع الأقساط المحددة، مع التعامل مع المدفوعات الجزئية والمبالغ الزائدة.
      *
      * @param array $installmentIds معرفات الأقساط المراد دفعها.
-     * @param float $amount المبلغ الإجمالي المدفوع.
+     * @param string|int|float $amount مبلغ عشري؛ تقبل الأنواع القديمة للتوافق.
      * @param array $options خيارات إضافية (user_id, installment_plan_id, payment_method_id, cash_box_id, notes, paid_at).
      * @return array يحتوي على الدفعة الرئيسية والأقساط المتأثرة.
      * @throws \Throwable
      */
-    public function payInstallments(array $installmentIds, float $amount, array $options = [])
+    public function payInstallments(array $installmentIds, string|int|float $amount, array $options = [])
     {
         DB::beginTransaction();
 
         try {
-            $remainingAmountToDistribute = $amount;
-            $totalAmountSuccessfullyPaid = 0;
+            $remainingAmountToDistribute = bcadd((string) $amount, '0', 2);
+            $totalAmountSuccessfullyPaid = '0.00';
 
             $authUser = Auth::user();
 
-            $installmentPlan = InstallmentPlan::with('installments')->find($options['installment_plan_id'] ?? null);
+            $installmentPlan = InstallmentPlan::with('installments')->lockForUpdate()->find($options['installment_plan_id'] ?? null);
             if (!$installmentPlan) {
                 throw new Exception('InstallmentPaymentService: خطة التقسيط غير موجودة.');
             }
@@ -83,13 +83,19 @@ class InstallmentPaymentService
                 ->where('status', '!=', 'canceled')
                 ->where('remaining', '>', 0);
 
-            if (!empty($installmentIds)) {
+            if (isset($options['exact_allocations'])) {
+                $installmentsToProcess = (clone $query)->whereIn('id', array_keys($options['exact_allocations']))
+                    ->orderBy('due_date')->orderBy('id')->lockForUpdate()->get();
+                if ($installmentsToProcess->count() !== count($options['exact_allocations'])) {
+                    throw new Exception('تغيرت الأقساط. أعد المعاينة.');
+                }
+            } elseif (!empty($installmentIds)) {
                 // لو تم تحديد أقساط معينة يتم إعطاؤها الأولوية
-                $selectedInstallments = (clone $query)->whereIn('id', $installmentIds)->orderBy('due_date')->get();
-                $otherDueInstallments = (clone $query)->whereNotIn('id', $installmentIds)->orderBy('due_date')->get();
+                $selectedInstallments = (clone $query)->whereIn('id', $installmentIds)->orderBy('due_date')->lockForUpdate()->get();
+                $otherDueInstallments = (clone $query)->whereNotIn('id', $installmentIds)->orderBy('due_date')->lockForUpdate()->get();
                 $installmentsToProcess = $selectedInstallments->merge($otherDueInstallments);
             } else {
-                $installmentsToProcess = $query->orderBy('due_date')->get();
+                $installmentsToProcess = $query->orderBy('due_date')->lockForUpdate()->get();
             }
 
             $affectedInstallments = collect();
@@ -99,7 +105,11 @@ class InstallmentPaymentService
                     break;
                 }
 
-                $amountToApplyToCurrentInstallment = min($remainingAmountToDistribute, $installment->remaining);
+                $amountToApplyToCurrentInstallment = $options['exact_allocations'][$installment->id] ?? min($remainingAmountToDistribute, $installment->remaining);
+                if (bccomp((string) $amountToApplyToCurrentInstallment, (string) $installment->remaining, 2) > 0
+                    || bccomp((string) $amountToApplyToCurrentInstallment, (string) $remainingAmountToDistribute, 2) > 0) {
+                    throw new Exception('تغيرت قيمة القسط. أعد المعاينة.');
+                }
                 $newRemaining = bcsub($installment->remaining, $amountToApplyToCurrentInstallment, 2);
                 $newStatus = $installment->status;
 
@@ -127,7 +137,7 @@ class InstallmentPaymentService
             }
 
             $installmentPayment->update(['amount_paid' => $totalAmountSuccessfullyPaid]);
-            $this->updateInstallmentPlanStatus($installmentPlan);
+            $this->updateInstallmentPlanStatus($installmentPlan->load('installments'));
 
             $parentInvoice = $installmentPlan->invoice;
 
@@ -233,9 +243,15 @@ class InstallmentPaymentService
         }
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($installmentPayment, $userId) {
+            // Share lock ordering with collection/payment to prevent lost updates during reversal.
+            InstallmentPlan::whereKey($installmentPayment->installment_plan_id)->lockForUpdate()->firstOrFail();
+            $installmentPayment = InstallmentPayment::whereKey($installmentPayment->id)->lockForUpdate()->firstOrFail();
+            if ($installmentPayment->status === 'reversed') {
+                throw new \Exception('هذه الدفعة معكوسة مسبقاً.');
+            }
             // 1. Restore installments remaining and status
             foreach ($installmentPayment->details as $detail) {
-                $installment = $detail->installment;
+                $installment = Installment::whereKey($detail->installment_id)->lockForUpdate()->firstOrFail();
                 $installment->remaining = bcadd((string)$installment->remaining, (string)$detail->amount_paid, 2);
                 
                 if (bccomp((string)$installment->remaining, (string)$installment->amount, 2) >= 0) {

@@ -263,6 +263,9 @@ Route::middleware(['auth:sanctum', 'scope_company', 'branch_context', 'throttle:
             Route::patch('payment-methods/{id}/toggle', 'toggle');
             Route::delete('payment-methods/{paymentMethod}', 'destroy');
         });
+    Route::get('installment-collections/candidates', [\App\Http\Controllers\CustomerInstallmentCollectionController::class, 'candidates']);
+    Route::post('installment-collections/preview', [\App\Http\Controllers\CustomerInstallmentCollectionController::class, 'preview']);
+    Route::post('installment-collections', [\App\Http\Controllers\CustomerInstallmentCollectionController::class, 'store']);
     Route::controller(InstallmentPaymentController::class)
         ->group(function () {
             Route::get('installment-payments', 'index');
