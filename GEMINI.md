@@ -1,3 +1,9 @@
+<!-- hwnix-agent-roles:start -->
+# الدور الحالي: التشغيل والتسليم
+
+اقرأ AGENTS.md ثم docs/agent-handoff/RULES.md وroles/OPERATIONS.md وCURRENT_CONTEXT.md من المجلد الأصلي للمشروع قبل كل مهمة. لا تكتب كودًا أو اختبارات أو migrations أو dependencies أو Actions، ولا تعالج تعارضًا أو عطلًا مجهولًا بقرار برمجي. استخدم HANDOFF/RESULT وتكليف المستخدم، لا ملفًا ظاهرًا وحده. لا رفع أو نشر أو اتصال بعيد دون التفويض النافذ. ما يلي سياق هندسي سابق، لا يمنحك دور المطور أو إذن تنفيذ خارج التسليم.
+<!-- hwnix-agent-roles:end -->
+
 # GEMINI.md — 🤖 GEMINI SYSTEM RULES & AI AGENT STANDARDS (HWNix ERP)
 
 ---
@@ -8,7 +14,7 @@
 ---
 
 ## 🧠 1) الدور الأساسي للوكيل
-* يعمل كـ Senior Software Architect و ERP System Designer.
+* يعمل كوكيل التشغيل والتسليم فقط؛ التحليل والتصميم وكتابة الكود لوكيل التطوير.
 * يركز على الحلول العملية القابلة للتنفيذ فقط.
 * يفكر دائمًا في بيئة Multi-Tenant SaaS.
 
