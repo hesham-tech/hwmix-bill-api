@@ -5,6 +5,8 @@ namespace Modules\AiPlatform\Http\Controllers\Admin;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\AiPlatform\Services\AiAdminScope;
+use Modules\AiPlatform\Http\Requests\Admin\{AiModelRequest, AiAccountRequest, AiAgentRequest, AiPromptRequest};
 use Modules\AiPlatform\Models\AiProvider;
 use Modules\AiPlatform\Models\AiProviderAccount;
 use Modules\AiPlatform\Models\AiAgent;
@@ -19,7 +21,7 @@ class DashboardApiController extends Controller
      */
     public function stats(Request $request): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
+        $companyId = AiAdminScope::company($request);
 
         return response()->json([
             'success' => true,
@@ -40,7 +42,7 @@ class DashboardApiController extends Controller
      */
     public function providers(Request $request): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
+        $companyId = AiAdminScope::company($request);
 
         $providers = AiProvider::with(['accounts' => function($q) use ($companyId) {
             $q->where('company_id', $companyId);
@@ -57,7 +59,7 @@ class DashboardApiController extends Controller
      */
     public function agents(Request $request): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
+        $companyId = AiAdminScope::company($request);
         $agents    = AiAgent::where('company_id', $companyId)->get();
 
         return response()->json([
@@ -71,7 +73,7 @@ class DashboardApiController extends Controller
      */
     public function prompts(Request $request): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
+        $companyId = AiAdminScope::company($request);
         $prompts   = AiPrompt::where('company_id', $companyId)->orWhereNull('company_id')->get();
 
         return response()->json([
@@ -85,7 +87,7 @@ class DashboardApiController extends Controller
      */
     public function usageReport(Request $request): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
+        $companyId = AiAdminScope::company($request);
         $logs      = AiUsageLog::where('company_id', $companyId)
             ->latest()
             ->limit(50)
@@ -113,18 +115,9 @@ class DashboardApiController extends Controller
     /**
      * إضافة نموذج ذكاء اصطناعي جديد
      */
-    public function storeModel(Request $request): JsonResponse
+    public function storeModel(AiModelRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'ai_provider_id'      => 'required|exists:ai_providers,id',
-            'model_id'            => 'required|string|max:100',
-            'label'               => 'required|string|max:255',
-            'version'             => 'nullable|string',
-            'max_context_tokens'  => 'nullable|integer',
-            'max_output_tokens'   => 'nullable|integer',
-            'input_price_per_1k'  => 'nullable|numeric',
-            'output_price_per_1k' => 'nullable|numeric',
-        ]);
+        $validated = $request->validated();
 
         $model = \Modules\AiPlatform\Models\AiModel::create(array_merge($validated, [
             'is_active' => true,
@@ -140,20 +133,11 @@ class DashboardApiController extends Controller
     /**
      * تحديث بيانات النموذج
      */
-    public function updateModel(Request $request, $id): JsonResponse
+    public function updateModel(AiModelRequest $request, $id): JsonResponse
     {
-        $validated = $request->validate([
-            'ai_provider_id'      => 'sometimes|exists:ai_providers,id',
-            'model_id'            => 'sometimes|string|max:100',
-            'label'               => 'sometimes|string|max:255',
-            'version'             => 'nullable|string',
-            'max_context_tokens'  => 'nullable|integer',
-            'max_output_tokens'   => 'nullable|integer',
-            'input_price_per_1k'  => 'nullable|numeric',
-            'output_price_per_1k' => 'nullable|numeric',
-        ]);
+        $validated = $request->validated();
 
-        $model = \Modules\AiPlatform\Models\AiModel::findOrFail($id);
+        $model = AiAdminScope::record(\Modules\AiPlatform\Models\AiModel::query(), $id);
         $model->update($validated);
 
         return response()->json([
@@ -168,7 +152,7 @@ class DashboardApiController extends Controller
      */
     public function destroyModel($id): JsonResponse
     {
-        $model = \Modules\AiPlatform\Models\AiModel::findOrFail($id);
+        $model = AiAdminScope::record(\Modules\AiPlatform\Models\AiModel::query(), $id);
         $model->delete();
 
         return response()->json([
@@ -182,7 +166,7 @@ class DashboardApiController extends Controller
      */
     public function toggleModelActive($id): JsonResponse
     {
-        $model = \Modules\AiPlatform\Models\AiModel::findOrFail($id);
+        $model = AiAdminScope::record(\Modules\AiPlatform\Models\AiModel::query(), $id);
         $model->is_active = !$model->is_active;
         $model->save();
 
@@ -198,7 +182,7 @@ class DashboardApiController extends Controller
      */
     public function accounts(Request $request): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
+        $companyId = AiAdminScope::accountOrPrompt($request);
         $accounts  = AiProviderAccount::with('provider')
             ->where('company_id', $companyId)
             ->get();
@@ -212,18 +196,11 @@ class DashboardApiController extends Controller
     /**
      * إضافة حساب مزود جديد (API Key)
      */
-    public function storeAccount(Request $request): JsonResponse
+    public function storeAccount(AiAccountRequest $request): JsonResponse
     {
-        $isSystem  = $request->boolean('is_system', false);
-        $companyId = $isSystem ? null : $request->get('company_id', 1);
+        $companyId = AiAdminScope::accountOrPrompt($request);
 
-        $validated = $request->validate([
-            'ai_provider_id'    => 'required|exists:ai_providers,id',
-            'label'             => 'required|string|max:255',
-            'api_key_encrypted' => 'required|string',
-            'custom_base_url'   => 'nullable|url',
-            'priority'          => 'nullable|integer',
-        ]);
+        $validated = $request->validated();
 
         /** @var \Modules\AiPlatform\Contracts\Security\SecretVaultInterface $vault */
         $vault = app(\Modules\AiPlatform\Contracts\Security\SecretVaultInterface::class);
@@ -231,6 +208,7 @@ class DashboardApiController extends Controller
 
         $account = AiProviderAccount::create([
             'company_id'        => $companyId,
+            'account_scope'     => $companyId === null ? 'SYSTEM' : 'COMPANY',
             'ai_provider_id'    => $validated['ai_provider_id'],
             'label'             => $validated['label'],
             'api_key_encrypted' => $vault->encrypt($rawKey),
@@ -253,25 +231,13 @@ class DashboardApiController extends Controller
     /**
      * تحديث بيانات حساب المزود / المفتاح
      */
-    public function updateAccount(Request $request, $id): JsonResponse
+    public function updateAccount(AiAccountRequest $request, $id): JsonResponse
     {
-        $isSystem  = $request->boolean('is_system', false);
-        $companyId = $isSystem ? null : $request->get('company_id', 1);
-        $account   = AiProviderAccount::where(function ($q) use ($companyId) {
-            $q->where('company_id', $companyId)->orWhereNull('company_id');
-        })->findOrFail($id);
+        $companyId = AiAdminScope::accountOrPrompt($request);
+        $account   = AiAdminScope::record(AiProviderAccount::where('company_id', $companyId), $id);
 
-        $validated = $request->validate([
-            'ai_provider_id'    => 'sometimes|exists:ai_providers,id',
-            'label'             => 'sometimes|string|max:255',
-            'api_key_encrypted' => 'nullable|string',
-            'custom_base_url'   => 'nullable|url',
-            'priority'          => 'nullable|integer',
-        ]);
+        $validated = $request->validated();
 
-        if ($request->has('is_system')) {
-            $validated['company_id'] = $companyId;
-        }
 
         if (!empty($validated['api_key_encrypted'])) {
             /** @var \Modules\AiPlatform\Contracts\Security\SecretVaultInterface $vault */
@@ -298,8 +264,8 @@ class DashboardApiController extends Controller
      */
     public function destroyAccount(Request $request, $id): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
-        $account   = AiProviderAccount::where('company_id', $companyId)->findOrFail($id);
+        $companyId = AiAdminScope::accountOrPrompt($request);
+        $account   = AiAdminScope::record(AiProviderAccount::where('company_id', $companyId), $id);
         $account->delete();
 
         return response()->json([
@@ -313,8 +279,8 @@ class DashboardApiController extends Controller
      */
     public function toggleAccountActive(Request $request, $id): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
-        $account   = AiProviderAccount::where('company_id', $companyId)->findOrFail($id);
+        $companyId = AiAdminScope::accountOrPrompt($request);
+        $account   = AiAdminScope::record(AiProviderAccount::where('company_id', $companyId), $id);
         $account->is_active = !$account->is_active;
         $account->save();
 
@@ -327,14 +293,10 @@ class DashboardApiController extends Controller
 
     /* ==================== Agents CRUD ==================== */
 
-    public function storeAgent(Request $request): JsonResponse
+    public function storeAgent(AiAgentRequest $request): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
-        $request->validate([
-            'key'  => 'required|string|max:100',
-            'name' => 'nullable|string|max:255',
-            'label'=> 'nullable|string|max:255',
-        ]);
+        $companyId = AiAdminScope::company($request);
+        $request->validated();
 
         $label = $request->input('label') ?? $request->input('name') ?? $request->input('key');
 
@@ -356,10 +318,10 @@ class DashboardApiController extends Controller
         ], 201);
     }
 
-    public function updateAgent(Request $request, $id): JsonResponse
+    public function updateAgent(AiAgentRequest $request, $id): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
-        $agent     = AiAgent::where('company_id', $companyId)->findOrFail($id);
+        $companyId = AiAdminScope::company($request);
+        $agent     = AiAdminScope::record(AiAgent::where('company_id', $companyId), $id);
 
         $data = $request->only(['key', 'description', 'system_prompt', 'preferred_capability', 'is_active']);
         if ($request->has('label') || $request->has('name')) {
@@ -377,8 +339,8 @@ class DashboardApiController extends Controller
 
     public function destroyAgent(Request $request, $id): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
-        $agent     = AiAgent::where('company_id', $companyId)->findOrFail($id);
+        $companyId = AiAdminScope::company($request);
+        $agent     = AiAdminScope::record(AiAgent::where('company_id', $companyId), $id);
         $agent->delete();
 
         return response()->json([
@@ -389,8 +351,8 @@ class DashboardApiController extends Controller
 
     public function toggleAgentActive(Request $request, $id): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
-        $agent     = AiAgent::where('company_id', $companyId)->findOrFail($id);
+        $companyId = AiAdminScope::company($request);
+        $agent     = AiAdminScope::record(AiAgent::where('company_id', $companyId), $id);
         $agent->is_active = !$agent->is_active;
         $agent->save();
 
@@ -403,16 +365,10 @@ class DashboardApiController extends Controller
 
     /* ==================== Prompts CRUD ==================== */
 
-    public function storePrompt(Request $request): JsonResponse
+    public function storePrompt(AiPromptRequest $request): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
-        $validated = $request->validate([
-            'key'               => 'required|string|max:100',
-            'title'             => 'required|string|max:255',
-            'description'       => 'nullable|string',
-            'capability_key'    => 'nullable|string',
-            'template'          => 'required|string',
-        ]);
+        $companyId = AiAdminScope::accountOrPrompt($request);
+        $validated = $request->validated();
 
         $prompt = AiPrompt::create([
             'company_id'     => $companyId,
@@ -442,17 +398,12 @@ class DashboardApiController extends Controller
         ], 201);
     }
 
-    public function updatePrompt(Request $request, $id): JsonResponse
+    public function updatePrompt(AiPromptRequest $request, $id): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
-        $prompt    = AiPrompt::where('company_id', $companyId)->orWhereNull('company_id')->findOrFail($id);
+        $companyId = AiAdminScope::accountOrPrompt($request);
+        $prompt    = AiAdminScope::record(AiPrompt::where('company_id', $companyId), $id);
 
-        $validated = $request->validate([
-            'title'          => 'sometimes|string|max:255',
-            'description'    => 'nullable|string',
-            'capability_key' => 'nullable|string',
-            'template'       => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $prompt->update($validated);
 
@@ -463,7 +414,7 @@ class DashboardApiController extends Controller
 
             \Illuminate\Support\Facades\DB::table('ai_prompt_versions')->insert([
                 'ai_prompt_id' => $prompt->id,
-                'company_id'   => $companyId,
+                'company_id'   => $prompt->company_id,
                 'version'      => $latestVersion + 1,
                 'locale'       => 'ar',
                 'template'     => $validated['template'],
@@ -482,8 +433,8 @@ class DashboardApiController extends Controller
 
     public function destroyPrompt(Request $request, $id): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
-        $prompt    = AiPrompt::where('company_id', $companyId)->orWhereNull('company_id')->findOrFail($id);
+        $companyId = AiAdminScope::accountOrPrompt($request);
+        $prompt    = AiAdminScope::record(AiPrompt::where('company_id', $companyId), $id);
         $prompt->delete();
 
         return response()->json([
@@ -494,8 +445,8 @@ class DashboardApiController extends Controller
 
     public function togglePromptActive(Request $request, $id): JsonResponse
     {
-        $companyId = $request->get('company_id', 1);
-        $prompt    = AiPrompt::where('company_id', $companyId)->orWhereNull('company_id')->findOrFail($id);
+        $companyId = AiAdminScope::accountOrPrompt($request);
+        $prompt    = AiAdminScope::record(AiPrompt::where('company_id', $companyId), $id);
         $prompt->is_active = !$prompt->is_active;
         $prompt->save();
 

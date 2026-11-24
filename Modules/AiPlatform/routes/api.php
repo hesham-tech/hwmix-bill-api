@@ -45,7 +45,7 @@ Route::prefix(config('ai-platform.api.prefix', 'api/v1/ai'))
             ->name('executions.cancel');
 
         // Admin REST APIs for Vue.js Frontend Dashboard
-        Route::prefix('admin')->name('admin.')->group(function () {
+        Route::prefix('admin')->middleware(['auth:sanctum', \Modules\AiPlatform\Http\Middleware\EnsureAiAdministrator::class])->name('admin.')->group(function () {
             Route::get('stats', [\Modules\AiPlatform\Http\Controllers\Admin\DashboardApiController::class, 'stats'])->name('stats');
             Route::get('providers', [\Modules\AiPlatform\Http\Controllers\Admin\DashboardApiController::class, 'providers'])->name('providers');
             Route::get('agents', [\Modules\AiPlatform\Http\Controllers\Admin\DashboardApiController::class, 'agents'])->name('agents.index');

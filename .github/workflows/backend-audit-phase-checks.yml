@@ -13,6 +13,7 @@ on:
       - 'Modules/Accounting/routes/api.php'
       - 'tests/Unit/**'
       - 'Modules/ExportImport/**'
+      - 'Modules/AiPlatform/**'
       - 'app/Http/Controllers/Api/BackupController.php'
       - 'app/Http/Middleware/EnsureSystemBackupAdministrator.php'
       - 'app/Policies/SystemBackupPolicy.php'
@@ -69,6 +70,7 @@ jobs:
           tests/Unit/StoreCatalogFiltersTest.php
           tests/Unit/ExportDownloadAuthorizationTest.php
           tests/Unit/SystemBackupAuthorizationTest.php
+          tests/Unit/AiAdministrationAuthorizationTest.php
 
       - name: Check staging deployment scripts
         run: |
